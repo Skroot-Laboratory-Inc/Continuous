@@ -233,13 +233,3 @@ class Settings:
         else:
             fontsize = 13
         mpl.rcParams.update({'font.size': fontsize})
-
-    def selectCell(self):
-        logger.info('cell selected')
-        self.AppModule.cellApp = True
-        self.AppModule.foamingApp = False
-
-    def selectFoaming(self):
-        logger.info('foaming selected')
-        self.AppModule.cellApp = False
-        self.AppModule.foamingApp = True

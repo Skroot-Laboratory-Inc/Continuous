@@ -39,10 +39,6 @@ class Setup:
                                         command=lambda: self.Settings.freqToggleSetting("Signal Check"))
         menubar.add_cascade(label="Display", menu=settingsMenuDisplay)
 
-        settingsMenuAppType = tk.Menu(menubar, tearoff=0)
-        settingsMenuAppType.add_command(label="Cell", command=lambda: self.Settings.selectCell())
-        settingsMenuAppType.add_command(label="Foaming", command=lambda: self.Settings.selectFoaming())
-        menubar.add_cascade(label="Application Use", menu=settingsMenuAppType)
         return menubar
 
     def createTheme(self):
