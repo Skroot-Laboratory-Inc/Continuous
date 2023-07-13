@@ -96,16 +96,14 @@ class AppModule:
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
+        self.Buttons.startFunc()
 
     def setupApp(self):
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
-        self.Setup.createFramesAndButtons()
+        self.Setup.createFrames()
         self.root.config(menu=self.menubar)
-        text_notification.setText("Press browse and select \na save location to begin.", ('Courier', 9, 'bold'),
-                                  self.royalBlue, self.white)
-        # self.selectApplication()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
@@ -232,11 +230,6 @@ class AppModule:
             logger.exception("Failed to generated summaryPlot")
 
     def resetRun(self):
-        self.stopButton['state'] = 'disabled'
-        self.submitButton['state'] = 'normal'
-        self.airFreqInput['state'] = 'normal'
-        self.waterFreqInput['state'] = 'normal'
-        self.browseButton['state'] = 'normal'
         self.airFreqInput.delete(0, 50)
         self.waterFreqInput.delete(0, 50)
         self.totalViability = []
@@ -292,7 +285,7 @@ class AppModule:
     def showFrame(self, frame):
         self.currentFrame = frame
         try:
-            frame.place(relx=0, rely=0, relwidth=0.7, relheight=1)
+            frame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
             frame.tkraise()
         except:
             logger.exception('Failed to change the frame visible')

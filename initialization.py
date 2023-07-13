@@ -112,17 +112,16 @@ class Initialization:
         self.liquidThread = ''
 
     def setSavePath(self, savePath):
+        if not os.path.exists(savePath):
+            os.mkdir(savePath)
         self.savePath = rf'{savePath}/{self.readerNumber}{self.folderSuffix}'
-        if self.AppModule.ServerFileShare.disabled == False:
+        if not self.AppModule.ServerFileShare.disabled:
             self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
         self.createFolders()
 
     def createFolders(self):
-        try:
-            if not os.path.exists(self.serverSavePath):
-                os.mkdir(self.serverSavePath)
-        except:
-            pass
+        if not os.path.exists(self.serverSavePath):
+            os.mkdir(self.serverSavePath)
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
         if not os.path.exists(f'{self.savePath}/Calibration.csv'):

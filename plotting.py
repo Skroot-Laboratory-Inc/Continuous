@@ -118,29 +118,32 @@ class Plotting:
             ax2.set_ylabel(self.secondAxisTitle, color='k')
 
     def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
+        spaceForPlots = 0.9
         self.frequencyFrame = tk.Frame(outerFrame, bg=self.AppModule.white, bd=5)
         relx, rely = 0, 0
         if totalNumberOfReaders > 1:
-            if (self.readerNumber % 4) == 1:
+            if (self.readerNumber % 5) == 1:
                 relx, rely = 0, 0
-            elif (self.readerNumber % 4) == 2:
-                relx, rely = 0.5, 0
-            elif (self.readerNumber % 4) == 3:
-                relx, rely = 0, 0.45
-            elif (self.readerNumber % 4) == 0:
-                relx, rely = 0.5, 0.45
+            elif (self.readerNumber % 5) == 2:
+                relx, rely = 0.33, 0
+            elif (self.readerNumber % 5) == 3:
+                relx, rely = 0.67, 0
+            elif (self.readerNumber % 5) == 4:
+                relx, rely = 0, 0.5*spaceForPlots
+            elif (self.readerNumber % 5) == 0:
+                relx, rely = 0.33, 0.5*spaceForPlots
             else:
                 pass
             if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.45, relheight=0.45)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.27, relheight=0.45*spaceForPlots)
             else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.5, relheight=0.45)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.27, relheight=0.45*spaceForPlots)
         else:
             relx, rely = 0, 0
             if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.9, relheight=0.9)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9*spaceForPlots)
             else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=1, relheight=0.9)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.67, relheight=0.9*spaceForPlots)
 
     def createUpdateFrequenciesButton(self, outerFrame):
         self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())

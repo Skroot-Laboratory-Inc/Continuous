@@ -98,14 +98,8 @@ class Settings:
                                                                     'Are you sure you would like to ignore the weak signal warning?')
         logger.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
-    def setNumReaders(self):
-        numReaders = tk.simpledialog.askinteger("Input", "Number of readers used: \nRange: (1 - 12)",
-                                                parent=self.AppModule.root, minvalue=1, maxvalue=12)
-        logger.info(f'numReaders changed to {numReaders}')
-        if numReaders != '':
-            self.AppModule.numReaders = numReaders
-
     def createReaders(self, numReaders):
+        maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
         self.addReaderSecondAxis()
@@ -113,21 +107,21 @@ class Settings:
             self.addInoculation()
         if numReaders is not None:
             self.AppModule.outerFrames = []
-            numScreens = math.ceil(numReaders / 4)
-            readersOnLastScreen = numReaders % 4
+            numScreens = math.ceil(numReaders / maxReadersPerScreen)
+            readersOnLastScreen = numReaders % maxReadersPerScreen
             if readersOnLastScreen == 0:
-                readersOnLastScreen = 4
+                readersOnLastScreen = maxReadersPerScreen
             for i in range(numScreens):
-                self.AppModule.outerFrames.append(tk.Frame(self.AppModule.root, bg=self.AppModule.white))
+                self.AppModule.outerFrames.append(tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white))
             if self.AppModule.foamingApp:
                 for readerNumber in range(1, numReaders + 1):
                     readerColor = self.AppModule.ColorCycler.getNext()
-                    screenNumber = math.ceil(readerNumber / 4) - 1
+                    screenNumber = math.ceil(readerNumber / 5) - 1
                     outerFrame = self.AppModule.outerFrames[screenNumber]
                     if screenNumber == numScreens - 1:
                         readersOnScreen = readersOnLastScreen
                     else:
-                        readersOnScreen = 4
+                        readersOnScreen = maxReadersPerScreen
                     self.AppModule.Readers.append(FoamingReader( \
                         self.AppModule, readerNumber, self.AppModule.airFreq, self.AppModule.waterFreq, \
                         self.AppModule.waterShift, outerFrame, numReaders, self.AppModule.nPoints,
@@ -137,12 +131,12 @@ class Settings:
             elif self.AppModule.cellApp:
                 for readerNumber in range(1, numReaders + 1):
                     readerColor = self.AppModule.ColorCycler.getNext()
-                    screenNumber = math.ceil(readerNumber / 4) - 1
+                    screenNumber = math.ceil(readerNumber / maxReadersPerScreen) - 1
                     outerFrame = self.AppModule.outerFrames[screenNumber]
                     if screenNumber == numScreens - 1:
                         readersOnScreen = readersOnLastScreen
                     else:
-                        readersOnScreen = 4
+                        readersOnScreen = maxReadersPerScreen
                     self.AppModule.Readers.append(Reader( \
                         self.AppModule, readerNumber, outerFrame, readersOnScreen, \
                         self.AppModule.nPoints, self.AppModule.startFreq, self.AppModule.stopFreq,
@@ -155,9 +149,6 @@ class Settings:
     def createNextAndPreviousFrameButtons(self):
         for screenNumber in range(len(self.AppModule.outerFrames)):
             if (screenNumber + 1) != len(self.AppModule.outerFrames):
-                # nextReaders = ttk.Button(self.AppModule.outerFrames[screenNumber], text="Next", command = lambda: self.AppModule.showFrame(self.AppModule.outerFrames[screenNumber+1]))
-                # nextReaders.place(relx=0.85, rely=0.94, relwidth=0.15, relheight=0.04)
-                # nextReaders['style'] = 'W.TButton'
                 nextReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
                                         highlightbackground='black')
                 nextReaders.place(relx=0.85, rely=0.94, relwidth=0.15, relheight=0.04)

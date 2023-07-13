@@ -14,9 +14,7 @@ class Setup:
     def createMenus(self):
         menubar = tk.Menu(self.root)
         settingsMenuReaders = tk.Menu(menubar, tearoff=0)
-        settingsMenuReaders.add_command(label="Number of readers", command=lambda: self.Settings.setNumReaders())
         settingsMenuReaders.add_command(label="Frequency Range", command=lambda: self.Settings.freqRangeSetting())
-        settingsMenuReaders.add_command(label="Number of points", command=lambda: self.Settings.nPointsSetting())
         settingsMenuReaders.add_command(label="Scan Rate", command=lambda: self.Settings.rateSetting())
         settingsMenuReaders.add_command(label="File Save", command=lambda: self.Settings.saveFilesSetting())
         settingsMenuReaders.add_command(label="Calibrate", command=lambda: self.Buttons.calFunc())
@@ -54,79 +52,20 @@ class Setup:
         self.AppModule.royalBlue = 'RoyalBlue4'
         self.AppModule.white = 'white'
 
-    def createFramesAndButtons(self):
-        rightFrame = tk.Frame(self.root, bg=self.AppModule.royalBlue)  # consider this a div, border = 5
-        textFrame = tk.Frame(rightFrame, bg=self.AppModule.royalBlue)
-        outerFrame = tk.Frame(self.root, bg=self.AppModule.white)
-        text_notification.createWidget(textFrame)
-        text_notification.setText("")
+    def createFrames(self):
+        spaceForPlots = 0.9
+        self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.white)
+        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.95)
 
-        outerFrame.place(relx=0, rely=0, relwidth=0.7, relheight=1)
-        rightFrame.place(relx=0.7, rely=0, relwidth=0.3, relheight=1)
-        textFrame.place(rely=0, relx=0.15, relwidth=0.7, relheight=0.09)
+        textFrame = tk.Frame(self.root, bg=self.AppModule.white)
+        text_notification.createWidget(textFrame)
+        text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
+        textFrame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
         text_notification.packWidget()
 
-        self.AppModule.browseButton = ttk.Button(rightFrame, text="Browse", command=lambda: self.Buttons.browseFunc())
-        self.AppModule.startButton = ttk.Button(rightFrame, text="Start", command=lambda: self.Buttons.startFunc())
-        self.AppModule.stopButton = ttk.Button(rightFrame, text="Stop", command=lambda: self.Buttons.stopFunc())
-        airFreqLabel = ttk.Label(rightFrame, text="Air Frequency (MHz)", borderwidth=0)
-        self.AppModule.airFreqInput = ttk.Entry(rightFrame)
-        waterFreqLabel = ttk.Label(rightFrame, text="Liquid Frequency (MHz)", borderwidth=0)
-        self.AppModule.waterFreqInput = ttk.Entry(rightFrame)
-        self.AppModule.submitButton = ttk.Button(rightFrame, text="Submit", command=lambda: self.Buttons.submitFunc())
-
-        # Placing the items on the GUI
-        buttonInitialY = 0.09
-        spacingY = 0.06
-        xPadding = 0.15
-        buttonWidth = 1 - xPadding * 2
-        buttonHeight = 0.05
-        textHeight = 0.03
-        order = [self.AppModule.browseButton,
-                 self.AppModule.startButton,
-                 self.AppModule.stopButton,
-                 airFreqLabel,
-                 self.AppModule.airFreqInput,
-                 waterFreqLabel,
-                 self.AppModule.waterFreqInput,
-                 self.AppModule.submitButton]
-
-        currentY = buttonInitialY
-        for i in range(len(order)):
-            if isinstance(order[i], ttk.Button):
-                if i != 0:
-                    currentY += spacingY
-                order[i].place(rely=currentY, relx=xPadding, relwidth=buttonWidth, relheight=buttonHeight)
-            elif isinstance(order[i], ttk.Label) and isinstance(order[i - 1], ttk.Entry):
-                if i != 0:
-                    currentY += (spacingY - textHeight)
-                order[i].place(rely=currentY, relx=xPadding, relwidth=buttonWidth, relheight=textHeight)
-            elif isinstance(order[i], ttk.Label):
-                if i != 0:
-                    currentY += spacingY
-                order[i].place(rely=currentY, relx=xPadding, relwidth=buttonWidth, relheight=textHeight)
-            elif isinstance(order[i], ttk.Entry) and isinstance(order[i - 1], ttk.Label):
-                if i != 0:
-                    currentY += (spacingY - textHeight)
-                order[i].place(rely=currentY, relx=xPadding, relwidth=buttonWidth, relheight=textHeight)
-            elif isinstance(order[i], ttk.Entry):
-                if i != 0:
-                    currentY += textHeight
-                order[i].place(rely=currentY, relx=xPadding, relwidth=buttonWidth, relheight=textHeight)
-        self.AppModule.summaryFrame = tk.Frame(rightFrame, bg=self.AppModule.white, bd=0)
-        self.AppModule.summaryFrame.place(anchor='n', rely=(currentY + spacingY), relx=0.5, relwidth=1,
-                                          relheight=1 - (currentY + spacingY))
+        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
+        self.AppModule.summaryFrame.place(rely=0.5*spaceForPlots, relx=0.67, relwidth=0.3, relheight=0.45*spaceForPlots)
 
         # Other buttons that will be invoked
-        self.AppModule.summaryPlotButton = ttk.Button(rightFrame, text="Summary Plot Update",
+        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
                                                       command=lambda: self.AppModule.plotSummary())
-
-        buttons = [self.AppModule.browseButton, self.AppModule.submitButton, self.AppModule.startButton,
-                   self.AppModule.stopButton, self.AppModule.summaryPlotButton]
-        for b in buttons:
-            b['state'] = 'disabled'
-            b['style'] = 'W.TButton'
-        airFreqLabel['style'] = 'W.TButton'
-        waterFreqLabel['style'] = 'W.TButton'
-        self.AppModule.submitButton['state'] = 'normal'
-        self.AppModule.browseButton['state'] = 'normal'

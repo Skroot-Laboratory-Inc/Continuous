@@ -10,6 +10,7 @@ import matplotlib as mpl
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 
+import guided_setup
 import logger
 import setup
 import text_notification
@@ -26,6 +27,9 @@ mpl.use('TkAgg')
 
 class AppModule:
     def __init__(self, version):
+        self.readerPlotFrame = None
+        self.airFreqLabel = None
+        self.waterFreqLabel = None
         self.currentFrame = None
         self.totalMin = None
         self.time = None
@@ -48,7 +52,6 @@ class AppModule:
         self.stopButton = None
         self.startButton = None
         self.airFreqInput = None
-        self.browseButton = None
         self.menubar = None
         try:
             self.desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
@@ -96,21 +99,42 @@ class AppModule:
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
+        self.Buttons.startFunc()
+        self.root.mainloop()  # everything comes before this
+
 
     def setupApp(self):
+        self.baseSavePath = self.desktop + "/data"
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
-        self.Setup.createFramesAndButtons()
+        self.Setup.createFrames()
         self.root.config(menu=self.menubar)
-        text_notification.setText("Press browse and select \na save location to begin.", ('Courier', 9, 'bold'),
-                                  self.royalBlue, self.white)
-        # self.selectApplication()
+        self.guidedSetup()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
-        self.root.mainloop()  # everything comes before this
 
+    def guidedSetup(self):
+        date = guided_setup.askDate(self.root)
+        cellType = guided_setup.askCellType()
+        vesselType = guided_setup.askVesselType()
+        self.savePath = f"{self.baseSavePath}/{date}_{cellType}_{vesselType}"
+        numReaders = guided_setup.askNumReaders(self.root)
+        self.numReaders = int(numReaders)
+        scanRate = guided_setup.askScanRate(self.root)
+        self.scanRate = scanRate
+        calibrate = guided_setup.askCalibrateReaders()
+        # Calibrate readers after connecting
+        maybeSecondaryAxis = guided_setup.askSecondaryAxis()
+        if maybeSecondaryAxis:
+            self.secondAxisTitle = maybeSecondaryAxis
+        else:
+            self.secondAxisTitle = ""
+        self.Buttons.browseFunc()
+        self.Settings.createReaders(numReaders)
+        if calibrate:
+            self.Buttons.calFunc()
     def root(self):
         self.root = tk.Tk()  # everything in the application comes after this
         if self.os == 'windows':
@@ -232,11 +256,6 @@ class AppModule:
             logger.exception("Failed to generated summaryPlot")
 
     def resetRun(self):
-        self.stopButton['state'] = 'disabled'
-        self.submitButton['state'] = 'normal'
-        self.airFreqInput['state'] = 'normal'
-        self.waterFreqInput['state'] = 'normal'
-        self.browseButton['state'] = 'normal'
         self.airFreqInput.delete(0, 50)
         self.waterFreqInput.delete(0, 50)
         self.totalViability = []
@@ -292,10 +311,11 @@ class AppModule:
     def showFrame(self, frame):
         self.currentFrame = frame
         try:
-            frame.place(relx=0, rely=0, relwidth=0.7, relheight=1)
+            frame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
             frame.tkraise()
         except:
             logger.exception('Failed to change the frame visible')
+        self.summaryFrame.tkraise()
 
 
 AppModule("version: Unified_v3.1")

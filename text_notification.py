@@ -7,8 +7,8 @@ def createWidget(frame):
 
 
 def packWidget():
-    widget.pack()
+    widget.pack(fill='x')
 
 
-def setText(text, font=('Courier', 12, 'bold'), backgroundColor='RoyalBlue4', foregroundColor='white'):
+def setText(text, font=('Courier', 9, 'bold'), backgroundColor='RoyalBlue4', foregroundColor='white'):
     widget.configure(text=text, font=font, background=backgroundColor, foreground=foregroundColor)

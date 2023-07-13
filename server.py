@@ -17,14 +17,14 @@ class ServerFileShare:
         try:
             hostname = sp.getoutput(['hostname'])
             self.serverLocationBase = ''
-            if os.path.exists(rf"\\server\data") == True:
+            if os.path.exists(rf"\\server\data"):
                 self.serverLocationBase = rf"\\server\data\{hostname}"
-                if os.path.exists(self.serverLocationBase) == False:
+                if not os.path.exists(self.serverLocationBase):
                     os.mkdir(self.serverLocationBase)
-            elif os.path.exists(
-                    'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\fakeServer') == True and self.DevMode.fakeServer == True:
+            elif os.path.exists('C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\fakeServer') \
+                    and self.DevMode.fakeServer:
                 self.serverLocationBase = 'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\fakeServer\\Laptop'
-                if os.path.exists(self.serverLocationBase) == False:
+                if not os.path.exists(self.serverLocationBase):
                     os.mkdir(self.serverLocationBase)
             if self.serverLocationBase == '':
                 self.disabled = True
@@ -37,7 +37,7 @@ class ServerFileShare:
             folderNumbers = [int(os.path.basename(folder).split('_')[0]) for folder in
                              glob.glob(f'{self.serverLocationBase}\*') if
                              os.path.basename(folder).split('_')[0].isdigit()]
-            if folderNumbers != []:
+            if folderNumbers:
                 folderUsed = int(max(folderNumbers)) + 1
             else:
                 folderUsed = 1
