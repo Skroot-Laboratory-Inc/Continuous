@@ -41,6 +41,7 @@ class VnaScanning:
             phase = a[::2] * np.pi / 1024
             freqs = start_freq + df * np.arange(0, num_points)
             trans_loss = list(mag)
+            phase_list = list(phase)
             calibration_TL = []
             if 'Calibration.csv' not in output_file_name:
                 readings = pandas.read_csv(calibration_file_name)
@@ -61,7 +62,7 @@ class VnaScanning:
                     return dBlist[pos - 1]
 
             with open(output_file_name, "w+") as file:
-                file.write(f"Frequency(Hz),Transmission Loss(dB)\n")
+                file.write(f"Frequency(Hz),Transmission Loss(dB),Phase\n")
                 for ind in range(len(freqs)):
                     if not calibration_TL:
                         pass
@@ -69,7 +70,7 @@ class VnaScanning:
                         calibration_offset = find_nearest_internal(calibration_Freq, freqs[ind] * 1000000,
                                                                    calibration_TL)
                         trans_loss[ind] = -(trans_loss[ind] - calibration_offset) / 12.5
-                    file.write(f"{freqs[ind] * 1000000},{trans_loss[ind]}\n")
+                    file.write(f"{freqs[ind] * 1000000},{trans_loss[ind]},{phase_list[ind]}\n")
             if len(freqs) == len(trans_loss):
                 self.scanFrequency = freqs
                 self.scanMagnitude = trans_loss

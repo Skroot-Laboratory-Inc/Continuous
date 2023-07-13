@@ -132,7 +132,6 @@ class AppModule:
         else:
             self.secondAxisTitle = ""
         self.Buttons.browseFunc()
-        self.Settings.createReaders(numReaders)
         if calibrate:
             self.Buttons.calFunc()
     def root(self):

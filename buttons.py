@@ -24,6 +24,7 @@ class ButtonFunctions:
         except:
             self.AppModule.threadStatus = False
         try:
+            text_notification.setText("Scanning...")
             logger.info("started")
             if self.AppModule.threadStatus:
                 tk.messagebox.showinfo("Error", "Test Still Running")
