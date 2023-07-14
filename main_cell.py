@@ -116,14 +116,21 @@ class AppModule:
             pyi_splash.close()
 
     def guidedSetup(self):
-        date = guided_setup.askDate(self.root)
-        cellType = guided_setup.askCellType()
-        vesselType = guided_setup.askVesselType()
+        second_win = tk.Toplevel(self.root)
+        second_win.maxsize(1, 1)
+        self.root.eval(f'tk::PlaceWindow {str(second_win)} center')
+
+        second_win.withdraw()
+
+        date = guided_setup.askDate(second_win)
+        cellType = guided_setup.askCellType(second_win)
+        vesselType = guided_setup.askVesselType(second_win)
         self.savePath = f"{self.baseSavePath}/{date}_{cellType}_{vesselType}"
-        numReaders = guided_setup.askNumReaders(self.root)
+        numReaders = guided_setup.askNumReaders(second_win)
         self.numReaders = int(numReaders)
-        scanRate = guided_setup.askScanRate(self.root)
+        scanRate = guided_setup.askScanRate(second_win)
         self.scanRate = scanRate
+        second_win.destroy()
         calibrate = guided_setup.askCalibrateReaders()
         # Calibrate readers after connecting
         maybeSecondaryAxis = guided_setup.askSecondaryAxis()
@@ -136,6 +143,7 @@ class AppModule:
             self.Buttons.calFunc()
     def root(self):
         self.root = tk.Tk()  # everything in the application comes after this
+        self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
         if self.os == 'windows':
             self.root.state('zoomed')
         elif self.os == 'linux':
@@ -254,6 +262,10 @@ class AppModule:
         except:
             logger.exception("Failed to generated summaryPlot")
 
+    def onClosing(self):
+        if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
+            self.root.destroy()
+
     def resetRun(self):
         self.airFreqInput.delete(0, 50)
         self.waterFreqInput.delete(0, 50)
@@ -315,6 +327,5 @@ class AppModule:
         except:
             logger.exception('Failed to change the frame visible')
         self.summaryFrame.tkraise()
-
 
 AppModule("version: Unified_v3.1")
