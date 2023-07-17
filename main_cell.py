@@ -157,8 +157,8 @@ class AppModule:
     def mainLoop(self):
         self.thread.shutdown_flag = threading.Event()
         while not self.thread.shutdown_flag.is_set():
+            startTime = time.time()
             try:
-                startTime = time.time()
                 for Reader in self.Readers:
                     if not self.isDevMode:
                         success = Reader.takeScan()
@@ -185,11 +185,12 @@ class AppModule:
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadFile()
+            except:
+                logger.exception('Unknown error has occurred')
+            finally:
                 currentTime = time.time()
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-            except:
-                logger.exception('Unknown error has occurred')
         text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.royalBlue, self.white)
         self.resetRun()
         logger.info('Stopped scanning')
