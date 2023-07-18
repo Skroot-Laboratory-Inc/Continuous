@@ -1,7 +1,57 @@
 from __future__ import print_function
 
 import tkinter as tk
-import time
+
+
+def guidedSetupCell(root, baseSavePath):
+    second_win = tk.Toplevel(root)
+    second_win.maxsize(1, 1)
+    root.eval(f'tk::PlaceWindow {str(second_win)} center')
+    second_win.withdraw()
+
+    date = askDate(second_win)
+    cellType = askCellType(second_win)
+    vesselType = askVesselType(second_win)
+    savePath = f"{baseSavePath}/{date}_{cellType}_{vesselType}"
+
+    numReaders = askNumReaders(second_win)
+    numReaders = int(numReaders)
+    scanRate = askScanRate(second_win)
+    scanRate = scanRate
+    second_win.destroy()
+    calibrate = askCalibrateReaders()
+
+    maybeSecondaryAxis = askSecondaryAxis()
+    if maybeSecondaryAxis:
+        secondAxisTitle = maybeSecondaryAxis
+    else:
+        secondAxisTitle = ""
+    return savePath, numReaders, scanRate, calibrate, secondAxisTitle
+
+def guidedSetupFoaming(root, baseSavePath):
+    second_win = tk.Toplevel(root)
+    second_win.maxsize(1, 1)
+    root.eval(f'tk::PlaceWindow {str(second_win)} center')
+    second_win.withdraw()
+
+    date = askDate(second_win)
+    cellType = askCellType(second_win)
+    vesselType = askVesselType(second_win)
+    savePath = f"{baseSavePath}/{date}_{cellType}_{vesselType}"
+
+    numReaders = askNumReaders(second_win)
+    numReaders = int(numReaders)
+    scanRate = askScanRate(second_win)
+    scanRate = scanRate
+    second_win.destroy()
+    calibrate = askCalibrateReaders()
+
+    maybeSecondaryAxis = askSecondaryAxis()
+    if maybeSecondaryAxis:
+        secondAxisTitle = maybeSecondaryAxis
+    else:
+        secondAxisTitle = ""
+    return savePath, numReaders, scanRate, calibrate, secondAxisTitle
 
 
 def askDate(root):
