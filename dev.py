@@ -9,7 +9,7 @@ from scipy.signal import savgol_filter
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.fakeServer = True
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
