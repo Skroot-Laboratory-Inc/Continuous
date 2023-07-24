@@ -99,6 +99,8 @@ class AppModule(MainShared):
 
     def setupApp(self):
         self.baseSavePath = self.desktop + "/data"
+        if not os.path.exists(self.baseSavePath):
+            os.mkdir(self.baseSavePath)
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
@@ -116,4 +118,4 @@ class AppModule(MainShared):
 
 
 
-AppModule("version: Cell_v1.0.1")
+AppModule("version: Cell_v1.0.2")

@@ -110,4 +110,4 @@ class AppModule (MainShared):
             pyi_splash.close()
 
 
-AppModule("version: Foaming_v1.0.1")
+AppModule("version: Foaming_v1.0.2")

@@ -117,10 +117,12 @@ class Initialization:
         self.savePath = rf'{savePath}/{self.readerNumber}{self.folderSuffix}'
         if not self.AppModule.ServerFileShare.disabled:
             self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
+        else:
+            self.serverSavePath = 'incorrect/path'
         self.createFolders()
 
     def createFolders(self):
-        if not os.path.exists(self.serverSavePath):
+        if not os.path.exists(self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
             os.mkdir(self.serverSavePath)
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
