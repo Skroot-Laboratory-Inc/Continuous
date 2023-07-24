@@ -11,7 +11,8 @@ class ButtonFunctions:
         self.AppModule = AppModule
 
     def browseFunc(self):
-        self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
+        if not self.AppModule.ServerFileShare.disabled:
+            self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
         self.AppModule.Settings.createReaders(self.AppModule.numReaders)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
