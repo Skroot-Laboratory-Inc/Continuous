@@ -20,6 +20,7 @@ mpl.use('TkAgg')
 
 class AppModule(MainShared):
     def __init__(self, version):
+        self.performedCalibration = False
         self.baseSavePath = None
         self.secondAxisTitle = None
         self.readerPlotFrame = None
@@ -94,7 +95,6 @@ class AppModule(MainShared):
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
-        self.Buttons.startFunc()
         self.root.mainloop()  # everything comes before this
 
     def setupApp(self):
@@ -109,13 +109,13 @@ class AppModule(MainShared):
 
         self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
             guided_setup.guidedSetupCell(self.root, self.baseSavePath)
-        self.Buttons.browseFunc()
         if calibrate:
-            self.Buttons.calFunc()
+            self.performedCalibration = True
+            self.Buttons.calFunc(self.numReaders, self)
+        self.Buttons.createStartButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
-
 
 
 AppModule("version: Cell_v1.0.2")

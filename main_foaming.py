@@ -20,6 +20,7 @@ mpl.use('TkAgg')
 
 class AppModule (MainShared):
     def __init__(self, version):
+        self.performedCalibration = False
         self.currentFrame = None
         self.totalMin = None
         self.time = None
@@ -90,7 +91,6 @@ class AppModule (MainShared):
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
-        self.Buttons.startFunc()
         self.root.mainloop()  # everything comes before this
     def setupApp(self):
         self.baseSavePath = self.desktop + "/data"
@@ -102,9 +102,10 @@ class AppModule (MainShared):
 
         self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath)
-        self.Buttons.browseFunc()
         if calibrate:
+            self.performedCalibration = True
             self.Buttons.calFunc()
+        self.Buttons.createStartButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()

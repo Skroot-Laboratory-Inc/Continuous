@@ -56,10 +56,33 @@ def guidedSetupFoaming(root, baseSavePath):
 
 def askDate(root):
     date = ''
+    formattedWrong = False
+    dateRaw = '1000/1000/1000'
     while date == '':
-        date = tk.simpledialog.askinteger(f"Today's Date", "Enter today's date (YYYYMMDD)",
-                                          parent=root,
-                                          minvalue=20230630)
+        if not formattedWrong:
+            dateRaw = tk.simpledialog.askstring(f"Today's Date", "Enter today's date (MM/DD/YYYY)", parent=root)
+        else:
+            dateRaw = tk.simpledialog.askstring(f"Check Formatting", "Check the formatting - Enter today's date ("
+                                                                     "MM/DD/YYYY)", parent=root)
+        try:
+            dateList = dateRaw.split("/")
+            print(dateList)
+            if len(dateList) < 3:
+                formattedWrong = True
+                continue
+            if int(dateList[0]) > 12:
+                formattedWrong = True
+                continue
+            if int(dateList[1]) > 31:
+                formattedWrong = True
+                continue
+            if int(dateList[2]) < 2023:
+                formattedWrong = True
+                continue
+            date = f"{dateList[0]}-{dateList[1]}-{dateList[2]}"
+        except:
+            formattedWrong = True
+            continue
     return date
 
 

@@ -1,6 +1,15 @@
 import os
 import threading
+import time
 import tkinter as tk
+from bisect import bisect_left
+from tkinter import ttk
+import subprocess as sp
+
+import numpy as np
+import pandas
+import serial
+from serial.tools import list_ports
 
 import logger
 import text_notification
@@ -10,7 +19,24 @@ class ButtonFunctions:
     def __init__(self, AppModule):
         self.AppModule = AppModule
 
-    def browseFunc(self):
+    def createStartButton(self):
+        self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start", command=lambda: self.startFunc())
+        self.startButton.place(relx=0.47, rely=0.47)
+        self.startButton['style'] = 'W.TButton'
+
+    def startFunc(self):
+        spaceForPlots = 0.9
+        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
+        self.AppModule.summaryFrame.place(rely=0.5*spaceForPlots, relx=0.67, relwidth=0.3, relheight=0.45*spaceForPlots)
+
+        # Other buttons that will be invoked
+        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
+                                                      command=lambda: self.AppModule.plotSummary())
+        try:
+            self.AppModule.threadStatus = self.AppModule.thread.is_alive()
+        except:
+            self.AppModule.threadStatus = False
+        self.startButton.destroy()
         if not self.AppModule.ServerFileShare.disabled:
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
         self.AppModule.Settings.createReaders(self.AppModule.numReaders)
@@ -18,12 +44,7 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         if self.AppModule.cellApp:
             self.AppModule.Settings.addInoculation()
-
-    def startFunc(self):
-        try:
-            self.AppModule.threadStatus = self.AppModule.thread.is_alive()
-        except:
-            self.AppModule.threadStatus = False
+        self.createStopButton()
         try:
             text_notification.setText("Scanning...")
             logger.info("started")
@@ -36,28 +57,105 @@ class ButtonFunctions:
             tk.messagebox.showinfo("Error", "Please calibrate your reader first")
             logger.exception("Failed to calibrate the reader")
 
-    def calFunc(self):
+    def createStopButton(self):
+        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="Stop", command=lambda: self.stopFunc())
+        self.stopButton.pack(side='top', anchor='ne')
+        self.stopButton['style'] = 'W.TButton'
+
+    def stopFunc(self):
+        logger.info("Stop Button Pressed")
+        self.AppModule.thread.shutdown_flag.set()
+        self.stopButton.destroy()
+        text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+
+    def calFunc(self, numReaders, AppModule):
         try:
             logger.info(f'calibrate button pressed')
-            calThread = threading.Thread(target=self.calFunc2, args=())
+            calThread = threading.Thread(target=self.calFunc2, args=(numReaders, AppModule))
             calThread.start()
         except:
             tk.messagebox.showinfo("Error", "Please select a save location first")
             logger.exception("Failed to select a save directory")
 
-    def calFunc2(self):
-        text_notification.setText("Calibrating...", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
-                                  self.AppModule.white)
-        for Reader in self.AppModule.Readers:
+    def calFunc2(self, numReaders, AppModule):
+        print(numReaders)
+        for readerNumber in range(1, numReaders+1):
+            text_notification.setText(f"Calibrating reader {readerNumber}... do not touch the reader",
+                                      ('Courier', 9, 'bold'), self.AppModule.royalBlue,
+                                      self.AppModule.white)
             try:
-                logger.info('calibrating')
-                print('calibrating')
-                if not os.path.exists(os.path.dirname(Reader.calFileLocation)):
-                    os.mkdir(os.path.dirname(Reader.calFileLocation))
-                Reader.readVna(0.1, 250, 10000, f'{Reader.calFileLocation}', Reader.port)
-                text_notification.setText(f"Calibration {Reader.readerNumber} Complete", ('Courier', 9, 'bold'),
+                logger.info(f"Calibrating reader {readerNumber}")
+                calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+                port = self.findPort(readerNumber)
+                if not os.path.exists(os.path.dirname(calFileLocation)):
+                    os.mkdir(os.path.dirname(calFileLocation))
+                self.createCalibration(0.1, 250, 10000, f'{calFileLocation}', port, readerNumber)
+                text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
+                logger.info(f"Calibration complete for reader {readerNumber}")
             except:
-                text_notification.setText(f"Calibration Failed \nfor reader {Reader.readerNumber}...",
+                text_notification.setText(f"Calibration Failed \nfor reader {readerNumber}...",
                                           ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
-                logger.exception(f'Failed to calibrate reader {Reader.readerNumber}')
+                logger.exception(f'Failed to calibrate reader {readerNumber}')
+
+    def pauseUntilUserClicks(self, readerNumber):
+        tk.messagebox.showinfo(f'Reader {readerNumber}',
+                               f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
+
+    def findPort(self, readerNumber):
+        if self.AppModule.isDevMode == False:
+            portList, attempts, port = [], 0, ''
+            self.pauseUntilUserClicks(readerNumber)
+            while portList == [] and attempts <= 3:
+                time.sleep(2)
+                if self.AppModule.os == "windows":
+                    ports = list_ports.comports()
+                    portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
+                    portList = [num for num in portNums if num not in self.AppModule.ports]
+                    if portList != []:
+                        port = f'COM{max(portList)}'
+                        self.AppModule.ports.append(max(portList))
+                else:
+                    ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
+                        'ascii').strip().splitlines()
+                    portList = [port for port in ports if port not in self.AppModule.ports]
+                    if portList != []:
+                        port = portList[-1]
+                        self.AppModule.ports.append(max(portList))
+                logger.info(f'Used: {self.AppModule.ports}, found: {portList}')
+                attempts += 1
+                if attempts > 3:
+                    tk.messagebox.showinfo(f'Reader {readerNumber}',
+                                           f'Reader {readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
+            logger.info(f'{self.AppModule.ports}')
+            return port
+    def createCalibration(self, start_freq, stop_freq, num_points, output_file_name, port, readerNumber):
+        socket = serial.Serial(port, 115200, timeout=1.5)
+        try:
+            khz2dds = 10737.4182
+            df = (stop_freq - start_freq) * 1.0 / num_points
+            sleep_time = 0.1
+            socket.write(b"2\r")
+            time.sleep(sleep_time)
+            socket.write(b"%d\r" % (start_freq * 1e3 * khz2dds))
+            time.sleep(sleep_time)
+            socket.write(b"%d\r" % num_points)
+            time.sleep(sleep_time)
+            socket.write(b"%d\r" % (df * 1e3 * khz2dds))
+            time.sleep(sleep_time)
+            ans = b''.join(socket.readlines())
+            a = np.frombuffer(ans, dtype=np.uint16)
+            mag = a[1::2]
+            phase = a[::2] * np.pi / 1024
+            freqs = start_freq + df * np.arange(0, num_points)
+            trans_loss = list(mag)
+            phase_list = list(phase)
+            with open(output_file_name, "w+") as file:
+                file.write(f"Frequency(Hz),Transmission Loss(dB),Phase\n")
+                for ind in range(len(freqs)):
+                    file.write(f"{freqs[ind] * 1000000},{trans_loss[ind]},{phase_list[ind]}\n")
+            text_notification.setText(f"reader {readerNumber} calibration complete")
+        except:
+            logger.exception("Failed to take create calibration")
+        finally:
+            socket.close()
