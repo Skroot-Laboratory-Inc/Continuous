@@ -13,6 +13,7 @@ from serial.tools import list_ports
 
 import logger
 import text_notification
+from timer import RunningTimer
 
 
 class ButtonFunctions:
@@ -44,7 +45,8 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         if self.AppModule.cellApp:
             self.AppModule.Settings.addInoculation()
-        self.createStopButton()
+        self.createStopButton(self.AppModule.readerPlotFrame)
+        self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         try:
             text_notification.setText("Scanning...")
             logger.info("started")
@@ -57,8 +59,8 @@ class ButtonFunctions:
             tk.messagebox.showinfo("Error", "Please calibrate your reader first")
             logger.exception("Failed to calibrate the reader")
 
-    def createStopButton(self):
-        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="Stop", command=lambda: self.stopFunc())
+    def createStopButton(self, frame):
+        self.stopButton = ttk.Button(frame, text="Stop", command=lambda: self.stopFunc())
         self.stopButton.pack(side='top', anchor='ne')
         self.stopButton['style'] = 'W.TButton'
 

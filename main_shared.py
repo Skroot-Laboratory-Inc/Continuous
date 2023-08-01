@@ -73,6 +73,7 @@ class MainShared:
                     except:
                         logger.exception(f'reader {Reader.readerNumber} failed to take scan')
                     finally:
+                        self.Timer.updateTime()
                         Reader.incrementScan()
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
@@ -107,7 +108,8 @@ class MainShared:
             if self.thread.shutdown_flag.is_set() == True:
                 logger.info('Cancelling data collection due to stop button pressed')
                 break
-            time.sleep(0.5)
+            time.sleep(0.05)
+            self.Timer.updateTime()
             currentTime = time.time()
 
     def plotSummary(self):

@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import os
 import tkinter as tk
 
 
@@ -8,12 +9,7 @@ def guidedSetupCell(root, baseSavePath):
     second_win.maxsize(1, 1)
     root.eval(f'tk::PlaceWindow {str(second_win)} center')
     second_win.withdraw()
-
-    date = askDate(second_win)
-    cellType = askCellType(second_win)
-    vesselType = askVesselType(second_win)
-    savePath = f"{baseSavePath}/{date}_{cellType}_{vesselType}"
-
+    savePath = setSavePath(second_win, baseSavePath)
     numReaders = askNumReaders(second_win)
     numReaders = int(numReaders)
     scanRate = askScanRate(second_win)
@@ -27,18 +23,14 @@ def guidedSetupCell(root, baseSavePath):
     else:
         secondAxisTitle = ""
     return savePath, numReaders, scanRate, calibrate, secondAxisTitle
+
 
 def guidedSetupFoaming(root, baseSavePath):
     second_win = tk.Toplevel(root)
     second_win.maxsize(1, 1)
     root.eval(f'tk::PlaceWindow {str(second_win)} center')
     second_win.withdraw()
-
-    date = askDate(second_win)
-    cellType = askCellType(second_win)
-    vesselType = askVesselType(second_win)
-    savePath = f"{baseSavePath}/{date}_{cellType}_{vesselType}"
-
+    savePath = setSavePath(second_win, baseSavePath)
     numReaders = askNumReaders(second_win)
     numReaders = int(numReaders)
     scanRate = askScanRate(second_win)
@@ -54,10 +46,22 @@ def guidedSetupFoaming(root, baseSavePath):
     return savePath, numReaders, scanRate, calibrate, secondAxisTitle
 
 
+def setSavePath(second_win, baseSavePath):
+    date = askDate(second_win)
+    cellType = askCellType(second_win)
+    vesselType = askVesselType(second_win)
+    if not os.path.exists(f"{baseSavePath}/{date}_{cellType}_{vesselType}"):
+        return f"{baseSavePath}/{date}_{cellType}_{vesselType}"
+    else:
+        incrementalNumber = 0
+        while os.path.exists(f"{baseSavePath}/{date}_{cellType}_{vesselType} ({incrementalNumber})"):
+            incrementalNumber += 1
+        return f"{baseSavePath}/{date}_{cellType}_{vesselType} ({incrementalNumber})"
+
+
 def askDate(root):
     date = ''
     formattedWrong = False
-    dateRaw = '1000/1000/1000'
     while date == '':
         if not formattedWrong:
             dateRaw = tk.simpledialog.askstring(f"Today's Date", "Enter today's date (MM/DD/YYYY)", parent=root)

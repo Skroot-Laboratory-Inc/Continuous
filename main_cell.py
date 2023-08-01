@@ -14,6 +14,7 @@ from dev import DevMode
 from main_shared import MainShared
 from server import ServerFileShare
 from settings import Settings
+from timer import RunningTimer
 
 mpl.use('TkAgg')
 
@@ -87,6 +88,7 @@ class AppModule(MainShared):
         self.createRoot()
         self.ColorCycler = ColorCycler()
         self.ServerFileShare = ServerFileShare(self)
+        self.Timer = RunningTimer()
         self.Readers = []
         self.Settings = Settings(self)
         self.Buttons = ButtonFunctions(self)
