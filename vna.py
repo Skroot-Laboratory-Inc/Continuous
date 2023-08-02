@@ -69,6 +69,8 @@ class VnaScanning:
                     else:
                         calibration_offset = find_nearest_internal(calibration_Freq, freqs[ind] * 1000000,
                                                                    calibration_TL)
+                        # this might be the technical value - Note: np.log(0) will throw an error and must be acknowledged
+                        # trans_loss[ind] = np.log(np.abs(trans_loss[ind] - calibration_offset)) * 20
                         trans_loss[ind] = -(trans_loss[ind] - calibration_offset) / 12.5
                     file.write(f"{freqs[ind] * 1000000},{trans_loss[ind]},{phase_list[ind]}\n")
             if len(freqs) == len(trans_loss):
@@ -82,7 +84,7 @@ class VnaScanning:
                 logger.info(f'pointsNeeded: {len(freqs)}, pointsReceived: {len(trans_loss)}')
             logger.exception("Failed to take scan")
             self.AppModule.currentlyScanning = False
-            return False
+            raise
 
     def deleteScanFile(self):
         os.remove(f'{self.savePath}/{self.scanNumber}.csv')

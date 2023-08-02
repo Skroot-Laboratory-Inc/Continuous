@@ -48,28 +48,33 @@ class MainShared:
             startTime = time.time()
             try:
                 for Reader in self.Readers:
-                    if not self.isDevMode:
-                        success = Reader.takeScan()
-                        if not success:
-                            text_notification.setText(f"Reader {Reader.readerNumber} \nFailed to take scan.")
-                            continue
-                        Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
-                    else:
-                        Reader.addDevPoint()
-                    if self.denoiseSet:
-                        Reader.denoiseResults()
-                    Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
-                    Reader.createAnalyzedFiles()
-                    if not self.ServerFileShare.disabled:
-                        Reader.createServerJsonFile()
-                        Reader.sendFilesToServer()
-                    if self.disableSaveFullFiles:
-                        Reader.deleteScanFile()
-                    Reader.printScanFreq()
-                    Reader.checkFoaming()
-                    Reader.checkContamination()
-                    Reader.checkHarvest()
-                    Reader.incrementScan()
+                    try:
+                        if not self.isDevMode:
+                            success = Reader.takeScan()
+                            if not success:
+                                text_notification.setText(f"Reader {Reader.readerNumber} \nFailed to take scan.")
+                                continue
+                            Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
+                        else:
+                            Reader.addDevPoint()
+                        if self.denoiseSet:
+                            Reader.denoiseResults()
+                        Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
+                        Reader.createAnalyzedFiles()
+                        if not self.ServerFileShare.disabled:
+                            Reader.createServerJsonFile()
+                            Reader.sendFilesToServer()
+                        if self.disableSaveFullFiles:
+                            Reader.deleteScanFile()
+                        Reader.printScanFreq()
+                        Reader.checkFoaming()
+                        Reader.checkContamination()
+                        Reader.checkHarvest()
+                    except:
+                        logger.exception(f'reader {Reader.readerNumber} failed to take scan')
+                    finally:
+                        self.Timer.updateTime()
+                        Reader.incrementScan()
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadFile()
@@ -103,7 +108,8 @@ class MainShared:
             if self.thread.shutdown_flag.is_set() == True:
                 logger.info('Cancelling data collection due to stop button pressed')
                 break
-            time.sleep(0.5)
+            time.sleep(0.05)
+            self.Timer.updateTime()
             currentTime = time.time()
 
     def plotSummary(self):
@@ -156,57 +162,19 @@ class MainShared:
             self.root.destroy()
 
     def resetRun(self):
-        self.airFreqInput.delete(0, 50)
-        self.waterFreqInput.delete(0, 50)
-        self.totalViability = []
-        self.viabilityTime = []
-        self.waterShift = None
-        self.notes = ['']
-        self.calculatedCells = []
-        self.ports = []
-        self.caldB = []
-        self.calFreq = []
-        self.freq = [None]
-        self.dB = [None]
-        self.frequency = [[]]
-        self.time = [[]]
-        self.totalMin = [[]]
-        self.dB = [None]
-        self.freq = [None]
-        self.frequency = [[]]
-        self.time = [[]]
-        self.totalMin = [[]]
-        self.savePath = ''  # needs edited # needs to call reset readers specifically
-        try:
-            self.menubar.delete("Inoculation")
-        except:
-            pass
-        try:
-            self.menubar.delete("Experiment Notes")
-        except:
-            pass
-        try:
-            self.menubar.delete("Second Axis")
-        except:
-            pass
         for Reader in self.Readers:
             try:
                 Reader.socket.close()
             except:
                 Reader.socket = None
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-            try:
-                Reader.indicatorCanvas.delete('all')
-            except:
-                logger.exception(f'Failed to remove indicator for Reader {Reader.readerNumber}')
-            try:
-                for widget in Reader.frequencyFrame.winfo_children():
-                    widget.destroy()
-            except:
-                logger.exception(f'Failed to remove canvas for Reader {Reader.readerNumber}')
-        for widgets in self.summaryFrame.winfo_children():
+        for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
+        self.Buttons.createStartButton()
+        self.performedCalibration = False
+        self.ports = []
         self.Readers = []
+        self.Buttons.guidedSetupButton.invoke()
 
     def showFrame(self, frame):
         self.currentFrame = frame

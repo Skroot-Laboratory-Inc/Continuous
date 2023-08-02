@@ -53,7 +53,6 @@ class Setup:
         self.AppModule.white = 'white'
 
     def createFrames(self):
-        spaceForPlots = 0.9
         self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.white)
         self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.95)
 
@@ -62,10 +61,3 @@ class Setup:
         text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
         textFrame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
         text_notification.packWidget()
-
-        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
-        self.AppModule.summaryFrame.place(rely=0.5*spaceForPlots, relx=0.67, relwidth=0.3, relheight=0.45*spaceForPlots)
-
-        # Other buttons that will be invoked
-        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
-                                                      command=lambda: self.AppModule.plotSummary())

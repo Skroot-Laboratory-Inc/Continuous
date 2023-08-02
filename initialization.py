@@ -50,7 +50,6 @@ class Initialization:
         self.scanNumber = 100001
 
     def initializeSecondAxis(self):
-        self.secondAxisTitle = None
         self.secondAxisValues = []
         self.secondAxisTime = []
 
@@ -135,36 +134,42 @@ class Initialization:
                 logger.info(f"No calibration found for Reader {self.readerNumber}")
 
     def findPort(self):
-        if self.AppModule.isDevMode == False:
-            portList, attempts = [], 0
-            self.pauseUntilUserClicks()
-            while portList == [] and attempts <= 3:
-                time.sleep(2)
+        if not self.AppModule.isDevMode:
+            if self.AppModule.performedCalibration:
                 if self.AppModule.os == "windows":
-                    ports = list_ports.comports()
-                    portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
-                    portList = [num for num in portNums if num not in self.AppModule.ports]
-                    if portList != []:
-                        self.port = f'COM{max(portList)}'
-                        self.AppModule.ports.append(max(portList))
-                        return
+                    self.port = f'COM{self.AppModule.ports[self.readerNumber-1]}'
                 else:
-                    ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
-                        'ascii').strip().splitlines()
-                    portList = [port for port in ports if port not in self.AppModule.ports]
-                    if portList != []:
-                        self.port = portList[-1]
-                        self.AppModule.ports.append(max(portList))
-                        return
-                logger.info(f'Used: {self.AppModule.ports}, found: {portList}')
-                tk.messagebox.showinfo(f'Reader {self.readerNumber}',
-                                       f'Reader {self.readerNumber}\nNew VNA not found, press OK to try again.')
-                attempts += 1
-                if attempts > 3:
+                    self.port = self.AppModule.ports[self.readerNumber - 1]
+            else:
+                portList, attempts = [], 0
+                self.pauseUntilUserClicks()
+                while portList == [] and attempts <= 3:
+                    time.sleep(2)
+                    if self.AppModule.os == "windows":
+                        ports = list_ports.comports()
+                        portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
+                        portList = [num for num in portNums if num not in self.AppModule.ports]
+                        if portList:
+                            self.port = f'COM{max(portList)}'
+                            self.AppModule.ports.append(max(portList))
+                            return
+                    else:
+                        ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
+                            'ascii').strip().splitlines()
+                        portList = [port for port in ports if port not in self.AppModule.ports]
+                        if portList:
+                            self.port = portList[-1]
+                            self.AppModule.ports.append(max(portList))
+                            return
+                    logger.info(f'Used: {self.AppModule.ports}, found: {portList}')
                     tk.messagebox.showinfo(f'Reader {self.readerNumber}',
-                                           f'Reader {self.readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
+                                           f'Reader {self.readerNumber}\nNew VNA not found, press OK to try again.')
+                    attempts += 1
+                    if attempts > 3:
+                        tk.messagebox.showinfo(f'Reader {self.readerNumber}',
+                                               f'Reader {self.readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
 
-            logger.info(f'{self.AppModule.ports}')
+                logger.info(f'{self.AppModule.ports}')
 
     def pauseUntilUserClicks(self):
         tk.messagebox.showinfo(f'Reader {self.readerNumber}',

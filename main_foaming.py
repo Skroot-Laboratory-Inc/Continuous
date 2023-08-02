@@ -14,12 +14,14 @@ from dev import DevMode
 from main_shared import MainShared
 from server import ServerFileShare
 from settings import Settings
+from timer import RunningTimer
 
 mpl.use('TkAgg')
 
 
-class AppModule (MainShared):
+class AppModule(MainShared):
     def __init__(self, version):
+        self.performedCalibration = False
         self.currentFrame = None
         self.totalMin = None
         self.time = None
@@ -81,6 +83,7 @@ class AppModule (MainShared):
             self.location = os.getcwd()
         self.createRoot()
         self.ColorCycler = ColorCycler()
+        self.Timer = RunningTimer()
         self.ServerFileShare = ServerFileShare(self)
         self.Readers = []
         self.Settings = Settings(self)
@@ -90,8 +93,8 @@ class AppModule (MainShared):
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
-        self.Buttons.startFunc()
         self.root.mainloop()  # everything comes before this
+
     def setupApp(self):
         self.baseSavePath = self.desktop + "/data"
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
@@ -100,14 +103,18 @@ class AppModule (MainShared):
         self.Setup.createFrames()
         self.root.config(menu=self.menubar)
 
-        self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
-            guided_setup.guidedSetupFoaming(self.root, self.baseSavePath)
-        self.Buttons.browseFunc()
-        if calibrate:
-            self.Buttons.calFunc()
+        self.guidedSetup()
+        self.Buttons.createStartButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
+
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel", secondAxisTitle=""):
+        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
+            guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
+        if calibrate:
+            self.performedCalibration = True
+            self.Buttons.calFunc(self.numReaders, self)
 
 
 AppModule("version: Foaming_v1.0.2")

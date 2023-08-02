@@ -14,12 +14,14 @@ from dev import DevMode
 from main_shared import MainShared
 from server import ServerFileShare
 from settings import Settings
+from timer import RunningTimer
 
 mpl.use('TkAgg')
 
 
 class AppModule(MainShared):
     def __init__(self, version):
+        self.performedCalibration = False
         self.baseSavePath = None
         self.secondAxisTitle = None
         self.readerPlotFrame = None
@@ -86,6 +88,7 @@ class AppModule(MainShared):
         self.createRoot()
         self.ColorCycler = ColorCycler()
         self.ServerFileShare = ServerFileShare(self)
+        self.Timer = RunningTimer()
         self.Readers = []
         self.Settings = Settings(self)
         self.Buttons = ButtonFunctions(self)
@@ -94,7 +97,6 @@ class AppModule(MainShared):
             self.aws = AwsBoto3()
         self.isDevMode = self.DevMode.isDevMode
         self.setupApp()
-        self.Buttons.startFunc()
         self.root.mainloop()  # everything comes before this
 
     def setupApp(self):
@@ -107,15 +109,19 @@ class AppModule(MainShared):
         self.Setup.createFrames()
         self.root.config(menu=self.menubar)
 
-        self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
-            guided_setup.guidedSetupCell(self.root, self.baseSavePath)
-        self.Buttons.browseFunc()
-        if calibrate:
-            self.Buttons.calFunc()
+        self.guidedSetup()
+        self.Buttons.createGuidedSetupButton()
+        self.Buttons.createStartButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
 
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel", secondAxisTitle=""):
+        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType, self.vesselType, self.secondAxisTitle = \
+            guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
+        if calibrate:
+            self.performedCalibration = True
+            self.Buttons.calFunc(self.numReaders, self)
 
 
 AppModule("version: Cell_v1.0.2")

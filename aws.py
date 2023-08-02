@@ -14,7 +14,6 @@ class AwsBoto3:
         self.disabled = True
         self.bucket = 'skroot-data'
         self.dstPdfName = None
-        self.disabled = False
         self.dstPdfName = None
         try:
             self.folders = self.s3.list_objects_v2(Bucket='skroot-data', Delimiter='/')['CommonPrefixes']
