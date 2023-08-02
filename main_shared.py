@@ -174,6 +174,7 @@ class MainShared:
         self.performedCalibration = False
         self.ports = []
         self.Readers = []
+        self.Buttons.guidedSetupButton.invoke()
 
     def showFrame(self, frame):
         self.currentFrame = frame

@@ -28,7 +28,8 @@ class ButtonFunctions:
     def startFunc(self):
         spaceForPlots = 0.9
         self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
-        self.AppModule.summaryFrame.place(rely=0.5*spaceForPlots, relx=0.67, relwidth=0.3, relheight=0.45*spaceForPlots)
+        self.AppModule.summaryFrame.place(rely=0.5 * spaceForPlots, relx=0.67, relwidth=0.3,
+                                          relheight=0.45 * spaceForPlots)
 
         # Other buttons that will be invoked
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
@@ -81,7 +82,7 @@ class ButtonFunctions:
 
     def calFunc2(self, numReaders, AppModule):
         print(numReaders)
-        for readerNumber in range(1, numReaders+1):
+        for readerNumber in range(1, numReaders + 1):
             text_notification.setText(f"Calibrating reader {readerNumber}... do not touch the reader",
                                       ('Courier', 9, 'bold'), self.AppModule.royalBlue,
                                       self.AppModule.white)
@@ -131,6 +132,7 @@ class ButtonFunctions:
                                            f'Reader {readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
             logger.info(f'{self.AppModule.ports}')
             return port
+
     def createCalibration(self, start_freq, stop_freq, num_points, output_file_name, port, readerNumber):
         socket = serial.Serial(port, 115200, timeout=1.5)
         try:
@@ -161,3 +163,13 @@ class ButtonFunctions:
             logger.exception("Failed to take create calibration")
         finally:
             socket.close()
+
+    def createGuidedSetupButton(self):
+        self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",
+                                            command=lambda: self.AppModule.guidedSetup(self.AppModule.month,
+                                                                                       self.AppModule.day,
+                                                                                       self.AppModule.year,
+                                                                                       self.AppModule.numReaders,
+                                                                                       self.AppModule.scanRate,
+                                                                                       self.AppModule.cellType,
+                                                                                       self.AppModule.vesselType))
