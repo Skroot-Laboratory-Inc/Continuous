@@ -5,8 +5,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 
-def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType):
-    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType)
+def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle):
+    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
     month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, vesselType = setupForm.getConfiguration()
     # second_win.withdraw()
     # logger.info("skipped")
@@ -48,7 +48,8 @@ def guidedSetupFoaming(root, baseSavePath, month, day, year, numReaders, scanRat
 
 
 class SetupForm:
-    def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType):
+    def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle):
+        self.secondAxisTitle = None
         self.vesselType = None
         self.cellType = None
         self.year = None
@@ -62,7 +63,7 @@ class SetupForm:
         self.secondAxis = False
         self.entrySize = 10
         self.calibrateRequired = tk.IntVar()
-        self.secondAxisRequired = tk.IntVar()
+        self.secondAxisEntry = tk.StringVar(value=secondAxisTitle)
         self.cellTypeEntry = tk.StringVar(value=cellType)
         self.vesselTypeEntry = tk.StringVar(value=vesselType)
         self.monthEntry = tk.IntVar(value=month)
@@ -81,6 +82,7 @@ class SetupForm:
         tk.Label(self.window, text="Vessel Type", bg='white').grid(row=4, column=0, sticky='w')
         tk.Label(self.window, text="Number of Readers", bg='white').grid(row=6, column=0, sticky='w')
         tk.Label(self.window, text="Scan Rate", bg='white').grid(row=8, column=0, sticky='w')
+        tk.Label(self.window, text="Second Axis (optional)", bg='white').grid(row=10, column=0, sticky='w')
 
         dateFrame = tk.Frame(self.window, bg='white')
         tk.Spinbox(dateFrame, textvariable=self.monthEntry, width=round(self.entrySize / 4), from_=1, to=12, borderwidth=0).grid(row=0, column=1)
@@ -100,35 +102,30 @@ class SetupForm:
         tk.Spinbox(self.window, textvariable=self.numReadersEntry, from_=1, to=12, wrap=True, borderwidth=0).grid(row=6, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=7, column=1, sticky="ew")
 
-        tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.25", "0.5", "1", "2", "3", "5", "10"), wrap=True, borderwidth=0).grid(row=8, column=1, sticky="ew")
+        tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.5", "1", "2", "3", "5", "10"), wrap=True, borderwidth=0).grid(row=8, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=9, column=1, sticky="ew")
 
-        tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
-                       command=self.setCalibrate, bg='white', borderwidth=0).grid(row=10, column=0, sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=11, column=0, sticky="ew")
-
-        tk.Checkbutton(self.window, text="Second Axis Used", variable=self.secondAxisRequired, onvalue=1, offvalue=0,
-                       command=self.setSecondAxis, bg='white', borderwidth=0).grid(row=10, column=1, sticky="ew")
+        tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0).grid(row=10, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=11, column=1, sticky="ew")
 
+        tk.Entry(self.window, borderwidth=0).grid(row=12, column=1, sticky="ew")
+
+        tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
+                       command=self.setCalibrate, bg='white', borderwidth=0).grid(row=13, column=1, sticky="ew")
+
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit())
-        self.submitButton.grid(row=12, column=0, sticky="sw")
+        self.submitButton.grid(row=13, column=0, sticky="sw")
         self.submitButton['style'] = 'W.TButton'
         root.wait_window(self.window)
 
     def getConfiguration(self):
-        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxis, self.cellType, self.vesselType
+        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.cellType, self.vesselType, self.secondAxisTitle
 
     def setCalibrate(self):
         if self.calibrateRequired == 1:
             self.calibrate = True
         if self.calibrateRequired == 0:
             self.calibrate = False
-    def setSecondAxis(self):
-        if self.secondAxisRequired == 1:
-            self.secondAxis = True
-        if self.secondAxisRequired == 0:
-            self.secondAxis = False
 
     def onSubmit(self):
         if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != ""
@@ -146,7 +143,7 @@ class SetupForm:
                         f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()} ({incrementalNumber})"):
                     incrementalNumber += 1
                 self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()} ({incrementalNumber})"
-            self.month, self.day, self.year, self.vesselType, self.cellType = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.vesselTypeEntry.get(), self.cellTypeEntry.get()
+            self.month, self.day, self.year, self.vesselType, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.vesselTypeEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
             self.window.destroy()
         else:
             tk.messagebox.showerror("Incorrect Formatting", "One (or more) of the values entered is not formatted "

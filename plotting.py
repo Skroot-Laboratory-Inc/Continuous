@@ -14,18 +14,18 @@ class SecondAxis:
         menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeSecondAxisValues())
 
     def typeSecondAxisValues(self):
-        if self.secondAxisTitle == None:
-            self.secondAxisTitle = tk.simpledialog.askstring(f'Reader {self.readerNumber} second y-axis title',
+        if self.AppModule.secondAxisTitle == "":
+            self.AppModule.secondAxisTitle = tk.simpledialog.askstring(f'Reader {self.readerNumber} second y-axis title',
                                                              f'Enter the title for the second axis for reader {self.readerNumber} here. \n Common options include "Viability (%)" or Cell Count (cells/mL)')
-            logger.info(f'second axis title for Reader {self.readerNumber} entered: {self.secondAxisTitle}')
-        value = tk.simpledialog.askfloat(f'Reader {self.readerNumber} {self.secondAxisTitle}',
-                                         f'Enter the value for {self.secondAxisTitle} and reader {self.readerNumber} here. \n Numbers only')
+            logger.info(f'second axis title for Reader {self.readerNumber} entered: {self.AppModule.secondAxisTitle}')
+        value = tk.simpledialog.askfloat(f'Reader {self.readerNumber} {self.AppModule.secondAxisTitle}',
+                                         f'Enter the value for {self.AppModule.secondAxisTitle} and reader {self.readerNumber} here. \n Numbers only')
         if value != None:
             self.secondAxisTime.append(self.time[-1])
             self.secondAxisValues.append(value)
             with open(f'{self.savePath}/secondAxis.csv', 'w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(['Time (hours)', self.secondAxisTitle])
+                writer.writerow(['Time (hours)', self.AppModule.secondAxisTitle])
                 writer.writerows(zip(self.secondAxisTime, self.secondAxisValues))
             logger.info(f'second axis value for Reader {self.readerNumber} entered: {value}')
 
@@ -112,10 +112,10 @@ class Plotting:
         self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def addSecondAxis(self, plot):
-        if self.secondAxisTitle is not None:
+        if self.AppModule.secondAxisTitle != "":
             ax2 = plot.twinx()
             ax2.scatter(self.secondAxisTime, self.secondAxisValues, s=20, color='k')
-            ax2.set_ylabel(self.secondAxisTitle, color='k')
+            ax2.set_ylabel(self.AppModule.secondAxisTitle, color='k')
 
     def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
         spaceForPlots = 0.9
