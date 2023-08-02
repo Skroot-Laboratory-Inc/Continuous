@@ -172,4 +172,5 @@ class ButtonFunctions:
                                                                                        self.AppModule.numReaders,
                                                                                        self.AppModule.scanRate,
                                                                                        self.AppModule.cellType,
-                                                                                       self.AppModule.vesselType))
+                                                                                       self.AppModule.vesselType,
+                                                                                       self.AppModule.secondAxisTitle))

@@ -116,9 +116,9 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="3", cellType="Cell", vesselType="Vessel"):
-        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle, self.cellType, self.vesselType = \
-            guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType)
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel", secondAxisTitle=""):
+        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType, self.vesselType, self.secondAxisTitle = \
+            guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
         if calibrate:
             self.performedCalibration = True
             self.Buttons.calFunc(self.numReaders, self)

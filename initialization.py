@@ -50,7 +50,6 @@ class Initialization:
         self.scanNumber = 100001
 
     def initializeSecondAxis(self):
-        self.secondAxisTitle = None
         self.secondAxisValues = []
         self.secondAxisTime = []
 
