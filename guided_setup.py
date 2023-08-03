@@ -85,33 +85,35 @@ class SetupForm:
         tk.Label(self.window, text="Second Axis (optional)", bg='white').grid(row=10, column=0, sticky='w')
 
         dateFrame = tk.Frame(self.window, bg='white')
-        tk.Spinbox(dateFrame, textvariable=self.monthEntry, width=round(self.entrySize / 4), from_=1, to=12, borderwidth=0).grid(row=0, column=1)
+        tk.Spinbox(dateFrame, textvariable=self.monthEntry, width=round(self.entrySize / 4), from_=1, to=12, borderwidth=0, highlightthickness=0).grid(row=0, column=1)
         tk.Label(dateFrame, text="/", bg='white', width=round(self.entrySize / 10)).grid(row=0, column=2)
-        tk.Spinbox(dateFrame, textvariable=self.dayEntry, width=round(self.entrySize / 4), from_=1, to=31, borderwidth=0).grid(row=0, column=3)
+        tk.Spinbox(dateFrame, textvariable=self.dayEntry, width=round(self.entrySize / 4), from_=1, to=31, borderwidth=0, highlightthickness=0).grid(row=0, column=3)
         tk.Label(dateFrame, text="/", bg='white', width=round(self.entrySize / 10)).grid(row=0, column=4)
-        tk.Spinbox(dateFrame, textvariable=self.yearEntry, width=round(self.entrySize / 2), from_=2023, to=2050, borderwidth=0).grid(row=0, column=5)
+        tk.Spinbox(dateFrame, textvariable=self.yearEntry, width=round(self.entrySize / 2), from_=2023, to=2050, borderwidth=0, highlightthickness=0).grid(row=0, column=5)
         dateFrame.grid(row=0, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=1, column=1, sticky="ew")
 
-        tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0).grid(row=2, column=1, sticky="ew")
+        tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0, highlightthickness=0).grid(row=2, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=3, column=1, sticky="ew")
 
-        tk.Entry(self.window, textvariable=self.vesselTypeEntry, borderwidth=0).grid(row=4, column=1, sticky="ew")
+        tk.Entry(self.window, textvariable=self.vesselTypeEntry, borderwidth=0, highlightthickness=0).grid(row=4, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=5, column=1, sticky="ew")
 
-        tk.Spinbox(self.window, textvariable=self.numReadersEntry, from_=1, to=12, wrap=True, borderwidth=0).grid(row=6, column=1, sticky="ew")
+        tk.Spinbox(self.window, textvariable=self.numReadersEntry, from_=1, to=12, wrap=True, borderwidth=0, highlightthickness=0).grid(row=6, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=7, column=1, sticky="ew")
 
-        tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.5", "1", "2", "3", "5", "10"), wrap=True, borderwidth=0).grid(row=8, column=1, sticky="ew")
+        tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.5", "1", "2", "3", "5", "10"), wrap=True, borderwidth=0, highlightthickness=0).grid(row=8, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=9, column=1, sticky="ew")
 
-        tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0).grid(row=10, column=1, sticky="ew")
+        tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0, highlightthickness=0).grid(row=10, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=11, column=1, sticky="ew")
 
-        tk.Entry(self.window, borderwidth=0).grid(row=12, column=1, sticky="ew")
+        spacer = tk.Entry(self.window, borderwidth=0, disabledbackground="white", cursor='arrow')
+        spacer.grid(row=12, column=1, sticky="ew")
+        spacer['state'] = "disabled"
 
         tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
-                       command=self.setCalibrate, bg='white', borderwidth=0).grid(row=13, column=1, sticky="ew")
+                       command=self.setCalibrate, bg='white', borderwidth=0, highlightthickness=0).grid(row=13, column=1, sticky="ew")
 
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit())
         self.submitButton.grid(row=13, column=0, sticky="sw")
