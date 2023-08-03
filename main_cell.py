@@ -126,4 +126,4 @@ class AppModule(MainShared):
             self.Buttons.startButton["state"] = "normal"
 
 
-AppModule("version: Cell_v1.0.2")
+AppModule("version: Cell_v1.0.5")
