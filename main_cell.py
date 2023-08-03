@@ -109,9 +109,9 @@ class AppModule(MainShared):
         self.Setup.createFrames()
         self.root.config(menu=self.menubar)
 
+        self.Buttons.createStartButton()
         self.guidedSetup()
         self.Buttons.createGuidedSetupButton()
-        self.Buttons.createStartButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
@@ -120,8 +120,10 @@ class AppModule(MainShared):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType, self.vesselType, self.secondAxisTitle = \
             guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
         if calibrate:
+            self.Buttons.startButton["state"] = "disabled"
             self.performedCalibration = True
-            self.Buttons.calFunc(self.numReaders, self)
+            self.Buttons.calFunc2(self.numReaders, self)
+            self.Buttons.startButton["state"] = "normal"
 
 
 AppModule("version: Cell_v1.0.2")
