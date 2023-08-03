@@ -108,7 +108,7 @@ class SetupForm:
         tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0, highlightthickness=0).grid(row=10, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=11, column=1, sticky="ew")
 
-        spacer = tk.Entry(self.window, borderwidth=0, disabledbackground="white", cursor='arrow')
+        spacer = tk.Entry(self.window, borderwidth=0, highlightthickness=0, disabledbackground="white", cursor='arrow')
         spacer.grid(row=12, column=1, sticky="ew")
         spacer['state'] = "disabled"
 
@@ -124,9 +124,9 @@ class SetupForm:
         return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.cellType, self.vesselType, self.secondAxisTitle
 
     def setCalibrate(self):
-        if self.calibrateRequired == 1:
+        if self.calibrateRequired.get() == 1:
             self.calibrate = True
-        if self.calibrateRequired == 0:
+        if self.calibrateRequired.get() == 0:
             self.calibrate = False
 
     def onSubmit(self):
