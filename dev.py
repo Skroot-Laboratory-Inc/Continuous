@@ -1,6 +1,7 @@
 import glob
 import os
 import shutil
+from datetime import datetime
 
 import pandas
 from scipy.signal import savgol_filter
@@ -61,6 +62,7 @@ class ReaderDevMode:
                 shutil.copy(self.devFiles[nextPointIndex], f'{self.savePath}/{self.scanNumber}.csv')
                 self.minFrequency.append(self.devFrequency[nextPointIndex])
                 self.time.append(self.devTime[nextPointIndex])
+                self.timestamp.append(datetime.now())
                 self.minDb.append(self.devDb[nextPointIndex])
                 self.minFrequencySpline.append(self.devFrequency[nextPointIndex])
                 self.minDbSpline.append(self.devDb[nextPointIndex])

@@ -187,6 +187,7 @@ class Settings:
             pass
         if self.AppModule.Readers:
             settingsMenuNotes = tk.Menu(self.AppModule.menubar, tearoff=0)
+            settingsMenuNotes.add_command(label=f"All Readers", command=lambda: self.addNotesAllReaders())
             for Reader in self.AppModule.Readers:
                 Reader.addExperimentNotesMenubar(settingsMenuNotes)
             self.AppModule.menubar.add_cascade(label="Experiment Notes", menu=settingsMenuNotes)
@@ -216,6 +217,12 @@ class Settings:
     def inoculateAllReaders(self):
         for Reader in self.AppModule.Readers:
             Reader.updateInoculation()
+
+    def addNotesAllReaders(self):
+        newNotes = tk.simpledialog.askstring(f'All Reader Notes',
+                                             f'Add any experiment notes here. \nThey will be applied to all readers. \nThey can be viewed in the pdf generated.')
+        for Reader in self.AppModule.Readers:
+            Reader.updateExperimentNotes(newNotes)
 
     def updateFontSize(self):
         numberReaders = len(self.AppModule.Readers)

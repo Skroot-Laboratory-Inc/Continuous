@@ -170,8 +170,8 @@ class MainShared:
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
-        self.Buttons.createStartButton()
-        self.performedCalibration = False
+        self.Buttons.createConnectReadersButton()
+        self.foundPorts = False
         self.ports = []
         self.Readers = []
         self.Buttons.guidedSetupButton.invoke()
