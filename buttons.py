@@ -81,7 +81,6 @@ class ButtonFunctions:
             logger.exception("Failed to select a save directory")
 
     def calFunc2(self, numReaders, AppModule):
-        print(numReaders)
         for readerNumber in range(1, numReaders + 1):
             text_notification.setText(f"Calibrating reader {readerNumber}... do not touch the reader",
                                       ('Courier', 9, 'bold'), self.AppModule.royalBlue,
@@ -100,6 +99,19 @@ class ButtonFunctions:
                 text_notification.setText(f"Calibration Failed \nfor reader {readerNumber}...",
                                           ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
                 logger.exception(f'Failed to calibrate reader {readerNumber}')
+
+    def createConnectReadersButton(self):
+        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers", command=lambda: self.connectReaders(self.AppModule.numReaders))
+        self.connectReadersButton.place(relx=0.46, rely=0.47)
+        self.connectReadersButton['style'] = 'W.TButton'
+
+    def connectReaders(self, numReaders):
+        self.connectReadersButton.destroy()
+        for readerNumber in range(1, numReaders + 1):
+            self.findPort(readerNumber)
+        self.AppModule.foundPorts = True
+        self.createStartButton()
+
 
     def pauseUntilUserClicks(self, readerNumber):
         tk.messagebox.showinfo(f'Reader {readerNumber}',

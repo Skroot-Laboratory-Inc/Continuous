@@ -21,10 +21,11 @@ mpl.use('TkAgg')
 
 class AppModule(MainShared):
     def __init__(self, version):
-        self.performedCalibration = False
+        self.foundPorts = False
         self.currentFrame = None
         self.totalMin = None
         self.time = None
+        self.timestamp = None
         self.frequency = None
         self.freq = None
         self.calFreq = None
@@ -105,7 +106,7 @@ class AppModule(MainShared):
         self.Setup.createFrames()
         self.root.config(menu=self.menubar)
 
-        self.Buttons.createStartButton()
+        self.Buttons.createConnectReadersButton()
         self.guidedSetup()
         self.Buttons.createGuidedSetupButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
@@ -116,10 +117,10 @@ class AppModule(MainShared):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
         if calibrate:
-            self.Buttons.startButton["state"] = "disabled"
-            self.performedCalibration = True
+            self.Buttons.connectReadersButton.destroy()
+            self.foundPorts = True
             self.Buttons.calFunc2(self.numReaders, self)
-            self.Buttons.startButton["state"] = "normal"
+            self.Buttons.createStartButton()
 
 
 AppModule("version: Foaming_v1.0.2")

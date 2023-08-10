@@ -76,6 +76,7 @@ class Initialization:
         self.minDbRaw = []
         self.minDbSmooth = []
         self.time = []
+        self.timestamp = []
 
     def initializeContamination(self, outerFrame):
         self.contaminated = False
@@ -135,7 +136,7 @@ class Initialization:
 
     def findPort(self):
         if not self.AppModule.isDevMode:
-            if self.AppModule.performedCalibration:
+            if self.AppModule.foundPorts:
                 if self.AppModule.os == "windows":
                     self.port = f'COM{self.AppModule.ports[self.readerNumber-1]}'
                 else:

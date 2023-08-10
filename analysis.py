@@ -1,5 +1,6 @@
 import csv
 import warnings
+from datetime import datetime
 from statistics import mean
 
 import numpy as np
@@ -44,6 +45,7 @@ class Analysis:
             self.minDbSpline.append(0)
             self.minFrequencySpline.append(0)
         self.time.append((self.scanNumber - 100000) / 60)
+        self.timestamp.append(datetime.now())
 
     def findMinData(self, filename):
         try:
@@ -188,20 +190,20 @@ class Analysis:
     def createAnalyzedFiles(self):
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.minFrequency, self.minDb))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.minFrequency, self.minDb))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.minFrequencySmooth, self.minDbSmooth))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.minFrequencySmooth, self.minDbSmooth))
         with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.minFrequencySpline, self.minDbSpline))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.minFrequencySpline, self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.minFrequencyRaw, self.minDbRaw))
+            writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Frequency (MHz)'])
