@@ -1,16 +1,21 @@
 import logging
 import os
+import shutil
+from datetime import datetime
 
 
 def loggerSetup(location, version):
     global logger
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-    try:
-        logFile = open(location, 'w+')
-    except:
+    if not os.path.exists(os.path.dirname(location)):
         os.mkdir(os.path.dirname(location))
-        logFile = open(location, 'w+')
+    if not os.path.exists(location):
+        open(location, 'w+').close()
+    elif os.path.getsize(location) > 50000000:
+        # log is greater than 50 MB, make a copy and create a new one
+        shutil.copy(location, f"{location[:-4]}_{datetime.now().date()}.txt")
+        open(location, 'w+').close()
     fh = logging.FileHandler(location)
     logging.captureWarnings(True)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
