@@ -1,3 +1,4 @@
+from datetime import datetime
 import importlib.util
 import os
 import sys
@@ -111,7 +112,8 @@ class AppModule(MainShared):
         self.root.config(menu=self.menubar)
 
         self.Buttons.createConnectReadersButton()
-        self.guidedSetup()
+        currentDate = datetime.now().date()
+        self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
         self.Buttons.createGuidedSetupButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
