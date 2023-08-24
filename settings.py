@@ -98,7 +98,7 @@ class Settings:
                                                                     'Are you sure you would like to ignore the weak signal warning?')
         logger.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
-    def createReaders(self, numReaders):
+    def createReaders(self, numReaders, Vnas):
         maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
@@ -126,7 +126,7 @@ class Settings:
                         self.AppModule, readerNumber, self.AppModule.airFreq, self.AppModule.waterFreq, \
                         self.AppModule.waterShift, outerFrame, numReaders, self.AppModule.nPoints,
                         self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.scanRate,
-                        self.AppModule.savePath, readerColor) \
+                        self.AppModule.savePath, readerColor, Vnas[readerNumber - 1]) \
                         )
             elif self.AppModule.cellApp:
                 for readerNumber in range(1, numReaders + 1):
@@ -140,7 +140,7 @@ class Settings:
                     self.AppModule.Readers.append(Reader( \
                         self.AppModule, readerNumber, outerFrame, readersOnScreen, \
                         self.AppModule.nPoints, self.AppModule.startFreq, self.AppModule.stopFreq,
-                        self.AppModule.scanRate, self.AppModule.savePath, readerColor) \
+                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, Vnas[readerNumber - 1]) \
                         )
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])

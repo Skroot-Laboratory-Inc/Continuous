@@ -50,7 +50,8 @@ class MainShared:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
-                            success = Reader.takeScan()
+                            self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.Vna.takeScan(
+                                f'{Reader.savePath}/{Reader.scanNumber}.csv', Reader.startFreq, Reader.stopFreq, Reader.nPoints)
                             if not success:
                                 text_notification.setText(f"Reader {Reader.readerNumber} \nFailed to take scan.")
                                 continue
@@ -65,7 +66,7 @@ class MainShared:
                             Reader.createServerJsonFile()
                             Reader.sendFilesToServer()
                         if self.disableSaveFullFiles:
-                            Reader.deleteScanFile()
+                            deleteScanFile(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         Reader.printScanFreq()
                         Reader.checkFoaming()
                         Reader.checkContamination()
@@ -74,7 +75,7 @@ class MainShared:
                         logger.exception(f'reader {Reader.readerNumber} failed to take scan')
                     finally:
                         self.Timer.updateTime()
-                        Reader.incrementScan()
+                        incrementScan(Reader)
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadFile()
@@ -164,7 +165,7 @@ class MainShared:
     def resetRun(self):
         for Reader in self.Readers:
             try:
-                Reader.socket.close()
+                Reader.Vna.closeSocket()
             except:
                 Reader.socket = None
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
@@ -173,6 +174,7 @@ class MainShared:
         self.Buttons.createConnectReadersButton()
         self.foundPorts = False
         self.ports = []
+        self.Buttons.Vnas = []
         self.Readers = []
         self.Buttons.guidedSetupButton.invoke()
 
@@ -184,3 +186,11 @@ class MainShared:
         except:
             logger.exception('Failed to change the frame visible')
         self.summaryFrame.tkraise()
+
+
+def incrementScan(Reader):
+    Reader.scanNumber += Reader.scanRate
+
+
+def deleteScanFile(filename):
+    os.remove(filename)

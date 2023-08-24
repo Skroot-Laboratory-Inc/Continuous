@@ -17,10 +17,10 @@ from plotting import Plotting, SecondAxis
 from vna import VnaScanning
 
 
-class Reader(Analysis, ReaderDevMode, Initialization, Plotting, VnaScanning, Indicator,
+class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
              ContaminationAlgorithm, HarvestAlgorithm, ExperimentNotes, SecondAxis):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
-                 scanRate, savePath, readerColor):
+                 scanRate, savePath, readerColor, Vna):
         self.folderSuffix = "_Cell"
         self.jsonTextLocation = "serverInfo.json"
         self.waterShift = None
@@ -35,6 +35,7 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, VnaScanning, Ind
         self.scanRate = scanRate
         self.startFreq = startFreq
         self.stopFreq = stopFreq
+        self.Vna = Vna
         self.initializeDefaults(savePath, outerFrame, readerColor)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
         self.initializeContamination(outerFrame)
@@ -111,7 +112,7 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, VnaScanning, Ind
 
 class FoamingReader(Reader, FoamingAlgorithm):
     def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders,
-                 nPoints, startFreq, stopFreq, scanRate, savePath, readerColor):
+                 nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, Vna):
         self.folderSuffix = "_Foaming"
         self.backgroundColor = '#FFFFFF'
         self.waterShift = waterShift
@@ -125,6 +126,7 @@ class FoamingReader(Reader, FoamingAlgorithm):
         self.Emailer = Emailer('', f'Foaming Reader {readerNumber}')
         self.Emailer.setMessageFoam()
         self.AppModule = AppModule
+        self.Vna = Vna
         self.Dac = Dac()
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
