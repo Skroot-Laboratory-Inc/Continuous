@@ -51,9 +51,8 @@ class Analysis:
         try:
             readings1 = pandas.read_csv(filename)
             readings = readings1[7:-1]
-            frequency = readings['Frequency(Hz)'].values.tolist()
-            dB = readings['Transmission Loss(dB)'].values.tolist()
-            frequency = [y / 1000000 for y in frequency]
+            frequency = readings['Frequency (MHz)'].values.tolist()
+            dB = readings['Signal Strength (dB)'].values.tolist()
             self.scanFrequency, self.scanMagnitude = frequency, dB
             return self.findMin(frequency, dB)
         except:
@@ -64,12 +63,11 @@ class Analysis:
         try:
             readings1 = pandas.read_csv(filename)
             readings = readings1[7:-1]
-            frequency = readings['Frequency(Hz)'].values.tolist()
-            dB = readings['Transmission Loss(dB)'].values.tolist()
-            frequencySmooth = [y / 1000000 for y in frequency]
+            frequency = readings['Frequency (MHz)'].values.tolist()
+            dB = readings['Signal Strength (dB)'].values.tolist()
             dBSmooth = savgol_filter(dB, 501, 2)
-            self.scanFrequency, self.scanMagnitude = frequencySmooth, dBSmooth
-            return self.findMin(frequencySmooth, dBSmooth)
+            self.scanFrequency, self.scanMagnitude = frequency, dBSmooth
+            return self.findMin(frequency, dBSmooth)
         except:
             logger.exception("Failed to get data from file")
         return 0, 0, 0, 0
@@ -123,9 +121,8 @@ class Analysis:
         try:
             readings1 = pandas.read_csv(filename)
             readings = readings1[7:-1]
-            frequency = readings['Frequency(Hz)'].values.tolist()
-            dB = readings['Transmission Loss(dB)'].values.tolist()
-            frequency = [y / 1000000 for y in frequency]
+            frequency = readings['Frequency (MHz)'].values.tolist()
+            dB = readings['Signal Strength (dB)'].values.tolist()
             return self.findMinSpline(frequency, dB)
         except:
             logger.exception("Failed to get data from file")

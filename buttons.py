@@ -6,19 +6,17 @@ from bisect import bisect_left
 from tkinter import ttk
 import subprocess as sp
 
-import numpy as np
-import pandas
-import serial
 from serial.tools import list_ports
 
 import logger
 import text_notification
-from timer import RunningTimer
+from vna import VnaScanning
 
 
 class ButtonFunctions:
     def __init__(self, AppModule):
         self.AppModule = AppModule
+        self.Vnas = []
 
     def createStartButton(self):
         self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start", command=lambda: self.startFunc())
@@ -41,7 +39,7 @@ class ButtonFunctions:
         self.startButton.destroy()
         if not self.AppModule.ServerFileShare.disabled:
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
-        self.AppModule.Settings.createReaders(self.AppModule.numReaders)
+        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.Vnas)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         if self.AppModule.cellApp:
@@ -91,7 +89,8 @@ class ButtonFunctions:
                 port = self.findPort(readerNumber)
                 if not os.path.exists(os.path.dirname(calFileLocation)):
                     os.mkdir(os.path.dirname(calFileLocation))
-                self.createCalibration(0.1, 250, 10000, f'{calFileLocation}', port, readerNumber)
+                Vna = VnaScanning(calFileLocation, port, self.AppModule, True)
+                self.Vnas.append(Vna)
                 text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
                 logger.info(f"Calibration complete for reader {readerNumber}")
@@ -108,7 +107,10 @@ class ButtonFunctions:
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
         for readerNumber in range(1, numReaders + 1):
-            self.findPort(readerNumber)
+            port = self.findPort(readerNumber)
+            calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+            Vna = VnaScanning(calFileLocation, port, self.AppModule, False)
+            self.Vnas.append(Vna)
         self.AppModule.foundPorts = True
         self.createStartButton()
 
@@ -144,37 +146,6 @@ class ButtonFunctions:
                                            f'Reader {readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
             logger.info(f'{self.AppModule.ports}')
             return port
-
-    def createCalibration(self, start_freq, stop_freq, num_points, output_file_name, port, readerNumber):
-        socket = serial.Serial(port, 115200, timeout=1.5)
-        try:
-            khz2dds = 10737.4182
-            df = (stop_freq - start_freq) * 1.0 / num_points
-            sleep_time = 0.1
-            socket.write(b"2\r")
-            time.sleep(sleep_time)
-            socket.write(b"%d\r" % (start_freq * 1e3 * khz2dds))
-            time.sleep(sleep_time)
-            socket.write(b"%d\r" % num_points)
-            time.sleep(sleep_time)
-            socket.write(b"%d\r" % (df * 1e3 * khz2dds))
-            time.sleep(sleep_time)
-            ans = b''.join(socket.readlines())
-            a = np.frombuffer(ans, dtype=np.uint16)
-            mag = a[1::2]
-            phase = a[::2] * np.pi / 1024
-            freqs = start_freq + df * np.arange(0, num_points)
-            trans_loss = list(mag)
-            phase_list = list(phase)
-            with open(output_file_name, "w+") as file:
-                file.write(f"Frequency(Hz),Transmission Loss(dB),Phase\n")
-                for ind in range(len(freqs)):
-                    file.write(f"{freqs[ind] * 1000000},{trans_loss[ind]},{phase_list[ind]}\n")
-            text_notification.setText(f"reader {readerNumber} calibration complete")
-        except:
-            logger.exception("Failed to take create calibration")
-        finally:
-            socket.close()
 
     def createGuidedSetupButton(self):
         self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",

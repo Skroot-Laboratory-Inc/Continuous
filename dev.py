@@ -74,8 +74,7 @@ class ReaderDevMode:
     def addDevScan(self, filename):
         readings1 = pandas.read_csv(filename)
         readings = readings1[7:-1]
-        frequency = readings['Frequency(Hz)'].values.tolist()
-        dB = readings['Transmission Loss(dB)'].values.tolist()
-        frequency = [y / 1000000 for y in frequency]
+        frequency = readings['Frequency (MHz)'].values.tolist()
+        dB = readings['Signal Strength (dB)'].values.tolist()
         dB = savgol_filter(dB, 51, 2)
         self.scanFrequency, self.scanMagnitude = frequency, dB

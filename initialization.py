@@ -21,7 +21,6 @@ class Initialization:
         self.initializeDenoise()
         self.initializeAnalysis()
         self.setSavePath(savePath)
-        self.findPort()
         self.createUpdateFrequenciesButton(outerFrame)
         if self.AppModule.isDevMode == True:
             self.devModeInitialization()
@@ -133,44 +132,6 @@ class Initialization:
                 text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
                                           ('Courier', 12, 'bold'), self.AppModule.royalBlue, 'red')
                 logger.info(f"No calibration found for Reader {self.readerNumber}")
-
-    def findPort(self):
-        if not self.AppModule.isDevMode:
-            if self.AppModule.foundPorts:
-                if self.AppModule.os == "windows":
-                    self.port = f'COM{self.AppModule.ports[self.readerNumber-1]}'
-                else:
-                    self.port = self.AppModule.ports[self.readerNumber - 1]
-            else:
-                portList, attempts = [], 0
-                self.pauseUntilUserClicks()
-                while portList == [] and attempts <= 3:
-                    time.sleep(2)
-                    if self.AppModule.os == "windows":
-                        ports = list_ports.comports()
-                        portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
-                        portList = [num for num in portNums if num not in self.AppModule.ports]
-                        if portList:
-                            self.port = f'COM{max(portList)}'
-                            self.AppModule.ports.append(max(portList))
-                            return
-                    else:
-                        ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
-                            'ascii').strip().splitlines()
-                        portList = [port for port in ports if port not in self.AppModule.ports]
-                        if portList:
-                            self.port = portList[-1]
-                            self.AppModule.ports.append(max(portList))
-                            return
-                    logger.info(f'Used: {self.AppModule.ports}, found: {portList}')
-                    tk.messagebox.showinfo(f'Reader {self.readerNumber}',
-                                           f'Reader {self.readerNumber}\nNew VNA not found, press OK to try again.')
-                    attempts += 1
-                    if attempts > 3:
-                        tk.messagebox.showinfo(f'Reader {self.readerNumber}',
-                                               f'Reader {self.readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
-
-                logger.info(f'{self.AppModule.ports}')
 
     def pauseUntilUserClicks(self):
         tk.messagebox.showinfo(f'Reader {self.readerNumber}',
