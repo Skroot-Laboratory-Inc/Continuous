@@ -1,10 +1,9 @@
 import os
+import subprocess as sp
 import threading
 import time
 import tkinter as tk
-from bisect import bisect_left
 from tkinter import ttk
-import subprocess as sp
 
 from serial.tools import list_ports
 
@@ -52,7 +51,6 @@ class ButtonFunctions:
             if self.AppModule.threadStatus:
                 tk.messagebox.showinfo("Error", "Test Still Running")
             else:
-                self.AppModule.thread = threading.Thread(target=self.AppModule.mainLoop, args=())
                 self.AppModule.thread.start()
         except:
             tk.messagebox.showinfo("Error", "Please calibrate your reader first")
@@ -100,7 +98,8 @@ class ButtonFunctions:
                 logger.exception(f'Failed to calibrate reader {readerNumber}')
 
     def createConnectReadersButton(self):
-        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers", command=lambda: self.connectReaders(self.AppModule.numReaders))
+        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers",
+                                               command=lambda: self.connectReaders(self.AppModule.numReaders))
         self.connectReadersButton.place(relx=0.46, rely=0.47)
         self.connectReadersButton['style'] = 'W.TButton'
 
@@ -114,15 +113,10 @@ class ButtonFunctions:
         self.AppModule.foundPorts = True
         self.createStartButton()
 
-
-    def pauseUntilUserClicks(self, readerNumber):
-        tk.messagebox.showinfo(f'Reader {readerNumber}',
-                               f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
-
     def findPort(self, readerNumber):
         if self.AppModule.isDevMode == False:
             portList, attempts, port = [], 0, ''
-            self.pauseUntilUserClicks(readerNumber)
+            pauseUntilUserClicks(readerNumber)
             while portList == [] and attempts <= 3:
                 time.sleep(2)
                 if self.AppModule.os == "windows":
@@ -157,3 +151,8 @@ class ButtonFunctions:
                                                                                        self.AppModule.cellType,
                                                                                        self.AppModule.vesselType,
                                                                                        self.AppModule.secondAxisTitle))
+
+
+def pauseUntilUserClicks(readerNumber):
+    tk.messagebox.showinfo(f'Reader {readerNumber}',
+                           f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')

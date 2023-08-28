@@ -1,72 +1,18 @@
 import importlib.util
 import os
-import sys
 from datetime import datetime
 
 import matplotlib as mpl
 
 import guided_setup
-import logger
-import setup
-from aws import AwsBoto3
-from buttons import ButtonFunctions
-from colors import ColorCycler
-from dev import DevMode
 from main_shared import MainShared
-from server import ServerFileShare
-from settings import Settings
-from timer import RunningTimer
 
 mpl.use('TkAgg')
 
 
 class AppModule(MainShared):
     def __init__(self, version):
-        self.foundPorts = False
-        self.currentFrame = None
-        self.totalMin = None
-        self.time = None
-        self.timestamp = None
-        self.frequency = None
-        self.freq = None
-        self.calFreq = None
-        self.caldB = None
-        self.calculatedCells = None
-        self.dB = None
-        self.notes = None
-        self.viabilityTime = None
-        self.totalViability = None
-        self.summaryPlot = None
-        self.summaryCanvas = None
-        self.summaryFig = None
-        self.summaryPlotButton = None
-        self.summaryFrame = None
-        self.submitButton = None
-        self.waterFreqInput = None
-        self.stopButton = None
-        self.startButton = None
-        self.airFreqInput = None
-        self.browseButton = None
-        self.menubar = None
-        try:
-            self.desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-            self.os = 'windows'
-        except:
-            self.desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-            self.os = 'linux'
-        logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
-        self.numReaders = None
-        self.savePath = ''
-        self.cellApp = False
-        self.foamingApp = True
-        self.freqToggleSet = "Signal Check"
-        self.splineToggleSet = False
-        self.denoiseSet = True
-        self.currentlyScanning = False
-        self.disableSaveFullFiles = False
-        self.emailSetting = False
-        self.awsTimeBetweenUploads = 6
-        self.awsLastUploadTime = 0
+        super().__init__(version)
         self.scanRate = 0.5
         self.startFreq = 40
         self.stopFreq = 250
@@ -74,34 +20,13 @@ class AppModule(MainShared):
         self.airFreq = 0
         self.waterFreq = 0
         self.waterShift = None
-        self.thread = ''
-        self.threadStatus = ''
-        self.royalBlue = 'RoyalBlue4'
-        self.white = 'white'
-        self.ports = []
-        try:
-            self.location = sys._MEIPASS
-        except:
-            self.location = os.getcwd()
-        self.createRoot()
-        self.ColorCycler = ColorCycler()
-        self.Timer = RunningTimer()
-        self.ServerFileShare = ServerFileShare(self)
-        self.Readers = []
-        self.Settings = Settings(self)
-        self.Buttons = ButtonFunctions(self)
-        self.DevMode = DevMode()
-        if not self.DevMode.isDevMode:
-            self.aws = AwsBoto3()
-        self.isDevMode = self.DevMode.isDevMode
+        self.cellApp = False
+        self.foamingApp = True
         self.setupApp()
         self.root.mainloop()  # everything comes before this
 
     def setupApp(self):
-        self.baseSavePath = self.desktop + "/data"
-        if not os.path.exists(self.baseSavePath):
-            os.mkdir(self.baseSavePath)
-        self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
+        # TODO - update this to account for foaming setup, it will be different values needed
         self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
         self.Setup.createFrames()
@@ -115,9 +40,10 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel", secondAxisTitle=""):
-        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.secondAxisTitle = \
-            guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle)
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel"):
+        self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate = \
+            guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate,
+                                            cellType, vesselType)
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True

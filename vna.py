@@ -7,6 +7,7 @@ import pandas
 import serial
 
 import logger
+import text_notification
 
 
 class VnaScanning:
@@ -69,7 +70,8 @@ class VnaScanning:
     def calibrationComparison(self, frequency, magnitude, phase):
         calibratedMagnitude, calibratedPhase = [], []
         for i in range(len(frequency)):
-            calibrationMagnitudeOffset = find_nearest(frequency[i], self.calibrationFrequency, self.calibrationMagnitude)
+            calibrationMagnitudeOffset = find_nearest(frequency[i], self.calibrationFrequency,
+                                                      self.calibrationMagnitude)
             calibrationPhaseOffset = find_nearest(frequency[i], self.calibrationFrequency, self.calibrationPhase)
             calibratedMagnitude.append(
                 -(convertLinearValueToDb(magnitude[i]) - convertLinearValueToDb(calibrationMagnitudeOffset)))
@@ -105,11 +107,16 @@ def convertAnalogToValues(magnitude, phase):
 
 
 def loadCalibrationFile(calibrationFilename):
-    readings = pandas.read_csv(calibrationFilename)
-    calibrationMagnitude = list(readings['Signal Strength (dB)'].values.tolist())
-    calibrationPhase = list(readings['Phase'].values.tolist())
-    calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
-    return calibrationFrequency, calibrationMagnitude, calibrationPhase
+    try:
+        readings = pandas.read_csv(calibrationFilename)
+        calibrationMagnitude = list(readings['Signal Strength (dB)'].values.tolist())
+        calibrationPhase = list(readings['Phase'].values.tolist())
+        calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
+        return calibrationFrequency, calibrationMagnitude, calibrationPhase
+    except:
+        text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
+                                  ('Courier', 9, 'bold'), "black", "red")
+        logger.exception("Failed to load in calibration")
 
 
 def createScanFile(outputFileName, frequency, magnitude, phase):

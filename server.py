@@ -3,20 +3,19 @@ import os
 import subprocess as sp
 
 import logger
-from dev import DevMode
 
 
 class ServerFileShare:
     def __init__(self, AppModule):
+        self.serverLocationBase = ''
         self.AppModule = AppModule
-        self.DevMode = DevMode()
+        self.DevMode = AppModule.DevMode
         self.disabled = False
         self.setServerLocation()
 
     def setServerLocation(self):
         try:
             hostname = sp.getoutput(['hostname'])
-            self.serverLocationBase = ''
             if os.path.exists(rf"\\server\data"):
                 self.serverLocationBase = rf"\\server\data\{hostname}"
                 if not os.path.exists(self.serverLocationBase):
@@ -28,7 +27,7 @@ class ServerFileShare:
                     os.mkdir(self.serverLocationBase)
             if self.serverLocationBase == '':
                 self.disabled = True
-        except Exception as e:
+        except:
             self.disabled = True
             logger.exception('Failed to find server')
 

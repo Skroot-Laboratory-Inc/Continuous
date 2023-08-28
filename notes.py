@@ -1,7 +1,14 @@
 import tkinter as tk
 
+from analysis import Analysis
+
 
 class ExperimentNotes:
+    def __init__(self, readerNumber):
+        self.readerNumber = readerNumber
+        self.notes = ''
+        self.notesTimestamps = []
+
     def addExperimentNotesMenubar(self, menu):
         menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeExperimentNotes())
 
@@ -12,7 +19,7 @@ class ExperimentNotes:
 
     def updateExperimentNotes(self, newNotes):
         if newNotes != '':
-            if self.time == []:
+            if not self.time:
                 timestamp = 0
             else:
                 timestamp = round(self.time[-1], 4)

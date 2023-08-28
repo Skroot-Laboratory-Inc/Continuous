@@ -1,15 +1,38 @@
+import csv
 import threading
 import tkinter as tk
 
 import numpy as np
 from scipy.signal import savgol_filter
-import csv
 
 import logger
 import text_notification
+from analysis import Analysis
+from dac import Dac
+from indicator import Indicator
+from notes import ExperimentNotes
 
 
-class HarvestAlgorithm:
+class HarvestAlgorithm(Indicator, ExperimentNotes):
+    def __init__(self, outerFrame, AppModule, Emailer):
+        Indicator.__init__(self)
+        self.Emailer = Emailer
+        self.AppModule = AppModule
+        self.inoculated = False
+        self.indicatorColor = None
+        self.closeToHarvest = False
+        self.readyToHarvest = False
+        self.inoculatedTime = 1e10
+        self.hoursAfterInoculation = 2
+        self.closeToHarvestThreshold = 0.005
+        self.consecutivePoints = 8
+        self.savgolPoints = 51
+        self.backwardPoints = 25
+        self.harvested = False
+        self.continuousHarvest = 0
+        self.continuousHarvestReady = 0
+        self.createIndicator(outerFrame)
+
     def addInoculationMenuBar(self, menu):
         menu.add_command(label=f"Reader {self.readerNumber} Inoculated", command=lambda: self.updateInoculation())
 
@@ -24,7 +47,7 @@ class HarvestAlgorithm:
 
     def checkHarvest(self):
         if self.time[-1] > (self.inoculatedTime + self.hoursAfterInoculation):
-            if self.readyToHarvest == False:
+            if not self.readyToHarvest:
                 self.harvestAlgorithm(self.denoiseTime, self.denoiseFrequency)
 
     def harvestAlgorithm(self, time, frequency):
@@ -50,11 +73,11 @@ class HarvestAlgorithm:
                                          zip(smoothedSlopes[-self.consecutivePoints * 2:-self.consecutivePoints],
                                              smoothedSlopes[
                                              -self.consecutivePoints * 2 + 1:-self.consecutivePoints]))  # Checks that the list of 5 is strictly increasing
-            if self.closeToHarvest == False:
+            if not self.closeToHarvest:
                 if lastFiveIncreasing and previousFiveDecreasing:
                     logger.info(
                         f'Flask {self.readerNumber} is close to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
-                    if self.AppModule.emailSetting == True:
+                    if self.AppModule.emailSetting:
                         self.Emailer.sendMessage()
                         self.Emailer.setMessageHarvestReady()
                     self.changeIndicatorYellow()
@@ -63,34 +86,42 @@ class HarvestAlgorithm:
                 if lastFiveDecreasing and previousFiveIncreasing:
                     logger.info(
                         f'Flask {self.readerNumber} is ready to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
-                    if self.AppModule.emailSetting == True:
+                    if self.AppModule.emailSetting:
                         self.Emailer.sendMessage()
                     self.changeIndicatorRed()
                     self.readyToHarvest = True
 
-    def updateHarvestJson(self, harvestColor):
-        self.indicatorColor = harvestColor
 
+class ContaminationAlgorithm(Analysis, Indicator):
+    def __init__(self, outerFrame, AppModule, Emailer, readerNumber):
+        Indicator.__init__(self)
+        self.readerNumber = readerNumber
+        self.AppModule = AppModule
+        self.continuousContaminated = 0
+        self.backgroundColor = None
+        self.contaminated = False
+        self.createIndicator(outerFrame)
+        self.updateContaminationJson(self.white)
+        self.Emailer = Emailer
 
-class ContaminationAlgorithm:
     def checkContamination(self):
-        if len(self.time) > 201 and self.AppModule.cellApp == True:
-            if self.contaminated == False:
+        if len(self.time) > 201 and self.AppModule.cellApp is True:
+            if not self.contaminated:
                 self.contaminated = self.contaminationAlgorithm(self.time, self.minFrequency, [100, 100])
-                if self.contaminated == True:
+                if self.contaminated:
                     logger.info(f'Flask {self.readerNumber} is contaminated at time {self.time[-1]} hours')
                     self.updateContaminationJson(self.lightRed)
 
     def contaminationAlgorithm(self, time, frequency, window):
         time_to_analyze = len(time) - 1
-        if window == []:
+        if not window:
             window = [100, 100]
         coeff_current = np.polyfit(time[time_to_analyze - window[0]:time_to_analyze],
                                    frequency[time_to_analyze - window[0]:time_to_analyze], 1)
         coeff_previous = np.polyfit(time[time_to_analyze - window[0] - window[1]:time_to_analyze - window[0]],
                                     frequency[time_to_analyze - window[0] - window[1]:time_to_analyze - window[0]], 1)
         slopes = [coeff_current[0], coeff_previous[0]]
-        if (abs(slopes[0]) > abs(slopes[1]) * 10 and abs(slopes[1]) > 0.03):
+        if abs(slopes[0]) > abs(slopes[1]) * 10 and abs(slopes[1]) > 0.03:
             self.continuousContaminated += 1
             if self.continuousContaminated > 5:
                 return True
@@ -104,7 +135,23 @@ class ContaminationAlgorithm:
         self.backgroundColor = contaminationColor
 
 
-class FoamingAlgorithm:
+class FoamingAlgorithm(Analysis):
+    def __init__(self, airFreq, waterFreq, waterShift, AppModule, Emailer):
+        self.AppModule = AppModule
+        self.Emailer = Emailer
+        self.referenceFrequency = None
+        self.foamThresh = 10
+        self.scanRate = 0.1
+        self.startFreq = airFreq - 15
+        self.stopFreq = airFreq + 15
+        self.nPoints = 350
+        self.airFreq = airFreq
+        self.waterFreq = waterFreq
+        self.waterShift = waterShift
+        self.errorThread = ''
+        self.liquidThread = ''
+        self.Dac = Dac()
+
     def checkFoaming(self):
         if self.airFreq != 0:
             self.referenceFrequency = self.minFrequency[0]

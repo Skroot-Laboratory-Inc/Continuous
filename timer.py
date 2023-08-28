@@ -5,6 +5,7 @@ import tkinter as tk
 
 class RunningTimer:
     def __init__(self):
+        self.startTime = None
         self.timer = None
 
     def createWidget(self, frame, font=('Courier', 9, 'bold'), backgroundColor='white', foregroundColor='black'):

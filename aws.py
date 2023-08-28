@@ -37,9 +37,9 @@ class AwsBoto3:
             self.disabled = True
 
     def uploadFile(self, fileLocation):
-        if self.dstPdfName == None:
+        if self.dstPdfName is None:
             self.findFolder(fileLocation)
-        if self.disabled == False:
+        if not self.disabled:
             try:
                 self.s3.upload_file(fileLocation, self.bucket, self.dstPdfName,
                                     ExtraArgs={'ContentType': 'application/pdf', 'ContentDisposition': 'inline'})
@@ -50,7 +50,7 @@ class AwsBoto3:
                 logger.exception('Failed to upload file')
 
     def downloadFile(self, filename):
-        if self.disabled == False:
+        if not self.disabled:
             try:
                 self.s3.download_file(self.bucket, filename, filename)
             except botocore.exceptions.EndpointConnectionError:

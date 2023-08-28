@@ -1,7 +1,13 @@
 import tkinter as tk
 
+from colors import Colors
 
-class Indicator:
+
+class Indicator(Colors):
+    def __init__(self):
+        super().__init__()
+        self.indicatorColor = self.green
+
     def createIndicator(self, outerFrame):
         if self.totalNumberOfReaders > 1:
             self.indicatorCanvas = tk.Canvas(outerFrame, height=90, width=90, bg="white", highlightbackground="white",
@@ -36,3 +42,6 @@ class Indicator:
     def changeIndicatorRed(self):
         self.indicatorCanvas.itemconfig(self.indicator, fill=self.red)
         self.updateHarvestJson(self.red)
+
+    def updateHarvestJson(self, harvestColor):
+        self.indicatorColor = harvestColor
