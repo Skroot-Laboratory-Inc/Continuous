@@ -12,8 +12,8 @@ def loggerSetup(location, version):
         os.mkdir(os.path.dirname(location))
     if not os.path.exists(location):
         open(location, 'w+').close()
-    elif os.path.getsize(location) > 50000000:
-        # log is greater than 50 MB, make a copy and create a new one
+    elif os.path.getsize(location) > 100000:
+        # log is greater than 100 kB, make a copy and create a new one
         shutil.copy(location, f"{location[:-4]}_{datetime.now().date()}.txt")
         open(location, 'w+').close()
     fh = logging.FileHandler(location)

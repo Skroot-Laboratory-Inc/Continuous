@@ -1,26 +1,22 @@
 import json
 import os
 import shutil
-from statistics import mean
 
 import logger
 import text_notification
 from algorithms import ContaminationAlgorithm, FoamingAlgorithm, HarvestAlgorithm
 from analysis import Analysis
-from dac import Dac
 from dev import ReaderDevMode
 from emailer import Emailer
-from indicator import Indicator
-from initialization import Initialization
-from notes import ExperimentNotes
-from plotting import Plotting, SecondAxis
-from vna import VnaScanning
+from plotting import Plotting
 
 
-class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
-             ContaminationAlgorithm, HarvestAlgorithm, ExperimentNotes, SecondAxis):
+class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, Vna):
+        self.scanMagnitude = []
+        self.scanFrequency = []
+        self.scanNumber = 100001
         self.folderSuffix = "_Cell"
         self.jsonTextLocation = "serverInfo.json"
         self.waterShift = None
@@ -36,19 +32,15 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
         self.startFreq = startFreq
         self.stopFreq = stopFreq
         self.Vna = Vna
-        self.initializeDefaults(savePath, outerFrame, readerColor)
+        self.Vna = Vna
+        self.initializeReaderFolders(savePath)
+        self.ReaderDevMode = ReaderDevMode(AppModule, readerNumber)
+        Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
+        Analysis.__init__(self, savePath, 51, 101)
+        ContaminationAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer, readerNumber)
+        HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
-        self.initializeContamination(outerFrame)
-        self.initializeHarvest(outerFrame)
         self.createServerJsonFile()
-
-    def determineFitPoints(self):
-        minMag = abs(min(self.scanMagnitude))
-        meanMag = abs(mean(self.scanMagnitude))
-        if (minMag - meanMag) < 1:
-            return 51
-        elif (minMag - meanMag) > 1:
-            return 101
 
     def sendFilesToServer(self):
         self.sendToServer(f'{self.savePath}/{self.scanNumber}.csv')
@@ -83,11 +75,11 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
         self.Emailer.changeReceiver(receiver_email)
 
     def sendToServer(self, filename):
-        if self.AppModule.ServerFileShare.disabled == False:
+        if not self.AppModule.ServerFileShare.disabled:
             try:
                 if os.path.exists(filename):
                     shutil.copy(filename, self.serverSavePath)
-            except Exception as e:
+            except Exception:
                 logger.exception('Failed to send file to server')
         else:
             pass
@@ -105,6 +97,32 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
         with open(f'{self.savePath}/{self.jsonTextLocation}', 'w') as f:
             f.write(json_object)
 
+    def initializeReaderFolders(self, savePath):
+        self.setSavePath(savePath)
+
+    def setSavePath(self, savePath):
+        if not os.path.exists(savePath):
+            os.mkdir(savePath)
+        self.savePath = rf'{savePath}/{self.readerNumber}{self.folderSuffix}'
+        if not self.AppModule.ServerFileShare.disabled:
+            self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
+        else:
+            self.serverSavePath = 'incorrect/path'
+        self.createFolders()
+
+    def createFolders(self):
+        if not os.path.exists(self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
+            os.mkdir(self.serverSavePath)
+        if not os.path.exists(self.savePath):
+            os.mkdir(self.savePath)
+        if not os.path.exists(f'{self.savePath}/Calibration.csv'):
+            if os.path.exists(self.calFileLocation):
+                shutil.copy(self.calFileLocation, f'{self.savePath}/Calibration.csv')
+            else:
+                text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
+                                          ('Courier', 12, 'bold'), self.AppModule.royalBlue, 'red')
+                logger.info(f"No calibration found for Reader {self.readerNumber}")
+
     # no ops
     def checkFoaming(self):
         pass
@@ -113,6 +131,9 @@ class Reader(Analysis, ReaderDevMode, Initialization, Plotting, Indicator,
 class FoamingReader(Reader, FoamingAlgorithm):
     def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders,
                  nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, Vna):
+        self.scanMagnitude = []
+        self.scanFrequency = []
+        self.scanNumber = 100001
         self.folderSuffix = "_Foaming"
         self.backgroundColor = '#FFFFFF'
         self.waterShift = waterShift
@@ -127,19 +148,14 @@ class FoamingReader(Reader, FoamingAlgorithm):
         self.Emailer.setMessageFoam()
         self.AppModule = AppModule
         self.Vna = Vna
-        self.Dac = Dac()
+        self.Vna = Vna
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
-        self.initializeDefaults(savePath, outerFrame, readerColor)
+        self.initializeReaderFolders(savePath)
+        Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule)
+        Analysis.__init__(self, savePath, 11, 21)
+        FoamingAlgorithm.__init__(self, airFreq, waterFreq, waterShift, AppModule, self.Emailer)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
-
-    def determineFitPoints(self):
-        minMag = abs(min(self.scanMagnitude))
-        meanMag = abs(mean(self.scanMagnitude))
-        if (minMag - meanMag) < 1:
-            return 11
-        elif (minMag - meanMag) > 1:
-            return 21
 
     def sendFilesToServer(self):
         self.sendToServer(f'{self.savePath}/{self.scanNumber}.csv')

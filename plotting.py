@@ -7,30 +7,50 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 
 import logger
+from analysis import Analysis
+from notes import ExperimentNotes
 
 
-class SecondAxis:
+class SecondAxis(Analysis):
+    def __init__(self, readerNumber, secondAxisTitle):
+        self.secondAxisValues = []
+        self.secondAxisTime = []
+        self.readerNumber = readerNumber
+        self.secondAxisTitle = secondAxisTitle
+
     def addSecondAxisMenubar(self, menu):
         menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeSecondAxisValues())
 
     def typeSecondAxisValues(self):
-        if self.AppModule.secondAxisTitle == "":
-            self.AppModule.secondAxisTitle = tk.simpledialog.askstring(f'Reader {self.readerNumber} second y-axis title',
-                                                             f'Enter the title for the second axis for reader {self.readerNumber} here. \n Common options include "Viability (%)" or Cell Count (cells/mL)')
-            logger.info(f'second axis title for Reader {self.readerNumber} entered: {self.AppModule.secondAxisTitle}')
-        value = tk.simpledialog.askfloat(f'Reader {self.readerNumber} {self.AppModule.secondAxisTitle}',
-                                         f'Enter the value for {self.AppModule.secondAxisTitle} and reader {self.readerNumber} here. \n Numbers only')
-        if value != None:
+        if self.secondAxisTitle == "":
+            self.secondAxisTitle = tk.simpledialog.askstring(
+                f'Reader {self.readerNumber} second y-axis title',
+                f'Enter the title for the second axis for reader {self.readerNumber} here. \n Common options include "Viability (%)" or Cell Count (cells/mL)')
+            logger.info(f'second axis title for Reader {self.readerNumber} entered: {self.secondAxisTitle}')
+        value = tk.simpledialog.askfloat(f'Reader {self.readerNumber} {self.secondAxisTitle}',
+                                         f'Enter the value for {self.secondAxisTitle} and reader {self.readerNumber} here. \n Numbers only')
+        if value is not None:
             self.secondAxisTime.append(self.time[-1])
             self.secondAxisValues.append(value)
             with open(f'{self.savePath}/secondAxis.csv', 'w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(['Time (hours)', self.AppModule.secondAxisTitle])
+                writer.writerow(['Time (hours)', self.secondAxisTitle])
                 writer.writerows(zip(self.secondAxisTime, self.secondAxisValues))
             logger.info(f'second axis value for Reader {self.readerNumber} entered: {value}')
 
 
-class Plotting:
+class Plotting(SecondAxis, ExperimentNotes):
+    def __init__(self, readerColor, outerFrame, readerNumber, AppModule, secondAxisTitle=""):
+        SecondAxis.__init__(self, readerNumber, secondAxisTitle)
+        ExperimentNotes.__init__(self, readerNumber)
+        self.AppModule = AppModule
+        self.frequencyPlot = None
+        self.frequencyFigure = None
+        self.frequencyCanvas = None
+        self.frequencyFrame = None
+        self.readerColor = readerColor
+        self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())
+
     def plotFrequencies(self):
         if self.AppModule.freqToggleSet == "Frequency":
             self.plotFrequency()
@@ -54,7 +74,7 @@ class Plotting:
         else:
             self.frequencyPlot.scatter(self.time, self.minDbSmooth, s=20, color=self.readerColor)
         for xvalue in self.notesTimestamps:
-            self.addVerticalLine(self.frequencyPlot, xvalue)
+            addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)
         self.frequencyPlot.set_xlabel('Time (hours)')
         self.frequencyPlot.set_facecolor(self.backgroundColor)
@@ -79,7 +99,7 @@ class Plotting:
         else:
             self.frequencyPlot.scatter(self.time, self.minFrequencySmooth, s=20, color=self.readerColor)
         for xvalue in self.notesTimestamps:
-            self.addVerticalLine(self.frequencyPlot, xvalue)
+            addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)
         if self.waterShift is not None:
             self.frequencyPlot.set_ylim([self.waterFreq - 2, self.airFreq + 2])
@@ -90,9 +110,6 @@ class Plotting:
             self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
         self.frequencyCanvas.draw()
         self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-    def addVerticalLine(self, plot, x):
-        plot.axvline(x=x)
 
     def plotSignal(self):
         try:
@@ -112,10 +129,10 @@ class Plotting:
         self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def addSecondAxis(self, plot):
-        if self.AppModule.secondAxisTitle != "":
+        if self.secondAxisTitle != "":
             ax2 = plot.twinx()
             ax2.scatter(self.secondAxisTime, self.secondAxisValues, s=20, color='k')
-            ax2.set_ylabel(self.AppModule.secondAxisTitle, color='k')
+            ax2.set_ylabel(self.secondAxisTitle, color='k')
 
     def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
         spaceForPlots = 0.9
@@ -129,21 +146,22 @@ class Plotting:
             elif (self.readerNumber % 5) == 3:
                 relx, rely = 0.67, 0
             elif (self.readerNumber % 5) == 4:
-                relx, rely = 0, 0.5*spaceForPlots
+                relx, rely = 0, 0.5 * spaceForPlots
             elif (self.readerNumber % 5) == 0:
-                relx, rely = 0.33, 0.5*spaceForPlots
+                relx, rely = 0.33, 0.5 * spaceForPlots
             else:
                 pass
             if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.27, relheight=0.45*spaceForPlots)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
             else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.27, relheight=0.45*spaceForPlots)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
         else:
             relx, rely = 0, 0
             if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9*spaceForPlots)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9 * spaceForPlots)
             else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.67, relheight=0.9*spaceForPlots)
+                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.67, relheight=0.9 * spaceForPlots)
 
-    def createUpdateFrequenciesButton(self, outerFrame):
-        self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())
+
+def addVerticalLine(plot, x):
+    plot.axvline(x=x)

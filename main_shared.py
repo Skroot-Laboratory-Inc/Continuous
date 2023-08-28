@@ -1,6 +1,6 @@
-import importlib.util
 import math
 import os
+import sys
 import threading
 import time
 import tkinter as tk
@@ -12,25 +12,89 @@ from matplotlib.figure import Figure
 import logger
 import setup
 import text_notification
+from aws import AwsBoto3
+from buttons import ButtonFunctions
+from colors import ColorCycler
+from dev import DevMode
 from pdf import generatePdf
+from server import ServerFileShare
+from settings import Settings
+from timer import RunningTimer
 
 mpl.use('TkAgg')
 
 
 class MainShared:
-    def setupApp(self):
+    def __init__(self, version):
+        self.root = tk.Tk()  # everything in the application comes after this
+        self.readerPlotFrame = None
+        self.scanFrequency = None
+        self.foundPorts = False
+        self.currentFrame = None
+        self.summaryPlot = None
+        self.summaryCanvas = None
+        self.summaryFig = None
+        self.summaryPlotButton = None
+        self.summaryFrame = None
+        self.submitButton = None
+        self.waterFreqInput = None
+        self.stopButton = None
+        self.startButton = None
+        self.airFreqInput = None
+        self.menubar = None
+        self.cellType = None
+        self.year = None
+        self.day = None
+        self.month = None
+        try:
+            self.desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+            self.os = 'windows'
+        except:
+            self.desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+            self.os = 'linux'
+        self.baseSavePath = self.desktop + "/data"
+        if not os.path.exists(self.baseSavePath):
+            os.mkdir(self.baseSavePath)
+        logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
+        self.numReaders = None
+        self.savePath = ''
+        self.cellApp = False
+        self.foamingApp = False
+        self.freqToggleSet = "Signal Check"
+        self.splineToggleSet = False
+        self.denoiseSet = True
+        self.currentlyScanning = False
+        self.disableSaveFullFiles = False
+        self.emailSetting = False
+        self.awsTimeBetweenUploads = 6
+        self.awsLastUploadTime = 0
+        self.scanRate = 0.5
+        self.startFreq = 40
+        self.stopFreq = 250
+        self.nPoints = 2000
+        self.thread = threading.Thread(target=self.mainLoop, args=())
+        self.threadStatus = ''
+        self.royalBlue = 'RoyalBlue4'
+        self.white = 'white'
+        self.ports = []
+        try:
+            self.location = sys._MEIPASS
+        except:
+            self.location = os.getcwd()
+        self.createRoot()
+        self.ColorCycler = ColorCycler()
+        self.Timer = RunningTimer()
+        self.Readers = []
+        self.Settings = Settings(self)
+        self.Buttons = ButtonFunctions(self)
+        self.DevMode = DevMode()
+        self.ServerFileShare = ServerFileShare(self)
+        if not self.DevMode.isDevMode:
+            self.aws = AwsBoto3()
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
-        self.menubar = self.Setup.createMenus()
-        self.Setup.createTheme()
-        self.Setup.createFrames()
-        self.root.config(menu=self.menubar)
-        if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
-            import pyi_splash
-            pyi_splash.close()
-        self.root.mainloop()  # everything comes before this
+        self.isDevMode = self.DevMode.isDevMode
 
     def createRoot(self):
-        self.root = tk.Tk()  # everything in the application comes after this
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
         if self.os == 'windows':
             self.root.state('zoomed')
@@ -51,13 +115,14 @@ class MainShared:
                     try:
                         if not self.isDevMode:
                             self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.Vna.takeScan(
-                                f'{Reader.savePath}/{Reader.scanNumber}.csv', Reader.startFreq, Reader.stopFreq, Reader.nPoints)
+                                f'{Reader.savePath}/{Reader.scanNumber}.csv', Reader.startFreq, Reader.stopFreq,
+                                Reader.nPoints)
                             if not success:
                                 text_notification.setText(f"Reader {Reader.readerNumber} \nFailed to take scan.")
                                 continue
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
-                            Reader.addDevPoint()
+                            Reader.ReaderDevMode.addDevPoint()
                         if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -106,7 +171,7 @@ class MainShared:
 
     def waitUntilNextScan(self, currentTime, startTime):
         while currentTime - startTime < self.scanRate * 60:
-            if self.thread.shutdown_flag.is_set() == True:
+            if self.thread.shutdown_flag.is_set():
                 logger.info('Cancelling data collection due to stop button pressed')
                 break
             time.sleep(0.05)
@@ -171,7 +236,7 @@ class MainShared:
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
-        self.Buttons.createConnectReadersButton()
+        self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
         self.ports = []
         self.Buttons.Vnas = []

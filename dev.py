@@ -6,6 +6,8 @@ from datetime import datetime
 import pandas
 from scipy.signal import savgol_filter
 
+from analysis import Analysis
+
 
 class DevMode:
     def __init__(self):
@@ -22,23 +24,24 @@ class DevMode:
         # self.mode = "Analysis"
 
 
-class ReaderDevMode:
-    def devModeInitialization(self):
-        self.DevMode = self.AppModule.DevMode
-        self.AppModule.scanRate = self.DevMode.scanRate
-        self.scanNumber = self.DevMode.startTime + 100000
-        self.scanRate = self.DevMode.scanRate
-        self.loadDevMode()
+class ReaderDevMode(Analysis):
+    def __init__(self, AppModule, readerNumber):
+        self.DevMode = AppModule.DevMode
+        if self.DevMode.isDevMode:
+            AppModule.scanRate = self.DevMode.scanRate
+            self.scanNumber = self.DevMode.startTime + 100000
+            self.scanRate = self.DevMode.scanRate
+            self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
+            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/Analyzed.csv')
+            self.devTime = readings['Time (hours)'].values.tolist()
+            self.devFrequency = readings['Frequency (MHz)'].values.tolist()
+            try:
+                self.devDb = readings['Signal Strength (dB)'].values.tolist()
+            except:
+                self.devDb = [0] * len(self.devFrequency)
+            self.loadDevMode()
 
     def loadDevMode(self):
-        self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{self.readerNumber}/*')
-        readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{self.readerNumber}/Analyzed.csv')
-        self.devTime = readings['Time (hours)'].values.tolist()
-        self.devFrequency = readings['Frequency (MHz)'].values.tolist()
-        try:
-            self.devDb = readings['Signal Strength (dB)'].values.tolist()
-        except:
-            self.devDb = [0] * len(self.devFrequency)
         self.minDb = self.devDb[0:self.DevMode.startTime]
         self.minFrequency = self.devFrequency[0:self.DevMode.startTime]
         self.minDbSpline = self.devDb[0:self.DevMode.startTime]
