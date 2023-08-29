@@ -62,7 +62,7 @@ class Plotting(SecondAxis, ExperimentNotes):
     def plotMagnitude(self):
         try:
             self.frequencyFigure.clear()
-        except:
+        except AttributeError:
             self.frequencyFigure = Figure(figsize=(3, 3))
             self.frequencyFigure.set_tight_layout(True)
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)
@@ -87,7 +87,7 @@ class Plotting(SecondAxis, ExperimentNotes):
     def plotFrequency(self):
         try:
             self.frequencyFigure.clear()
-        except:
+        except AttributeError:
             self.frequencyFigure = Figure(figsize=(3, 3))
             self.frequencyFigure.set_tight_layout(True)
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)
@@ -114,7 +114,7 @@ class Plotting(SecondAxis, ExperimentNotes):
     def plotSignal(self):
         try:
             self.frequencyFigure.clear()
-        except:
+        except AttributeError:
             self.frequencyFigure = Figure(figsize=(3, 3))
             self.frequencyFigure.set_tight_layout(True)
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)

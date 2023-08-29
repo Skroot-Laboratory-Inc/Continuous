@@ -31,10 +31,7 @@ class ButtonFunctions:
         # Other buttons that will be invoked
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
                                                       command=lambda: self.AppModule.plotSummary())
-        try:
-            self.AppModule.threadStatus = self.AppModule.thread.is_alive()
-        except:
-            self.AppModule.threadStatus = False
+        self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
         if not self.AppModule.ServerFileShare.disabled:
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
@@ -45,16 +42,12 @@ class ButtonFunctions:
             self.AppModule.Settings.addInoculation()
         self.createStopButton(self.AppModule.readerPlotFrame)
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
-        try:
-            text_notification.setText("Scanning...")
-            logger.info("started")
-            if self.AppModule.threadStatus:
-                tk.messagebox.showinfo("Error", "Test Still Running")
-            else:
-                self.AppModule.thread.start()
-        except:
-            tk.messagebox.showinfo("Error", "Please calibrate your reader first")
-            logger.exception("Failed to calibrate the reader")
+        text_notification.setText("Scanning...")
+        logger.info("started")
+        if self.AppModule.threadStatus:
+            tk.messagebox.showinfo("Error", "Test Still Running")
+        else:
+            self.AppModule.thread.start()
 
     def createStopButton(self, frame):
         self.stopButton = ttk.Button(frame, text="Stop", command=lambda: self.stopFunc())
@@ -68,13 +61,9 @@ class ButtonFunctions:
         text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
     def calFunc(self, numReaders, AppModule):
-        try:
-            logger.info(f'calibrate button pressed')
-            calThread = threading.Thread(target=self.calFunc2, args=(numReaders, AppModule))
-            calThread.start()
-        except:
-            tk.messagebox.showinfo("Error", "Please select a save location first")
-            logger.exception("Failed to select a save directory")
+        logger.info(f'calibrate button pressed')
+        calThread = threading.Thread(target=self.calFunc2, args=(numReaders, AppModule))
+        calThread.start()
 
     def calFunc2(self, numReaders, AppModule):
         for readerNumber in range(1, numReaders + 1):
@@ -87,14 +76,12 @@ class ButtonFunctions:
                 port = self.findPort(readerNumber)
                 if not os.path.exists(os.path.dirname(calFileLocation)):
                     os.mkdir(os.path.dirname(calFileLocation))
-                Vna = VnaScanning(calFileLocation, port, self.AppModule, True)
+                Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
                 self.Vnas.append(Vna)
                 text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
                 logger.info(f"Calibration complete for reader {readerNumber}")
             except:
-                text_notification.setText(f"Calibration Failed \nfor reader {readerNumber}...",
-                                          ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
                 logger.exception(f'Failed to calibrate reader {readerNumber}')
 
     def createConnectReadersButton(self):
@@ -108,13 +95,13 @@ class ButtonFunctions:
         for readerNumber in range(1, numReaders + 1):
             port = self.findPort(readerNumber)
             calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-            Vna = VnaScanning(calFileLocation, port, self.AppModule, False)
+            Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, False)
             self.Vnas.append(Vna)
         self.AppModule.foundPorts = True
         self.createStartButton()
 
     def findPort(self, readerNumber):
-        if self.AppModule.isDevMode == False:
+        if not self.AppModule.isDevMode:
             portList, attempts, port = [], 0, ''
             pauseUntilUserClicks(readerNumber)
             while portList == [] and attempts <= 3:
@@ -123,14 +110,14 @@ class ButtonFunctions:
                     ports = list_ports.comports()
                     portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
                     portList = [num for num in portNums if num not in self.AppModule.ports]
-                    if portList != []:
+                    if portList:
                         port = f'COM{max(portList)}'
                         self.AppModule.ports.append(max(portList))
                 else:
                     ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
                         'ascii').strip().splitlines()
                     portList = [port for port in ports if port not in self.AppModule.ports]
-                    if portList != []:
+                    if portList:
                         port = portList[-1]
                         self.AppModule.ports.append(max(portList))
                 logger.info(f'Used: {self.AppModule.ports}, found: {portList}')

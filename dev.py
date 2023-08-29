@@ -37,7 +37,7 @@ class ReaderDevMode(Analysis):
             self.devFrequency = readings['Frequency (MHz)'].values.tolist()
             try:
                 self.devDb = readings['Signal Strength (dB)'].values.tolist()
-            except:
+            except ValueError:
                 self.devDb = [0] * len(self.devFrequency)
             self.loadDevMode()
 

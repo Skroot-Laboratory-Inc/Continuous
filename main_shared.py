@@ -49,7 +49,7 @@ class MainShared:
         try:
             self.desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
             self.os = 'windows'
-        except:
+        except KeyError:
             self.desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
             self.os = 'linux'
         self.baseSavePath = self.desktop + "/data"
@@ -79,7 +79,7 @@ class MainShared:
         self.ports = []
         try:
             self.location = sys._MEIPASS
-        except:
+        except AttributeError:
             self.location = os.getcwd()
         self.createRoot()
         self.ColorCycler = ColorCycler()
@@ -118,7 +118,6 @@ class MainShared:
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv', Reader.startFreq, Reader.stopFreq,
                                 Reader.nPoints)
                             if not success:
-                                text_notification.setText(f"Reader {Reader.readerNumber} \nFailed to take scan.")
                                 continue
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
@@ -137,7 +136,7 @@ class MainShared:
                         Reader.checkContamination()
                         Reader.checkHarvest()
                     except:
-                        logger.exception(f'reader {Reader.readerNumber} failed to take scan')
+                        logger.exception(f'Unchecked error, Reader {Reader.readerNumber} failed to take scan')
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
@@ -182,7 +181,7 @@ class MainShared:
         try:
             try:
                 self.summaryFig.clear()
-            except:
+            except AttributeError:
                 size = 3
                 self.summaryFig = Figure(figsize=(size, size))
                 self.summaryFig.set_tight_layout(True)
@@ -216,12 +215,12 @@ class MainShared:
             self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg')
             try:
                 self.summaryCanvas.get_tk_widget().pack()
-            except:
+            except AttributeError:
                 self.summaryCanvas = FigureCanvasTkAgg(self.summaryFig, master=self.summaryFrame)
             self.summaryCanvas.draw()
             self.summaryCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         except:
-            logger.exception("Failed to generated summaryPlot")
+            logger.exception("Failed to generate summaryPlot")
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
@@ -231,7 +230,7 @@ class MainShared:
         for Reader in self.Readers:
             try:
                 Reader.Vna.closeSocket()
-            except:
+            except AttributeError:
                 Reader.socket = None
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
