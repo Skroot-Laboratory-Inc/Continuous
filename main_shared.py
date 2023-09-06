@@ -25,7 +25,7 @@ mpl.use('TkAgg')
 
 
 class MainShared:
-    def __init__(self, version):
+    def __init__(self, version, major_version, minor_version):
         self.root = tk.Tk()  # everything in the application comes after this
         self.readerPlotFrame = None
         self.scanFrequency = None
@@ -90,7 +90,7 @@ class MainShared:
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
         if not self.DevMode.isDevMode:
-            self.aws = AwsBoto3()
+            self.aws = AwsBoto3(major_version, minor_version)
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.isDevMode = self.DevMode.isDevMode
 
@@ -108,6 +108,7 @@ class MainShared:
 
     def mainLoop(self):
         self.thread.shutdown_flag = threading.Event()
+        self.awsCheckSoftwareUpdates()
         while not self.thread.shutdown_flag.is_set():
             startTime = time.time()
             try:
@@ -142,7 +143,7 @@ class MainShared:
                         incrementScan(Reader)
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
-                self.awsUploadFile()
+                self.awsUploadPdfFile()
             except:
                 logger.exception('Unknown error has occurred')
             finally:
@@ -153,11 +154,24 @@ class MainShared:
         self.resetRun()
         logger.info('Stopped scanning')
 
-    def awsUploadFile(self):
+    def awsCheckSoftwareUpdates(self):
         if not self.DevMode.isDevMode:
-            if (self.Readers[0].scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                self.aws.uploadFile(f'{self.savePath}/Summary.pdf')
-                self.awsLastUploadTime = self.Readers[0].scanNumber
+            newestVersion, updateRequired = self.aws.checkForSoftwareUpdates()
+            if updateRequired:
+                text_notification.setText(f"Newer software available {newestVersion} consider upgrading to use new features")
+
+    def awsUploadPdfFile(self):
+        if not self.DevMode.isDevMode:
+            if self.aws.dstPdfName is None:
+                self.aws.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
+            else:
+                if (self.Readers[0].scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
+                    self.aws.uploadFile(f'{self.savePath}/Summary.pdf', self.aws.dstPdfName, 'application/pdf')
+                    self.awsLastUploadTime = self.Readers[0].scanNumber
+
+    def awsUploadLogFile(self):
+        if not self.DevMode.isDevMode:
+            self.aws.uploadFile(f'{self.desktop}/Calibration/log.txt', self.aws.dstLogName, 'text/plain')
 
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:

@@ -11,8 +11,8 @@ mpl.use('TkAgg')
 
 
 class AppModule(MainShared):
-    def __init__(self, version):
-        super().__init__(version)
+    def __init__(self, version, major_version, minor_version):
+        super().__init__(version, major_version, minor_version)
         self.foamingApp = False
         self.cellApp = True
         self.setupApp()
@@ -45,4 +45,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-AppModule("version: Cell_v1.0.5")
+major_version = 1.0
+minor_version = 4
+AppModule(f"version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

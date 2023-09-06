@@ -41,6 +41,7 @@ class ButtonFunctions:
         if self.AppModule.cellApp:
             self.AppModule.Settings.addInoculation()
         self.createStopButton(self.AppModule.readerPlotFrame)
+        self.createUploadLogButton(self.AppModule.readerPlotFrame)
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
         logger.info("started")
@@ -53,6 +54,11 @@ class ButtonFunctions:
         self.stopButton = ttk.Button(frame, text="Stop", command=lambda: self.stopFunc())
         self.stopButton.pack(side='top', anchor='ne')
         self.stopButton['style'] = 'W.TButton'
+
+    def createUploadLogButton(self, frame):
+        self.uploadLogButton = ttk.Button(frame, text="Still need help?", command=lambda: self.AppModule.awsUploadLogFile())
+        self.uploadLogButton.pack(side='bottom', anchor='ne')
+        self.uploadLogButton['style'] = 'W.TButton'
 
     def stopFunc(self):
         logger.info("Stop Button Pressed")
