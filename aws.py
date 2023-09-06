@@ -21,20 +21,23 @@ class AwsBoto3:
             self.disabled = True
 
     def findFolder(self, fileLocation):
-        try:
-            for folder in self.folders:
-                try:
-                    filename = f'{folder["Prefix"]}{uuid.uuid4()}.pdf'
-                    self.s3.upload_file(fileLocation, self.bucket, filename)
-                    self.dstPdfName = filename
-                    break
-                except botocore.exceptions.ClientError:
-                    pass  # This means unauthorized
-                except:
-                    logger.exception('Failed to find bucket')
-        except botocore.exceptions.EndpointConnectionError:
-            logger.info('no internet')
-            self.disabled = True
+        if not self.disabled:
+            try:
+                for folder in self.folders:
+                    try:
+                        filename = f'{folder["Prefix"]}{uuid.uuid4()}.pdf'
+                        self.s3.upload_file(fileLocation, self.bucket, filename)
+                        self.dstPdfName = filename
+                        break
+                    except botocore.exceptions.ClientError:
+                        pass  # This means unauthorized
+                    except:
+                        logger.exception('Failed to find bucket')
+            except botocore.exceptions.EndpointConnectionError:
+                logger.info('no internet')
+                self.disabled = True
+            except:
+                logger.exception("Error - most likely there were no folders found in AWS")
 
     def uploadFile(self, fileLocation):
         if self.dstPdfName is None:
