@@ -10,6 +10,10 @@ from dev import ReaderDevMode
 from emailer import Emailer
 from plotting import Plotting
 
+import paramiko
+from scp import SCPClient
+
+
 
 class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
@@ -43,15 +47,31 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         self.createServerJsonFile()
 
     def sendFilesToServer(self):
-        self.sendToServer(f'{self.savePath}/{self.scanNumber}.csv')
-        self.sendToServer(f'{self.savePath}/Analyzed.csv')
-        self.sendToServer(f'{self.savePath}/smoothAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/denoisedAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/splineAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/noFitAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/secondAxis.csv')
-        self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
-        self.sendToServer(f'{self.savePath}/{self.jsonTextLocation}')
+        all_files = [
+            f'{self.savePath}/{self.scanNumber}.csv',
+            f'{self.savePath}/Analyzed.csv',
+            f'{self.savePath}/smoothAnalyzed.csv',
+            f'{self.savePath}/denoisedAnalyzed.csv',
+            f'{self.savePath}/splineAnalyzed.csv',
+            f'{self.savePath}/noFitAnalyzed.csv',
+            f'{self.savePath}/secondAxis.csv',
+            f'{os.path.dirname(self.savePath)}/Summary.pdf',
+            f'{self.savePath}/{self.jsonTextLocation}',
+        ]
+
+        files_to_send = []
+        for file in all_files:
+            if os.path.exists(file):
+                files_to_send.append(file)
+
+        if self.AppModule.os == "windows":
+            for file in files_to_send:
+                self.sendToServer(file)
+        elif self.AppModule.os == "linux":
+            if self.sshConnection == None:
+                logger.info("SSH connection has not established")
+            self.scp.put(files_to_send, "Documents/")
+
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, labelHeight, plotWidth, plotHeight, notesWidth, paddingY):
         pdf.placeText(f"Reader {self.readerNumber}", currentX, currentY, labelWidth, labelHeight, 16, True)
@@ -104,14 +124,30 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         if not os.path.exists(savePath):
             os.mkdir(savePath)
         self.savePath = rf'{savePath}/{self.readerNumber}{self.folderSuffix}'
-        if not self.AppModule.ServerFileShare.disabled:
-            self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
-        else:
-            self.serverSavePath = 'incorrect/path'
+        if self.AppModule.os == "windows":
+            if not self.AppModule.ServerFileShare.disabled:
+                self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
+            else:
+                self.serverSavePath = 'incorrect/path'
+        if self.AppModule.os == "linux":
+            self.initializeSSHConnection("192.168.86.26", "22", "adamrice", "skrootasdf")
         self.createFolders()
 
+    def initializeSSHConnection(self, hostname, port, username, password):
+        try:
+            self.sshConnection = paramiko.SSHClient()
+            self.sshConnection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.sshConnection.connect(
+                hostname=hostname, port=port, 
+                username=username, password=password,
+                timeout=5)
+            self.scp = SCPClient(self.sshConnection.get_transport())
+            logger.info(f"Connection Established with {username}@{hostname}:{port}")
+        except Exception as err:
+            logger.exception("There was an error SSH connecting to the server")
+
     def createFolders(self):
-        if not os.path.exists(self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
+        if self.AppModule.os == "windows" and not os.path.exists(self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
             os.mkdir(self.serverSavePath)
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
