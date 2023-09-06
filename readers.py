@@ -130,7 +130,7 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
             else:
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
-            self.initializeSSHConnection("192.168.86.26", "22", "adamrice", "skrootasdf")
+            self.initializeSSHConnection("192.168.86.26", "22", "adamrice", "skroot")
         self.createFolders()
 
     def initializeSSHConnection(self, hostname, port, username, password):
