@@ -11,7 +11,8 @@ class ServerFileShare:
         self.AppModule = AppModule
         self.DevMode = AppModule.DevMode
         self.disabled = False
-        self.setServerLocation()
+        if self.AppModule.os == "windows":
+            self.setServerLocation()
 
     def setServerLocation(self):
         try:
