@@ -11,8 +11,8 @@ mpl.use('TkAgg')
 
 
 class AppModule(MainShared):
-    def __init__(self, version):
-        super().__init__(version)
+    def __init__(self, version, major_version, minor_version):
+        super().__init__(version, major_version, minor_version)
         self.scanRate = 0.5
         self.startFreq = 40
         self.stopFreq = 250
@@ -33,6 +33,7 @@ class AppModule(MainShared):
         self.root.config(menu=self.menubar)
 
         self.Buttons.createConnectReadersButton()
+        self.Buttons.createHelpButton(self.readerPlotFrame)
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
         self.Buttons.createGuidedSetupButton()
@@ -40,7 +41,8 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel"):
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell",
+                    vesselType="Vessel"):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate,
                                             cellType, vesselType)
@@ -51,4 +53,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-AppModule("version: Foaming_v1.0.2")
+major_version = 1.1
+minor_version = 0
+AppModule(f"version: Foaming_v{major_version}.{minor_version}")

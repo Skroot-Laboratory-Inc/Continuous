@@ -1,32 +1,38 @@
 import uuid
+from urllib import parse
 
 import boto3
 import botocore
 from botocore.client import Config
 
 import logger
+import text_notification
 
 
 class AwsBoto3:
-    def __init__(self):
+    def __init__(self, major_version, minor_version):
         config = Config(connect_timeout=5, read_timeout=5)
         self.s3 = boto3.client('s3', config=config)
-        self.disabled = True
+        self.disabled = False
         self.bucket = 'skroot-data'
+        self.dataPrefix = 'data-pdfs/'
         self.dstPdfName = None
-        self.dstPdfName = None
+        self.newestMajorVersion = major_version
+        self.newestMinorVersion = minor_version
         try:
-            self.folders = self.s3.list_objects_v2(Bucket='skroot-data', Delimiter='/')['CommonPrefixes']
+            self.folders = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=self.dataPrefix, Delimiter='/')['CommonPrefixes']
         except:
             self.disabled = True
+        self.runUuid = uuid.uuid4()
+        self.dstLogName = f'error-logs/{self.runUuid}.txt'
 
-    def findFolder(self, fileLocation):
+    def findFolderAndUploadFile(self, fileLocation, fileType):
         if not self.disabled:
             try:
                 for folder in self.folders:
                     try:
-                        filename = f'{folder["Prefix"]}{uuid.uuid4()}.pdf'
-                        self.s3.upload_file(fileLocation, self.bucket, filename)
+                        filename = f'{folder["Prefix"]}{self.runUuid}.pdf'
+                        self.s3.upload_file(fileLocation, self.bucket, filename, ExtraArgs={'ContentType': fileType})
                         self.dstPdfName = filename
                         break
                     except botocore.exceptions.ClientError:
@@ -39,18 +45,41 @@ class AwsBoto3:
             except:
                 logger.exception("Error - most likely there were no folders found in AWS")
 
-    def uploadFile(self, fileLocation):
-        if self.dstPdfName is None:
-            self.findFolder(fileLocation)
+    def uploadFile(self, fileLocation, fileName, fileType):
         if not self.disabled:
+            text_notification.setText("Uploading log file...")
             try:
-                self.s3.upload_file(fileLocation, self.bucket, self.dstPdfName,
-                                    ExtraArgs={'ContentType': 'application/pdf', 'ContentDisposition': 'inline'})
+                tags = {"response_email": "greenwalt@skrootlab.com"}
+                self.s3.upload_file(fileLocation, self.bucket, fileName,
+                                    ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags)})
             except botocore.exceptions.EndpointConnectionError:
                 logger.info('no internet')
                 self.disabled = True
             except:
                 logger.exception('Failed to upload file')
+                text_notification.setText("Failed to upload log file")
+            text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
+
+    def checkForSoftwareUpdates(self):
+        if not self.disabled:
+            updateRequired = False
+            filesResult = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
+            for item in filesResult['Contents']:
+                files = item['Key']
+                if files == 'software-releases/':
+                    continue
+                tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=files)
+                majorVersion = float(tags["TagSet"][0]['Value'])
+                minorVersion = int(tags["TagSet"][1]['Value'])
+
+                if majorVersion > self.newestMajorVersion or (majorVersion == self.newestMajorVersion and minorVersion > self.newestMinorVersion):
+                    self.newestMajorVersion = majorVersion
+                    self.newestMinorVersion = minorVersion
+                    updateRequired = True
+
+            return f"{self.newestMajorVersion}.{self.newestMinorVersion}", updateRequired
+        else:
+            return "", False
 
     def downloadFile(self, filename):
         if not self.disabled:

@@ -11,8 +11,8 @@ mpl.use('TkAgg')
 
 
 class AppModule(MainShared):
-    def __init__(self, version):
-        super().__init__(version)
+    def __init__(self, version, major_version, minor_version):
+        super().__init__(version, major_version, minor_version)
         self.foamingApp = False
         self.cellApp = True
         self.setupApp()
@@ -37,6 +37,7 @@ class AppModule(MainShared):
          self.vesselType, self.secondAxisTitle) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
                                                                                year, numReaders, scanRate, cellType,
                                                                                vesselType, secondAxisTitle)
+        self.Buttons.createHelpButton(self.readerPlotFrame)
         self.Buttons.createConnectReadersButton()
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
@@ -45,4 +46,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-AppModule("version: Cell_v1.0.5")
+major_version = 1.1
+minor_version = 0
+AppModule(f"version: Cell_v{major_version}.{minor_version}", major_version, minor_version)
