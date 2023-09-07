@@ -37,6 +37,7 @@ class AppModule(MainShared):
          self.vesselType, self.secondAxisTitle) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
                                                                                year, numReaders, scanRate, cellType,
                                                                                vesselType, secondAxisTitle)
+        self.Buttons.createHelpButton(self.readerPlotFrame)
         self.Buttons.createConnectReadersButton()
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
@@ -45,6 +46,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-major_version = 1.0
-minor_version = 4
+major_version = 1.1
+minor_version = 0
 AppModule(f"version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

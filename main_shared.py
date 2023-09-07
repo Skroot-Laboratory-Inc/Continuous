@@ -86,7 +86,7 @@ class MainShared:
         self.Timer = RunningTimer()
         self.Readers = []
         self.Settings = Settings(self)
-        self.Buttons = ButtonFunctions(self)
+        self.Buttons = ButtonFunctions(self, self.location, self.root)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
         if not self.DevMode.isDevMode:

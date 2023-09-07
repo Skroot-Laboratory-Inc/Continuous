@@ -33,6 +33,7 @@ class AppModule(MainShared):
         self.root.config(menu=self.menubar)
 
         self.Buttons.createConnectReadersButton()
+        self.Buttons.createHelpButton(self.readerPlotFrame)
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
         self.Buttons.createGuidedSetupButton()
@@ -52,6 +53,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-major_version = 1.0
-minor_version = 5
+major_version = 1.1
+minor_version = 0
 AppModule(f"version: Foaming_v{major_version}.{minor_version}")

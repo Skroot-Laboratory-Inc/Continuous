@@ -6,14 +6,20 @@ import tkinter as tk
 from tkinter import ttk
 
 from serial.tools import list_ports
+from PIL import Image, ImageTk
 
 import logger
 import text_notification
 from vna import VnaScanning
+from information_panel import InformationPanel
 
 
 class ButtonFunctions:
-    def __init__(self, AppModule):
+    def __init__(self, AppModule, location, root):
+        self.root = root
+        image = Image.open(rf"{location}\resources\help.png")
+        resizedImage = image.resize((15, 15), Image.ANTIALIAS)
+        self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
         self.Vnas = []
 
@@ -41,7 +47,6 @@ class ButtonFunctions:
         if self.AppModule.cellApp:
             self.AppModule.Settings.addInoculation()
         self.createStopButton(self.AppModule.readerPlotFrame)
-        self.createUploadLogButton(self.AppModule.readerPlotFrame)
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
         logger.info("started")
@@ -55,10 +60,11 @@ class ButtonFunctions:
         self.stopButton.pack(side='top', anchor='ne')
         self.stopButton['style'] = 'W.TButton'
 
-    def createUploadLogButton(self, frame):
-        self.uploadLogButton = ttk.Button(frame, text="Still need help?", command=lambda: self.AppModule.awsUploadLogFile())
-        self.uploadLogButton.pack(side='bottom', anchor='ne')
-        self.uploadLogButton['style'] = 'W.TButton'
+    def createHelpButton(self, frame):
+        self.helpButton = ttk.Button(frame, text="Need help?", image=self.helpIcon, compound=tk.LEFT,
+                                     command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
+        self.helpButton.pack(side='bottom', anchor='ne')
+        self.helpButton['style'] = 'W.TButton'
 
     def stopFunc(self):
         logger.info("Stop Button Pressed")

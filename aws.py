@@ -57,8 +57,8 @@ class AwsBoto3:
                 self.disabled = True
             except:
                 logger.exception('Failed to upload file')
-                text_notification.setText("Uploading log file...")
-            text_notification.setText("Log file uploaded")
+                text_notification.setText("Failed to upload log file")
+            text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
 
     def checkForSoftwareUpdates(self):
         if not self.disabled:
