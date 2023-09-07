@@ -17,7 +17,7 @@ from information_panel import InformationPanel
 class ButtonFunctions:
     def __init__(self, AppModule, location, root):
         self.root = root
-        image = Image.open(rf"{location}\resources\help.png")
+        image = Image.open(rf"{location}/resources/help.png")
         resizedImage = image.resize((15, 15), Image.ANTIALIAS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
@@ -39,7 +39,7 @@ class ButtonFunctions:
                                                       command=lambda: self.AppModule.plotSummary())
         self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
-        if not self.AppModule.ServerFileShare.disabled:
+        if not self.AppModule.ServerFileShare.disabled and self.AppModule.os == "windows":
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
         self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.Vnas)
         self.AppModule.Settings.addReaderNotes()

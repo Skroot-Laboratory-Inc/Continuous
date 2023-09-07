@@ -57,8 +57,17 @@ class AwsBoto3:
                 self.disabled = True
             except:
                 logger.exception('Failed to upload file')
-                text_notification.setText("Failed to upload log file")
-            text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
+                text_notification.setText("Failed to upload file")
+
+    def deleteFile(self, fileName):
+        if not self.disabled:
+            try:
+                self.s3.delete_object(Bucket=self.bucket, Key=fileName)
+            except botocore.exceptions.EndpointConnectionError:
+                logger.info('no internet')
+                self.disabled = True
+            except:
+                logger.exception('Failed to delete file')
 
     def checkForSoftwareUpdates(self):
         if not self.disabled:

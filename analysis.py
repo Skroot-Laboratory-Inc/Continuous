@@ -64,33 +64,12 @@ class Analysis:
 
     def findMin(self, frequency, magnitude):
         try:
-            _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
-            rawMinimum = min(denoisedMagnitude)
-            minIndeces = [index for index, element in enumerate(denoisedMagnitude) if element == rawMinimum]
-            minIndex = int(round(mean(minIndeces), 0))
-            Max = 0.1
-            pointsUsed = self.determineFitPoints()
-            finalFrequency = frequency[minIndex - pointsUsed:minIndex + pointsUsed]
-            finalMagnitude = magnitude[minIndex - pointsUsed:minIndex + pointsUsed]
-            while len(finalMagnitude) <= pointsUsed and Max < 4:
-                Max += .05
-                finalMagnitude = [dB for dB in finalMagnitude if rawMinimum + Max > dB > rawMinimum]
-            magnitudeIndeces = [index for index, mag in enumerate(finalMagnitude) if
-                                rawMinimum + Max > mag > rawMinimum]
-            frequenciesUsed = [finalFrequency[index] for index in magnitudeIndeces]
-            with warnings.catch_warnings():
-                warnings.filterwarnings('error')
-                try:
-                    quadraticCoefficients = np.polyfit(frequenciesUsed, finalMagnitude, 2)
-                except np.RankWarning:
-                    raise badFit()
-            frequencies = np.linspace(frequenciesUsed[0], frequenciesUsed[-1], 1000)
-            quadraticFunction = np.polyval(quadraticCoefficients, frequencies)
-            minMag = min(quadraticFunction)
-            minFrequency = frequencies[list(quadraticFunction).index(minMag)]
-            rawMag = magnitude[minIndex]
-            rawFreq = frequency[minIndex]
-            return minMag, minFrequency, rawMag, rawFreq
+            minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
+            points = self.determineFitPoints()
+            quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
+            quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
+            minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum, points)
+            return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
         except:
             logger.exception("Failed to analyze scan")
             return 0, 0, 0, 0
@@ -140,9 +119,9 @@ def denoise(x, y, threshold, points):
     dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
     core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
     core_samples[dbsc.core_sample_indices_] = True
-    x = [x for x in x if core_samples[x.index(x)]]
-    y = [y[i] for i in range(len(y)) if core_samples[i]]
-    return x, y
+    denoiseX = [xval for xval in x if core_samples[x.index(xval)]]
+    denoiseY = [y[i] for i in range(len(y)) if core_samples[i]]
+    return denoiseX, denoiseY
 
 
 def findMinSpline(frequency, magnitude):
@@ -191,3 +170,33 @@ def extractValuesFromScanFile(filename):
         return [], []
     except:
         logger.exception("Unknown error parsing file")
+
+
+def findRawMinimum(frequency, magnitude):
+    _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
+    rawMinimum = min(denoisedMagnitude)
+    minIndeces = [index for index, element in enumerate(denoisedMagnitude) if element == rawMinimum]
+    minIndex = int(round(mean(minIndeces), 0))
+    rawFreq = frequency[minIndex]
+    return minIndex, rawFreq, rawMinimum
+
+
+def findQuadraticMinimum(frequency, magnitude, rawMinimum, pointsUsed):
+    Max = 0.1
+    finalMagnitude = []
+    while len(finalMagnitude) <= pointsUsed and Max < 4:
+        Max += .05
+        finalMagnitude = [dB for dB in magnitude if rawMinimum < dB < rawMinimum + Max]
+    magnitudeIndeces = [index for index, mag in enumerate(finalMagnitude) if rawMinimum < mag < rawMinimum + Max]
+    frequenciesUsed = [frequency[index] for index in magnitudeIndeces]
+    with warnings.catch_warnings():
+        warnings.filterwarnings('error')
+        try:
+            quadraticCoefficients = np.polyfit(frequenciesUsed, finalMagnitude, 2)
+        except np.RankWarning:
+            raise badFit()
+    frequencies = np.linspace(frequenciesUsed[0], frequenciesUsed[-1], 1000)
+    quadraticFunction = np.polyval(quadraticCoefficients, frequencies)
+    minMag = min(quadraticFunction)
+    minFrequency = frequencies[list(quadraticFunction).index(minMag)]
+    return minMag, minFrequency
