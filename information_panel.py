@@ -18,6 +18,9 @@ class InformationPanel:
         self.uploadLogButton.grid(row=2, column=0, sticky='w')
 
     def uploadLogAndDisable(self):
-        self.AppModule.awsUploadLogFile()
+        success = self.AppModule.awsUploadLogFile()
         self.uploadLogButton['state'] = 'disabled'
-        tk.Label(self.window, text="Log sent to Skroot, please contact a representative with more context.", bg='white').grid(row=3, column=0, sticky='w')
+        if success:
+            tk.Label(self.window, text="Log sent to Skroot, please contact a representative with more context.", bg='white').grid(row=3, column=0, sticky='w')
+        else:
+            tk.Label(self.window, text="Please contact a Skroot representative to get more help.", bg='white').grid(row=3, column=0, sticky='w')

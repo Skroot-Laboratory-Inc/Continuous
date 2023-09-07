@@ -124,7 +124,7 @@ def loadCalibrationFile(calibrationFilename):
         calibrationPhase = list(readings['Phase'].values.tolist())
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
-    except ValueError:
+    except KeyError or ValueError:
         text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
                                   ('Courier', 9, 'bold'), "black", "red")
         logger.exception("Column did not exist")

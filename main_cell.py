@@ -47,5 +47,5 @@ class AppModule(MainShared):
 
 
 major_version = 1.1
-minor_version = 0
+minor_version = 1
 AppModule(f"version: Cell_v{major_version}.{minor_version}", major_version, minor_version)
