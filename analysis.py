@@ -20,8 +20,6 @@ class Analysis:
         self.denoiseTimeSmooth = []
         self.denoiseTotalMinSmooth = []
         self.denoiseTimeDbSmooth = []
-        self.denoisePoints = 1
-        self.denoiseRadius = 1
         self.denoiseTime = []
         self.denoiseTimeDb = []
         self.denoiseFrequency = []
@@ -41,135 +39,70 @@ class Analysis:
         self.largePeakPoints = largePeakPoints
 
     def analyzeScan(self, filename):
-        try:
-            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
-            self.minDb.append(minMag)
-            self.minFrequency.append(minFreq)
-            self.minDbRaw.append(minMag)
-            self.minFrequencyRaw.append(minFreq)
-        except:
-            logger.exception("Failed to analyze scan normally")
-            self.minDb.append(0)
-            self.minFrequency.append(0)
-            self.minDbRaw.append(0)
-            self.minFrequencyRaw.append(0)
-        try:
-            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinDataSmooth(filename)
-            self.minDbSmooth.append(minMag)
-            self.minFrequencySmooth.append(minFreq)
-        except:
-            logger.exception("Failed to analyze smoothed scan")
-            self.minDbSmooth.append(0)
-            self.minFrequencySmooth.append(0)
-        try:
-            minMag, minFreq = self.findMinDataSpline(filename)
-            self.minDbSpline.append(minMag)
-            self.minFrequencySpline.append(minFreq)
-        except:
-            logger.exception("Failed to analyze spline scan")
-            self.minDbSpline.append(0)
-            self.minFrequencySpline.append(0)
+        minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
+        self.minDb.append(minMag)
+        self.minFrequency.append(minFreq)
+        self.minDbRaw.append(minMag)
+        self.minFrequencyRaw.append(minFreq)
+        minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
+        self.minDbSmooth.append(minMag)
+        self.minFrequencySmooth.append(minFreq)
+        minMag, minFreq = findMinDataSpline(filename)
+        self.minDbSpline.append(minMag)
+        self.minFrequencySpline.append(minFreq)
         self.time.append((self.scanNumber - 100000) / 60)
         self.timestamp.append(datetime.now())
 
     def findMinData(self, filename):
-        try:
-            readings1 = pandas.read_csv(filename)
-            readings = readings1[7:-1]
-            frequency = readings['Frequency (MHz)'].values.tolist()
-            dB = readings['Signal Strength (dB)'].values.tolist()
-            self.scanFrequency, self.scanMagnitude = frequency, dB
-            return self.findMin(frequency, dB)
-        except:
-            logger.exception("Failed to get data from file")
-        return 0, 0, 0, 0
+        self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename)
+        return self.findMin(self.scanFrequency, self.scanMagnitude)
 
     def findMinDataSmooth(self, filename):
-        try:
-            readings1 = pandas.read_csv(filename)
-            readings = readings1[7:-1]
-            frequency = readings['Frequency (MHz)'].values.tolist()
-            dB = readings['Signal Strength (dB)'].values.tolist()
-            dBSmooth = savgol_filter(dB, 501, 2)
-            self.scanFrequency, self.scanMagnitude = frequency, dBSmooth
-            return self.findMin(frequency, dBSmooth)
-        except:
-            logger.exception("Failed to get data from file")
-        return 0, 0, 0, 0
+        frequency, magnitude = extractValuesFromScanFile(filename)
+        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 501, 2)
+        return self.findMin(frequency, self.scanMagnitude)
 
-    def findMin(self, frequency, dB):
+    def findMin(self, frequency, magnitude):
         try:
-            data = np.column_stack([frequency, dB])
-            stscaler = StandardScaler().fit(data)
-            data = stscaler.transform(data)
-            dbsc = DBSCAN(eps=0.20, min_samples=3).fit(data)
-            labels = dbsc.labels_
-            core_samples = np.zeros_like(labels, dtype=bool)
-            core_samples[dbsc.core_sample_indices_] = True
-            NewdB = [dB[i] for i in range(len(dB)) if i in dbsc.core_sample_indices_]
-            NewFreq = [Freqnew for Freqnew in frequency if frequency.index(Freqnew) in dbsc.core_sample_indices_]
-            MindB = min(NewdB)
-            MinIndeces = [index for index, element in enumerate(NewdB) if element == MindB]
-            minIndex = int(round(mean(MinIndeces), 0))
-            FinaldB = []
+            _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
+            rawMinimum = min(denoisedMagnitude)
+            minIndeces = [index for index, element in enumerate(denoisedMagnitude) if element == rawMinimum]
+            minIndex = int(round(mean(minIndeces), 0))
             Max = 0.1
             pointsUsed = self.determineFitPoints()
-            NewMinfrequency = frequency[minIndex - pointsUsed:minIndex + pointsUsed]
-            NewMindB = dB[minIndex - pointsUsed:minIndex + pointsUsed]
-            while len(FinaldB) <= pointsUsed and Max < 4:
+            finalFrequency = frequency[minIndex - pointsUsed:minIndex + pointsUsed]
+            finalMagnitude = magnitude[minIndex - pointsUsed:minIndex + pointsUsed]
+            while len(finalMagnitude) <= pointsUsed and Max < 4:
                 Max += .05
-                FinaldB = [dB for dB in NewMindB if dB < MindB + Max and dB > MindB]
-            FinaldBIndeces = [index for index, element in enumerate(NewMindB) if
-                              element < MindB + Max and element > MindB]
-            FinalFreq = [NewMinfrequency[index] for index in FinaldBIndeces]
+                finalMagnitude = [dB for dB in finalMagnitude if rawMinimum + Max > dB > rawMinimum]
+            magnitudeIndeces = [index for index, mag in enumerate(finalMagnitude) if
+                                rawMinimum + Max > mag > rawMinimum]
+            frequenciesUsed = [finalFrequency[index] for index in magnitudeIndeces]
             with warnings.catch_warnings():
                 warnings.filterwarnings('error')
                 try:
-                    Mincoeff = np.polyfit(FinalFreq, FinaldB, 2)
+                    quadraticCoefficients = np.polyfit(frequenciesUsed, finalMagnitude, 2)
                 except np.RankWarning:
                     raise badFit()
-            Nums = np.linspace(FinalFreq[0], FinalFreq[-1], 1000)
-            Minfunc = np.polyval(Mincoeff, Nums)
-            FuncMin = min(Minfunc)
-            Minfunclist = list(Minfunc)
-            FuncMin_dB = Nums[Minfunclist.index(FuncMin)]
-            minMag = FuncMin
-            minFreq = FuncMin_dB
-            rawMag = dB[minIndex]
+            frequencies = np.linspace(frequenciesUsed[0], frequenciesUsed[-1], 1000)
+            quadraticFunction = np.polyval(quadraticCoefficients, frequencies)
+            minMag = min(quadraticFunction)
+            minFrequency = frequencies[list(quadraticFunction).index(minMag)]
+            rawMag = magnitude[minIndex]
             rawFreq = frequency[minIndex]
-            return minMag, minFreq, rawMag, rawFreq
+            return minMag, minFrequency, rawMag, rawFreq
         except:
             logger.exception("Failed to analyze scan")
-        return 0, 0, 0, 0
-
-    def findMinDataSpline(self, filename):
-        try:
-            readings1 = pandas.read_csv(filename)
-            readings = readings1[7:-1]
-            frequency = readings['Frequency (MHz)'].values.tolist()
-            dB = readings['Signal Strength (dB)'].values.tolist()
-            return findMinSpline(frequency, dB)
-        except:
-            logger.exception("Failed to get data from file")
-        return 0, 0, 0, 0
+            return 0, 0, 0, 0
 
     def denoiseResults(self):
-        if len(self.time) > 1000:
-            self.denoiseRadius, self.denoisePoints = 0.2, 20
-        elif len(self.time) > 100:
-            self.denoiseRadius, self.denoisePoints = 0.5, 10
-        elif len(self.time) > 20:
-            self.denoiseRadius, self.denoisePoints = 0.6, 2
-        else:
-            self.denoiseRadius, self.denoisePoints = 1, 1
-        self.denoiseTime, self.denoiseFrequency = denoise(self.time, self.minFrequency, self.denoiseRadius,
-                                                          self.denoisePoints)
+        denoiseRadius, denoisePoints = getDenoiseParameters(self.time)
+        self.denoiseTime, self.denoiseFrequency = denoise(self.time, self.minFrequency, denoiseRadius, denoisePoints)
         self.denoiseTimeSmooth, self.denoiseFrequencySmooth = denoise(self.time, self.minFrequencySmooth,
-                                                                      self.denoiseRadius, self.denoisePoints)
-        self.denoiseTimeDb, self.denoiseTotalMin = denoise(self.time, self.minDb, self.denoiseRadius,
-                                                           self.denoisePoints)
+                                                                      denoiseRadius, denoisePoints)
+        self.denoiseTimeDb, self.denoiseTotalMin = denoise(self.time, self.minDb, denoiseRadius, denoisePoints)
         self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth = denoise(self.time, self.minDbSmooth,
-                                                                       self.denoiseRadius, self.denoisePoints)
+                                                                       denoiseRadius, denoisePoints)
 
     def createAnalyzedFiles(self):
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
@@ -202,34 +135,22 @@ class Analysis:
             return self.largePeakPoints
 
 
-def denoise(x1, FuncMin_dB, Threshold, points):
-    InitialLength = len(FuncMin_dB)
-    data = np.column_stack([x1, FuncMin_dB])
-    stscaler = StandardScaler().fit(data)
-    data = stscaler.transform(data)
-    dbsc = DBSCAN(eps=Threshold, min_samples=points).fit(data)
-    labels = dbsc.labels_
-    core_samples = np.zeros_like(labels, dtype=bool)
+def denoise(x, y, threshold, points):
+    data = np.column_stack([x, y])
+    dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
+    core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
     core_samples[dbsc.core_sample_indices_] = True
-    x1 = [x for x in x1 if core_samples[x1.index(x)] == True]
-    FuncMin_dB = [FuncMin_dB[i] for i in range(len(FuncMin_dB)) if core_samples[i] == True]
-    FinalLength = len(FuncMin_dB)
-    return x1, FuncMin_dB
+    x = [x for x in x if core_samples[x.index(x)]]
+    y = [y[i] for i in range(len(y)) if core_samples[i]]
+    return x, y
 
-def findMinSpline(frequency, dB):
+
+def findMinSpline(frequency, magnitude):
     try:
-        data = np.column_stack([frequency, dB])
-        stscaler = StandardScaler().fit(data)
-        data = stscaler.transform(data)
-        dbsc = DBSCAN(eps=0.20, min_samples=3).fit(data)
-        labels = dbsc.labels_
-        core_samples = np.zeros_like(labels, dtype=bool)
-        core_samples[dbsc.core_sample_indices_] = True
-        NewdB = [dB[i] for i in range(len(dB)) if i in dbsc.core_sample_indices_]
-        NewFreq = [Freqnew for Freqnew in frequency if frequency.index(Freqnew) in dbsc.core_sample_indices_]
-        raw_min_index = NewdB.index(min(NewdB))
-        MinFunc = CubicSpline(NewFreq, NewdB)
-        xrange = np.arange(NewFreq[raw_min_index] - 5, NewFreq[raw_min_index] + 5, 0.001)
+        denoisedFrequency, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
+        raw_min_index = denoisedMagnitude.index(min(denoisedMagnitude))
+        MinFunc = CubicSpline(denoisedFrequency, denoisedMagnitude)
+        xrange = np.arange(denoisedFrequency[raw_min_index] - 5, denoisedFrequency[raw_min_index] + 5, 0.001)
         yrange = MinFunc(xrange)
         FuncMin = min(yrange)
         FuncMin_dB = xrange[list(yrange).index(FuncMin)]
@@ -238,4 +159,35 @@ def findMinSpline(frequency, dB):
         return minMag, minFreq
     except:
         logger.exception("Failed to analyze scan")
-    return 0, 0
+        return 0, 0
+
+
+def getDenoiseParameters(numberOfTimePoints):
+    if len(numberOfTimePoints) > 1000:
+        return 0.2, 20
+    elif len(numberOfTimePoints) > 100:
+        return 0.5, 10
+    elif len(numberOfTimePoints) > 20:
+        return 0.6, 2
+    else:
+        return 1, 1
+
+
+def findMinDataSpline(filename):
+    frequency, magnitude = extractValuesFromScanFile(filename)
+    return findMinSpline(frequency, magnitude)
+
+
+def extractValuesFromScanFile(filename):
+    try:
+        # The first few values are known to be inaccurate, and are ignored
+        readings = pandas.read_csv(filename)[7:-1]
+        return readings['Frequency (MHz)'].values.tolist(), readings['Signal Strength (dB)'].values.tolist()
+    except ValueError:
+        logger.exception("Rows named improperly")
+        return [], []
+    except FileNotFoundError:
+        logger.exception(f"File does not exist {filename}")
+        return [], []
+    except:
+        logger.exception("Unknown error parsing file")

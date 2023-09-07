@@ -11,8 +11,9 @@ import text_notification
 
 
 class VnaScanning:
-    def __init__(self, calibrationFilename, port, AppModule, calibrationRequired=False):
+    def __init__(self, calibrationFilename, port, AppModule, readerNumber, calibrationRequired=False):
         self.socket = serial.Serial(port, 115200, timeout=1.5)
+        self.readerNumber = readerNumber
         self.AppModule = AppModule
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
@@ -30,6 +31,11 @@ class VnaScanning:
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
             self.AppModule.currentlyScanning = False
             return frequency, calibratedMagnitude, calibratedPhase, True
+        except IndexError:
+            # Vna returned an empty list - because it's not connected
+            text_notification.setText(f"Connection lost to Reader {self.readerNumber}, check USB connection")
+            logger.exception(f"Lost reader connection for reader {self.readerNumber}")
+            self.AppModule.currentlyScanning = False
         except:
             logger.exception("Failed to take scan")
             self.AppModule.currentlyScanning = False
@@ -43,9 +49,14 @@ class VnaScanning:
             frequency, rawMagnitude, rawPhase = self.readVnaValues(0.1, 250, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             createScanFile(calibrationFilename, frequency, magnitude, phase)
-            self.AppModule.currentlyScanning = False
+        except IndexError:
+            # Vna returned an empty list - because it's not connected
+
+            text_notification.setText(f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
+            logger.exception(f"Lost reader connection for reader {self.readerNumber}")
         except:
             logger.exception("Failed to take scan")
+        finally:
             self.AppModule.currentlyScanning = False
 
     def readVnaValues(self, start_freq, stop_freq, num_points):
@@ -113,9 +124,11 @@ def loadCalibrationFile(calibrationFilename):
         calibrationPhase = list(readings['Phase'].values.tolist())
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
-    except:
+    except ValueError:
         text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
                                   ('Courier', 9, 'bold'), "black", "red")
+        logger.exception("Column did not exist")
+    except Exception:
         logger.exception("Failed to load in calibration")
 
 

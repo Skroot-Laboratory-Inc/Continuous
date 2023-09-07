@@ -78,7 +78,7 @@ def generatePdf(location, Readers):
         pdf.setAuthor()  # uses Skroot Laboratory
         pdf.output(f'{location}/Summary.pdf', 'F')  # saves the plot, F refers to file
     except:
-        logger.exception("Failed to generated summary PDF")
+        logger.exception("Failed to generate summary PDF")
 
 
 def checkIfNewPage(pdf, currentX, currentY, labelHeight, plotHeight, paddingX, oldX, labelWidth):
