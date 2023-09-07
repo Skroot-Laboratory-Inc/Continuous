@@ -66,7 +66,7 @@ class MainShared:
         self.currentlyScanning = False
         self.disableSaveFullFiles = False
         self.emailSetting = False
-        self.awsTimeBetweenUploads = 6
+        self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
         self.scanRate = 0.5
         self.startFreq = 40
@@ -161,7 +161,7 @@ class MainShared:
                 text_notification.setText(f"Newer software available {newestVersion} consider upgrading to use new features")
 
     def awsUploadPdfFile(self):
-        if not self.DevMode.isDevMode:
+        if not self.DevMode.isDevMode and not self.aws.disabled:
             if self.aws.dstPdfName is None:
                 self.aws.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
             else:
@@ -170,8 +170,11 @@ class MainShared:
                     self.awsLastUploadTime = self.Readers[0].scanNumber
 
     def awsUploadLogFile(self):
-        if not self.DevMode.isDevMode:
+        if not self.DevMode.isDevMode and not self.aws.disabled:
             self.aws.uploadFile(f'{self.desktop}/Calibration/log.txt', self.aws.dstLogName, 'text/plain')
+            text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
+            return True
+        return False
 
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:

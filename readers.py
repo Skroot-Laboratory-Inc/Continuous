@@ -14,10 +14,11 @@ import paramiko
 from scp import SCPClient
 
 
-
 class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, Vna):
+        self.scp = None
+        self.sshConnection = None
         self.scanMagnitude = []
         self.scanFrequency = []
         self.scanNumber = 100001
@@ -40,38 +41,41 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         self.initializeReaderFolders(savePath)
         self.ReaderDevMode = ReaderDevMode(AppModule, readerNumber)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
-        Analysis.__init__(self, savePath, 51, 101)
+        Analysis.__init__(self, savePath, 41, 61)
         ContaminationAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer, readerNumber)
         HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
         self.createServerJsonFile()
 
     def sendFilesToServer(self):
-        all_files = [
-            f'{self.savePath}/{self.scanNumber}.csv',
-            f'{self.savePath}/Analyzed.csv',
-            f'{self.savePath}/smoothAnalyzed.csv',
-            f'{self.savePath}/denoisedAnalyzed.csv',
-            f'{self.savePath}/splineAnalyzed.csv',
-            f'{self.savePath}/noFitAnalyzed.csv',
-            f'{self.savePath}/secondAxis.csv',
-            f'{os.path.dirname(self.savePath)}/Summary.pdf',
-            f'{self.savePath}/{self.jsonTextLocation}',
-        ]
+        try:
+            all_files = [
+                f'{self.savePath}/{self.scanNumber}.csv',
+                f'{self.savePath}/Analyzed.csv',
+                f'{self.savePath}/smoothAnalyzed.csv',
+                f'{self.savePath}/denoisedAnalyzed.csv',
+                f'{self.savePath}/splineAnalyzed.csv',
+                f'{self.savePath}/noFitAnalyzed.csv',
+                f'{self.savePath}/secondAxis.csv',
+                f'{os.path.dirname(self.savePath)}/Summary.pdf',
+                f'{self.savePath}/{self.jsonTextLocation}',
+            ]
 
-        files_to_send = []
-        for file in all_files:
-            if os.path.exists(file):
-                files_to_send.append(file)
+            files_to_send = []
+            for file in all_files:
+                if os.path.exists(file):
+                    files_to_send.append(file)
 
-        if self.AppModule.os == "windows":
-            for file in files_to_send:
-                self.sendToServer(file)
-        elif self.AppModule.os == "linux":
-            if self.sshConnection == None:
-                logger.info("SSH connection has not established")
-            self.scp.put(files_to_send, "Documents/")
-
+            if self.AppModule.os == "windows":
+                for file in files_to_send:
+                    self.sendToServer(file)
+            elif self.AppModule.os == "linux":
+                if self.sshConnection is None:
+                    logger.info("SSH connection has not established")
+                elif self.scp is not None:
+                    self.scp.put(files_to_send, "Documents/")
+        except:
+            logger.exception("Failed to send files to server")
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, labelHeight, plotWidth, plotHeight, notesWidth, paddingY):
         pdf.placeText(f"Reader {self.readerNumber}", currentX, currentY, labelWidth, labelHeight, 16, True)
@@ -138,16 +142,17 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
             self.sshConnection = paramiko.SSHClient()
             self.sshConnection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.sshConnection.connect(
-                hostname=hostname, port=port, 
+                hostname=hostname, port=port,
                 username=username, password=password,
                 timeout=5)
             self.scp = SCPClient(self.sshConnection.get_transport())
             logger.info(f"Connection Established with {username}@{hostname}:{port}")
-        except Exception as err:
+        except:
             logger.exception("There was an error SSH connecting to the server")
 
     def createFolders(self):
-        if self.AppModule.os == "windows" and not os.path.exists(self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
+        if self.AppModule.os == "windows" and not os.path.exists(
+                self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
             os.mkdir(self.serverSavePath)
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
