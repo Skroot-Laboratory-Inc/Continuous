@@ -173,6 +173,8 @@ class MainShared:
         if not self.DevMode.isDevMode and not self.aws.disabled:
             self.aws.uploadFile(f'{self.desktop}/Calibration/log.txt', self.aws.dstLogName, 'text/plain')
             text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
+            return True
+        return False
 
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:
