@@ -6,3 +6,4 @@ Icon=/home/skroot/.local/DesktopApp/resources/squareLogo.PNG
 Version=v0.0.0
 Terminal=false
 Type=Application
+Path=/home/skroot/.local/DesktopApp
