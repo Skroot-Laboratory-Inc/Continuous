@@ -20,8 +20,9 @@ def loggerSetup(location, version):
     logging.captureWarnings(True)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("boto3").setLevel(logging.WARNING)
-    logging.getLogger("botocore").setLevel(logging.WARNING)
+    logging.getLogger("boto3").setLevel(logging.ERROR)
+    logging.getLogger("botocore").setLevel(logging.ERROR)
+    logging.getLogger('s3transfer').setLevel(logging.ERROR)
     logger.addHandler(fh)
     logger.info(f'Logger Setup {version}')
     return
