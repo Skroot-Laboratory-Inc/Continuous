@@ -160,13 +160,13 @@ class MainShared:
             newestVersion, updateRequired = self.aws.checkForSoftwareUpdates()
             if updateRequired:
                 text_notification.setText(
-                    f"Newer software available {newestVersion} consider upgrading to use new features")
+                    f"Newer software available v{newestVersion} consider upgrading to use new features")
 
     def downloadSoftwareUpdate(self):
         self.aws.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
         with ZipFile(fr'{os.path.dirname(os.path.dirname(self.location))}/DesktopApp.zip', 'r') as file:
             file.extractall()
-        text_notification.setText(f"New software version updated {self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
+        text_notification.setText(f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
 
     def awsUploadPdfFile(self):
         if not self.DevMode.isDevMode and not self.aws.disabled:
