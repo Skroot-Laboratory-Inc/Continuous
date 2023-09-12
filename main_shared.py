@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 import sys
 import threading
 import time
@@ -164,8 +165,10 @@ class MainShared:
 
     def downloadSoftwareUpdate(self):
         self.aws.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
-        with ZipFile(fr'{os.path.dirname(os.path.dirname(self.location))}/DesktopApp.zip', 'r') as file:
+        with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
             file.extractall()
+        if self.os == "linux":
+            shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop', rf'{os.path.dirname(self.location)}/share/applications')
         text_notification.setText(f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
 
     def awsUploadPdfFile(self):
