@@ -19,6 +19,7 @@ class AwsBoto3:
         self.dstPdfName = None
         self.newestMajorVersion = major_version
         self.newestMinorVersion = minor_version
+        self.newestZipVersion = ''
         try:
             self.folders = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=self.dataPrefix, Delimiter='/')['CommonPrefixes']
         except:
@@ -74,10 +75,10 @@ class AwsBoto3:
             updateRequired = False
             filesResult = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
             for item in filesResult['Contents']:
-                files = item['Key']
-                if files == 'software-releases/':
+                filename = item['Key']
+                if filename == 'software-releases/':
                     continue
-                tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=files)
+                tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
                 majorVersion = float(tags["TagSet"][0]['Value'])
                 minorVersion = int(tags["TagSet"][1]['Value'])
 
@@ -85,17 +86,21 @@ class AwsBoto3:
                     self.newestMajorVersion = majorVersion
                     self.newestMinorVersion = minorVersion
                     updateRequired = True
+                    self.newestZipVersion = filename
 
             return f"{self.newestMajorVersion}.{self.newestMinorVersion}", updateRequired
         else:
             return "", False
 
-    def downloadFile(self, filename):
+    def downloadFile(self, aws_filename, local_filename):
         if not self.disabled:
             try:
-                self.s3.download_file(self.bucket, filename, filename)
+                self.s3.download_file(self.bucket, aws_filename, local_filename)
             except botocore.exceptions.EndpointConnectionError:
                 logger.info('no internet')
                 self.disabled = True
             except:
                 logger.exception('Failed to download file')
+
+    def downloadSoftwareUpdate(self, local_filename):
+        self.downloadFile(self.newestZipVersion, local_filename)

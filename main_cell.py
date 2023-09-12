@@ -19,9 +19,9 @@ class AppModule(MainShared):
         self.root.mainloop()  # everything comes before this
 
     def setupApp(self):
-        self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
         self.Setup.createFrames()
+        self.menubar = self.Setup.createMenus()
         self.root.config(menu=self.menubar)
 
         currentDate = datetime.now().date()

@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 import sys
 import threading
 import time
@@ -8,6 +9,8 @@ import tkinter as tk
 import matplotlib as mpl
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
+from zipfile import ZipFile
+
 
 import logger
 import setup
@@ -108,7 +111,6 @@ class MainShared:
 
     def mainLoop(self):
         self.thread.shutdown_flag = threading.Event()
-        self.awsCheckSoftwareUpdates()
         while not self.thread.shutdown_flag.is_set():
             startTime = time.time()
             try:
@@ -158,7 +160,19 @@ class MainShared:
         if not self.DevMode.isDevMode:
             newestVersion, updateRequired = self.aws.checkForSoftwareUpdates()
             if updateRequired:
-                text_notification.setText(f"Newer software available {newestVersion} consider upgrading to use new features")
+                text_notification.setText(
+                    f"Newer software available v{newestVersion} consider upgrading to use new features")
+
+    def downloadSoftwareUpdate(self):
+        try:
+            self.aws.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
+            with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
+                file.extractall()
+            if self.os == "linux":
+                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop', rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
+            text_notification.setText(f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
+        except:
+            logger.exception("failed to update software")
 
     def awsUploadPdfFile(self):
         if not self.DevMode.isDevMode and not self.aws.disabled:

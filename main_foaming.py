@@ -27,9 +27,9 @@ class AppModule(MainShared):
 
     def setupApp(self):
         # TODO - update this to account for foaming setup, it will be different values needed
-        self.menubar = self.Setup.createMenus()
         self.Setup.createTheme()
         self.Setup.createFrames()
+        self.menubar = self.Setup.createMenus()
         self.root.config(menu=self.menubar)
 
         self.Buttons.createConnectReadersButton()
