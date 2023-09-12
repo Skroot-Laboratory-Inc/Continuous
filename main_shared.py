@@ -169,7 +169,7 @@ class MainShared:
             with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
                 file.extractall()
             if self.os == "linux":
-                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop', rf'{os.path.dirname(self.location)}/share/applications')
+                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop', rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
             text_notification.setText(f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
         except:
             logger.exception("failed to update software")
