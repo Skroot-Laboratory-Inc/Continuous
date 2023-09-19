@@ -16,6 +16,7 @@ from exceptions import badFit
 
 class Analysis:
     def __init__(self, savePath, smallPeakPoints, largePeakPoints):
+        self.zeroPoint = 0
         self.denoiseFrequencySmooth = []
         self.denoiseTimeSmooth = []
         self.denoiseTotalMinSmooth = []
@@ -68,7 +69,8 @@ class Analysis:
             points = self.determineFitPoints()
             quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
             quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
-            minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum, points)
+            minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
+                                                        points)
             return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
         except:
             logger.exception("Failed to analyze scan")
@@ -86,24 +88,30 @@ class Analysis:
     def createAnalyzedFiles(self):
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.timestamp, self.minFrequency, self.minDb))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequency), self.minDb))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.timestamp, self.minFrequencySmooth, self.minDbSmooth))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySmooth), self.minDbSmooth))
         with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', 'Signal Strength (dB)'])
-            writer.writerows(zip(self.time, self.timestamp, self.minFrequencySpline, self.minDbSpline))
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Frequency (MHz)', 'Signal Strength (dB)'])
+            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
             writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Frequency (MHz)'])
-            writer.writerows(zip(self.denoiseTime, self.denoiseFrequency))
+            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)'])
+            writer.writerows(zip(self.denoiseTime, self.frequencyToIndex(self.denoiseFrequency)))
+
+    def setZeroPoint(self, zeroPoint):
+        self.zeroPoint = zeroPoint
+
+    def frequencyToIndex(self, frequencyVector):
+        return [-(val - frequencyVector[self.zeroPoint]) for val in frequencyVector]
 
     def determineFitPoints(self):
         minMag = abs(min(self.scanMagnitude))

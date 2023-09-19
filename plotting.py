@@ -52,8 +52,8 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())
 
     def plotFrequencies(self):
-        if self.AppModule.freqToggleSet == "Frequency":
-            self.plotFrequency()
+        if self.AppModule.freqToggleSet == "SGI":
+            self.plotGrowthIndex()
         elif self.AppModule.freqToggleSet == "Signal Strength":
             self.plotMagnitude()
         elif self.AppModule.freqToggleSet == "Signal Check":
@@ -84,20 +84,20 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyCanvas.draw()
         self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-    def plotFrequency(self):
+    def plotGrowthIndex(self):
         try:
             self.frequencyFigure.clear()
         except AttributeError:
             self.frequencyFigure = Figure(figsize=(3, 3))
             self.frequencyFigure.set_tight_layout(True)
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)
-        self.frequencyPlot.set_ylabel('Frequency (MHz)', color=self.readerColor)
-        self.frequencyPlot.set_title(f'Resonant Frequency Reader {self.readerNumber}')
+        self.frequencyPlot.set_ylabel('Skroot Growth Index (SGI)', color=self.readerColor)
+        self.frequencyPlot.set_title(f'SGI Reader {self.readerNumber}')
         if self.AppModule.denoiseSet:
-            self.frequencyPlot.scatter(self.denoiseTimeSmooth, self.denoiseFrequencySmooth, s=20,
+            self.frequencyPlot.scatter(self.denoiseTimeSmooth, self.frequencyToIndex(self.denoiseFrequencySmooth), s=20,
                                        color=self.readerColor)
         else:
-            self.frequencyPlot.scatter(self.time, self.minFrequencySmooth, s=20, color=self.readerColor)
+            self.frequencyPlot.scatter(self.time, self.frequencyToIndex(self.minFrequencySmooth), s=20, color=self.readerColor)
         for xvalue in self.notesTimestamps:
             addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)

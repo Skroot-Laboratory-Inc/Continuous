@@ -22,7 +22,7 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
         self.indicatorColor = None
         self.closeToHarvest = False
         self.readyToHarvest = False
-        self.inoculatedTime = 1e10
+        self.inoculatedTime = 0
         self.hoursAfterInoculation = 2
         self.closeToHarvestThreshold = 0.005
         self.consecutivePoints = 8
@@ -38,17 +38,17 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
 
     def updateInoculation(self):
         self.inoculated = True
-        if len(self.time) > 0:
-            self.inoculatedTime = self.time[-1]
-        else:
-            self.inoculatedTime = 0
+        self.inoculatedTime = self.time[-1]
+        for Reader in self.AppModule.Readers:
+            Reader.setZeroPoint(len(self.time)-1)
         self.updateExperimentNotes('Inoculated')
         logger.info(f'Flask {self.readerNumber} is inoculated at time {self.time[-1]}')
 
     def checkHarvest(self):
-        if self.time[-1] > (self.inoculatedTime + self.hoursAfterInoculation):
-            if not self.readyToHarvest:
-                self.harvestAlgorithm(self.denoiseTime, self.denoiseFrequency)
+        if self.inoculated:
+            if self.time[-1] > (self.inoculatedTime + self.hoursAfterInoculation):
+                if not self.readyToHarvest:
+                    self.harvestAlgorithm(self.denoiseTime, self.denoiseFrequency)
 
     def harvestAlgorithm(self, time, frequency):
         ysmooth = savgol_filter(frequency, self.savgolPoints, 2)
