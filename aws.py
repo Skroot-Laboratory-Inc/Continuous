@@ -48,7 +48,7 @@ class AwsBoto3:
 
     def uploadFile(self, fileLocation, fileName, fileType):
         if not self.disabled:
-            text_notification.setText("Uploading log file...")
+            text_notification.setText("Uploading file...")
             try:
                 tags = {"response_email": "greenwalt@skrootlab.com"}
                 self.s3.upload_file(fileLocation, self.bucket, fileName,

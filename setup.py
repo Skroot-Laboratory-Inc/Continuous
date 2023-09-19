@@ -36,7 +36,7 @@ class Setup:
         menubar.add_cascade(label="Analysis", menu=settingsMenuAnalysis)
 
         settingsMenuDisplay = tk.Menu(menubar, tearoff=0)
-        settingsMenuDisplay.add_command(label="Frequency", command=lambda: self.Settings.freqToggleSetting("Frequency"))
+        settingsMenuDisplay.add_command(label="SGI", command=lambda: self.Settings.freqToggleSetting("SGI"))
         settingsMenuDisplay.add_command(label="Signal Strength",
                                         command=lambda: self.Settings.freqToggleSetting("Signal Strength"))
         settingsMenuDisplay.add_command(label="Signal Check",

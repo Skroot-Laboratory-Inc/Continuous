@@ -220,20 +220,20 @@ class MainShared:
             self.summaryPlot.tick_params(axis='both', which='minor', labelsize=7)
             self.summaryPlot.tick_params(axis='both', which='major', labelsize=7)
             self.ColorCycler.reset()
-            if self.freqToggleSet == "Frequency" or self.freqToggleSet == "Signal Check":
-                self.summaryPlot.set_ylabel('Change in Frequency (MHz)', fontsize=9)
-                self.summaryPlot.set_title(f'Resonant Frequency Summary', fontsize=9)
+            if self.freqToggleSet == "SGI" or self.freqToggleSet == "Signal Check":
+                self.summaryPlot.set_ylabel('Skroot Growth Index (SGI)', fontsize=9)
+                self.summaryPlot.set_title(f'Summary', fontsize=9)
                 for Reader in self.Readers:
                     readerColor = self.ColorCycler.getNext()
                     if self.denoiseSet:
-                        y = [yval - Reader.denoiseFrequencySmooth[0] for yval in Reader.denoiseFrequencySmooth]
+                        y = Reader.frequencyToIndex(Reader.denoiseFrequencySmooth)
                         self.summaryPlot.scatter(Reader.denoiseTimeSmooth, y, s=20, color=readerColor)
                     else:
-                        y = [yval - Reader.minFrequencySmooth[0] for yval in Reader.minFrequencySmooth]
+                        y = Reader.frequencyToIndex(Reader.minFrequencySmooth)
                         self.summaryPlot.scatter(Reader.time, y, s=20, color=readerColor)
             elif self.freqToggleSet == "Signal Strength":
                 self.summaryPlot.set_ylabel('Change in Signal Strength (dB)', fontsize=9)
-                self.summaryPlot.set_title(f'Signal Strength Summary', fontsize=9)
+                self.summaryPlot.set_title(f'Summary', fontsize=9)
                 for Reader in self.Readers:
                     readerColor = self.ColorCycler.getNext()
                     if self.denoiseSet:
