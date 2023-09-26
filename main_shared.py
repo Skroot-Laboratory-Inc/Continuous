@@ -92,8 +92,8 @@ class MainShared:
         self.Buttons = ButtonFunctions(self, self.location, self.root)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
-        if not self.DevMode.isDevMode:
-            self.aws = AwsBoto3(major_version, minor_version)
+        self.aws = AwsBoto3(major_version, minor_version)
+        self.aws.disabled = True
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.isDevMode = self.DevMode.isDevMode
 
@@ -124,7 +124,7 @@ class MainShared:
                                 continue
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
-                            Reader.ReaderDevMode.addDevPoint()
+                            Reader.addDevPoint()
                         if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -243,7 +243,7 @@ class MainShared:
                         y = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
                         self.summaryPlot.scatter(Reader.time, y, s=20, color=readerColor)
             self.summaryPlot.set_xlabel('Time (hours)', fontsize=7)
-            self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg')
+            self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg', dpi=500)
             try:
                 self.summaryCanvas.get_tk_widget().pack()
             except AttributeError:

@@ -7,24 +7,25 @@ import pandas
 from scipy.signal import savgol_filter
 
 from analysis import Analysis
+from plotting import Plotting
 
 
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
-        self.fakeServer = True
+        self.tryDevMode = True
+        self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:
             self.isDevMode = False
         self.startTime = 400
-        self.scanRate = 0.04
+        self.scanRate = 0.2
         self.mode = "GUI"
         # self.mode = "Analysis"
 
 
-class ReaderDevMode(Analysis):
+class ReaderDevMode(Plotting):
     def __init__(self, AppModule, readerNumber):
         self.DevMode = AppModule.DevMode
         if self.DevMode.isDevMode:
@@ -42,14 +43,16 @@ class ReaderDevMode(Analysis):
             self.loadDevMode()
 
     def loadDevMode(self):
+        self.time = self.devTime[0:self.DevMode.startTime]
+
         self.minDb = self.devDb[0:self.DevMode.startTime]
         self.minFrequency = self.devFrequency[0:self.DevMode.startTime]
+
         self.minDbSpline = self.devDb[0:self.DevMode.startTime]
         self.minFrequencySpline = self.devFrequency[0:self.DevMode.startTime]
-        self.time = self.devTime[0:self.DevMode.startTime]
+
         self.minDbSmooth = self.devDb[0:self.DevMode.startTime]
         self.minFrequencySmooth = self.devFrequency[0:self.DevMode.startTime]
-        self.time = self.devTime[0:self.DevMode.startTime]
 
     def addDevPoint(self):
         if self.DevMode.mode == "Analysis":
@@ -63,10 +66,12 @@ class ReaderDevMode(Analysis):
                 nextPointIndex = len(self.time)
                 self.addDevScan(self.devFiles[nextPointIndex])
                 shutil.copy(self.devFiles[nextPointIndex], f'{self.savePath}/{self.scanNumber}.csv')
-                self.minFrequency.append(self.devFrequency[nextPointIndex])
                 self.time.append(self.devTime[nextPointIndex])
                 self.timestamp.append(datetime.now())
+
+                self.minFrequency.append(self.devFrequency[nextPointIndex])
                 self.minDb.append(self.devDb[nextPointIndex])
+
                 self.minFrequencySpline.append(self.devFrequency[nextPointIndex])
                 self.minDbSpline.append(self.devDb[nextPointIndex])
                 self.minFrequencySmooth.append(self.devFrequency[nextPointIndex])

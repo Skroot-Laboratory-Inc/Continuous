@@ -14,7 +14,7 @@ import paramiko
 from scp import SCPClient
 
 
-class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
+class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, Vna):
         self.scp = None
@@ -37,11 +37,10 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         self.startFreq = startFreq
         self.stopFreq = stopFreq
         self.Vna = Vna
-        self.Vna = Vna
         self.initializeReaderFolders(savePath)
-        self.ReaderDevMode = ReaderDevMode(AppModule, readerNumber)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
         Analysis.__init__(self, savePath, 41, 61)
+        ReaderDevMode.__init__(self, AppModule, readerNumber)
         ContaminationAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer, readerNumber)
         HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
@@ -77,22 +76,14 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         except:
             logger.exception("Failed to send files to server")
 
-    def addToPdf(self, pdf, currentX, currentY, labelWidth, labelHeight, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeText(f"Reader {self.readerNumber}", currentX, currentY, labelWidth, labelHeight, 16, True)
-        currentY += labelHeight
-        pdf.placePlot(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
-                      plotHeight)
+    def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
+        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
+                       plotHeight)
         currentX += plotWidth
-        currentY -= (7 * plotHeight) / 8
-        currentX -= notesWidth
-        currentY -= paddingY
-        if self.harvested == False:
+        if not self.harvested:
             pdf.drawCircle(currentX, currentY, 0.02, 'green')
         else:
             pdf.drawCircle(currentX, currentY, 0.02, 'red')
-        currentY += (7 * plotHeight) / 8
-        currentX += notesWidth
-        currentY += paddingY
         return currentX, currentY
 
     def updateEmailReceiver(self, receiver_email):
@@ -169,7 +160,7 @@ class Reader(Plotting, ContaminationAlgorithm, HarvestAlgorithm):
         pass
 
 
-class FoamingReader(Reader, FoamingAlgorithm):
+class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders,
                  nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, Vna):
         self.scanMagnitude = []
@@ -196,6 +187,7 @@ class FoamingReader(Reader, FoamingAlgorithm):
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule)
         Analysis.__init__(self, savePath, 11, 21)
         FoamingAlgorithm.__init__(self, airFreq, waterFreq, waterShift, AppModule, self.Emailer)
+        ReaderDevMode.__init__(self, AppModule, readerNumber)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
 
     def sendFilesToServer(self):
@@ -208,11 +200,9 @@ class FoamingReader(Reader, FoamingAlgorithm):
         self.sendToServer(f'{self.savePath}/secondAxis.csv')
         self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
 
-    def addToPdf(self, pdf, currentX, currentY, labelWidth, labelHeight, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeText(f"Reader {self.readerNumber}", currentX, currentY, labelWidth, labelHeight, 16, True)
-        currentY += labelHeight
-        pdf.placePlot(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
-                      plotHeight)
+    def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
+        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
+                       plotHeight)
         currentX += plotWidth
         return currentX, currentY
 
