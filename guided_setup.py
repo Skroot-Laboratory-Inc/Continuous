@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
+import pyautogui
 
 
 def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle):
@@ -132,8 +133,18 @@ class SetupForm:
                     incrementalNumber += 1
                 self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()} ({incrementalNumber})"
             self.month, self.day, self.year, self.vesselType, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.vesselTypeEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
+            self.takeScreenshot()
             self.window.destroy()
         else:
             tk.messagebox.showerror("Incorrect Formatting", "One (or more) of the values entered is not formatted "
                                                             "properly")
             self.window.tkraise()
+
+    def takeScreenshot(self):
+        x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
+        w, h = self.window.winfo_width(), self.window.winfo_height()
+        if not os.path.exists(os.path.basename(self.savePath)):
+            os.mkdir(os.path.basename(self.savePath))
+        if not os.path.exists(self.savePath):
+            os.mkdir(self.savePath)
+        pyautogui.screenshot(f'{self.savePath}\\setupForm.png', region=(x, y, w, round(h*0.75)))

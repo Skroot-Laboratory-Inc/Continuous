@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 
 import logger
 from analysis import Analysis
+from dev import ReaderDevMode
 from notes import ExperimentNotes
 
 
@@ -78,7 +79,7 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.addSecondAxis(self.frequencyPlot)
         self.frequencyPlot.set_xlabel('Time (hours)')
         self.frequencyPlot.set_facecolor(self.backgroundColor)
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
+        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
         if self.frequencyCanvas is None:
             self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
         self.frequencyCanvas.draw()
@@ -105,7 +106,7 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.frequencyPlot.set_ylim([self.waterFreq - 2, self.airFreq + 2])
         self.frequencyPlot.set_xlabel('Time (hours)')
         self.frequencyPlot.set_facecolor(self.backgroundColor)
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
+        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
         if self.frequencyCanvas is None:
             self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
         self.frequencyCanvas.draw()
@@ -122,7 +123,7 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot.scatter(self.scanFrequency, self.scanMagnitude, s=20, color='black')
         self.frequencyPlot.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], s=30, color='red')
         self.frequencyPlot.set_xlabel('Frequency (MHz)')
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
+        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
         if self.frequencyCanvas is None:
             self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
         self.frequencyCanvas.draw()
