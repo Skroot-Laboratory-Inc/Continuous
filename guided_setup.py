@@ -143,8 +143,8 @@ class SetupForm:
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
         w, h = self.window.winfo_width(), self.window.winfo_height()
-        if not os.path.exists(os.path.basename(self.savePath)):
-            os.mkdir(os.path.basename(self.savePath))
+        if not os.path.exists(os.path.dirname(self.savePath)):
+            os.mkdir(os.path.dirname(self.savePath))
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
         pyautogui.screenshot(f'{self.savePath}\\setupForm.png', region=(x, y, w, round(h*0.75)))
