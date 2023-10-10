@@ -72,7 +72,8 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 if self.sshConnection is None:
                     logger.info("SSH connection has not established")
                 elif self.scp is not None:
-                    self.scp.put(files_to_send, "Documents/")
+                    self.scp.put(files_to_send, self.serverSavePath)
+
         except:
             logger.exception("Failed to send files to server")
 
@@ -125,7 +126,13 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             else:
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
-            self.initializeSSHConnection("192.168.86.26", "22", "adamrice", "skroot")
+            self.initializeSSHConnection("192.168.0.245", "22", "skrootbot", "Skroot01")
+            self.serverSavePath = f'Data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
+            serverSavePath_ = self.serverSavePath.replace('/', '\\')
+            stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
+            stdout, stderr = stdout_.read(), stderr_.read()
+            if stderr != b'':
+                logger.exception(f"Could not create folder after connecting to the server: {stderr}")
         self.createFolders()
 
     def initializeSSHConnection(self, hostname, port, username, password):
