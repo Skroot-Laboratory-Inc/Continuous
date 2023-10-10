@@ -78,7 +78,13 @@ class AwsBoto3:
                 filename = item['Key']
                 if filename == 'software-releases/':
                     continue
-                tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
+                try:
+                    tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
+                except botocore.exceptions.ClientError:
+                    # This means it's an R&D update and we are not using an R&D profile
+                    continue
+                except:
+                    logger.exception("failed to get tags of software update file")
                 majorVersion = float(tags["TagSet"][0]['Value'])
                 minorVersion = int(tags["TagSet"][1]['Value'])
 
