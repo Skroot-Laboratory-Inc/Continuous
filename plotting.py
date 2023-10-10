@@ -8,7 +8,6 @@ from matplotlib.figure import Figure
 
 import logger
 from analysis import Analysis
-from dev import ReaderDevMode
 from notes import ExperimentNotes
 
 

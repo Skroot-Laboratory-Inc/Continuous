@@ -93,7 +93,6 @@ class MainShared:
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
         self.aws = AwsBoto3(major_version, minor_version)
-        self.aws.disabled = True
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.isDevMode = self.DevMode.isDevMode
 
