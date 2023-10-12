@@ -11,7 +11,6 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 from zipfile import ZipFile
 
-
 import logger
 import setup
 import text_notification
@@ -59,6 +58,7 @@ class MainShared:
         if not os.path.exists(self.baseSavePath):
             os.mkdir(self.baseSavePath)
         logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
+        self.version = f'{major_version}.{minor_version}'
         self.numReaders = None
         self.savePath = ''
         self.cellApp = False
@@ -168,8 +168,10 @@ class MainShared:
             with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
                 file.extractall()
             if self.os == "linux":
-                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop', rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
-            text_notification.setText(f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
+                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
+                                rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
+            text_notification.setText(
+                f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
         except:
             logger.exception("failed to update software")
 
@@ -265,6 +267,8 @@ class MainShared:
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
+        versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
+        versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
         self.ports = []
