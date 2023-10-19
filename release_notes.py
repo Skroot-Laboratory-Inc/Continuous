@@ -7,9 +7,10 @@ class ReleaseNotes:
         self.releaseNotes = releaseNotes
         self.windowRoot = tk.Toplevel(root, bg='white', borderwidth=0, pady=25, padx=25)
         self.windowRoot.maxsize(width=450, height=550)
-        scrollbar = tk.Scrollbar(self.windowRoot, orient=tk.VERTICAL, bg='white', borderwidth=0)
+        scrollbar = tk.Scrollbar(self.windowRoot, orient=tk.VERTICAL)
         self.windowCanvas = tk.Canvas(
-            self.windowRoot, bg='white', yscrollcommand=scrollbar.set, width=400, height=500, borderwidth=0, highlightthickness=0
+            self.windowRoot, bg='white', yscrollcommand=scrollbar.set, width=400, height=500, borderwidth=0,
+            highlightthickness=0
         )
         self.window = tk.Frame(self.windowRoot, bg='white', borderwidth=0)
         self.windowCanvas.create_window(0, 0, anchor="nw", window=self.window)
@@ -32,40 +33,43 @@ class ReleaseNotes:
         tk.Label(self.window, text="Release Notes", bg='white', font='Helvetica 14 bold').grid(row=row, column=0,
                                                                                                sticky='w')
         row += 1
-        ttk.Separator(self.window, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky='ew')
-        row += 1
+        row = self.createSeparatorLine(row)
         for version, notes in self.releaseNotes.items():
             tk.Label(self.window, text=version, bg='white', font='Helvetica 12 bold').grid(row=row, column=0,
                                                                                            sticky='w')
             row += 1
-            if "features" in notes:
-                tk.Label(self.window, text="New Features:", bg='white', font='Helvetica 10 bold').grid(row=row,
-                                                                                                       column=0,
-                                                                                                       sticky='w')
-                row += 1
-                for index, feature in notes['features'].items():
-                    tk.Label(self.window, text=f"- {feature}", bg='white', font='Helvetica 10').grid(row=row, column=0,
-                                                                                                     sticky='w')
-                    row += 1
-                tk.Label(self.window, text='', bg='white', font='Helvetica 10').grid(row=row, column=0, sticky='w')
-                row += 1
-            if "bugfixes" in notes:
-                tk.Label(self.window, text="Bug Fixes:", bg='white', font='Helvetica 10 bold').grid(row=row, column=0,
-                                                                                                    sticky='w')
-                row += 1
-                for index, bugfix in notes['bugfixes'].items():
-                    tk.Label(self.window, text=f"- {bugfix}", bg='white', font='Helvetica 10').grid(row=row, column=0,
-                                                                                                    sticky='w')
-                    row += 1
-                tk.Label(self.window, text='', bg='white', font='Helvetica 10').grid(row=row, column=0, sticky='w')
-                row += 1
-            ttk.Separator(self.window, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky='ew')
-            row += 1
+            row = self.createFeaturesSection(notes, row)
+            row = self.createBugFixesSection(notes, row)
+            row = self.createSeparatorLine(row)
         return row
 
+    def createFeaturesSection(self, notes, row):
+        if "features" in notes:
+            tk.Label(self.window, text="New Features:", bg='white', font='Helvetica 10 bold').grid(row=row,
+                                                                                                   column=0,
+                                                                                                   sticky='w')
+            row += 1
+            for index, feature in notes['features'].items():
+                tk.Label(self.window, text=f"- {feature}", bg='white', font='Helvetica 10').grid(row=row, column=0,
+                                                                                                 sticky='w')
+                row += 1
+            row = self.createSpacer(row)
+            return row
+
+    def createBugFixesSection(self, notes, row):
+        if "bugfixes" in notes:
+            tk.Label(self.window, text="Bug Fixes:", bg='white', font='Helvetica 10 bold').grid(row=row, column=0,
+                                                                                                sticky='w')
+            row += 1
+            for index, bugfix in notes['bugfixes'].items():
+                tk.Label(self.window, text=f"- {bugfix}", bg='white', font='Helvetica 10').grid(row=row, column=0,
+                                                                                                sticky='w')
+                row += 1
+            row = self.createSpacer(row)
+            return row
+
     def createDownloadAndCancelButtons(self, row):
-        tk.Label(self.window, text='', bg='white', font='Helvetica 10').grid(row=row, column=0, sticky='w')
-        row += 1
+        row = self.createSpacer(row)
         downloadButton = ttk.Button(self.window, text="Download", command=lambda: self.setDownload(True))
         downloadButton['style'] = 'W.TButton'
         downloadButton.grid(row=row, column=0, sticky='w')
@@ -76,10 +80,20 @@ class ReleaseNotes:
     def setDownload(self, value):
         self.download = value
         self.windowRoot.destroy()
+
     def on_mousewheel(self, event):
         scroll = -1 if event.delta > 0 else 1
         self.windowCanvas.yview_scroll(scroll, "units")
 
+    def createSpacer(self, row):
+        tk.Label(self.window, text='', bg='white', font='Helvetica 10').grid(row=row, column=0, sticky='w')
+        row += 1
+        return row
+
+    def createSeparatorLine(self, row):
+        ttk.Separator(self.window, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky='ew')
+        row += 1
+        return row
 
 # root = tk.Tk()
 # ReleaseNotes({
