@@ -1,0 +1,11 @@
+{
+  "v1.1.2": {
+    "features": {
+      "1": "Updated inoculation to zero out y-axis",
+      "2": "Updated plotting to use Skroot Growth Index (SGI)"
+    },
+    "bugfixes": {
+      "1": "Fixed AWS Integrations"
+    }
+  }
+}

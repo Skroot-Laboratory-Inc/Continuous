@@ -14,13 +14,13 @@ from zipfile import ZipFile
 import logger
 import setup
 import text_notification
-from aws import AwsBoto3
 from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
 from pdf import generatePdf
 from server import ServerFileShare
 from settings import Settings
+from software_update import SoftwareUpdate
 from timer import RunningTimer
 
 mpl.use('TkAgg')
@@ -92,7 +92,7 @@ class MainShared:
         self.Buttons = ButtonFunctions(self, self.location, self.root)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
-        self.aws = AwsBoto3(major_version, minor_version)
+        self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version, self.location)
         self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.isDevMode = self.DevMode.isDevMode
 
@@ -157,36 +157,39 @@ class MainShared:
 
     def awsCheckSoftwareUpdates(self):
         if not self.DevMode.isDevMode:
-            newestVersion, updateRequired = self.aws.checkForSoftwareUpdates()
+            newestVersion, updateRequired = self.SoftwareUpdate.checkForSoftwareUpdates()
             if updateRequired:
                 text_notification.setText(
                     f"Newer software available v{newestVersion} consider upgrading to use new features")
 
     def downloadSoftwareUpdate(self):
         try:
-            self.aws.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
-            with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
-                file.extractall()
-            if self.os == "linux":
-                shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
-                                rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
-            text_notification.setText(
-                f"New software version updated v{self.aws.newestMajorVersion}.{self.aws.newestMinorVersion}")
+            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
+            if downloadUpdate:
+                with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
+                    file.extractall()
+                if self.os == "linux":
+                    shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
+                                    rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
+                text_notification.setText(
+                    f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
+            else:
+                text_notification.setText("Software update aborted.")
         except:
             logger.exception("failed to update software")
 
     def awsUploadPdfFile(self):
-        if not self.DevMode.isDevMode and not self.aws.disabled:
-            if self.aws.dstPdfName is None:
-                self.aws.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
+        if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
+            if self.SoftwareUpdate.dstPdfName is None:
+                self.SoftwareUpdate.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
             else:
                 if (self.Readers[0].scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                    self.aws.uploadFile(f'{self.savePath}/Summary.pdf', self.aws.dstPdfName, 'application/pdf')
+                    self.SoftwareUpdate.uploadFile(f'{self.savePath}/Summary.pdf', self.SoftwareUpdate.dstPdfName, 'application/pdf')
                     self.awsLastUploadTime = self.Readers[0].scanNumber
 
     def awsUploadLogFile(self):
-        if not self.DevMode.isDevMode and not self.aws.disabled:
-            self.aws.uploadFile(f'{self.desktop}/Calibration/log.txt', self.aws.dstLogName, 'text/plain')
+        if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
+            self.SoftwareUpdate.uploadFile(f'{self.desktop}/Calibration/log.txt', self.SoftwareUpdate.dstLogName, 'text/plain')
             text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
             return True
         return False

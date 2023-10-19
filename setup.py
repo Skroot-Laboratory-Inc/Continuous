@@ -14,7 +14,7 @@ class Setup:
     def createMenus(self):
         self.AppModule.awsCheckSoftwareUpdates()
         menubar = tk.Menu(self.root)
-        if self.AppModule.aws.newestZipVersion:
+        if self.AppModule.SoftwareUpdate.newestZipVersion:
             settingsMenuSoftware = tk.Menu(menubar, tearoff=0)
             settingsMenuSoftware.add_command(label="Update", command=lambda: self.AppModule.downloadSoftwareUpdate())
             menubar.add_cascade(label="Software", menu=settingsMenuSoftware)
