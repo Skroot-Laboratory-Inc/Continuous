@@ -1,4 +1,15 @@
 {
+  "v1.2.0": {
+    "features": {
+      "1": "Added release notes dialog to software updates.",
+      "2": "Added version to the bottom left of the screen.",
+      "3": "Separated software pipelines for production.",
+      "4": "Summary pdf updated to have a summary page."
+    },
+    "bugfixes": {
+      "1": "Fixed extra file creation."
+    }
+  },
   "v1.1.2": {
     "features": {
       "1": "Updated inoculation to zero out y-axis",
