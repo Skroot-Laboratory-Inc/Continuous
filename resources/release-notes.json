@@ -1,4 +1,10 @@
 {
+  "v1.2.1": {
+    "bugfixes": {
+      "1": "Fixed a bug causing startup crashes.",
+      "2": "Fixed a bug with a deprecated library causing instability."
+    }
+  },
   "v1.2.0": {
     "features": {
       "1": "Added release notes dialog to software updates.",

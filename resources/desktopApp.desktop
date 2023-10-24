@@ -1,7 +1,7 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Name=Skroot App
-Exec=/usr/bin/python3 /home/skroot/.local/DesktopApp/main_cell.py
+Exec=bash -c "cd /home/skroot/.local/DesktopApp && /usr/bin/python3 main_cell.py"
 Icon=/home/skroot/.local/DesktopApp/resources/squareLogo.PNG
 Version=v0.0.0
 Terminal=false
