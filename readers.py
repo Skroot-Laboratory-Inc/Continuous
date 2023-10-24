@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import socket
 
 import logger
 import text_notification
@@ -73,7 +74,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                     logger.info("SSH connection has not established")
                 elif self.scp is not None:
                     self.scp.put(files_to_send, self.serverSavePath)
-
         except:
             logger.exception("Failed to send files to server")
 

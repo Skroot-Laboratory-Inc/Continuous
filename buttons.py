@@ -18,7 +18,7 @@ class ButtonFunctions:
     def __init__(self, AppModule, location, root):
         self.root = root
         image = Image.open(rf"{location}/resources/help.png")
-        resizedImage = image.resize((15, 15), Image.ANTIALIAS)
+        resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
         self.Vnas = []
