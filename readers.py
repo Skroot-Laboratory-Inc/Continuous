@@ -18,6 +18,7 @@ from scp import SCPClient
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, Vna):
+        self.sshDisabled = False
         self.scp = None
         self.sshConnection = None
         self.scanMagnitude = []
@@ -69,16 +70,14 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             if self.AppModule.os == "windows":
                 for file in files_to_send:
                     self.sendToServer(file)
-            elif self.AppModule.os == "linux":
-                if self.sshConnection is None:
-                    logger.info("SSH connection has not established")
-                elif self.scp is not None:
-                    self.scp.put(files_to_send, self.serverSavePath)
+            elif self.AppModule.os == "linux" and not self.sshDisabled:
+                self.scp.put(files_to_send, self.serverSavePath)
         except:
             logger.exception("Failed to send files to server")
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
+        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
+                       plotWidth,
                        plotHeight)
         currentX += plotWidth
         if not self.harvested:
@@ -127,12 +126,13 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
             self.initializeSSHConnection("192.168.0.245", "22", "skrootbot", "Skroot01")
-            self.serverSavePath = f'Data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
-            serverSavePath_ = self.serverSavePath.replace('/', '\\')
-            stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
-            stdout, stderr = stdout_.read(), stderr_.read()
-            if stderr != b'':
-                logger.exception(f"Could not create folder after connecting to the server: {stderr}")
+            if not self.sshDisabled:
+                self.serverSavePath = f'Data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
+                serverSavePath_ = self.serverSavePath.replace('/', '\\')
+                stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
+                stdout, stderr = stdout_.read(), stderr_.read()
+                if stderr != b'':
+                    logger.exception(f"Could not create folder after connecting to the server: {stderr}")
         self.createFolders()
 
     def initializeSSHConnection(self, hostname, port, username, password):
@@ -146,6 +146,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             self.scp = SCPClient(self.sshConnection.get_transport())
             logger.info(f"Connection Established with {username}@{hostname}:{port}")
         except:
+            self.sshDisabled = True
             logger.exception("There was an error SSH connecting to the server")
 
     def createFolders(self):
@@ -208,7 +209,8 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY, plotWidth,
+        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
+                       plotWidth,
                        plotHeight)
         currentX += plotWidth
         return currentX, currentY
