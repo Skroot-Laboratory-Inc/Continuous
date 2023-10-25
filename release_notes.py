@@ -54,7 +54,7 @@ class ReleaseNotes:
                                                                                                  sticky='w')
                 row += 1
             row = self.createSpacer(row)
-            return row
+        return row
 
     def createBugFixesSection(self, notes, row):
         if "bugfixes" in notes:
@@ -66,7 +66,7 @@ class ReleaseNotes:
                                                                                                 sticky='w')
                 row += 1
             row = self.createSpacer(row)
-            return row
+        return row
 
     def createDownloadAndCancelButtons(self, row):
         row = self.createSpacer(row)
