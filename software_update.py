@@ -64,8 +64,7 @@ class SoftwareUpdate(AwsBoto3):
                         majorVersion == self.newestMajorVersion and minorVersion > self.newestMinorVersion):
                     self.updateNewestVersion(majorVersion, minorVersion, filename)
                     return f"{self.newestMajorVersion}.{self.newestMinorVersion}", True
-                else:
-                    return f"{self.newestMajorVersion}.{self.newestMinorVersion}", False
+            return f"{self.newestMajorVersion}.{self.newestMinorVersion}", False
         else:
             return "", False
 
