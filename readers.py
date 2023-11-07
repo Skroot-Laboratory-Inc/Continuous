@@ -41,7 +41,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.Vna = Vna
         self.initializeReaderFolders(savePath)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
-        Analysis.__init__(self, savePath, 41, 61)
+        Analysis.__init__(self, self.savePath, 41, 61)
         ReaderDevMode.__init__(self, AppModule, readerNumber)
         ContaminationAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer, readerNumber)
         HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
