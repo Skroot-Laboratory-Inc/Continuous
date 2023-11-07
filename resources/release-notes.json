@@ -1,4 +1,9 @@
 {
+  "v1.2.3": {
+    "other": {
+      "1": "Fixed a bug that errored on more than 1 software release uploaded "
+    }
+  },
   "v1.2.2": {
     "bugfixes": {
       "1": "Fixed a bug causing the file save location to be incorrect."
