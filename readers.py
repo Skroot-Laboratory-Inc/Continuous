@@ -193,7 +193,7 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.totalNumberOfReaders = totalNumberOfReaders
         self.initializeReaderFolders(savePath)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule)
-        Analysis.__init__(self, savePath, 11, 21)
+        Analysis.__init__(self, self.savePath, 11, 21)
         FoamingAlgorithm.__init__(self, airFreq, waterFreq, waterShift, AppModule, self.Emailer)
         ReaderDevMode.__init__(self, AppModule, readerNumber)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
