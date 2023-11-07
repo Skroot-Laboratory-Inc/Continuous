@@ -1,4 +1,9 @@
 {
+  "v1.2.2": {
+    "bugfixes": {
+      "1": "Fixed a bug causing the file save location to be incorrect."
+    }
+  },
   "v1.2.1": {
     "bugfixes": {
       "1": "Fixed a bug causing startup crashes.",
