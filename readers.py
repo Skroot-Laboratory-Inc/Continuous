@@ -127,7 +127,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         if self.AppModule.os == "linux":
             self.initializeSSHConnection("192.168.0.245", "22", "skrootbot", "Skroot01")
             if not self.sshDisabled:
-                self.serverSavePath = f'Data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
+                self.serverSavePath = f'D:/data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
                 serverSavePath_ = self.serverSavePath.replace('/', '\\')
                 stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
                 stdout, stderr = stdout_.read(), stderr_.read()
