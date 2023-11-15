@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 
 import logger
 import text_notification
+from sib import Sib
 from vna import VnaScanning
 from information_panel import InformationPanel
 
@@ -21,7 +22,7 @@ class ButtonFunctions:
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
-        self.Vnas = []
+        self.ReaderInterfaces = []
 
     def createStartButton(self):
         self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start", command=lambda: self.startFunc())
@@ -41,7 +42,7 @@ class ButtonFunctions:
         self.startButton.destroy()
         if not self.AppModule.ServerFileShare.disabled and self.AppModule.os == "windows":
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
-        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.Vnas)
+        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.ReaderInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         if self.AppModule.cellApp:
@@ -88,8 +89,19 @@ class ButtonFunctions:
                 port = self.findPort(readerNumber)
                 if not os.path.exists(os.path.dirname(calFileLocation)):
                     os.mkdir(os.path.dirname(calFileLocation))
-                Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
-                self.Vnas.append(Vna)
+                try:
+                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
+                    success = sib.performHandshake()
+                    if success:
+                        self.ReaderInterfaces.append(sib)
+                    else:
+                        sib.close()
+                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                        self.ReaderInterfaces.append(Vna)
+                except:
+                    logger.exception("SIB Handshake failed - can ignore if VNA is connected")
+                    Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                    self.ReaderInterfaces.append(Vna)
                 text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
                 logger.info(f"Calibration complete for reader {readerNumber}")
@@ -107,8 +119,19 @@ class ButtonFunctions:
         for readerNumber in range(1, numReaders + 1):
             port = self.findPort(readerNumber)
             calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-            Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, False)
-            self.Vnas.append(Vna)
+            try:
+                sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
+                success = sib.performHandshake()
+                if success:
+                    self.ReaderInterfaces.append(sib)
+                else:
+                    sib.close()
+                    Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                    self.ReaderInterfaces.append(Vna)
+            except:
+                logger.exception("SIB Handshake failed - can ignore if VNA is connected")
+                Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                self.ReaderInterfaces.append(Vna)
         self.AppModule.foundPorts = True
         self.createStartButton()
 
@@ -120,7 +143,7 @@ class ButtonFunctions:
                 time.sleep(2)
                 if self.AppModule.os == "windows":
                     ports = list_ports.comports()
-                    portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
+                    portNums = [int(ports[i].device[3:]) for i in range(len(ports))]
                     portList = [num for num in portNums if num not in self.AppModule.ports]
                     if portList:
                         port = f'COM{max(portList)}'

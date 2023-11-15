@@ -116,9 +116,8 @@ class MainShared:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
-                            self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.Vna.takeScan(
-                                f'{Reader.savePath}/{Reader.scanNumber}.csv', Reader.startFreq, Reader.stopFreq,
-                                Reader.nPoints)
+                            self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.ReaderInterface.takeScan(
+                                f'{Reader.savePath}/{Reader.scanNumber}.csv')
                             if not success:
                                 continue
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
@@ -264,7 +263,7 @@ class MainShared:
     def resetRun(self):
         for Reader in self.Readers:
             try:
-                Reader.Vna.closeSocket()
+                Reader.ReaderInterface.close()
             except AttributeError:
                 Reader.socket = None
                 logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
@@ -275,7 +274,7 @@ class MainShared:
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
         self.ports = []
-        self.Buttons.Vnas = []
+        self.Buttons.ReaderInterfaces = []
         self.Readers = []
         self.Buttons.guidedSetupButton.invoke()
 

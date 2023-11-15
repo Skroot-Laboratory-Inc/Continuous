@@ -3,6 +3,9 @@ import os
 import shutil
 import socket
 
+import paramiko
+from scp import SCPClient
+
 import logger
 import text_notification
 from algorithms import ContaminationAlgorithm, FoamingAlgorithm, HarvestAlgorithm
@@ -10,14 +13,12 @@ from analysis import Analysis
 from dev import ReaderDevMode
 from emailer import Emailer
 from plotting import Plotting
-
-import paramiko
-from scp import SCPClient
+from reader_interface import ReaderInterface
 
 
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
-                 scanRate, savePath, readerColor, Vna):
+                 scanRate, savePath, readerColor, ReaderInterface: ReaderInterface):
         self.sshDisabled = False
         self.scp = None
         self.sshConnection = None
@@ -34,11 +35,11 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.AppModule = AppModule
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
-        self.nPoints = nPoints
         self.scanRate = scanRate
-        self.startFreq = startFreq
-        self.stopFreq = stopFreq
-        self.Vna = Vna
+        ReaderInterface.setNumberOfPoints(nPoints)
+        ReaderInterface.setStartFrequency(startFreq)
+        ReaderInterface.setStopFrequency(stopFreq)
+        self.ReaderInterface = ReaderInterface
         self.initializeReaderFolders(savePath)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
         Analysis.__init__(self, self.savePath, 41, 61)
@@ -170,7 +171,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
 
 class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders,
-                 nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, Vna):
+                 nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, ReaderInterface):
         self.scanMagnitude = []
         self.scanFrequency = []
         self.scanNumber = 100001
@@ -179,16 +180,15 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.waterShift = waterShift
         self.airFreq = airFreq
         self.waterFreq = waterFreq
-        self.nPoints = nPoints
         self.scanRate = scanRate
-        self.startFreq = startFreq
-        self.stopFreq = stopFreq
         self.calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         self.Emailer = Emailer('', f'Foaming Reader {readerNumber}')
         self.Emailer.setMessageFoam()
         self.AppModule = AppModule
-        self.Vna = Vna
-        self.Vna = Vna
+        ReaderInterface.setNumberOfPoints(nPoints)
+        ReaderInterface.setStartFrequency(startFreq)
+        ReaderInterface.setStopFrequency(stopFreq)
+        self.ReaderInterface = ReaderInterface
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
         self.initializeReaderFolders(savePath)
