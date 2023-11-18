@@ -115,7 +115,7 @@ class VnaScanning(ReaderInterface):
             calibrationPhaseOffset = find_nearest(frequency[i], self.calibrationFrequency, self.calibrationPhase)
             calibratedMagnitude.append(
                 -(convertLinearValueToDb(magnitude[i]) - convertLinearValueToDb(calibrationMagnitudeOffset)))
-            calibratedPhase.append(convertLinearValueToDb(phase[i]) - convertLinearValueToDb(calibrationPhaseOffset))
+            calibratedPhase.append(phase[i] - calibrationPhaseOffset)
         return calibratedMagnitude, calibratedPhase
 
 
