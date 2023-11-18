@@ -46,6 +46,6 @@ class AppModule(MainShared):
             self.Buttons.createStartButton()
 
 
-major_version = 1.2
-minor_version = 3
+major_version = 1.3
+minor_version = 0
 AppModule(f"Version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

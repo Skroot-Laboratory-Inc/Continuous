@@ -1,7 +1,14 @@
 {
-  "v1.2.3": {
+  "v1.3.0": {
+    "features": {
+      "1": "disabled contamination checking algorithm.",
+      "2": "Added linux server fileshare."
+    },
+    "bugfixes": {
+      "1": "Fixed a bug that errored on more than 1 software release uploaded."
+    },
     "other": {
-      "1": "Fixed a bug that errored on more than 1 software release uploaded "
+      "1": "Added SIB support for on premise testing."
     }
   },
   "v1.2.2": {
