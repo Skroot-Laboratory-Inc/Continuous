@@ -34,17 +34,16 @@ class VnaScanning(ReaderInterface):
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
-            self.AppModule.currentlyScanning = False
             return frequency, calibratedMagnitude, calibratedPhase, True
         except IndexError:
             # Vna returned an empty list - because it's not connected
             text_notification.setText(f"Connection lost to Reader {self.readerNumber}, check USB connection")
             logger.exception(f"Lost reader connection for reader {self.readerNumber}")
-            self.AppModule.currentlyScanning = False
         except:
             logger.exception("Failed to take scan")
-            self.AppModule.currentlyScanning = False
             return [], [], [], False
+        finally:
+            self.AppModule.currentlyScanning = False
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
@@ -57,7 +56,8 @@ class VnaScanning(ReaderInterface):
             return True
         except IndexError:
             # Vna returned an empty list - because it's not connected
-            text_notification.setText(f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
+            text_notification.setText(
+                f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
             logger.exception(f"Lost reader connection for reader {self.readerNumber}")
             return False
         except:
@@ -87,6 +87,7 @@ class VnaScanning(ReaderInterface):
         self.socket.close()
 
     """ End of required implementations, VNA specific below"""
+
     def readVnaValues(self, start_freq, stop_freq, num_points):
         khz2dds = 10737.4182
         df = (stop_freq - start_freq) * 1.0 / num_points

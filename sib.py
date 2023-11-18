@@ -41,17 +41,17 @@ class Sib(ReaderInterface):
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, [])
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
-            self.AppModule.currentlyScanning = False
             return frequency, magnitude, [], True
         except sibcontrol.SIBException:
             text_notification.setText("Failed to perform sweep for reader, check reader connection.")
             logger.exception("Failed to perform sweep for reader, check reader connection.")
-            self.AppModule.currentlyScanning = False
             return [], [], [], False
+        finally:
+            self.AppModule.currentlyScanning = False
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
-            self.sib.start_MHzv = 0.1
+            self.sib.start_MHz = 0.1
             self.sib.stop_MHz = 350
             self.sib.num_pts = 10000
             while self.AppModule.currentlyScanning:
@@ -69,11 +69,13 @@ class Sib(ReaderInterface):
             text_notification.setText("Failed to perform calibration.")
             logger.exception("Failed to perform calibration.")
             return False
+        finally:
+            self.AppModule.currentlyScanning = False
 
     def setStartFrequency(self, startFreqMHz) -> bool:
         if 0 <= startFreqMHz <= 350 and startFreqMHz < self.stopFreqMHz:
             self.startFreqMHz = startFreqMHz
-            self.sib.start_MHzv = startFreqMHz
+            self.sib.start_MHz = startFreqMHz
             return True
         else:
             text_notification.setText(f"Invalid value, start frequency must be between 0 and 350."
