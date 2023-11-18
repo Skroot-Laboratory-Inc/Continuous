@@ -134,7 +134,7 @@ class MainShared:
                             deleteScanFile(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         Reader.printScanFreq()
                         Reader.checkFoaming()
-                        Reader.checkContamination()
+                        # Reader.checkContamination()
                         Reader.checkHarvest()
                     except:
                         logger.exception(f'Unchecked error, Reader {Reader.readerNumber} failed to take scan')
