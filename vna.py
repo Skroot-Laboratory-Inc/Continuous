@@ -27,7 +27,6 @@ class VnaScanning(ReaderInterface):
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
-            print("taking scan")
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
@@ -85,7 +84,6 @@ class VnaScanning(ReaderInterface):
         self.nPoints = nPoints
 
     def close(self):
-        print("closing")
         self.socket.close()
 
     """ End of required implementations, VNA specific below"""

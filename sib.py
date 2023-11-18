@@ -42,12 +42,12 @@ class Sib(ReaderInterface):
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, [])
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
             self.AppModule.currentlyScanning = False
-            return frequency, magnitude, []
+            return frequency, magnitude, [], True
         except sibcontrol.SIBException:
             text_notification.setText("Failed to perform sweep for reader, check reader connection.")
             logger.exception("Failed to perform sweep for reader, check reader connection.")
             self.AppModule.currentlyScanning = False
-            return [], [], []
+            return [], [], [], False
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:

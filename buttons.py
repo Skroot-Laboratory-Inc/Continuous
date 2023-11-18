@@ -86,22 +86,22 @@ class ButtonFunctions:
             try:
                 logger.info(f"Calibrating reader {readerNumber}")
                 calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-                port = self.findPort(readerNumber)
+                port, readerType = self.findPort(readerNumber)
                 if not os.path.exists(os.path.dirname(calFileLocation)):
                     os.mkdir(os.path.dirname(calFileLocation))
                 try:
-                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
-                    success = sib.performHandshake()
-                    if success:
-                        self.ReaderInterfaces.append(sib)
-                    else:
-                        sib.close()
+                    if readerType == 'SIB':
+                        sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
+                        success = sib.performHandshake()
+                        if success:
+                            self.ReaderInterfaces.append(sib)
+                        else:
+                            sib.close()
+                    elif readerType == 'VNA':
                         Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
                         self.ReaderInterfaces.append(Vna)
                 except:
-                    logger.exception("SIB Handshake failed - can ignore if VNA is connected")
-                    Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
-                    self.ReaderInterfaces.append(Vna)
+                    logger.exception(f"Failed to instantiate reader {readerNumber}")
                 text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
                 logger.info(f"Calibration complete for reader {readerNumber}")
@@ -121,19 +121,17 @@ class ButtonFunctions:
             calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
             try:
                 if readerType == 'SIB':
-                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
+                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, False)
                     success = sib.performHandshake()
                     if success:
                         self.ReaderInterfaces.append(sib)
                     else:
                         sib.close()
                 elif readerType == 'VNA':
-                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, False)
                         self.ReaderInterfaces.append(Vna)
             except:
-                logger.exception("SIB Handshake failed - can ignore if VNA is connected")
-                Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
-                self.ReaderInterfaces.append(Vna)
+                logger.exception(f"Failed to instantiate reader {readerNumber}")
         self.AppModule.foundPorts = True
         self.createStartButton()
 
