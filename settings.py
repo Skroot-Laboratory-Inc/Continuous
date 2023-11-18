@@ -46,12 +46,12 @@ class Settings:
                                             parent=self.AppModule.root, minvalue=0.1, maxvalue=250)
         if startFreq is not None:
             for Reader in self.AppModule.Readers:
-                Reader.startFreq = startFreq
+                Reader.ReaderInterface.setStartFrequency(startFreq)
             self.AppModule.startFreq = startFreq
             logger.info(f'startFreq changed to {startFreq}')
         if stopFreq is not None:
             for Reader in self.AppModule.Readers:
-                Reader.stopFreq = stopFreq
+                Reader.ReaderInterface.setStopFrequency(stopFreq)
             self.AppModule.stopFreq = stopFreq
             logger.info(f'stopFreq changed to {stopFreq}')
 
@@ -60,7 +60,7 @@ class Settings:
                                            parent=self.AppModule.root, minvalue=1000, maxvalue=7000)
         if nPoints is not None:
             for Reader in self.AppModule.Readers:
-                Reader.nPoints = nPoints
+                Reader.ReaderInterface.setNumberOfPoints(nPoints)
             self.AppModule.nPoints = nPoints
             logger.info(f'nPoints changed to {nPoints}')
 
@@ -102,7 +102,7 @@ class Settings:
                                                                     'the weak signal warning?')
         logger.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
-    def createReaders(self, numReaders, Vnas):
+    def createReaders(self, numReaders, ReaderInterfaces):
         maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
@@ -130,7 +130,7 @@ class Settings:
                         self.AppModule, readerNumber, self.AppModule.airFreq, self.AppModule.waterFreq,
                         self.AppModule.waterShift, outerFrame, numReaders, self.AppModule.nPoints,
                         self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.scanRate,
-                        self.AppModule.savePath, readerColor, Vnas[readerNumber - 1]))
+                        self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
             elif self.AppModule.cellApp:
                 for readerNumber in range(1, numReaders + 1):
                     readerColor = self.AppModule.ColorCycler.getNext()
@@ -143,7 +143,7 @@ class Settings:
                     self.AppModule.Readers.append(Reader(
                         self.AppModule, readerNumber, outerFrame, readersOnScreen,
                         self.AppModule.nPoints, self.AppModule.startFreq, self.AppModule.stopFreq,
-                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, Vnas[readerNumber - 1]))
+                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()
