@@ -117,17 +117,19 @@ class ButtonFunctions:
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
         for readerNumber in range(1, numReaders + 1):
-            port = self.findPort(readerNumber)
+            port, readerType = self.findPort(readerNumber)
             calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
             try:
-                sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
-                success = sib.performHandshake()
-                if success:
-                    self.ReaderInterfaces.append(sib)
-                else:
-                    sib.close()
-                    Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
-                    self.ReaderInterfaces.append(Vna)
+                if readerType == 'SIB':
+                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
+                    success = sib.performHandshake()
+                    if success:
+                        self.ReaderInterfaces.append(sib)
+                    else:
+                        sib.close()
+                elif readerType == 'VNA':
+                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
+                        self.ReaderInterfaces.append(Vna)
             except:
                 logger.exception("SIB Handshake failed - can ignore if VNA is connected")
                 Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
@@ -137,31 +139,32 @@ class ButtonFunctions:
 
     def findPort(self, readerNumber):
         if not self.AppModule.isDevMode:
-            portList, attempts, port = [], 0, ''
+            filteredSIBPorts, filteredVNAPorts, attempts, port, readerType = [], [], 0, '', ''
             pauseUntilUserClicks(readerNumber)
-            while portList == [] and attempts <= 3:
+            while filteredVNAPorts == [] and filteredSIBPorts == [] and attempts <= 3:
                 time.sleep(2)
+                ports = list_ports.comports()
                 if self.AppModule.os == "windows":
-                    ports = list_ports.comports()
-                    portNums = [int(ports[i].device[3:]) for i in range(len(ports))]
-                    portList = [num for num in portNums if num not in self.AppModule.ports]
-                    if portList:
-                        port = f'COM{max(portList)}'
-                        self.AppModule.ports.append(max(portList))
+                    filteredVNAPorts = [port.device for port in ports if "USB-SERIAL CH340" in port.description and port.device not in self.AppModule.ports]
+                    filteredSIBPorts = [port.device for port in ports if "USB Serial Device" in port.description and port.device not in self.AppModule.ports]
                 else:
-                    ports = sp.run('ls /dev/ttyUSB*', shell=True, capture_output=True).stdout.decode(
-                        'ascii').strip().splitlines()
-                    portList = [port for port in ports if port not in self.AppModule.ports]
-                    if portList:
-                        port = portList[-1]
-                        self.AppModule.ports.append(max(portList))
-                logger.info(f'Used: {self.AppModule.ports}, found: {portList}')
+                    filteredVNAPorts = [port.device for port in ports
+                                        if port.description == "USB Serial" and port.device not in self.AppModule.ports]
+                    filteredSIBPorts = [port.device for port in ports if
+                                        port.manufacturer == "Skroot Laboratory" and port.device not in self.AppModule.ports]
+                if filteredSIBPorts:
+                    port = filteredSIBPorts[0]
+                    readerType = 'SIB'
+                if filteredVNAPorts:
+                    port = filteredVNAPorts[0]
+                    readerType = 'VNA'
+                self.AppModule.ports.append(port)
                 attempts += 1
                 if attempts > 3:
                     tk.messagebox.showinfo(f'Reader {readerNumber}',
                                            f'Reader {readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
             logger.info(f'{self.AppModule.ports}')
-            return port
+            return port, readerType
 
     def createGuidedSetupButton(self):
         self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",
