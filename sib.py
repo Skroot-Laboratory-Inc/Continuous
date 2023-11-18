@@ -57,6 +57,7 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
+            self.checkAndSendConfiguration()
             self.sib.write_sweep_command()
             magnitude = self.waitForSweepToCompleteAndGetResults()
             self.setNumberOfPoints(self.nPoints)
