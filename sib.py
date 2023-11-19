@@ -31,13 +31,11 @@ class Sib(ReaderInterface):
             calibrationFilename)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
-        self.checkAndSendConfiguration()
         try:
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            self.sib.write_sweep_command()
-            magnitude = self.waitForSweepToCompleteAndGetResults()
+            magnitude = self.performSweepAndWaitForComplete()
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, [])
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
@@ -57,9 +55,7 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            self.checkAndSendConfiguration()
-            self.sib.write_sweep_command()
-            magnitude = self.waitForSweepToCompleteAndGetResults()
+            magnitude = self.performSweepAndWaitForComplete()
             self.setNumberOfPoints(self.nPoints)
             self.setStartFrequency(self.startFreqMHz)
             self.setStopFrequency(self.stopFreqMHz)
@@ -132,6 +128,12 @@ class Sib(ReaderInterface):
             logger.exception("Failed to set firmware version")
             return ''
 
+    def sleep(self) -> None:
+        self.sib.sleep()
+
+    def wake(self) -> None:
+        self.sib.wake()
+
     def checkAndSendConfiguration(self) -> bool:
         if self.sib.valid_config():
             try:
@@ -149,9 +151,11 @@ class Sib(ReaderInterface):
                                       "points.")
             return False
 
-    def waitForSweepToCompleteAndGetResults(self) -> List[str]:
-        sweep_complete = False
-        conversion_results = list()
+    def performSweepAndWaitForComplete(self) -> List[str]:
+        self.checkAndSendConfiguration()
+        self.wake()
+        self.sib.write_sweep_command()
+        conversion_results, sweep_complete = list(), False
         while not sweep_complete:
             try:
                 if self.sib.data_waiting() > 0:
@@ -165,13 +169,13 @@ class Sib(ReaderInterface):
                         conversion_results.extend(tmp_data)
                     else:
                         logger.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
-
                 else:
                     # This is where you put code to check if the user would like to stop the sweep
                     # or anything else.
                     time.sleep(0.01)
             except:
                 logger.exception("An error occurred while waiting for scan to complete")
+        self.sleep()
         return conversion_results
 
     def calibrationComparison(self, frequency, magnitude, phase):
