@@ -223,6 +223,7 @@ class MainShared:
             self.summaryPlot.tick_params(axis='both', which='minor', labelsize=7)
             self.summaryPlot.tick_params(axis='both', which='major', labelsize=7)
             self.ColorCycler.reset()
+
             if self.freqToggleSet == "SGI" or self.freqToggleSet == "Signal Check":
                 self.summaryPlot.set_ylabel('Skroot Growth Index (SGI)', fontsize=9)
                 self.summaryPlot.set_title(f'Summary', fontsize=9)
@@ -234,6 +235,8 @@ class MainShared:
                     else:
                         y = Reader.frequencyToIndex(Reader.minFrequencySmooth)
                         self.summaryPlot.scatter(Reader.time, y, s=20, color=readerColor)
+                    if self.freqToggleSet == "SGI":
+                        self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
             elif self.freqToggleSet == "Signal Strength":
                 self.summaryPlot.set_ylabel('Change in Signal Strength (dB)', fontsize=9)
                 self.summaryPlot.set_title(f'Summary', fontsize=9)
