@@ -7,6 +7,7 @@ from typing import List
 import numpy as np
 import pandas
 import serial
+from serial import SerialException
 
 import logger
 import text_notification
@@ -16,6 +17,7 @@ from reader_interface import ReaderInterface
 class VnaScanning(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
         self.socket = serial.Serial(port, 115200, timeout=1.5)
+        self.port = port
         self.readerNumber = readerNumber
         self.AppModule = AppModule
         self.startFreqMHz = 0.1
@@ -41,6 +43,19 @@ class VnaScanning(ReaderInterface):
             # Vna returned an empty list - because it's not connected
             text_notification.setText(f"Connection lost to Reader {self.readerNumber}, check USB connection")
             logger.exception(f"Lost reader connection for reader {self.readerNumber}")
+        except SerialException:
+            self.close()
+            self.socket = serial.Serial(self.port, 115200, timeout=1.5)
+            try:
+                self.AppModule.currentlyScanning = True
+                frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
+                magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
+                calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
+                createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
+                return frequency, calibratedMagnitude, calibratedPhase, True
+            except:
+                logger.exception("Failed to take scan")
+                return [], [], [], False
         except:
             logger.exception("Failed to take scan")
             return [], [], [], False

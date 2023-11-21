@@ -74,7 +74,7 @@ class Analysis:
             return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
         except:
             logger.exception("Failed to analyze scan")
-            return 0, 0, 0, 0
+            return np.nan, np.nan, np.nan, np.nan
 
     def denoiseResults(self):
         denoiseRadius, denoisePoints = getDenoiseParameters(self.time)
@@ -146,7 +146,7 @@ def findMinSpline(frequency, magnitude):
         return minMag, minFreq
     except:
         logger.exception("Failed to analyze scan")
-        return 0, 0
+        return np.nan, np.nan
 
 
 def getDenoiseParameters(numberOfTimePoints):
