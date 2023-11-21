@@ -6,7 +6,9 @@
       "3": "Zero'd out x-axis on inoculation time when entered."
     },
     "bugfixes": {
-      "1": "Fixed a bug that errored when more than 1 software release was available."
+      "1": "Software update now works properly with more than 1 software update available.",
+      "2": "Disconnecting and reconnecting a reader now continues scanning.",
+      "3": "Failed scan analysis now removes the scan instead of returning zero."
     },
     "other": {
       "1": "Added SIB support for on premise testing."

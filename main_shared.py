@@ -254,6 +254,8 @@ class MainShared:
                 self.summaryCanvas.get_tk_widget().pack()
             except AttributeError:
                 self.summaryCanvas = FigureCanvasTkAgg(self.summaryFig, master=self.summaryFrame)
+            except:
+                self.summaryCanvas = FigureCanvasTkAgg(self.summaryFig, master=self.summaryFrame)
             self.summaryCanvas.draw()
             self.summaryCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         except:
