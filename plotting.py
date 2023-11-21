@@ -103,6 +103,7 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.addSecondAxis(self.frequencyPlot)
         if self.waterShift is not None:
             self.frequencyPlot.set_ylim([self.waterFreq - 2, self.airFreq + 2])
+        self.frequencyPlot.set_xlim([self.inoculatedTime, None])
         self.frequencyPlot.set_xlabel('Time (hours)')
         self.frequencyPlot.set_facecolor(self.backgroundColor)
         self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
