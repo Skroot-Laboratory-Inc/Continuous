@@ -1,18 +1,19 @@
 import os
-import subprocess as sp
 import threading
 import time
 import tkinter as tk
 from tkinter import ttk
 
-from serial.tools import list_ports
 from PIL import Image, ImageTk
+from serial.tools import list_ports
+from serial.tools.list_ports_common import ListPortInfo
 
 import logger
 import text_notification
+from information_panel import InformationPanel
+from reader_interface import ReaderInterface
 from sib import Sib
 from vna import VnaScanning
-from information_panel import InformationPanel
 
 
 class ButtonFunctions:
@@ -23,21 +24,22 @@ class ButtonFunctions:
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
         self.ReaderInterfaces = []
+        self.createButtonsOnNewFrame()
 
-    def createStartButton(self):
+    def createButtonsOnNewFrame(self):
         self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start", command=lambda: self.startFunc())
-        self.startButton.place(relx=0.47, rely=0.47)
-        self.startButton['style'] = 'W.TButton'
+        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
+        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
+                                                      command=lambda: self.AppModule.plotSummary())
+        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="Stop", command=lambda: self.stopFunc())
+        self.helpButton = ttk.Button(self.AppModule.readerPlotFrame, text="Need help?", image=self.helpIcon,
+                                     compound=tk.LEFT,
+                                     command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
 
     def startFunc(self):
         spaceForPlots = 0.9
-        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
         self.AppModule.summaryFrame.place(rely=0.5 * spaceForPlots, relx=0.67, relwidth=0.3,
                                           relheight=0.45 * spaceForPlots)
-
-        # Other buttons that will be invoked
-        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
-                                                      command=lambda: self.AppModule.plotSummary())
         self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
         if not self.AppModule.ServerFileShare.disabled and self.AppModule.os == "windows":
@@ -47,7 +49,7 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         if self.AppModule.cellApp:
             self.AppModule.Settings.addInoculation()
-        self.createStopButton(self.AppModule.readerPlotFrame)
+        self.placeStopButton()
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
         logger.info("started")
@@ -56,84 +58,39 @@ class ButtonFunctions:
         else:
             self.AppModule.thread.start()
 
-    def createStopButton(self, frame):
-        self.stopButton = ttk.Button(frame, text="Stop", command=lambda: self.stopFunc())
-        self.stopButton.pack(side='top', anchor='ne')
-        self.stopButton['style'] = 'W.TButton'
-
-    def createHelpButton(self, frame):
-        self.helpButton = ttk.Button(frame, text="Need help?", image=self.helpIcon, compound=tk.LEFT,
-                                     command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
-        self.helpButton.pack(side='bottom', anchor='ne')
-        self.helpButton['style'] = 'W.TButton'
-
     def stopFunc(self):
         logger.info("Stop Button Pressed")
         self.AppModule.thread.shutdown_flag.set()
         self.stopButton.destroy()
         text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
-    def calFunc(self, numReaders, AppModule):
+    def calFunc(self, numReaders):
         logger.info(f'calibrate button pressed')
-        calThread = threading.Thread(target=self.calFunc2, args=(numReaders, AppModule))
+        calThread = threading.Thread(target=self.calFunc2, args=numReaders)
         calThread.start()
 
-    def calFunc2(self, numReaders, AppModule):
+    def calFunc2(self, numReaders):
         for readerNumber in range(1, numReaders + 1):
             text_notification.setText(f"Calibrating reader {readerNumber}... do not touch the reader",
                                       ('Courier', 9, 'bold'), self.AppModule.royalBlue,
                                       self.AppModule.white)
             try:
                 logger.info(f"Calibrating reader {readerNumber}")
-                calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
                 port, readerType = self.findPort(readerNumber)
-                if not os.path.exists(os.path.dirname(calFileLocation)):
-                    os.mkdir(os.path.dirname(calFileLocation))
-                try:
-                    if readerType == 'SIB':
-                        sib = Sib(calFileLocation, port, self.AppModule, readerNumber, True)
-                        success = sib.performHandshake()
-                        if success:
-                            self.ReaderInterfaces.append(sib)
-                        else:
-                            sib.close()
-                    elif readerType == 'VNA':
-                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, True)
-                        self.ReaderInterfaces.append(Vna)
-                except:
-                    logger.exception(f"Failed to instantiate reader {readerNumber}")
+                self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, True))
                 text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
                                           self.AppModule.royalBlue, self.AppModule.white)
                 logger.info(f"Calibration complete for reader {readerNumber}")
             except:
                 logger.exception(f'Failed to calibrate reader {readerNumber}')
 
-    def createConnectReadersButton(self):
-        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers",
-                                               command=lambda: self.connectReaders(self.AppModule.numReaders))
-        self.connectReadersButton.place(relx=0.46, rely=0.47)
-        self.connectReadersButton['style'] = 'W.TButton'
-
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
         for readerNumber in range(1, numReaders + 1):
             port, readerType = self.findPort(readerNumber)
-            calFileLocation = f'{self.AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-            try:
-                if readerType == 'SIB':
-                    sib = Sib(calFileLocation, port, self.AppModule, readerNumber, False)
-                    success = sib.performHandshake()
-                    if success:
-                        self.ReaderInterfaces.append(sib)
-                    else:
-                        sib.close()
-                elif readerType == 'VNA':
-                        Vna = VnaScanning(calFileLocation, port, self.AppModule, readerNumber, False)
-                        self.ReaderInterfaces.append(Vna)
-            except:
-                logger.exception(f"Failed to instantiate reader {readerNumber}")
+            self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, False))
         self.AppModule.foundPorts = True
-        self.createStartButton()
+        self.placeStartButton()
 
     def findPort(self, readerNumber):
         if not self.AppModule.isDevMode:
@@ -141,28 +98,36 @@ class ButtonFunctions:
             pauseUntilUserClicks(readerNumber)
             while filteredVNAPorts == [] and filteredSIBPorts == [] and attempts <= 3:
                 time.sleep(2)
-                ports = list_ports.comports()
-                if self.AppModule.os == "windows":
-                    filteredVNAPorts = [port.device for port in ports if "USB-SERIAL CH340" in port.description and port.device not in self.AppModule.ports]
-                    filteredSIBPorts = [port.device for port in ports if "USB Serial Device" in port.description and port.device not in self.AppModule.ports]
-                else:
-                    filteredVNAPorts = [port.device for port in ports
-                                        if port.description == "USB Serial" and port.device not in self.AppModule.ports]
-                    filteredSIBPorts = [port.device for port in ports if
-                                        port.manufacturer == "Skroot Laboratory" and port.device not in self.AppModule.ports]
-                if filteredSIBPorts:
-                    port = filteredSIBPorts[0]
-                    readerType = 'SIB'
-                if filteredVNAPorts:
-                    port = filteredVNAPorts[0]
-                    readerType = 'VNA'
-                self.AppModule.ports.append(port)
-                attempts += 1
-                if attempts > 3:
-                    tk.messagebox.showinfo(f'Reader {readerNumber}',
-                                           f'Reader {readerNumber}\nNew VNA not found more than 3 times,\nApp restart required to avoid infinite loop')
-            logger.info(f'{self.AppModule.ports}')
-            return port, readerType
+                try:
+                    port, readerType = getNewVnaAndSibPorts(self.AppModule.os, self.AppModule.ports)
+                    self.AppModule.ports.append(port)
+                    return port, readerType
+                except:
+                    attempts += 1
+                    if attempts > 3:
+                        tk.messagebox.showinfo(f'Reader {readerNumber}',
+                                               f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp restart required to avoid infinite loop')
+                    else:
+                        tk.messagebox.showinfo(f'Reader {readerNumber}',
+                                               f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK')
+
+    def placeStartButton(self):
+        self.startButton.place(relx=0.47, rely=0.47)
+        self.startButton['style'] = 'W.TButton'
+
+    def placeStopButton(self):
+        self.stopButton.pack(side='top', anchor='ne')
+        self.stopButton['style'] = 'W.TButton'
+
+    def placeHelpButton(self):
+        self.helpButton.pack(side='bottom', anchor='ne')
+        self.helpButton['style'] = 'W.TButton'
+
+    def placeConnectReadersButton(self):
+        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers",
+                                               command=lambda: self.connectReaders(self.AppModule.numReaders))
+        self.connectReadersButton.place(relx=0.46, rely=0.47)
+        self.connectReadersButton['style'] = 'W.TButton'
 
     def createGuidedSetupButton(self):
         self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",
@@ -179,3 +144,38 @@ class ButtonFunctions:
 def pauseUntilUserClicks(readerNumber):
     tk.messagebox.showinfo(f'Reader {readerNumber}',
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
+
+
+def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
+    try:
+        if readerType == 'SIB':
+            sib = Sib(port, AppModule, readerNumber, calibrationRequired)
+            success = sib.performHandshake()
+            if success:
+                return sib
+            else:
+                logger.info(f"Failed to handshake SIB {readerNumber}")
+                sib.close()
+        elif readerType == 'VNA':
+            return VnaScanning(port, AppModule, readerNumber, calibrationRequired)
+    except:
+        logger.exception(f"Failed to instantiate reader {readerNumber}")
+
+
+def getNewVnaAndSibPorts(currentOs, portsTaken) -> (ListPortInfo, str):
+    ports = list_ports.comports()
+    if currentOs == "windows":
+        filteredVNAPorts = [port.device for port in ports if
+                            "USB-SERIAL CH340" in port.description and port.device not in portsTaken]
+        filteredSIBPorts = [port.device for port in ports if
+                            "USB Serial Device" in port.description and port.device not in portsTaken]
+    else:
+        filteredVNAPorts = [port.device for port in ports
+                            if port.description == "USB Serial" and port.device not in portsTaken]
+        filteredSIBPorts = [port.device for port in ports if
+                            port.manufacturer == "Skroot Laboratory" and port.device not in portsTaken]
+    if filteredSIBPorts:
+        return filteredSIBPorts[0], 'SIB'
+    if filteredVNAPorts:
+        return filteredVNAPorts[0], 'VNA'
+    raise Exception("No ports found")

@@ -19,8 +19,6 @@ class AppModule(MainShared):
         self.root.mainloop()  # everything comes before this
 
     def setupApp(self):
-        self.Setup.createTheme()
-        self.Setup.createFrames()
         self.menubar = self.Setup.createMenus()
         self.root.config(menu=self.menubar)
 
@@ -37,13 +35,14 @@ class AppModule(MainShared):
          self.vesselType, self.secondAxisTitle) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
                                                                                year, numReaders, scanRate, cellType,
                                                                                vesselType, secondAxisTitle)
-        self.Buttons.createHelpButton(self.readerPlotFrame)
-        self.Buttons.createConnectReadersButton()
+        self.Buttons.createButtonsOnNewFrame()
+        self.Buttons.placeHelpButton()
+        self.Buttons.placeConnectReadersButton()
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
-            self.Buttons.calFunc2(self.numReaders, self)
-            self.Buttons.createStartButton()
+            self.Buttons.calFunc2(self.numReaders)
+            self.Buttons.placeStartButton()
 
 
 major_version = 1.3

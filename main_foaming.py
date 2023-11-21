@@ -27,13 +27,11 @@ class AppModule(MainShared):
 
     def setupApp(self):
         # TODO - update this to account for foaming setup, it will be different values needed
-        self.Setup.createTheme()
-        self.Setup.createFrames()
         self.menubar = self.Setup.createMenus()
         self.root.config(menu=self.menubar)
 
-        self.Buttons.createConnectReadersButton()
-        self.Buttons.createHelpButton(self.readerPlotFrame)
+        self.Buttons.placeConnectReadersButton()
+        self.Buttons.placeHelpButton()
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
         self.Buttons.createGuidedSetupButton()
@@ -49,8 +47,8 @@ class AppModule(MainShared):
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
-            self.Buttons.calFunc2(self.numReaders, self)
-            self.Buttons.createStartButton()
+            self.Buttons.calFunc2(self.numReaders)
+            self.Buttons.placeStartButton()
 
 
 major_version = 1.1

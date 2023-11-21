@@ -1,4 +1,5 @@
 import csv
+import os
 import time  # for sleep()
 from bisect import bisect_left
 
@@ -13,7 +14,7 @@ from reader_interface import ReaderInterface
 
 
 class Sib(ReaderInterface):
-    def __init__(self, calibrationFilename, port, AppModule, readerNumber, calibrationRequired=False):
+    def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
         self.startFreqMHz = 0.1
         self.stopFreqMHz = 350
         self.nPoints = 3000
@@ -25,6 +26,7 @@ class Sib(ReaderInterface):
         self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
+        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
@@ -49,6 +51,7 @@ class Sib(ReaderInterface):
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
+            createCalibrationDirectoryIfNotExists(calibrationFilename)
             self.sib.start_MHz = 0.1
             self.sib.stop_MHz = 350
             self.sib.num_pts = 10000
@@ -243,6 +246,11 @@ def find_nearest(freq, freqList, dBlist):
         return dBlist[pos]
     else:
         return dBlist[pos - 1]
+
+
+def createCalibrationDirectoryIfNotExists(filename):
+    if not os.path.exists(os.path.dirname(filename)):
+        os.mkdir(os.path.dirname(filename))
 
 # ports = list_ports.comports()
 # portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
