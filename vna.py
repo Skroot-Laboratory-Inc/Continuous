@@ -1,4 +1,5 @@
 import csv
+import os
 import time
 from bisect import bisect_left
 from typing import List
@@ -13,13 +14,14 @@ from reader_interface import ReaderInterface
 
 
 class VnaScanning(ReaderInterface):
-    def __init__(self, calibrationFilename, port, AppModule, readerNumber, calibrationRequired=False):
+    def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
         self.socket = serial.Serial(port, 115200, timeout=1.5)
         self.readerNumber = readerNumber
         self.AppModule = AppModule
         self.startFreqMHz = 0.1
         self.stopFreqMHz = 250
         self.nPoints = 3000
+        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
@@ -47,6 +49,7 @@ class VnaScanning(ReaderInterface):
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
+            createCalibrationDirectoryIfNotExists(calibrationFilename)
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
@@ -164,3 +167,8 @@ def createScanFile(outputFileName, frequency, magnitude, phase):
         writer.writerow(['Frequency (MHz)', 'Signal Strength (dB)', 'Phase'])
         writer.writerows(zip(frequency, magnitude, phase))
     return
+
+
+def createCalibrationDirectoryIfNotExists(filename):
+    if not os.path.exists(os.path.dirname(filename)):
+        os.mkdir(os.path.dirname(filename))

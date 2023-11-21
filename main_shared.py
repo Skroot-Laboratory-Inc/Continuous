@@ -12,7 +12,6 @@ from matplotlib.figure import Figure
 from zipfile import ZipFile
 
 import logger
-import setup
 import text_notification
 from buttons import ButtonFunctions
 from colors import ColorCycler
@@ -20,6 +19,7 @@ from dev import DevMode
 from pdf import generatePdf
 from server import ServerFileShare
 from settings import Settings
+from setup import Setup
 from software_update import SoftwareUpdate
 from timer import RunningTimer
 
@@ -89,11 +89,11 @@ class MainShared:
         self.Timer = RunningTimer()
         self.Readers = []
         self.Settings = Settings(self)
+        self.Setup = Setup(self.root, self.Settings, self)
         self.Buttons = ButtonFunctions(self, self.location, self.root)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version, self.location)
-        self.Setup = setup.Setup(self.root, self.Buttons, self.Settings, self)
         self.isDevMode = self.DevMode.isDevMode
 
     def createRoot(self):

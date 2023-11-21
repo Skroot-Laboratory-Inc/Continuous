@@ -5,11 +5,12 @@ import text_notification
 
 
 class Setup:
-    def __init__(self, root, Buttons, Settings, AppModule):
+    def __init__(self, root, Settings, AppModule):
         self.root = root
-        self.Buttons = Buttons
         self.Settings = Settings
         self.AppModule = AppModule
+        self.createTheme()
+        self.createFrames()
 
     def createMenus(self):
         self.AppModule.awsCheckSoftwareUpdates()
@@ -23,7 +24,6 @@ class Setup:
         settingsMenuReaders.add_command(label="Frequency Range", command=lambda: self.Settings.freqRangeSetting())
         settingsMenuReaders.add_command(label="Scan Rate", command=lambda: self.Settings.rateSetting())
         settingsMenuReaders.add_command(label="File Save", command=lambda: self.Settings.saveFilesSetting())
-        settingsMenuReaders.add_command(label="Calibrate", command=lambda: self.Buttons.calFunc(self.AppModule.numReaders, self.AppModule))
         menubar.add_cascade(label="Readers", menu=settingsMenuReaders)
 
         settingsMenuAnalysis = tk.Menu(menubar, tearoff=0)
@@ -51,7 +51,8 @@ class Setup:
         width = self.root.winfo_screenwidth()  # 1200 # width of the window
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.white, background=self.AppModule.royalBlue)
+        style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.white,
+                        background=self.AppModule.royalBlue)
         style.map('W.TButton', background=[("disabled", "gray23"), ("active", "royal blue")])
         canvas = tk.Canvas(self.root, height=height, width=width)
         canvas.pack()

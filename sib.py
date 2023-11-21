@@ -1,4 +1,5 @@
 import csv
+import os
 import time  # for sleep()
 from bisect import bisect_left
 
@@ -13,7 +14,7 @@ from reader_interface import ReaderInterface
 
 
 class Sib(ReaderInterface):
-    def __init__(self, calibrationFilename, port, AppModule, readerNumber, calibrationRequired=False):
+    def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
         self.startFreqMHz = 0.1
         self.stopFreqMHz = 350
         self.nPoints = 3000
@@ -25,19 +26,18 @@ class Sib(ReaderInterface):
         self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
+        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
             calibrationFilename)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
-        self.checkAndSendConfiguration()
         try:
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            self.sib.write_sweep_command()
-            magnitude = self.waitForSweepToCompleteAndGetResults()
+            magnitude = self.performSweepAndWaitForComplete()
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, [])
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
@@ -51,15 +51,14 @@ class Sib(ReaderInterface):
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
+            createCalibrationDirectoryIfNotExists(calibrationFilename)
             self.sib.start_MHz = 0.1
             self.sib.stop_MHz = 350
             self.sib.num_pts = 10000
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            self.checkAndSendConfiguration()
-            self.sib.write_sweep_command()
-            magnitude = self.waitForSweepToCompleteAndGetResults()
+            magnitude = self.performSweepAndWaitForComplete()
             self.setNumberOfPoints(self.nPoints)
             self.setStartFrequency(self.startFreqMHz)
             self.setStopFrequency(self.stopFreqMHz)
@@ -132,6 +131,12 @@ class Sib(ReaderInterface):
             logger.exception("Failed to set firmware version")
             return ''
 
+    def sleep(self) -> None:
+        self.sib.sleep()
+
+    def wake(self) -> None:
+        self.sib.wake()
+
     def checkAndSendConfiguration(self) -> bool:
         if self.sib.valid_config():
             try:
@@ -149,9 +154,11 @@ class Sib(ReaderInterface):
                                       "points.")
             return False
 
-    def waitForSweepToCompleteAndGetResults(self) -> List[str]:
-        sweep_complete = False
-        conversion_results = list()
+    def performSweepAndWaitForComplete(self) -> List[str]:
+        self.checkAndSendConfiguration()
+        self.wake()
+        self.sib.write_sweep_command()
+        conversion_results, sweep_complete = list(), False
         while not sweep_complete:
             try:
                 if self.sib.data_waiting() > 0:
@@ -165,13 +172,13 @@ class Sib(ReaderInterface):
                         conversion_results.extend(tmp_data)
                     else:
                         logger.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
-
                 else:
                     # This is where you put code to check if the user would like to stop the sweep
                     # or anything else.
                     time.sleep(0.01)
             except:
                 logger.exception("An error occurred while waiting for scan to complete")
+        self.sleep()
         return conversion_results
 
     def calibrationComparison(self, frequency, magnitude, phase):
@@ -239,6 +246,11 @@ def find_nearest(freq, freqList, dBlist):
         return dBlist[pos]
     else:
         return dBlist[pos - 1]
+
+
+def createCalibrationDirectoryIfNotExists(filename):
+    if not os.path.exists(os.path.dirname(filename)):
+        os.mkdir(os.path.dirname(filename))
 
 # ports = list_ports.comports()
 # portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
