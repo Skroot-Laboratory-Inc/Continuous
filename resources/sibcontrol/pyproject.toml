@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sibcontrol"
+version = "2.0.0"
+authors = [
+    { name = "Nathan M. Neihart", email = "neihart@skrootlab.com" },
+]
+description = "Class for interfacing with SiB control board."
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "pyserial"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent"
+]
+

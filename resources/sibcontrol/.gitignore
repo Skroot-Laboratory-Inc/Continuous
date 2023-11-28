@@ -1,0 +1,8 @@
+# Ignore cache files
+sibcontrol/__pycache__/
+sibcontrol/ncomm/__pycache__/
+
+# Files that are created when the package is installed using pip
+sibcontrol.egg-info
+build/
+
