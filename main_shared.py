@@ -1,6 +1,7 @@
 import math
 import os
 import shutil
+import subprocess
 import sys
 import threading
 import time
@@ -170,6 +171,9 @@ class MainShared:
                 if self.os == "linux":
                     shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
                                     rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
+                    process = subprocess.Popen([f'{self.location}/resources/scripts/install-script.sh'])
+                    text_notification.setText("Installing new dependencies... please wait. This may take up to a minute.")
+                    process.wait()
                 text_notification.setText(
                     f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
             else:
