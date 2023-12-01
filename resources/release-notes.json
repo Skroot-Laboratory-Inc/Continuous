@@ -3,7 +3,8 @@
     "features": {
       "1": "Disabled contamination checking algorithm.",
       "2": "Added linux server fileshare for on premise usage.",
-      "3": "Zero'd out x-axis on inoculation time when entered."
+      "3": "Zero'd out x-axis on inoculation time when entered.",
+      "4": "Added an install script to install new packages on software updates."
     },
     "bugfixes": {
       "1": "Software update now works properly with more than 1 software update available.",
