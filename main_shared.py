@@ -1,6 +1,7 @@
 import math
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import threading
@@ -164,16 +165,15 @@ class MainShared:
 
     def downloadSoftwareUpdate(self):
         try:
-            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(fr'{os.path.dirname(self.location)}/DesktopApp.zip')
+            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(
+                fr'{os.path.dirname(self.location)}/DesktopApp.zip')
             if downloadUpdate:
                 with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
                     file.extractall()
                 if self.os == "linux":
                     shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
                                     rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
-                    process = subprocess.Popen([f'{self.location}/resources/scripts/install-script.sh'])
-                    text_notification.setText("Installing new dependencies... please wait. This may take up to a minute.")
-                    process.wait()
+                    runShScript(f'{self.location}/resources/scripts/install-script.sh')
                 text_notification.setText(
                     f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
             else:
@@ -187,12 +187,14 @@ class MainShared:
                 self.SoftwareUpdate.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
             else:
                 if (self.Readers[0].scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                    self.SoftwareUpdate.uploadFile(f'{self.savePath}/Summary.pdf', self.SoftwareUpdate.dstPdfName, 'application/pdf')
+                    self.SoftwareUpdate.uploadFile(f'{self.savePath}/Summary.pdf', self.SoftwareUpdate.dstPdfName,
+                                                   'application/pdf')
                     self.awsLastUploadTime = self.Readers[0].scanNumber
 
     def awsUploadLogFile(self):
         if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
-            self.SoftwareUpdate.uploadFile(f'{self.desktop}/Calibration/log.txt', self.SoftwareUpdate.dstLogName, 'text/plain')
+            self.SoftwareUpdate.uploadFile(f'{self.desktop}/Calibration/log.txt', self.SoftwareUpdate.dstLogName,
+                                           'text/plain')
             text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
             return True
         return False
@@ -303,3 +305,11 @@ def incrementScan(Reader):
 
 def deleteScanFile(filename):
     os.remove(filename)
+
+
+def runShScript(shScriptFilename):
+    st = os.stat(shScriptFilename)
+    os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
+    process = subprocess.Popen(["sh", shScriptFilename])
+    text_notification.setText("Installing new dependencies... please wait. This may take up to a minute.")
+    process.wait()
