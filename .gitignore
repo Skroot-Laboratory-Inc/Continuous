@@ -1,5 +1,8 @@
 # Default ignored files
 /__pycache__/
 /DesktopApp/
+/unit_tests/__pycache__/
+/build/
+DesktopApp/.idea/
 
 

@@ -3,7 +3,8 @@
     "features": {
       "1": "Disabled contamination checking algorithm.",
       "2": "Added linux server fileshare for on premise usage.",
-      "3": "Zero'd out x-axis on inoculation time when entered."
+      "3": "Zero'd out x-axis on inoculation time when entered.",
+      "4": "Added an install script to install new packages on software updates."
     },
     "bugfixes": {
       "1": "Software update now works properly with more than 1 software update available.",
@@ -23,26 +24,6 @@
     "bugfixes": {
       "1": "Fixed a bug causing startup crashes.",
       "2": "Fixed a bug with a deprecated library causing instability."
-    }
-  },
-  "v1.2.0": {
-    "features": {
-      "1": "Added release notes dialog to software updates.",
-      "2": "Added version to the bottom left of the screen.",
-      "3": "Separated software pipelines for production.",
-      "4": "Summary pdf updated to have a summary page."
-    },
-    "bugfixes": {
-      "1": "Fixed extra file creation."
-    }
-  },
-  "v1.1.2": {
-    "features": {
-      "1": "Updated inoculation to zero out y-axis",
-      "2": "Updated plotting to use Skroot Growth Index (SGI)"
-    },
-    "bugfixes": {
-      "1": "Fixed AWS Integrations"
     }
   }
 }
