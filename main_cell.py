@@ -1,5 +1,5 @@
 import importlib.util
-import os
+import os, json
 from datetime import datetime
 
 import matplotlib as mpl
@@ -45,6 +45,9 @@ class AppModule(MainShared):
             self.Buttons.placeStartButton()
 
 
-major_version = 2.0
-minor_version = 0
+with open('./resources/version.json') as j_file:
+    version = json.load(j_file)
+
+major_version = version['major_version']
+minor_version = version['minor_version']
 AppModule(f"Version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

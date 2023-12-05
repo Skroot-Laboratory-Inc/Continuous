@@ -17,8 +17,6 @@ import zipfile
 import traceback
 
 import boto3
-from botocore.exceptions import ClientError
-
 
 def zip_files(folder_path, zip_name):
     with zipfile.ZipFile(zip_name, 'w') as zipf:
@@ -28,21 +26,25 @@ def zip_files(folder_path, zip_name):
                 arcname = os.path.relpath(file_path, folder_path)
                 zipf.write(file_path, arcname)
 
+
+def s3_upload_file(file_path, file_name):
+    s3 = boto3.resource('s3')
+    b = s3.Bucket('skroot-data')
+    res = b.upload_file(file_path, f'software-releases/{file_name}')
+    print(f"Done >> {res}")
+
 with open('./resources/version.json') as j_file:
     version = json.load(j_file)
 
 major_version = version['major_version']
 minor_version = version['minor_version']
-name = f"DesktopApp_v{major_version}.{minor_version}.zip"
+name = f"DesktopApp_v{major_version}.{minor_version}_again.zip"
 zip_file_path = f"../__TEST__/{name}"
 try:
     # zip up the whole package
     zip_files('.', zip_file_path)
     # Upload the zip file to AWS in the skroot-data/software-releases bucket
-    s3 = boto3.resource('s3')
-    bucket = 'skroot-data'
-    s3.Bucket(bucket).upload_file(zip_file_path, f"software-releases/{name}")
-    # upload_file(zip_file_path, 'skroot-data/software-releases')
+    s3_upload_file(zip_file_path, name)
 except:
     traceback.print_exc()
 finally:
@@ -50,3 +52,4 @@ finally:
     if os.path.exists(zip_file_path):
         print("Deleting zip file...")
         os.remove(zip_file_path)
+        # pass
