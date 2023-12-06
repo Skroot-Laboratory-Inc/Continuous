@@ -15,6 +15,10 @@ from emailer import Emailer
 from plotting import Plotting
 from reader_interface import ReaderInterface
 
+import boto3
+from botocore.exceptions import ClientError
+
+
 
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
@@ -32,6 +36,8 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.readerName = f"Reader {readerNumber}"
         self.Emailer = Emailer('', f'{self.readerName}')
         self.Emailer.setMessageHarvestClose()
+        self.secret_name = "skroot_lab/ssh_bot_credentials"
+        self.region_name = "us-east-2"
         self.AppModule = AppModule
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
@@ -116,6 +122,25 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def initializeReaderFolders(self, savePath):
         self.setSavePath(savePath)
 
+    def get_aws_secret(self):
+        try:
+            session = boto3.session.Session()
+            client = session.client(
+                service_name='secretsmanager',
+                region_name=self.region_name
+            )
+
+            get_secret_value_response = client.get_secret_value(
+                SecretId=self.secret_name
+            )
+
+            secret = get_secret_value_response['SecretString']
+            secret = json.loads(secret)
+            return secret
+        except:
+            self.sshDisabled = True
+            return None
+
     def setSavePath(self, savePath):
         if not os.path.exists(savePath):
             os.mkdir(savePath)
@@ -126,8 +151,14 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             else:
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
-            self.initializeSSHConnection("192.168.0.245", "22", "skrootbot", "Skroot01")
-            if not self.sshDisabled:
+            aws_secret = self.get_aws_secret()
+            if aws_secret == None or self.sshDisabled:
+                logger.exception("Failure to find aws secret")
+            else:
+                self.initializeSSHConnection(
+                    aws_secret["host"], aws_secret["port"], aws_secret["username"], aws_secret["password"]
+                )
+
                 self.serverSavePath = f'D:/data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
                 serverSavePath_ = self.serverSavePath.replace('/', '\\')
                 stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
