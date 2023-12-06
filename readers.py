@@ -42,9 +42,10 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
         self.scanRate = scanRate
-        ReaderInterface.setNumberOfPoints(nPoints)
-        ReaderInterface.setStartFrequency(startFreq)
-        ReaderInterface.setStopFrequency(stopFreq)
+        if self.AppModule.DevMode.isDevMode == False:
+            ReaderInterface.setNumberOfPoints(nPoints)
+            ReaderInterface.setStartFrequency(startFreq)
+            ReaderInterface.setStopFrequency(stopFreq)
         self.ReaderInterface = ReaderInterface
         self.initializeReaderFolders(savePath)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
@@ -238,6 +239,7 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.sendToServer(f'{self.savePath}/noFitAnalyzed.csv')
         self.sendToServer(f'{self.savePath}/secondAxis.csv')
         self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
+        self.sendToServer(f'{os.path.dirname(self.savePath)}/summaryAnalyzed.csv')
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
         pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
