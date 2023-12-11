@@ -127,11 +127,10 @@ class MainShared:
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
                             Reader.addDevPoint()
-                        if self.denoiseSet and not self.DevMode.isDevMode:
+                        if self.denoiseSet and not self.isDevMode:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()
-                        self.createSummaryAnalyzedFile()
                         if not self.ServerFileShare.disabled:
                             Reader.createServerJsonFile()
                             Reader.sendFilesToServer()
@@ -146,6 +145,7 @@ class MainShared:
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
+                self.createSummaryAnalyzedFile()
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadPdfFile()
@@ -272,16 +272,16 @@ class MainShared:
 
     def createSummaryAnalyzedFile(self):
         rowHeaders = ['Time (hours)']
-        rowData = self.Readers[0].time
+        rowData = [self.Readers[0].time]
         with open(f'{self.savePath}/summaryAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:
-                rowHeaders.append('Reader 1 SGI')
-                rowHeaders.append('Reader 1 Signal Strength')
+                rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
+                rowHeaders.append(f'Reader {Reader.readerNumber} Signal Strength')
                 readerSGI = Reader.frequencyToIndex(Reader.minFrequencySmooth)
                 readerMagnitude = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
-                rowData = rowData.append(readerSGI)
-                rowData = rowData.append(readerMagnitude)
+                rowData.append(readerSGI)
+                rowData.append(readerMagnitude)
             writer.writerow(rowHeaders)
             # array transpose converts it to write columns instead of rows
             writer.writerows(np.array(rowData).transpose())
