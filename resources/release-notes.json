@@ -1,4 +1,9 @@
 {
+  "v2.0.1": {
+    "features": {
+      "1": "Added a summaryAnalyzed file in the root save location with all readers information."
+    }
+  },
   "v2.0.0": {
     "features": {
       "1": "Disabled contamination checking algorithm.",

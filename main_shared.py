@@ -1,3 +1,4 @@
+import csv
 import math
 import os
 import shutil
@@ -9,6 +10,7 @@ import time
 import tkinter as tk
 
 import matplotlib as mpl
+import numpy as np
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 from zipfile import ZipFile
@@ -125,7 +127,7 @@ class MainShared:
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
                             Reader.addDevPoint()
-                        if self.denoiseSet:
+                        if self.denoiseSet and not self.isDevMode:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()
@@ -143,6 +145,7 @@ class MainShared:
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
+                self.createSummaryAnalyzedFile()
                 self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadPdfFile()
@@ -266,6 +269,25 @@ class MainShared:
             self.summaryCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         except:
             logger.exception("Failed to generate summaryPlot")
+
+    def createSummaryAnalyzedFile(self):
+        rowHeaders = ['Time (hours)']
+        rowData = [self.Readers[0].time]
+        with open(f'{self.savePath}/summaryAnalyzed.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for Reader in self.Readers:
+                rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
+                rowHeaders.append(f'Reader {Reader.readerNumber} Frequency')
+                rowHeaders.append(f'Reader {Reader.readerNumber} Signal Strength')
+                readerSGI = Reader.frequencyToIndex(Reader.minFrequencySmooth)
+                readerMagnitude = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
+                rowData.append(readerSGI)
+                rowData.append(Reader.minFrequencySmooth)
+                rowData.append(readerMagnitude)
+            writer.writerow(rowHeaders)
+            # array transpose converts it to write columns instead of rows
+            writer.writerows(np.array(rowData).transpose())
+        return
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):

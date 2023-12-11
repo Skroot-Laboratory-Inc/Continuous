@@ -123,7 +123,11 @@ class Analysis:
 
 
 def denoise(x, y, threshold, points):
-    data = np.column_stack([x, y])
+    ycopy = y.copy()
+    for y_index in range(len(ycopy)):
+        if np.isnan(ycopy[y_index]):
+            ycopy[y_index] = 0
+    data = np.column_stack([x, ycopy])
     dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
     core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
     core_samples[dbsc.core_sample_indices_] = True
