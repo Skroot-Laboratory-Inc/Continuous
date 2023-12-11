@@ -277,10 +277,12 @@ class MainShared:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
+                rowHeaders.append(f'Reader {Reader.readerNumber} Frequency')
                 rowHeaders.append(f'Reader {Reader.readerNumber} Signal Strength')
                 readerSGI = Reader.frequencyToIndex(Reader.minFrequencySmooth)
                 readerMagnitude = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
                 rowData.append(readerSGI)
+                rowData.append(Reader.minFrequencySmooth)
                 rowData.append(readerMagnitude)
             writer.writerow(rowHeaders)
             # array transpose converts it to write columns instead of rows
