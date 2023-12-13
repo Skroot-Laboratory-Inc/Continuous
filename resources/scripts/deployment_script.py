@@ -12,7 +12,7 @@ def zip_files(folder_path, zip_name):
     if not os.path.exists(os.path.dirname(zip_name)):
         os.mkdir(os.path.dirname(zip_name))
     with zipfile.ZipFile(zip_name, 'w') as zipf:
-        for foldername, subfolders_, filenames in os.walk(f"../../{folder_path}"):
+        for foldername, subfolders_, filenames in os.walk(folder_path):
             for filename in filenames:
                 file_path = os.path.join(foldername, filename)
                 if "/.idea/" in file_path or "./__pycache__/" in file_path or "/.git/" in file_path or  "/unit_tests/" in file_path or "/temp/" in file_path:
@@ -60,7 +60,7 @@ try:
     print(f" > Zipping Files")
     if not check_before_overwrite(software_releases_bucket, zip_name):
         raise Exception("Did not perform update to avoid overwriting the current release files.")
-    zip_files('.', zip_file_path)
+    zip_files('../../.', zip_file_path)
     # Upload the zip file to AWS in the skroot-data/software-releases bucket
     print(f" > Uploading Zip as '{zip_name}' from '{zip_file_path}'")
     s3_upload_file(
