@@ -1,16 +1,3 @@
-"""
-
-- Zip all of the files into a DesktopApp_v{major_version}.{minor_version}.zip file
-- All of the files should be directly inside (don't zip the folder, zip the files)
-- Upload the zip file to AWS in the skroot-data/software-releases bucket
-    - Tag the file with major_version = major_version and minor_version = minor_version
-- Upload the resources/release-notes.json file to the bucket skroot-data/release-notes
-    - Filename should be v{major_version}.{minor_version}.json
-- major_version and minor_version are variables currently passed into the mainShared via the main_cell.py file
-- Don't worry about permissions, just assume the computer being used has permission to do this
-
-"""
-
 import os
 import json
 import shutil
