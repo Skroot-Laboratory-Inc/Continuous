@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 from datetime import datetime
 
@@ -51,6 +52,9 @@ class AppModule(MainShared):
             self.Buttons.placeStartButton()
 
 
-major_version = 1.1
-minor_version = 3
+with open('./resources/version.json') as j_file:
+    version = json.load(j_file)
+
+major_version = version['major_version']
+minor_version = version['minor_version']
 AppModule(f"version: Foaming_v{major_version}.{minor_version}")

@@ -110,6 +110,8 @@ class ButtonFunctions:
                     else:
                         tk.messagebox.showinfo(f'Reader {readerNumber}',
                                                f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK')
+        else:
+            return '', ''
 
     def placeStartButton(self):
         self.startButton.place(relx=0.47, rely=0.47)
