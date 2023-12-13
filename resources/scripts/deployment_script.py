@@ -17,8 +17,8 @@ def zip_files(folder_path, zip_name):
                 file_path = os.path.join(foldername, filename)
                 if "/.idea/" in file_path or "./__pycache__/" in file_path or "/.git/" in file_path or  "/unit_tests/" in file_path or "/temp/" in file_path:
                     continue
-                print(file_path)
                 arcname = os.path.relpath(file_path, folder_path)
+                print(file_path, arcname)
                 zipf.write(file_path, arcname)
 
 def s3_upload_file(file_path, file_name, aws_folder_name, tag_str=''):
