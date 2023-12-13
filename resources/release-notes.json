@@ -2,6 +2,12 @@
   "v2.0.1": {
     "features": {
       "1": "Added a summaryAnalyzed file in the root save location with all readers information."
+    },
+    "bugfixes": {
+      "1": "Failed analysis no longer causes analyzed files to not be created."
+    },
+    "other": {
+      "1": "Added a deployment script."
     }
   },
   "v2.0.0": {
@@ -18,17 +24,6 @@
     },
     "other": {
       "1": "Added SIB support for on premise testing."
-    }
-  },
-  "v1.2.2": {
-    "bugfixes": {
-      "1": "Fixed a bug causing the file save location to be incorrect."
-    }
-  },
-  "v1.2.1": {
-    "bugfixes": {
-      "1": "Fixed a bug causing startup crashes.",
-      "2": "Fixed a bug with a deprecated library causing instability."
     }
   }
 }
