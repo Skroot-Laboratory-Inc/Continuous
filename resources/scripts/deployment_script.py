@@ -30,17 +30,20 @@ def s3_upload_file(file_path, file_name, aws_folder_name, tag_str=''):
     )
 
 def check_before_overwrite(bucket, zip_name):
-    config = Config(connect_timeout=5, read_timeout=5)
-    s3 = boto3.client('s3', config=config)
-    allReleases = s3.list_objects_v2(Bucket='skroot-data', Prefix=bucket)
-    for item in allReleases['Contents']:
-        print(item)
-        filename = item['Key']
-        if zip_name in filename:
-            should_continue = input(f'This will overwrite the current release for {zip_name}\nAre you sure you wish to continue? (y)es or (n)o\n')
-            if should_continue == 'y' or should_continue == 'Y' or should_continue == 'yes' or should_continue == 'Yes':
-                return True
-    return False
+    try:
+        config = Config(connect_timeout=5, read_timeout=5)
+        s3 = boto3.client('s3', config=config)
+        allReleases = s3.list_objects_v2(Bucket='skroot-data', Prefix=bucket)
+        for item in allReleases['Contents']:
+            print(item)
+            filename = item['Key']
+            if zip_name in filename:
+                should_continue = input(f'This will overwrite the current release for {zip_name}\nAre you sure you wish to continue? (y)es or (n)o\n')
+                if should_continue == 'n' or should_continue == 'N' or should_continue == 'no' or should_continue == 'No':
+                    return False
+        return True
+    except:
+        raise
 
 with open('../version.json') as j_file:
     version = json.load(j_file)
