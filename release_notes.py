@@ -6,25 +6,26 @@ class ReleaseNotes:
     def __init__(self, releaseNotes, root):
         self.releaseNotes = releaseNotes
         self.windowRoot = tk.Toplevel(root, bg='white', borderwidth=0, pady=25, padx=25)
-        self.windowRoot.maxsize(width=450, height=550)
-        scrollbar = tk.Scrollbar(self.windowRoot, orient=tk.VERTICAL)
+        self.windowRoot.minsize(width=650, height=550)
+        self.windowRoot.maxsize(width=800, height=550)
         self.windowCanvas = tk.Canvas(
-            self.windowRoot, bg='white', yscrollcommand=scrollbar.set, width=400, height=500, borderwidth=0,
+            self.windowRoot, bg='white', borderwidth=0,
             highlightthickness=0
         )
         self.window = tk.Frame(self.windowRoot, bg='white', borderwidth=0)
         self.windowCanvas.create_window(0, 0, anchor="nw", window=self.window)
+        # Linux uses Button-5 for scroll down and Button-4 for scroll up
+        self.window.bind_all('<Button-4>', lambda e: self.windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
+        self.window.bind_all('<Button-5>', lambda e: self.windowCanvas.yview_scroll(int(e.num), 'units'))
+        # Windows uses MouseWheel for scrolling
+        self.window.bind_all('<MouseWheel>', lambda e: self.windowCanvas.yview_scroll(int(-1*(e.delta/120)), "units"))
         row = self.fillInVersions()
         self.createDownloadAndCancelButtons(row)
-        scrollbar.config(command=self.windowCanvas.yview)
         self.windowCanvas.grid(row=0, column=0, sticky="ns")
         self.windowCanvas.update()
         self.window.update()
         bounds = self.window.grid_bbox()
         self.windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
-        scrollbar.grid(row=0, column=1, sticky="ns")
-        scrollbar.update()
-        self.windowCanvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.download = False
         root.wait_window(self.windowCanvas)
 
@@ -50,8 +51,8 @@ class ReleaseNotes:
                                                                                                    sticky='w')
             row += 1
             for index, feature in notes['features'].items():
-                tk.Label(self.window, text=f"- {feature}", bg='white', font='Helvetica 10').grid(row=row, column=0,
-                                                                                                 sticky='w')
+                (tk.Label(self.window, text=f"- {feature}", bg='white', font='Helvetica 10', wraplength=500, justify="left")
+                 .grid(row=row, column=0, sticky='w'))
                 row += 1
             row = self.createSpacer(row)
         return row
@@ -62,8 +63,8 @@ class ReleaseNotes:
                                                                                                 sticky='w')
             row += 1
             for index, bugfix in notes['bugfixes'].items():
-                tk.Label(self.window, text=f"- {bugfix}", bg='white', font='Helvetica 10').grid(row=row, column=0,
-                                                                                                sticky='w')
+                (tk.Label(self.window, text=f"- {bugfix}", bg='white', font='Helvetica 10', wraplength=500, justify="left")
+                 .grid(row=row, column=0,sticky='w'))
                 row += 1
             row = self.createSpacer(row)
         return row
@@ -80,10 +81,6 @@ class ReleaseNotes:
     def setDownload(self, value):
         self.download = value
         self.windowRoot.destroy()
-
-    def on_mousewheel(self, event):
-        scroll = -1 if event.delta > 0 else 1
-        self.windowCanvas.yview_scroll(scroll, "units")
 
     def createSpacer(self, row):
         tk.Label(self.window, text='', bg='white', font='Helvetica 10').grid(row=row, column=0, sticky='w')
