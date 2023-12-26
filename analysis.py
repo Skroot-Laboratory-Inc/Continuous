@@ -48,18 +48,18 @@ class Analysis:
         minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
         self.minDbSmooth.append(minMag)
         self.minFrequencySmooth.append(minFreq)
-        minMag, minFreq = findMinDataSpline(filename)
+        minMag, minFreq = findMinDataSpline(filename, self.yAxisLabel)
         self.minDbSpline.append(minMag)
         self.minFrequencySpline.append(minFreq)
         self.time.append((self.scanNumber - 100000) / 60)
         self.timestamp.append(datetime.now())
 
     def findMinData(self, filename):
-        self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename)
+        self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
         return self.findMin(self.scanFrequency, self.scanMagnitude)
 
     def findMinDataSmooth(self, filename):
-        frequency, magnitude = extractValuesFromScanFile(filename)
+        frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
         self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 501, 2)
         return self.findMin(frequency, self.scanMagnitude)
 
@@ -88,19 +88,19 @@ class Analysis:
     def createAnalyzedFiles(self):
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequency), self.minDb))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySmooth), self.minDbSmooth))
         with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)', 'Signal Strength (dB)'])
+            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
@@ -164,16 +164,19 @@ def getDenoiseParameters(numberOfTimePoints):
         return 1, 1
 
 
-def findMinDataSpline(filename):
-    frequency, magnitude = extractValuesFromScanFile(filename)
+def findMinDataSpline(filename, yAxisLabel):
+    frequency, magnitude = extractValuesFromScanFile(filename, yAxisLabel)
     return findMinSpline(frequency, magnitude)
 
 
-def extractValuesFromScanFile(filename):
+def extractValuesFromScanFile(filename, yAxisLabel):
     try:
         # The first few values are known to be inaccurate, and are ignored
         readings = pandas.read_csv(filename)[7:-1]
-        return readings['Frequency (MHz)'].values.tolist(), readings['Signal Strength (dB)'].values.tolist()
+        if yAxisLabel == 'Signal Strength (Unitless)':
+            return readings['Frequency (MHz)'].values.tolist(), invertAlongYEqualsOne(readings[yAxisLabel].values.tolist())
+        else:
+            return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
     except ValueError:
         logger.exception("Rows named improperly")
         return [], []
@@ -183,6 +186,8 @@ def extractValuesFromScanFile(filename):
     except:
         logger.exception("Unknown error parsing file")
 
+def invertAlongYEqualsOne(volts):
+    return [1 - (volt - 1) for volt in volts]
 
 def findRawMinimum(frequency, magnitude):
     _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)

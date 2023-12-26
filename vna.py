@@ -20,14 +20,15 @@ class VnaScanning(ReaderInterface):
         self.port = port
         self.readerNumber = readerNumber
         self.AppModule = AppModule
-        self.startFreqMHz = 0.1
+        self.startFreqMHz = 1
         self.stopFreqMHz = 250
         self.nPoints = 3000
         calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.yAxisLabel = 'Signal Strength (dB)'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
-            calibrationFilename)
+            calibrationFilename, self.yAxisLabel)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -37,7 +38,7 @@ class VnaScanning(ReaderInterface):
             frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
-            createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
+            createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase, self.yAxisLabel)
             return frequency, calibratedMagnitude, calibratedPhase, True
         except IndexError:
             # Vna returned an empty list - because it's not connected
@@ -51,7 +52,7 @@ class VnaScanning(ReaderInterface):
                 frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
                 magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
                 calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
-                createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
+                createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase, self.yAxisLabel)
                 return frequency, calibratedMagnitude, calibratedPhase, True
             except:
                 logger.exception("Failed to take scan")
@@ -70,7 +71,7 @@ class VnaScanning(ReaderInterface):
             self.AppModule.currentlyScanning = True
             frequency, rawMagnitude, rawPhase = self.readVnaValues(0.1, 250, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
-            createScanFile(calibrationFilename, frequency, magnitude, phase)
+            createScanFile(calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
             return True
         except IndexError:
             # Vna returned an empty list - because it's not connected
@@ -161,10 +162,10 @@ def convertAnalogToValues(magnitude, phase):
     return magnitudeAdjusted, phaseAdjusted
 
 
-def loadCalibrationFile(calibrationFilename):
+def loadCalibrationFile(calibrationFilename, yAxisLabel):
     try:
         readings = pandas.read_csv(calibrationFilename)
-        calibrationMagnitude = list(readings['Signal Strength (dB)'].values.tolist())
+        calibrationMagnitude = list(readings[yAxisLabel].values.tolist())
         calibrationPhase = list(readings['Phase'].values.tolist())
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
@@ -176,10 +177,10 @@ def loadCalibrationFile(calibrationFilename):
         logger.exception("Failed to load in calibration")
 
 
-def createScanFile(outputFileName, frequency, magnitude, phase):
+def createScanFile(outputFileName, frequency, magnitude, phase, yAxisLabel):
     with open(outputFileName, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['Frequency (MHz)', 'Signal Strength (dB)', 'Phase'])
+        writer.writerow(['Frequency (MHz)', yAxisLabel, 'Phase'])
         writer.writerows(zip(frequency, magnitude, phase))
     return
 

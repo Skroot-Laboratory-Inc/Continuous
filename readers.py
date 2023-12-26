@@ -23,6 +23,7 @@ from botocore.exceptions import ClientError
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, ReaderInterface: ReaderInterface):
+        self.yAxisLabel = ReaderInterface.yAxisLabel
         self.sshDisabled = False
         self.scp = None
         self.sshConnection = None

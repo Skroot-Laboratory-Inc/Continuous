@@ -247,7 +247,7 @@ class MainShared:
                     if self.freqToggleSet == "SGI":
                         self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
             elif self.freqToggleSet == "Signal Strength":
-                self.summaryPlot.set_ylabel('Change in Signal Strength (dB)', fontsize=9)
+                self.summaryPlot.set_ylabel(f'Change in Signal Strength', fontsize=9)
                 self.summaryPlot.set_title(f'Summary', fontsize=9)
                 for Reader in self.Readers:
                     readerColor = self.ColorCycler.getNext()

@@ -15,7 +15,7 @@ from reader_interface import ReaderInterface
 
 class Sib(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
-        self.startFreqMHz = 0.1
+        self.startFreqMHz = 1
         self.stopFreqMHz = 350
         self.nPoints = 3000
         self.readerNumber = readerNumber
@@ -26,10 +26,11 @@ class Sib(ReaderInterface):
         self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
+        self.yAxisLabel = 'Signal Strength (Unitless)'
         calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
-        self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
+        self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(
             calibrationFilename)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
@@ -37,11 +38,11 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            magnitude = self.performSweepAndWaitForComplete()
+            volts = self.performSweepAndWaitForComplete()
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
-            calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, [])
-            createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase)
-            return frequency, magnitude, [], True
+            calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
+            createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
+            return frequency, volts, [], True
         except sibcontrol.SIBException:
             text_notification.setText("Failed to perform sweep for reader, check reader connection.")
             logger.exception("Failed to perform sweep for reader, check reader connection.")
@@ -52,18 +53,18 @@ class Sib(ReaderInterface):
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         try:
             createCalibrationDirectoryIfNotExists(calibrationFilename)
-            self.sib.start_MHz = 0.1
+            self.sib.start_MHz = 1
             self.sib.stop_MHz = 350
             self.sib.num_pts = 10000
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            magnitude = self.performSweepAndWaitForComplete()
+            volts = self.performSweepAndWaitForComplete()
             self.setNumberOfPoints(self.nPoints)
             self.setStartFrequency(self.startFreqMHz)
             self.setStopFrequency(self.stopFreqMHz)
             frequency = calculateFrequencyValues(0.1, 350, 10000)
-            createScanFile(calibrationFilename, frequency, magnitude, [])
+            createScanFile(calibrationFilename, frequency, volts,  self.yAxisLabel)
             return True
         except:
             text_notification.setText("Failed to perform calibration.")
@@ -179,53 +180,48 @@ class Sib(ReaderInterface):
             except:
                 logger.exception("An error occurred while waiting for scan to complete")
         self.sleep()
-        return conversion_results
+        return convertAdcToVolts(conversion_results)
 
-    def calibrationComparison(self, frequency, magnitude, phase):
+    def calibrationComparison(self, frequency, volts, phase):
         """Phase is filler for if it will be required/output for SIB or not."""
-        calibratedMagnitude, calibratedPhase = [], []
+        calibratedVolts, calibratedPhase = [], []
         for i in range(len(frequency)):
-            calibrationMagnitudeOffset = find_nearest(frequency[i], self.calibrationFrequency,
-                                                      self.calibrationMagnitude)
-            # calibrationPhaseOffset = find_nearest(frequency[i], self.calibrationFrequency, self.calibrationPhase)
-            calibratedMagnitude.append(
-                -(convertLinearValueToDb(magnitude[i]) - convertLinearValueToDb(calibrationMagnitudeOffset)))
-            # calibratedPhase.append(phase[i] - calibrationPhaseOffset)
-        return calibratedMagnitude, calibratedPhase
+            calibrationVoltsOffset = find_nearest(frequency[i], self.calibrationFrequency,
+                                                  self.calibrationVolts)
+            calibratedVolts.append((volts[i] / calibrationVoltsOffset))
+        return calibratedVolts, calibratedPhase
 
 
 def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]):
     try:
         readings = pandas.read_csv(calibrationFilename)
-        calibrationMagnitude = list(readings['Signal Strength (dB)'].values.tolist())
-        # calibrationPhase = list(readings['Phase'].values.tolist())
+        calibrationVolts = list(readings['Signal Strength (V)'].values.tolist())
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
-        return calibrationFrequency, calibrationMagnitude, []
+        return calibrationFrequency, calibrationVolts, []
     except KeyError or ValueError:
-        text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
-                                  ('Courier', 9, 'bold'), "black", "red")
-        logger.exception("Column did not exist")
+        try:
+            list(readings['Signal Strength (dB)'].values.tolist())
+            text_notification.setText("Calibration exists for VNA not SiB.",
+                                      ('Courier', 9, 'bold'), "black", "red")
+            logger.exception("Calibration found for VNA, not SiB")
+        except:
+            text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
+                                      ('Courier', 9, 'bold'), "black", "red")
+            logger.exception("Column did not exist")
     except Exception:
         logger.exception("Failed to load in calibration")
 
 
-def createScanFile(outputFileName, frequency, magnitude, phase):
-    # Phase is not currently implemented in the SIB
-    # with open(outputFileName, 'w', newline='') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(['Frequency (MHz)', 'Signal Strength (dB)', 'Phase'])
-    #     writer.writerows(zip(frequency, magnitude, phase))
-    # return
+def createScanFile(outputFileName, frequency, volts, yAxisLabel):
+    if 'Calibration.csv' in outputFileName:
+        yAxisLabel = 'Signal Strength (V)'
+    else:
+        yAxisLabel = yAxisLabel
     with open(outputFileName, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['Frequency (MHz)', 'Signal Strength (dB)'])
-        writer.writerows(zip(frequency, magnitude))
+        writer.writerow(['Frequency (MHz)', yAxisLabel])
+        writer.writerows(zip(frequency, volts))
     return
-
-
-def convertLinearValueToDb(value):
-    """Filler for any changes required to adjust the value returned by the SIB"""
-    return value
 
 
 def calculateFrequencyValues(startFreqMHz, stopFreqMHz, nPoints) -> List[str]:
@@ -251,6 +247,10 @@ def find_nearest(freq, freqList, dBlist):
 def createCalibrationDirectoryIfNotExists(filename):
     if not os.path.exists(os.path.dirname(filename)):
         os.mkdir(os.path.dirname(filename))
+
+
+def convertAdcToVolts(adcList):
+    return [float(adcValue) * (3.3 / 2 ** 10) for adcValue in adcList]
 
 # ports = list_ports.comports()
 # portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
