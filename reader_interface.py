@@ -11,6 +11,10 @@ class ReaderInterfaceMetaClass(type):
                 callable(subclass.takeScan) and
                 hasattr(subclass, 'takeCalibrationScan') and
                 callable(subclass.takeCalibrationScan) and
+                hasattr(subclass, 'calibrateIfRequired') and
+                callable(subclass.calibrateIfRequired) and
+                hasattr(subclass, 'loadCalibrationFile') and
+                callable(subclass.loadCalibrationFile) and
                 hasattr(subclass, 'setStartFrequency') and
                 callable(subclass.setStartFrequency) and
                 hasattr(subclass, 'setStopFrequency') and
@@ -25,6 +29,12 @@ class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         """The reader takes a scan and returns magnitude values."""
+
+    def calibrateIfRequired(self, readerNumber):
+        """The reader performs a calibration if needed."""
+
+    def loadCalibrationFile(self):
+        """The reader loads in the calibration scan values."""
 
     def takeCalibrationScan(self, calibrationFilename) -> bool:
         """The reader takes a scan using the calibration values for startFreq, stopFreq and nPoints."""

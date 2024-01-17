@@ -27,11 +27,14 @@ class Sib(ReaderInterface):
         self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
-        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        if calibrationRequired:
-            self.takeCalibrationScan(calibrationFilename)
+        self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationRequired = calibrationRequired
+        if not calibrationRequired:
+            self.loadCalibrationFile()
+
+    def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(
-            calibrationFilename)
+            self.calibrationFilename)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -50,9 +53,13 @@ class Sib(ReaderInterface):
         finally:
             self.AppModule.currentlyScanning = False
 
-    def takeCalibrationScan(self, calibrationFilename) -> bool:
+    def calibrateIfRequired(self, readerNumber):
+        if self.calibrationRequired:
+            self.takeCalibrationScan()
+
+    def takeCalibrationScan(self) -> bool:
         try:
-            createCalibrationDirectoryIfNotExists(calibrationFilename)
+            createCalibrationDirectoryIfNotExists(self.calibrationFilename)
             self.sib.start_MHz = 1
             self.sib.stop_MHz = 350
             self.sib.num_pts = 10000
@@ -65,7 +72,7 @@ class Sib(ReaderInterface):
             self.setStartFrequency(self.startFreqMHz)
             self.setStopFrequency(self.stopFreqMHz)
             frequency = calculateFrequencyValues(0.1, 350, 10000)
-            createScanFile(calibrationFilename, frequency, volts,  self.yAxisLabel)
+            createScanFile(self.calibrationFilename, frequency, volts,  self.yAxisLabel)
             return True
         except:
             text_notification.setText("Failed to perform calibration.")

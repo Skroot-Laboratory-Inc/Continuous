@@ -24,11 +24,14 @@ class VnaScanning(ReaderInterface):
         self.startFreqMHz = 1
         self.stopFreqMHz = 250
         self.nPoints = 3000
-        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        if calibrationRequired:
-            self.takeCalibrationScan(calibrationFilename)
+        self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationRequired = calibrationRequired
+        if not calibrationRequired:
+            self.loadCalibrationFile()
+
+    def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
-            calibrationFilename, self.yAxisLabel)
+            self.calibrationFilename, self.yAxisLabel)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -63,15 +66,19 @@ class VnaScanning(ReaderInterface):
         finally:
             self.AppModule.currentlyScanning = False
 
-    def takeCalibrationScan(self, calibrationFilename) -> bool:
+    def calibrateIfRequired(self, readerNumber):
+        if self.calibrationRequired:
+            self.takeCalibrationScan()
+
+    def takeCalibrationScan(self) -> bool:
         try:
-            createCalibrationDirectoryIfNotExists(calibrationFilename)
+            createCalibrationDirectoryIfNotExists(self.calibrationFilename)
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
             frequency, rawMagnitude, rawPhase = self.readVnaValues(0.1, 250, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
-            createScanFile(calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
+            createScanFile(self.calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
             return True
         except IndexError:
             # Vna returned an empty list - because it's not connected

@@ -64,25 +64,31 @@ class ButtonFunctions:
         self.stopButton.destroy()
         text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
-    def calFunc(self, numReaders):
+    def findReaders(self, numReaders):
         logger.info(f'calibrate button pressed')
-        calThread = threading.Thread(target=self.calFunc2, args=numReaders)
-        calThread.start()
-
-    def calFunc2(self, numReaders):
         for readerNumber in range(1, numReaders + 1):
-            text_notification.setText(f"Calibrating reader {readerNumber}... do not touch the reader",
-                                      ('Courier', 9, 'bold'), self.AppModule.royalBlue,
-                                      self.AppModule.white)
             try:
-                logger.info(f"Calibrating reader {readerNumber}")
                 port, readerType = self.findPort(readerNumber)
                 self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, True))
-                text_notification.setText(f"Calibration {readerNumber} Complete", ('Courier', 9, 'bold'),
-                                          self.AppModule.royalBlue, self.AppModule.white)
-                logger.info(f"Calibration complete for reader {readerNumber}")
             except:
-                logger.exception(f'Failed to calibrate reader {readerNumber}')
+                logger.exception(f'Failed to instantiate reader {readerNumber}')
+    def calFunc(self, numReaders):
+        calThreads = []
+        for readerIndex in range(numReaders):
+            calThread = threading.Thread(target=self.calFunc2, args=(readerIndex,))
+            calThreads.append(calThread)
+            calThread.start()
+        return calThreads
+
+    def calFunc2(self, readerIndex):
+        try:
+            logger.info(f"Calibrating reader {readerIndex+1}")
+            self.ReaderInterfaces[readerIndex].calibrateIfRequired(readerIndex+1)
+            logger.info(f"Calibration complete for reader {readerIndex+1}")
+            self.ReaderInterfaces[readerIndex].loadCalibrationFile()
+        except:
+            logger.exception(f'Failed to calibrate reader {readerIndex+1}')
+
 
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
