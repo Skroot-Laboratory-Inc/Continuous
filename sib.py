@@ -15,6 +15,7 @@ from reader_interface import ReaderInterface
 
 class Sib(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+        self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (Unitless)'
         self.startFreqMHz = 1
         self.stopFreqMHz = 350
@@ -75,6 +76,7 @@ class Sib(ReaderInterface):
             createScanFile(self.calibrationFilename, frequency, volts,  self.yAxisLabel)
             return True
         except:
+            self.calibrationFailed = True
             text_notification.setText("Failed to perform calibration.")
             logger.exception("Failed to perform calibration.")
             return False
@@ -215,8 +217,6 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
                                       ('Courier', 9, 'bold'), "black", "red")
             logger.exception("Calibration found for VNA, not SiB")
         except:
-            text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
-                                      ('Courier', 9, 'bold'), "black", "red")
             logger.exception("Column did not exist")
     except Exception:
         logger.exception("Failed to load in calibration")

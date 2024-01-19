@@ -16,8 +16,12 @@ from reader_interface import ReaderInterface
 
 class VnaScanning(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+        self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (dB)'
-        self.socket = serial.Serial(port, 115200, timeout=1.5)
+        try:
+            self.socket = serial.Serial(port, 115200, timeout=1.5)
+        except:
+            self.calibrationFailed = True
         self.port = port
         self.readerNumber = readerNumber
         self.AppModule = AppModule
@@ -82,11 +86,13 @@ class VnaScanning(ReaderInterface):
             return True
         except IndexError:
             # Vna returned an empty list - because it's not connected
+            self.calibrationFailed = True
             text_notification.setText(
                 f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
             logger.exception(f"Lost reader connection for reader {self.readerNumber}")
             return False
         except:
+            self.calibrationFailed = True
             logger.exception("Failed to take scan")
             return False
         finally:
@@ -177,8 +183,6 @@ def loadCalibrationFile(calibrationFilename, yAxisLabel):
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
     except KeyError or ValueError:
-        text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
-                                  ('Courier', 9, 'bold'), "black", "red")
         logger.exception("Column did not exist")
     except Exception:
         logger.exception("Failed to load in calibration")

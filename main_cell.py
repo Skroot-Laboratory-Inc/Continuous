@@ -49,14 +49,7 @@ class AppModule(MainShared):
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
             self.Buttons.findReaders(self.numReaders)
-            text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
-                                      self.royalBlue, self.white)
-            threads = self.Buttons.calFunc(self.numReaders)
-            for t in threads:
-                t.join()
-            text_notification.setText(f"Calibration Complete", ('Courier', 9, 'bold'),
-                                      self.royalBlue, self.white)
-            self.Buttons.placeStartButton()
+            self.Buttons.placeCalibrateReadersButton()
 
 
 with open('./resources/version.json') as j_file:

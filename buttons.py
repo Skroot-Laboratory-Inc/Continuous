@@ -60,7 +60,11 @@ class ButtonFunctions:
 
     def stopFunc(self):
         logger.info("Stop Button Pressed")
-        self.AppModule.thread.shutdown_flag.set()
+        try:
+            self.AppModule.thread.shutdown_flag.set()
+        except:
+            text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+            self.AppModule.resetRun()
         self.stopButton.destroy()
         text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
@@ -75,10 +79,40 @@ class ButtonFunctions:
     def calFunc(self, numReaders):
         calThreads = []
         for readerIndex in range(numReaders):
+            # self.calFunc2(readerIndex)
             calThread = threading.Thread(target=self.calFunc2, args=(readerIndex,))
             calThreads.append(calThread)
             calThread.start()
         return calThreads
+
+    def calibrateReaders(self):
+        self.calibrateReadersButton.destroy()
+        calibrateReadersThread = threading.Thread(target=self.calibrateReaders1)
+        calibrateReadersThread.start()
+
+    def calibrateReaders1(self):
+        text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
+                                  self.AppModule.royalBlue, self.AppModule.white)
+        threads = self.calFunc(self.AppModule.numReaders)
+        for t in threads:
+            t.join()
+        calibrationFailed = False
+        readersCalibrationFailed = ""
+        for ReaderInterface in self.ReaderInterfaces:
+            if ReaderInterface.calibrationFailed:
+                calibrationFailed = True
+                text_notification.setText(f"Calibration failed for reader {ReaderInterface.readerNumber}",
+                                          ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+                readersCalibrationFailed = readersCalibrationFailed.join(f" {ReaderInterface.readerNumber}")
+        if calibrationFailed:
+            text_notification.setText(f"Calibration failed for readers:{readersCalibrationFailed}",
+                                      ('Courier', 9, 'bold'),
+                                      self.AppModule.royalBlue, self.AppModule.white)
+            self.placeStopButton()
+        else:
+            text_notification.setText(f"Calibration Complete", ('Courier', 9, 'bold'),
+                                      self.AppModule.royalBlue, self.AppModule.white)
+            self.placeStartButton()
 
     def calFunc2(self, readerIndex):
         try:
@@ -87,6 +121,7 @@ class ButtonFunctions:
             logger.info(f"Calibration complete for reader {readerIndex+1}")
             self.ReaderInterfaces[readerIndex].loadCalibrationFile()
         except:
+            self.ReaderInterfaces[readerIndex].calibrationFailed = True
             logger.exception(f'Failed to calibrate reader {readerIndex+1}')
 
 
@@ -136,6 +171,12 @@ class ButtonFunctions:
                                                command=lambda: self.connectReaders(self.AppModule.numReaders))
         self.connectReadersButton.place(relx=0.46, rely=0.47)
         self.connectReadersButton['style'] = 'W.TButton'
+
+    def placeCalibrateReadersButton(self):
+        self.calibrateReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Calibrate",
+                                               command=lambda: self.calibrateReaders())
+        self.calibrateReadersButton.place(relx=0.46, rely=0.47)
+        self.calibrateReadersButton['style'] = 'W.TButton'
 
     def createGuidedSetupButton(self):
         self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",
