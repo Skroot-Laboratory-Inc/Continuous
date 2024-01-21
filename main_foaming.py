@@ -43,12 +43,6 @@ class AppModule(MainShared):
             pyi_splash.close()
 
     def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell",
-                    vesselType="Vessel"):
-        guidedSetupThread = threading.Thread(target=self.guidedSetup2, args=(
-        month, day, year, numReaders, scanRate, cellType, vesselType))
-        guidedSetupThread.start()
-
-    def guidedSetup2(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell",
                      vesselType="Vessel"):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate,
