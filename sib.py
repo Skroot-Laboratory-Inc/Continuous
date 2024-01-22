@@ -15,6 +15,7 @@ from reader_interface import ReaderInterface
 
 class Sib(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+        self.yAxisLabel = 'Signal Strength (Unitless)'
         self.startFreqMHz = 1
         self.stopFreqMHz = 350
         self.nPoints = 3000
@@ -26,7 +27,6 @@ class Sib(ReaderInterface):
         self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
-        self.yAxisLabel = 'Signal Strength (Unitless)'
         calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
@@ -59,6 +59,7 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
+            self.performSweepAndWaitForComplete()
             volts = self.performSweepAndWaitForComplete()
             self.setNumberOfPoints(self.nPoints)
             self.setStartFrequency(self.startFreqMHz)
@@ -133,10 +134,12 @@ class Sib(ReaderInterface):
             return ''
 
     def sleep(self) -> None:
-        self.sib.sleep()
+        return
+        # self.sib.sleep()
 
     def wake(self) -> None:
-        self.sib.wake()
+        return
+        # self.sib.wake()
 
     def checkAndSendConfiguration(self) -> bool:
         if self.sib.valid_config():

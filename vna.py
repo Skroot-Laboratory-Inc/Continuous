@@ -16,6 +16,7 @@ from reader_interface import ReaderInterface
 
 class VnaScanning(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+        self.yAxisLabel = 'Signal Strength (dB)'
         self.socket = serial.Serial(port, 115200, timeout=1.5)
         self.port = port
         self.readerNumber = readerNumber
@@ -24,7 +25,6 @@ class VnaScanning(ReaderInterface):
         self.stopFreqMHz = 250
         self.nPoints = 3000
         calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        self.yAxisLabel = 'Signal Strength (dB)'
         if calibrationRequired:
             self.takeCalibrationScan(calibrationFilename)
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
