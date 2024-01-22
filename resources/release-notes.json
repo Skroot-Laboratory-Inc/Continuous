@@ -1,59 +1,12 @@
 {
+  "v2.0.3": {
+    "other": {
+      "1": "Fixed sib algorithm and units"
+    }
+  },
   "v2.0.2": {
     "bugfixes": {
       "1": "Fixed a bug causing release notes dialog to format improperly"
-    }
-  },
-  "v2.0.1": {
-    "features": {
-      "1": "Added a summaryAnalyzed file in the root save location with all readers information."
-    },
-    "bugfixes": {
-      "1": "Failed analysis no longer causes analyzed files to not be created."
-    },
-    "other": {
-      "1": "Added a deployment script."
-    }
-  },
-  "v2.0.0": {
-    "features": {
-      "1": "Disabled contamination checking algorithm.",
-      "2": "Added linux server fileshare for on premise usage.",
-      "3": "Zero'd out x-axis on inoculation time when entered.",
-      "4": "Added an install script to install new packages on software updates."
-    },
-    "bugfixes": {
-      "1": "Software update now works properly with more than 1 software update available.",
-      "2": "Disconnecting and reconnecting a reader now continues scanning.",
-      "3": "Failed scan analysis now removes the scan instead of returning zero."
-    },
-    "other": {
-      "1": "Added SIB support for on premise testing."
-    }
-  },
-  "v1.2.2": {
-    "bugfixes": {
-      "1": "Fixed a bug causing the file save location to be incorrect."
-    }
-  },
-  "v1.2.1": {
-    "bugfixes": {
-      "1": "Fixed a bug causing startup crashes.",
-      "2": "Fixed a bug with a deprecated library causing instability."
-    }
-  },
-  "v1.2.0": {
-    "features": {
-      "1": "Added release notes dialog to software updates.",
-      "2": "Added version to the bottom left of the screen.",
-      "3": "Separated software pipelines for production.",
-      "4": "Summary pdf updated to have a summary page."
-    },
-    "bugfixes": {
-      "1": "Fixed extra file creation."
-    },
-    "other": {
-      "1": "Linux Server File share"
     }
   }
 }

@@ -157,6 +157,7 @@ def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequ
                 return sib
             else:
                 logger.info(f"Failed to handshake SIB {readerNumber}")
+                text_notification.setText("Failed to connect to SiB")
                 sib.close()
         elif readerType == 'VNA':
             return VnaScanning(port, AppModule, readerNumber, calibrationRequired)
