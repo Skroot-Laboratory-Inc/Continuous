@@ -1,4 +1,13 @@
 {
+  "v2.0.5": {
+    "features": {
+      "1": "Increased max time between scans",
+      "2": "Added a cleanup process for data/log files older than a month"
+    },
+    "bugfixes": {
+      "1": "Fixed an issue with the ssh connection failing and crashing on asus laptops"
+    }
+  },
   "v2.0.4": {
     "features": {
       "1": "Added simultaneous calibration, after connecting readers"

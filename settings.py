@@ -73,8 +73,8 @@ class Settings:
             logger.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
 
     def rateSetting(self):
-        scanRate = tk.simpledialog.askfloat("Input", "Scan Rate (minutes between scans): \nRange: (0.1 - 10)",
-                                            parent=self.AppModule.root, minvalue=0.1, maxvalue=10.0)
+        scanRate = tk.simpledialog.askfloat("Input", "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
+                                            parent=self.AppModule.root, minvalue=0.1, maxvalue=240)
         if scanRate is not None:
             for Reader in self.AppModule.Readers:
                 Reader.scanRate = scanRate

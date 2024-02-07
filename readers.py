@@ -160,7 +160,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 self.initializeSSHConnection(
                     aws_secret["host"], aws_secret["port"], aws_secret["username"], aws_secret["password"]
                 )
-
+            if not self.sshDisabled:
                 self.serverSavePath = f'D:/data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
                 serverSavePath_ = self.serverSavePath.replace('/', '\\')
                 stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
