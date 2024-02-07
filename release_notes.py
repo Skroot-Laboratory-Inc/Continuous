@@ -4,7 +4,7 @@ import tkinter.ttk as ttk
 
 class ReleaseNotes:
     def __init__(self, releaseNotes, root):
-        self.releaseNotes = releaseNotes
+        self.releaseNotes = self.sortNotes(releaseNotes)
         self.windowRoot = tk.Toplevel(root, bg='white', borderwidth=0, pady=25, padx=25)
         self.windowRoot.minsize(width=650, height=550)
         self.windowRoot.maxsize(width=800, height=550)
@@ -28,6 +28,12 @@ class ReleaseNotes:
         self.windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
         self.download = False
         root.wait_window(self.windowCanvas)
+
+    def sortNotes(self, releaseNotes):
+        keys = list(releaseNotes.keys())
+        keys.sort()
+        keys = keys[::-1]
+        return {i: releaseNotes[i] for i in keys}
 
     def fillInVersions(self):
         row = 0
