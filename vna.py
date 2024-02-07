@@ -16,19 +16,26 @@ from reader_interface import ReaderInterface
 
 class VnaScanning(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+        self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (dB)'
-        self.socket = serial.Serial(port, 115200, timeout=1.5)
+        try:
+            self.socket = serial.Serial(port, 115200, timeout=1.5)
+        except:
+            self.calibrationFailed = True
         self.port = port
         self.readerNumber = readerNumber
         self.AppModule = AppModule
         self.startFreqMHz = 1
         self.stopFreqMHz = 250
         self.nPoints = 3000
-        calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        if calibrationRequired:
-            self.takeCalibrationScan(calibrationFilename)
+        self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationRequired = calibrationRequired
+        if not calibrationRequired:
+            self.loadCalibrationFile()
+
+    def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationMagnitude, self.calibrationPhase = loadCalibrationFile(
-            calibrationFilename, self.yAxisLabel)
+            self.calibrationFilename, self.yAxisLabel)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -63,23 +70,29 @@ class VnaScanning(ReaderInterface):
         finally:
             self.AppModule.currentlyScanning = False
 
-    def takeCalibrationScan(self, calibrationFilename) -> bool:
+    def calibrateIfRequired(self, readerNumber):
+        if self.calibrationRequired:
+            self.takeCalibrationScan()
+
+    def takeCalibrationScan(self) -> bool:
         try:
-            createCalibrationDirectoryIfNotExists(calibrationFilename)
+            createCalibrationDirectoryIfNotExists(self.calibrationFilename)
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
             frequency, rawMagnitude, rawPhase = self.readVnaValues(0.1, 250, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
-            createScanFile(calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
+            createScanFile(self.calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
             return True
         except IndexError:
             # Vna returned an empty list - because it's not connected
+            self.calibrationFailed = True
             text_notification.setText(
                 f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
             logger.exception(f"Lost reader connection for reader {self.readerNumber}")
             return False
         except:
+            self.calibrationFailed = True
             logger.exception("Failed to take scan")
             return False
         finally:
@@ -170,8 +183,6 @@ def loadCalibrationFile(calibrationFilename, yAxisLabel):
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
     except KeyError or ValueError:
-        text_notification.setText("IMPORTANT!!! Software updated; calibration required.",
-                                  ('Courier', 9, 'bold'), "black", "red")
         logger.exception("Column did not exist")
     except Exception:
         logger.exception("Failed to load in calibration")

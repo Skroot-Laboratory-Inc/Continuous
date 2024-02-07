@@ -1,10 +1,12 @@
 import importlib.util
 import os, json
+import threading
 from datetime import datetime
 
 import matplotlib as mpl
 
 import guided_setup
+import text_notification
 from main_shared import MainShared
 
 mpl.use('TkAgg')
@@ -41,8 +43,8 @@ class AppModule(MainShared):
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
-            self.Buttons.calFunc2(self.numReaders)
-            self.Buttons.placeStartButton()
+            self.Buttons.findReaders(self.numReaders)
+            self.Buttons.placeCalibrateReadersButton()
 
 
 with open('./resources/version.json') as j_file:

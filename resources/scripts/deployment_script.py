@@ -15,7 +15,7 @@ def zip_files(folder_path, zip_name):
         for foldername, subfolders_, filenames in os.walk(folder_path):
             for filename in filenames:
                 file_path = os.path.join(foldername, filename)
-                if "/.idea/" in file_path or "./__pycache__/" in file_path or "/.git/" in file_path or  "/unit_tests/" in file_path or "/temp/" in file_path:
+                if ".idea" in file_path or "__pycache__" in file_path or ".git" in file_path or  "unit_tests" in file_path or "temp" in file_path or "venv" in file_path or "build" in file_path or "dist" in file_path or ".egg-info" in file_path:
                     continue
                 arcname = os.path.relpath(file_path, folder_path)
                 print(file_path, arcname)

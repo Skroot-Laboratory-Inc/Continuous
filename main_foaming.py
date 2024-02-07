@@ -1,11 +1,13 @@
 import importlib.util
 import json
 import os
+import threading
 from datetime import datetime
 
 import matplotlib as mpl
 
 import guided_setup
+import text_notification
 from main_shared import MainShared
 
 mpl.use('TkAgg')
@@ -41,14 +43,21 @@ class AppModule(MainShared):
             pyi_splash.close()
 
     def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell",
-                    vesselType="Vessel"):
+                     vesselType="Vessel"):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate,
                                             cellType, vesselType)
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
-            self.Buttons.calFunc2(self.numReaders)
+            self.Buttons.findReaders(self.numReaders)
+            text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
+                                      self.royalBlue, self.white)
+            threads = self.Buttons.calFunc(self.numReaders)
+            for t in threads:
+                t.join()
+            text_notification.setText(f"Calibration Complete", ('Courier', 9, 'bold'),
+                                      self.royalBlue, self.white)
             self.Buttons.placeStartButton()
 
 
