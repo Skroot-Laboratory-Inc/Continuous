@@ -1,9 +1,9 @@
 import json
+import logging
 import os
 
 import botocore
 
-import logger
 import release_notes
 from aws import AwsBoto3
 
@@ -59,7 +59,7 @@ class SoftwareUpdate(AwsBoto3):
                 except botocore.exceptions.ClientError:
                     continue  # This means it's an R&D update and we are not using an R&D profile
                 except:
-                    logger.exception("failed to get tags of software update file")
+                    logging.exception("failed to get tags of software update file")
                 if majorVersion > self.newestMajorVersion or (
                         majorVersion == self.newestMajorVersion and minorVersion > self.newestMinorVersion):
                     self.updateNewestVersion(majorVersion, minorVersion, filename)

@@ -1,6 +1,6 @@
-from fpdf import FPDF
+import logging
 
-import logger
+from fpdf import FPDF
 
 
 class PDF(FPDF):
@@ -25,7 +25,8 @@ class PDF(FPDF):
             self.set_fill_color(r=26, g=124, b=42)
         else:  # red
             self.set_fill_color(r=129, g=17, b=17)
-        self.ellipse(x=self.pdf_w * xrel, y=self.pdf_h * yrel + self.topPadding, w=self.pdf_h * rrel, h=self.pdf_h * rrel, style="FD")
+        self.ellipse(x=self.pdf_w * xrel, y=self.pdf_h * yrel + self.topPadding, w=self.pdf_h * rrel,
+                     h=self.pdf_h * rrel, style="FD")
 
     def placeImage(self, plt, xrel, yrel, relwidth, relheight):
         self.set_xy(self.pdf_w * xrel, self.pdf_h * yrel + self.topPadding)
@@ -87,11 +88,11 @@ def generateReaderPages(pdf, location, Readers, headerHeight):
                                                         paddingX,
                                                         oldX, labelWidth, headerHeight)
             except:
-                logger.exception(f'Failed to update pdf')
+                logging.exception(f'Failed to update pdf')
         pdf.setAuthor()  # uses Skroot Laboratory
         pdf.output(f'{location}/Summary.pdf', 'F')  # saves the plot, F refers to file
     except:
-        logger.exception("Failed to generate summary PDF")
+        logging.exception("Failed to generate summary PDF")
 
 
 def checkIfNewPage(pdf, currentX, currentY, plotHeight, paddingX, oldX, labelWidth, headerHeight):

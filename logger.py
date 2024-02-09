@@ -5,9 +5,6 @@ from datetime import datetime
 
 
 def loggerSetup(location, version):
-    global logger
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
     if not os.path.exists(os.path.dirname(location)):
         os.mkdir(os.path.dirname(location))
     if not os.path.exists(location):
@@ -16,21 +13,46 @@ def loggerSetup(location, version):
         # log is greater than 100 kB, make a copy and create a new one
         shutil.copy(location, f"{location[:-4]}_{datetime.now().date()}.txt")
         open(location, 'w+').close()
-    fh = logging.FileHandler(location)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(location)
+        ]
+    )
+    logging.getLogger().addFilter(DuplicateFilter())
     logging.captureWarnings(True)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("boto3").setLevel(logging.ERROR)
     logging.getLogger("botocore").setLevel(logging.ERROR)
     logging.getLogger('s3transfer').setLevel(logging.ERROR)
-    logger.addHandler(fh)
-    logger.info(f'Logger Setup {version}')
+    logging.info(f'Logger Setup {version}')
     return
 
 
 def info(infoText):
-    logger.info(infoText)
+    logging.info(infoText)
 
 
 def exception(exceptionText):
-    logger.exception(exceptionText)
+    logging.exception(exceptionText)
+
+
+class DuplicateFilter(logging.Filter):
+    def __init__(self):
+        self.consecutive_repeats = 0
+        self.consecutive_repeats_warning = 100
+        self.last_log = ""
+
+    def filter(self, record):
+        # add other fields if you need more granular comparison, depends on your app
+        current_log = (record.levelno, record.msg)
+        if current_log != getattr(self, "last_log", None):
+            self.last_log = current_log
+            self.consecutive_repeats = 0
+            return True
+        self.consecutive_repeats += 1
+        if self.consecutive_repeats % self.consecutive_repeats_warning == 0:
+            logging.warning(f"{self.last_log} recorded {self.consecutive_repeats_warning} times in a row.")
+        return False

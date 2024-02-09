@@ -1,8 +1,7 @@
 import glob
+import logging
 import os
 import subprocess as sp
-
-import logger
 
 
 class ServerFileShare:
@@ -30,7 +29,7 @@ class ServerFileShare:
                 self.disabled = True
         except:
             self.disabled = True
-            logger.exception('Failed to find server')
+            logging.exception('Failed to find server')
 
     def makeNextFolder(self, folderName):
         try:
@@ -44,4 +43,4 @@ class ServerFileShare:
             self.serverLocation = f'{self.serverLocationBase}/{folderUsed}_{folderName}'
             os.mkdir(self.serverLocation)
         except:
-            logger.exception('Failed to create folder on server')
+            logging.exception('Failed to create folder on server')

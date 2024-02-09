@@ -1,10 +1,10 @@
+import logging
 import math
 import tkinter as tk
 import tkinter.ttk as ttk
 
 import matplotlib as mpl
 
-import logger
 from readers import Reader, FoamingReader
 
 
@@ -18,7 +18,7 @@ class Settings:
                                               parent=self.AppModule.root, minvalue=1, maxvalue=100)
         if foamThresh is not None:
             self.AppModule.foamThresh = foamThresh
-            logger.info(f'foamThresh changed to {foamThresh}')
+            logging.info(f'foamThresh changed to {foamThresh}')
 
     def foamEmailSetting(self):
         receiver_email = ""
@@ -48,12 +48,12 @@ class Settings:
             for Reader in self.AppModule.Readers:
                 Reader.ReaderInterface.setStartFrequency(startFreq)
             self.AppModule.startFreq = startFreq
-            logger.info(f'startFreq changed to {startFreq}')
+            logging.info(f'startFreq changed to {startFreq}')
         if stopFreq is not None:
             for Reader in self.AppModule.Readers:
                 Reader.ReaderInterface.setStopFrequency(stopFreq)
             self.AppModule.stopFreq = stopFreq
-            logger.info(f'stopFreq changed to {stopFreq}')
+            logging.info(f'stopFreq changed to {stopFreq}')
 
     def nPointsSetting(self):
         nPoints = tk.simpledialog.askfloat("Input", "Number of points per scan: \nRange: (1,000-7,000)",
@@ -62,7 +62,7 @@ class Settings:
             for Reader in self.AppModule.Readers:
                 Reader.ReaderInterface.setNumberOfPoints(nPoints)
             self.AppModule.nPoints = nPoints
-            logger.info(f'nPoints changed to {nPoints}')
+            logging.info(f'nPoints changed to {nPoints}')
 
     def saveFilesSetting(self):
         disableSaveFullFiles = tk.messagebox.askyesno("Disable Full File Save",
@@ -70,7 +70,7 @@ class Settings:
                                                       parent=self.AppModule.root)
         if disableSaveFullFiles is not None:
             self.AppModule.disableSaveFullFiles = disableSaveFullFiles
-            logger.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
+            logging.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
 
     def rateSetting(self):
         scanRate = tk.simpledialog.askfloat("Input", "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
@@ -79,28 +79,28 @@ class Settings:
             for Reader in self.AppModule.Readers:
                 Reader.scanRate = scanRate
             self.AppModule.scanRate = scanRate
-            logger.info(f'scanRate changed to {scanRate}')
+            logging.info(f'scanRate changed to {scanRate}')
 
     def denoiseSetting(self):
         self.AppModule.denoiseSet = tk.messagebox.askyesno('Denoise Setting',
                                                            'Would you like to denoise and smooth the results before displaying them?')
-        logger.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
+        logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
     def freqToggleSetting(self, toggle):
         self.AppModule.freqToggleSet = toggle
-        logger.info(f'freqToggleSet changed to {toggle}')
+        logging.info(f'freqToggleSet changed to {toggle}')
 
     def splineToggleSetting(self):
         self.AppModule.splineToggleSet = tk.messagebox.askyesno('Quadratic/Spline',
                                                                 'Would you like to switch analysis to spline? '
                                                                 '(yes for Spline no for Quadratic) ')
-        logger.info(f'splineToggleSet changed to {self.AppModule.denoiseSet}')
+        logging.info(f'splineToggleSet changed to {self.AppModule.denoiseSet}')
 
     def weakSignalToggleSetting(self):
         self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno('Ignore Weak Signal',
                                                                     'Are you sure you would like to ignore '
                                                                     'the weak signal warning?')
-        logger.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
+        logging.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
     def createReaders(self, numReaders, ReaderInterfaces):
         maxReadersPerScreen = 5
@@ -143,7 +143,8 @@ class Settings:
                     self.AppModule.Readers.append(Reader(
                         self.AppModule, readerNumber, outerFrame, readersOnScreen,
                         self.AppModule.nPoints, self.AppModule.startFreq, self.AppModule.stopFreq,
-                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
+                        self.AppModule.scanRate, self.AppModule.savePath, readerColor,
+                        ReaderInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()

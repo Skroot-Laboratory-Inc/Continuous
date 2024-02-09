@@ -1,4 +1,9 @@
 {
+  "v2.0.7": {
+    "features": {
+      "1": "Updated logging to reduce entries created, and timestamp them."
+    }
+  },
   "v2.0.6": {
     "bugfixes": {
       "1": "Updated release notes to sort and display most recent first"

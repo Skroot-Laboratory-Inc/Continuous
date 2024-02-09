@@ -1,12 +1,13 @@
 import json
+import logging
 import os
 import shutil
 import socket
 
+import boto3
 import paramiko
 from scp import SCPClient
 
-import logger
 import text_notification
 from algorithms import ContaminationAlgorithm, FoamingAlgorithm, HarvestAlgorithm
 from analysis import Analysis
@@ -14,10 +15,6 @@ from dev import ReaderDevMode
 from emailer import Emailer
 from plotting import Plotting
 from reader_interface import ReaderInterface
-
-import boto3
-from botocore.exceptions import ClientError
-
 
 
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
@@ -82,7 +79,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             elif self.AppModule.os == "linux" and not self.sshDisabled:
                 self.scp.put(files_to_send, self.serverSavePath)
         except:
-            logger.exception("Failed to send files to server")
+            logging.exception("Failed to send files to server")
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
         pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
@@ -104,7 +101,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 if os.path.exists(filename):
                     shutil.copy(filename, self.serverSavePath)
             except Exception:
-                logger.exception('Failed to send file to server')
+                logging.exception('Failed to send file to server')
         else:
             pass
 
@@ -155,7 +152,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         if self.AppModule.os == "linux":
             aws_secret = self.get_aws_secret()
             if aws_secret == None or self.sshDisabled:
-                logger.exception("Failure to find aws secret")
+                logging.exception("Failure to find aws secret")
             else:
                 self.initializeSSHConnection(
                     aws_secret["host"], aws_secret["port"], aws_secret["username"], aws_secret["password"]
@@ -166,7 +163,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
                 stdout, stderr = stdout_.read(), stderr_.read()
                 if stderr != b'':
-                    logger.exception(f"Could not create folder after connecting to the server: {stderr}")
+                    logging.exception(f"Could not create folder after connecting to the server: {stderr}")
         self.createFolders()
 
     def initializeSSHConnection(self, hostname, port, username, password):
@@ -178,10 +175,10 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 username=username, password=password,
                 timeout=5)
             self.scp = SCPClient(self.sshConnection.get_transport())
-            logger.info(f"Connection Established with {username}@{hostname}:{port}")
+            logging.info(f"Connection Established with {username}@{hostname}:{port}")
         except:
             self.sshDisabled = True
-            logger.exception("There was an error SSH connecting to the server")
+            logging.exception("There was an error SSH connecting to the server")
 
     def createFolders(self):
         if self.AppModule.os == "windows" and not os.path.exists(
@@ -195,7 +192,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             else:
                 text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
                                           ('Courier', 12, 'bold'), self.AppModule.royalBlue, 'red')
-                logger.info(f"No calibration found for Reader {self.readerNumber}")
+                logging.info(f"No calibration found for Reader {self.readerNumber}")
 
     # no ops
     def checkFoaming(self):

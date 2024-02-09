@@ -1,4 +1,5 @@
 import csv
+import logging
 import math
 import os
 import shutil
@@ -8,12 +9,12 @@ import sys
 import threading
 import time
 import tkinter as tk
+from zipfile import ZipFile
 
 import matplotlib as mpl
 import numpy as np
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
-from zipfile import ZipFile
 
 import logger
 import text_notification
@@ -141,7 +142,7 @@ class MainShared:
                         # Reader.checkContamination()
                         Reader.checkHarvest()
                     except:
-                        logger.exception(f'Unchecked error, Reader {Reader.readerNumber} failed to take scan')
+                        logging.exception(f'Unchecked error, Reader {Reader.readerNumber} failed to take scan')
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
@@ -150,14 +151,14 @@ class MainShared:
                 generatePdf(self.savePath, self.Readers)
                 self.awsUploadPdfFile()
             except:
-                logger.exception('Unknown error has occurred')
+                logging.exception('Unknown error has occurred')
             finally:
                 currentTime = time.time()
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.royalBlue, self.white)
         self.resetRun()
-        logger.info('Stopped scanning')
+        logging.info('Stopped scanning')
 
     def awsCheckSoftwareUpdates(self):
         if not self.DevMode.isDevMode:
@@ -182,7 +183,7 @@ class MainShared:
             else:
                 text_notification.setText("Software update aborted.")
         except:
-            logger.exception("failed to update software")
+            logging.exception("failed to update software")
 
     def awsUploadPdfFile(self):
         if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
@@ -208,13 +209,13 @@ class MainShared:
                 Reader.scanRate = math.ceil(timeTaken / 60)
             self.scanRate = math.ceil(timeTaken / 60)
             text_notification.setText(f"Took too long to take scans \nScan rate now {self.Readers[0].scanRate}.")
-            logger.info(f'{timeTaken} seconds to take ALL scans')
-            logger.info(f"Took too long to take scans \nScan rate now {self.Readers[0].scanRate}.")
+            logging.info(f'{timeTaken} seconds to take ALL scans')
+            logging.info(f"Took too long to take scans \nScan rate now {self.Readers[0].scanRate}.")
 
     def waitUntilNextScan(self, currentTime, startTime):
         while currentTime - startTime < self.scanRate * 60:
             if self.thread.shutdown_flag.is_set():
-                logger.info('Cancelling data collection due to stop button pressed')
+                logging.info('Cancelling data collection due to stop button pressed')
                 break
             time.sleep(0.05)
             self.Timer.updateTime()
@@ -268,7 +269,7 @@ class MainShared:
             self.summaryCanvas.draw()
             self.summaryCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         except:
-            logger.exception("Failed to generate summaryPlot")
+            logging.exception("Failed to generate summaryPlot")
 
     def createSummaryAnalyzedFile(self):
         rowHeaders = ['Time (hours)']
@@ -299,7 +300,7 @@ class MainShared:
                 Reader.ReaderInterface.close()
             except AttributeError:
                 Reader.socket = None
-                logger.exception(f'Failed to close Reader {Reader.readerNumber} socket')
+                logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
         versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
@@ -317,7 +318,7 @@ class MainShared:
             frame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
             frame.tkraise()
         except:
-            logger.exception('Failed to change the frame visible')
+            logging.exception('Failed to change the frame visible')
         self.summaryFrame.tkraise()
 
 

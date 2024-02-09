@@ -1,6 +1,6 @@
-import hid
+import logging
 
-import logger
+import hid
 
 
 class Dac:
@@ -13,7 +13,7 @@ class Dac:
             self.device.open(VENDOR_ID, PRODUCT_ID)
         except:
             self.disabled = True
-            logger.exception("Failed to initialize DAC")
+            logging.exception("Failed to initialize DAC")
 
     def send_ma(self, mA):
         if not self.disabled:
@@ -24,7 +24,7 @@ class Dac:
 
 
 def write_to_adu(dev, msg_str):
-    logger.info('Writing command: {}'.format(msg_str))
+    logging.info('Writing command: {}'.format(msg_str))
     # message structure:
     #   message is an ASCII string containing the command
     #   8 bytes in length
@@ -35,7 +35,7 @@ def write_to_adu(dev, msg_str):
     try:
         num_bytes_written = dev.write(byte_str.encode())
     except IOError as e:
-        logger.exception('Error writing command: {}'.format(e))
+        logging.exception('Error writing command: {}'.format(e))
         return None
     return num_bytes_written
 
