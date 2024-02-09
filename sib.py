@@ -67,7 +67,6 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            self.performSweepAndWaitForComplete()
             volts = self.performSweepAndWaitForComplete()
             self.setNumberOfPoints(self.nPoints)
             self.setStartFrequency(self.startFreqMHz)
@@ -125,7 +124,7 @@ class Sib(ReaderInterface):
         try:
             return_val = self.sib.handshake(data)
             if return_val == data:
-                self.getFirmwareVersion()
+                # self.getFirmwareVersion()
                 return True
             else:
                 return False
@@ -143,12 +142,10 @@ class Sib(ReaderInterface):
             return ''
 
     def sleep(self) -> None:
-        return
-        # self.sib.sleep()
+        self.sib.sleep()
 
     def wake(self) -> None:
-        return
-        # self.sib.wake()
+        self.sib.wake()
 
     def checkAndSendConfiguration(self) -> bool:
         if self.sib.valid_config():

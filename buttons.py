@@ -200,6 +200,7 @@ def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequ
         if readerType == 'SIB':
             sib = Sib(port, AppModule, readerNumber, calibrationRequired)
             success = sib.performHandshake()
+            # success = True
             if success:
                 return sib
             else:
