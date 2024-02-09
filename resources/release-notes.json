@@ -1,4 +1,12 @@
 {
+  "v2.0.6": {
+    "bugfixes": {
+      "1": "Updated release notes to sort and display most recent first"
+    },
+    "other": {
+      "1": "Updated sib integration with sleep/wake, disabled firmware version check."
+    }
+  },
   "v2.0.3": {
     "other": {
       "1": "Fixed sib algorithm and units"
