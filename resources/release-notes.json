@@ -4,7 +4,8 @@
       "1": "Updated release notes to sort and display most recent first"
     },
     "other": {
-      "1": "Updated sib integration with sleep/wake, disabled firmware version check."
+      "1": "Updated sib integration with sleep/wake, disabled firmware version check.",
+      "2": "Added gnome-screenshot to dependencies for asus lapop"
     }
   },
   "v2.0.3": {
