@@ -60,7 +60,7 @@ class Analysis:
 
     def findMinDataSmooth(self, filename):
         frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 501, 2)
+        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
         return self.findMin(frequency, self.scanMagnitude, True)
 
     def findMin(self, frequency, magnitude, shouldLog):
@@ -107,7 +107,7 @@ class Analysis:
                 zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)', self.yAxisLabel])
+            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)

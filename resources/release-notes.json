@@ -1,7 +1,12 @@
 {
   "v2.0.7": {
     "features": {
-      "1": "Updated logging to reduce entries created, and timestamp them."
+      "1": "Updated logging to reduce entries created, and timestamp them.",
+      "2": ""
+    },
+    "bugfixes": {
+      "1": "Corrected noFitAnalyzed.csv column headers",
+      "2": "Moved guided setup form to be on top of desktop app."
     }
   },
   "v2.0.6": {

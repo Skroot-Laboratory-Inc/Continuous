@@ -128,7 +128,7 @@ class MainShared:
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
                             Reader.addDevPoint()
-                        if self.denoiseSet and not self.isDevMode:
+                        if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()

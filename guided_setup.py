@@ -56,6 +56,7 @@ class SetupForm:
         x = (ws / 2) - (w / 2)
         y = (hs / 2) - (h / 2)
         self.window.geometry('+%d+%d' % (x, y))
+        self.window.tkraise(root)
         tk.Label(self.window, text="Date", bg='white').grid(row=0, column=0, sticky='w')
         tk.Label(self.window, text="Cell Type", bg='white').grid(row=2, column=0, sticky='w')
         tk.Label(self.window, text="Vessel Type", bg='white').grid(row=4, column=0, sticky='w')
