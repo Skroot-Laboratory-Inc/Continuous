@@ -48,6 +48,8 @@ class SoftwareUpdate(AwsBoto3):
     def checkForSoftwareUpdates(self):
         if not self.disabled:
             allReleases = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
+            # first, we're just going through the releases and finding the most recent one
+            most_recent_version = (None, None)
             for item in allReleases['Contents']:
                 filename = item['Key']
                 if filename == 'software-releases/':
@@ -60,11 +62,19 @@ class SoftwareUpdate(AwsBoto3):
                     continue  # This means it's an R&D update and we are not using an R&D profile
                 except:
                     logger.exception("failed to get tags of software update file")
-                if majorVersion > self.newestMajorVersion or (
-                        majorVersion == self.newestMajorVersion and minorVersion > self.newestMinorVersion):
-                    self.updateNewestVersion(majorVersion, minorVersion, filename)
-                    return f"{self.newestMajorVersion}.{self.newestMinorVersion}", True
-            return f"{self.newestMajorVersion}.{self.newestMinorVersion}", False
+
+                # find the greatest version in the s3 bucket
+                if (most_recent_version == (None, None)) or \
+                        (most_recent_version[0] < majorVersion) or \
+                        (most_recent_version[0] == majorVersion and most_recent_version[1] < minorVersion):
+                    most_recent_version = (majorVersion, minorVersion)
+            # if our current newest version is less than that, then we'll update it and return True
+            out_of_date = False
+            if (self.newestMajorVersion < most_recent_version[0]) or \
+                (self.newestMajorVersion == most_recent_version[0] and self.newestMinorVersion < most_recent_version[1]):
+                out_of_date = True
+            self.updateNewestVersion(majorVersion, minorVersion, filename)
+            return f"{most_recent_version[0]}.{most_recent_version[1]}", out_of_date
         else:
             return "", False
 
