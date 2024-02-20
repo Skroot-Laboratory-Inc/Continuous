@@ -1,3 +1,4 @@
+import logging
 import uuid
 from urllib import parse
 
@@ -5,7 +6,7 @@ import boto3
 import botocore
 from botocore.client import Config
 
-import logger
+import logging
 import text_notification
 
 
@@ -33,15 +34,16 @@ class AwsBoto3:
                         self.s3.upload_file(fileLocation, self.bucket, filename, ExtraArgs={'ContentType': fileType})
                         self.dstPdfName = filename
                         break
-                    except botocore.exceptions.ClientError:
-                        pass  # This means unauthorized
-                    except:
-                        logger.exception('Failed to find bucket')
+                    except Exception as e:
+                        if type(e.__context__) is botocore.exceptions.ClientError:
+                            pass  # This means unauthorized
+                        else:
+                            logging.exception('Failed to find bucket')
             except botocore.exceptions.EndpointConnectionError:
-                logger.info('no internet')
+                logging.info('no internet')
                 self.disabled = True
             except:
-                logger.exception("Error - most likely there were no folders found in AWS")
+                logging.exception("Error - most likely there were no folders found in AWS")
 
     def uploadFile(self, fileLocation, fileName, fileType):
         if not self.disabled:
@@ -50,10 +52,10 @@ class AwsBoto3:
                 self.s3.upload_file(fileLocation, self.bucket, fileName,
                                     ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags)})
             except botocore.exceptions.EndpointConnectionError:
-                logger.info('no internet')
+                logging.info('no internet')
                 self.disabled = True
             except:
-                logger.exception('Failed to upload file')
+                logging.exception('Failed to upload file')
                 text_notification.setText("Failed to upload file")
 
     def deleteFile(self, fileName):
@@ -61,17 +63,17 @@ class AwsBoto3:
             try:
                 self.s3.delete_object(Bucket=self.bucket, Key=fileName)
             except botocore.exceptions.EndpointConnectionError:
-                logger.info('no internet')
+                logging.info('no internet')
                 self.disabled = True
             except:
-                logger.exception('Failed to delete file')
+                logging.exception('Failed to delete file')
 
     def downloadFile(self, aws_filename, local_filename):
         if not self.disabled:
             try:
                 self.s3.download_file(self.bucket, aws_filename, local_filename)
             except botocore.exceptions.EndpointConnectionError:
-                logger.info('no internet')
+                logging.info('no internet')
                 self.disabled = True
             except:
-                logger.exception('Failed to download file')
+                logging.exception('Failed to download file')

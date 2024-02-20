@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 import time
 from bisect import bisect_left
@@ -9,7 +10,6 @@ import pandas
 import serial
 from serial import SerialException
 
-import logger
 import text_notification
 from reader_interface import ReaderInterface
 
@@ -50,22 +50,23 @@ class VnaScanning(ReaderInterface):
         except IndexError:
             # Vna returned an empty list - because it's not connected
             text_notification.setText(f"Connection lost to Reader {self.readerNumber}, check USB connection")
-            logger.exception(f"Lost reader connection for reader {self.readerNumber}")
+            logging.exception(f"Lost reader connection for reader {self.readerNumber}")
         except SerialException:
             self.close()
             self.socket = serial.Serial(self.port, 115200, timeout=1.5)
             try:
                 self.AppModule.currentlyScanning = True
-                frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
+                frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz,
+                                                                       self.nPoints)
                 magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
                 calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
                 createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase, self.yAxisLabel)
                 return frequency, calibratedMagnitude, calibratedPhase, True
             except:
-                logger.exception("Failed to take scan")
+                logging.exception("Failed to take scan")
                 return [], [], [], False
         except:
-            logger.exception("Failed to take scan")
+            logging.exception("Failed to take scan")
             return [], [], [], False
         finally:
             self.AppModule.currentlyScanning = False
@@ -89,11 +90,11 @@ class VnaScanning(ReaderInterface):
             self.calibrationFailed = True
             text_notification.setText(
                 f"Calibration Failed for reader {self.readerNumber}... \nConnection lost, check USB connection")
-            logger.exception(f"Lost reader connection for reader {self.readerNumber}")
+            logging.exception(f"Lost reader connection for reader {self.readerNumber}")
             return False
         except:
             self.calibrationFailed = True
-            logger.exception("Failed to take scan")
+            logging.exception("Failed to take scan")
             return False
         finally:
             self.AppModule.currentlyScanning = False
@@ -183,9 +184,9 @@ def loadCalibrationFile(calibrationFilename, yAxisLabel):
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationMagnitude, calibrationPhase
     except KeyError or ValueError:
-        logger.exception("Column did not exist")
+        logging.exception("Column did not exist")
     except Exception:
-        logger.exception("Failed to load in calibration")
+        logging.exception("Failed to load in calibration")
 
 
 def createScanFile(outputFileName, frequency, magnitude, phase, yAxisLabel):

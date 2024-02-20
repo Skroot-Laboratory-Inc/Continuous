@@ -1,4 +1,14 @@
 {
+  "v2.0.7": {
+    "features": {
+      "1": "Updated logging to reduce entries created, and timestamp them."
+    },
+    "bugfixes": {
+      "1": "Corrected noFitAnalyzed.csv column headers",
+      "2": "Moved guided setup form to be on top of desktop app.",
+      "3": "Updated software update algorithm to find most recent version only."
+    }
+  },
   "v2.0.6": {
     "bugfixes": {
       "1": "Updated release notes to sort and display most recent first"

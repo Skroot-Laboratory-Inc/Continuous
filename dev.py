@@ -19,10 +19,10 @@ class DevMode:
             self.isDevMode = True
         else:
             self.isDevMode = False
-        self.startTime = 400
+        self.startTime = 0
         self.scanRate = 0.2
-        self.mode = "GUI"
-        # self.mode = "Analysis"
+        # self.mode = "GUI"
+        self.mode = "Analysis"
 
 
 class ReaderDevMode(Plotting):
@@ -33,13 +33,21 @@ class ReaderDevMode(Plotting):
             self.scanNumber = self.DevMode.startTime + 100000
             self.scanRate = self.DevMode.scanRate
             self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
-            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/Analyzed.csv')
+            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/noFitAnalyzed.csv')
             self.devTime = readings['Time (hours)'].values.tolist()
-            self.devFrequency = readings['Frequency (MHz)'].values.tolist()
+            try:
+                self.devFrequency = readings['Frequency (MHz)'].values.tolist()
+            except:
+                self.devFrequency = readings['Skroot Growth Index (SGI)'].values.tolist()
             try:
                 self.devDb = readings['Signal Strength (dB)'].values.tolist()
-            except ValueError:
-                self.devDb = [0] * len(self.devFrequency)
+            except:
+                try:
+                    self.devDb = readings['Signal Strength (Unitless)'].values.tolist()
+                except ValueError:
+                    self.devDb = [0] * len(self.devFrequency)
+
+
             self.loadDevMode()
 
     def loadDevMode(self):

@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -6,7 +7,6 @@ import tkinter.ttk as ttk
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 
-import logger
 from analysis import Analysis
 from notes import ExperimentNotes
 
@@ -26,7 +26,7 @@ class SecondAxis(Analysis):
             self.secondAxisTitle = tk.simpledialog.askstring(
                 f'Reader {self.readerNumber} second y-axis title',
                 f'Enter the title for the second axis for reader {self.readerNumber} here. \n Common options include "Viability (%)" or Cell Count (cells/mL)')
-            logger.info(f'second axis title for Reader {self.readerNumber} entered: {self.secondAxisTitle}')
+            logging.info(f'second axis title for Reader {self.readerNumber} entered: {self.secondAxisTitle}')
         value = tk.simpledialog.askfloat(f'Reader {self.readerNumber} {self.secondAxisTitle}',
                                          f'Enter the value for {self.secondAxisTitle} and reader {self.readerNumber} here. \n Numbers only')
         if value is not None:
@@ -36,7 +36,7 @@ class SecondAxis(Analysis):
                 writer = csv.writer(f)
                 writer.writerow(['Time (hours)', self.secondAxisTitle])
                 writer.writerows(zip(self.secondAxisTime, self.secondAxisValues))
-            logger.info(f'second axis value for Reader {self.readerNumber} entered: {value}')
+            logging.info(f'second axis value for Reader {self.readerNumber} entered: {value}')
 
 
 class Plotting(SecondAxis, ExperimentNotes):
@@ -70,11 +70,12 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot.set_title(f'Signal Strength Reader {self.readerNumber}')
         if self.AppModule.denoiseSet:
             if self.yAxisLabel == 'Signal Strength (Unitless)':
-                self.frequencyPlot.scatter(invertAlongYEqualsOne(self.denoiseTimeDbSmooth), self.denoiseTotalMinSmooth, s=20,
-                                       color=self.readerColor)
+                self.frequencyPlot.scatter(invertAlongYEqualsOne(self.denoiseTimeDbSmooth), self.denoiseTotalMinSmooth,
+                                           s=20,
+                                           color=self.readerColor)
             else:
                 self.frequencyPlot.scatter(self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth, s=20,
-                                       color=self.readerColor)
+                                           color=self.readerColor)
 
         else:
             self.frequencyPlot.scatter(self.time, self.minDbSmooth, s=20, color=self.readerColor)
@@ -102,7 +103,8 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.frequencyPlot.scatter(self.denoiseTimeSmooth, self.frequencyToIndex(self.denoiseFrequencySmooth), s=20,
                                        color=self.readerColor)
         else:
-            self.frequencyPlot.scatter(self.time, self.frequencyToIndex(self.minFrequencySmooth), s=20, color=self.readerColor)
+            self.frequencyPlot.scatter(self.time, self.frequencyToIndex(self.minFrequencySmooth), s=20,
+                                       color=self.readerColor)
         for xvalue in self.notesTimestamps:
             addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)
@@ -126,8 +128,10 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)
         self.frequencyPlot.set_title(f'Signal Check Reader {self.readerNumber}')
         if self.yAxisLabel == 'Signal Strength (Unitless)':
-            self.frequencyPlot.scatter(self.scanFrequency, invertAlongYEqualsOne(self.scanMagnitude), s=20, color='black')
-            self.frequencyPlot.scatter(self.minFrequencySmooth[-1], invertPointAlongYEqualsOne(self.minDbSmooth[-1]), s=30, color='red')
+            self.frequencyPlot.scatter(self.scanFrequency, invertAlongYEqualsOne(self.scanMagnitude), s=20,
+                                       color='black')
+            self.frequencyPlot.scatter(self.minFrequencySmooth[-1], invertPointAlongYEqualsOne(self.minDbSmooth[-1]),
+                                       s=30, color='red')
         else:
             self.frequencyPlot.scatter(self.scanFrequency, self.scanMagnitude, s=20, color='black')
             self.frequencyPlot.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], s=30, color='red')
@@ -176,8 +180,10 @@ class Plotting(SecondAxis, ExperimentNotes):
 def addVerticalLine(plot, x):
     plot.axvline(x=x)
 
+
 def invertAlongYEqualsOne(volts):
     return [invertPointAlongYEqualsOne(volt) for volt in volts]
+
 
 def invertPointAlongYEqualsOne(volt):
     return 1 - (volt - 1)

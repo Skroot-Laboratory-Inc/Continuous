@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 import time
@@ -8,7 +9,6 @@ from PIL import Image, ImageTk
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
-import logger
 import text_notification
 from information_panel import InformationPanel
 from reader_interface import ReaderInterface
@@ -52,30 +52,32 @@ class ButtonFunctions:
         self.placeStopButton()
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
-        logger.info("started")
+        logging.info("started")
         if self.AppModule.threadStatus:
             tk.messagebox.showinfo("Error", "Test Still Running")
         else:
             self.AppModule.thread.start()
 
     def stopFunc(self):
-        logger.info("Stop Button Pressed")
+        logging.info("Stop Button Pressed")
         try:
             self.AppModule.thread.shutdown_flag.set()
         except:
-            text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+            text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
+                                      self.AppModule.white)
             self.AppModule.resetRun()
         self.stopButton.destroy()
         text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
     def findReaders(self, numReaders):
-        logger.info(f'calibrate button pressed')
+        logging.info(f'calibrate button pressed')
         for readerNumber in range(1, numReaders + 1):
             try:
                 port, readerType = self.findPort(readerNumber)
                 self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, True))
             except:
-                logger.exception(f'Failed to instantiate reader {readerNumber}')
+                logging.exception(f'Failed to instantiate reader {readerNumber}')
+
     def calFunc(self, numReaders):
         calThreads = []
         for readerIndex in range(numReaders):
@@ -116,14 +118,13 @@ class ButtonFunctions:
 
     def calFunc2(self, readerIndex):
         try:
-            logger.info(f"Calibrating reader {readerIndex+1}")
-            self.ReaderInterfaces[readerIndex].calibrateIfRequired(readerIndex+1)
-            logger.info(f"Calibration complete for reader {readerIndex+1}")
+            logging.info(f"Calibrating reader {readerIndex + 1}")
+            self.ReaderInterfaces[readerIndex].calibrateIfRequired(readerIndex + 1)
+            logging.info(f"Calibration complete for reader {readerIndex + 1}")
             self.ReaderInterfaces[readerIndex].loadCalibrationFile()
         except:
             self.ReaderInterfaces[readerIndex].calibrationFailed = True
-            logger.exception(f'Failed to calibrate reader {readerIndex+1}')
-
+            logging.exception(f'Failed to calibrate reader {readerIndex + 1}')
 
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
@@ -174,7 +175,7 @@ class ButtonFunctions:
 
     def placeCalibrateReadersButton(self):
         self.calibrateReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Calibrate",
-                                               command=lambda: self.calibrateReaders())
+                                                 command=lambda: self.calibrateReaders())
         self.calibrateReadersButton.place(relx=0.46, rely=0.47)
         self.calibrateReadersButton['style'] = 'W.TButton'
 
@@ -203,13 +204,13 @@ def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequ
             if success:
                 return sib
             else:
-                logger.info(f"Failed to handshake SIB {readerNumber}")
+                logging.info(f"Failed to handshake SIB #{readerNumber} on port {port}")
                 text_notification.setText("Failed to connect to SiB")
                 sib.close()
         elif readerType == 'VNA':
             return VnaScanning(port, AppModule, readerNumber, calibrationRequired)
     except:
-        logger.exception(f"Failed to instantiate reader {readerNumber}")
+        logging.exception(f"Failed to instantiate reader {readerNumber}")
 
 
 def getNewVnaAndSibPorts(currentOs, portsTaken) -> (ListPortInfo, str):

@@ -1,14 +1,14 @@
 import csv
+import logging
 import os
 import time  # for sleep()
 from bisect import bisect_left
+from typing import List
 
 import numpy as np
 import pandas
 import sibcontrol
-from typing import List
 
-import logger
 import text_notification
 from reader_interface import ReaderInterface
 
@@ -49,7 +49,7 @@ class Sib(ReaderInterface):
             return frequency, volts, [], True
         except sibcontrol.SIBException:
             text_notification.setText("Failed to perform sweep for reader, check reader connection.")
-            logger.exception("Failed to perform sweep for reader, check reader connection.")
+            logging.exception("Failed to perform sweep for reader, check reader connection.")
             return [], [], [], False
         finally:
             self.AppModule.currentlyScanning = False
@@ -72,12 +72,12 @@ class Sib(ReaderInterface):
             self.setStartFrequency(self.startFreqMHz)
             self.setStopFrequency(self.stopFreqMHz)
             frequency = calculateFrequencyValues(0.1, 350, 10000)
-            createScanFile(self.calibrationFilename, frequency, volts,  self.yAxisLabel)
+            createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
         except:
             self.calibrationFailed = True
             text_notification.setText("Failed to perform calibration.")
-            logger.exception("Failed to perform calibration.")
+            logging.exception("Failed to perform calibration.")
             return False
         finally:
             self.AppModule.currentlyScanning = False
@@ -129,16 +129,16 @@ class Sib(ReaderInterface):
             else:
                 return False
         except sibcontrol.SIBException as e:
-            logger.exception("Failed to perform handshake")
+            logging.exception("Failed to perform handshake")
             return False
 
     def getFirmwareVersion(self) -> str:
         try:
             firmware_version = self.sib.version()
-            logger.info(f'The SIB Firmware is version: {firmware_version}')
+            logging.info(f'The SIB Firmware is version: {firmware_version}')
             return firmware_version
         except sibcontrol.SIBException as e:
-            logger.exception("Failed to set firmware version")
+            logging.exception("Failed to set firmware version")
             return ''
 
     def sleep(self) -> None:
@@ -157,7 +157,7 @@ class Sib(ReaderInterface):
                 return True
             except sibcontrol.SIBException:
                 text_notification.setText("Failed to set reader configuration, check reader connection.")
-                logger.exception("Failed to set reader configuration, check reader connection.")
+                logging.exception("Failed to set reader configuration, check reader connection.")
                 return False
         else:
             text_notification.setText("Reader configuration is not valid. Change the reader frequency or number of "
@@ -181,13 +181,13 @@ class Sib(ReaderInterface):
                         # SIB is sending measurement data. Add it to the conversion results array
                         conversion_results.extend(tmp_data)
                     else:
-                        logger.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
+                        logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
                 else:
                     # This is where you put code to check if the user would like to stop the sweep
                     # or anything else.
                     time.sleep(0.01)
             except:
-                logger.exception("An error occurred while waiting for scan to complete")
+                logging.exception("An error occurred while waiting for scan to complete")
         self.sleep()
         return convertAdcToVolts(conversion_results)
 
@@ -212,11 +212,11 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
             list(readings['Signal Strength (dB)'].values.tolist())
             text_notification.setText("Calibration exists for VNA not SiB.",
                                       ('Courier', 9, 'bold'), "black", "red")
-            logger.exception("Calibration found for VNA, not SiB")
+            logging.exception("Calibration found for VNA, not SiB")
         except:
-            logger.exception("Column did not exist")
+            logging.exception("Column did not exist")
     except Exception:
-        logger.exception("Failed to load in calibration")
+        logging.exception("Failed to load in calibration")
 
 
 def createScanFile(outputFileName, frequency, volts, yAxisLabel):

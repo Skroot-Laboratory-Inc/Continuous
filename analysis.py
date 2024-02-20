@@ -1,4 +1,5 @@
 import csv
+import logging
 import warnings
 from datetime import datetime
 from statistics import mean
@@ -10,7 +11,6 @@ from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-import logger
 from exceptions import badFit
 
 
@@ -56,14 +56,14 @@ class Analysis:
 
     def findMinData(self, filename):
         self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        return self.findMin(self.scanFrequency, self.scanMagnitude)
+        return self.findMin(self.scanFrequency, self.scanMagnitude, False)
 
     def findMinDataSmooth(self, filename):
         frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 501, 2)
-        return self.findMin(frequency, self.scanMagnitude)
+        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
+        return self.findMin(frequency, self.scanMagnitude, True)
 
-    def findMin(self, frequency, magnitude):
+    def findMin(self, frequency, magnitude, shouldLog):
         try:
             minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
             points = self.determineFitPoints()
@@ -72,8 +72,13 @@ class Analysis:
             minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
                                                         points)
             return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
+        except TypeError:
+            if shouldLog:
+                logging.info("Weak signal, could not analyze scan")
+            return np.nan, np.nan, np.nan, np.nan
         except:
-            logger.exception("Failed to analyze scan")
+            if shouldLog:
+                logging.exception("Failed to analyze scan")
             return np.nan, np.nan, np.nan, np.nan
 
     def denoiseResults(self):
@@ -93,14 +98,16 @@ class Analysis:
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySmooth), self.minDbSmooth))
+            writer.writerows(
+                zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySmooth), self.minDbSmooth))
         with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
+            writer.writerows(
+                zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)', self.yAxisLabel])
+            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', self.yAxisLabel])
             writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
@@ -149,7 +156,6 @@ def findMinSpline(frequency, magnitude):
         minFreq = FuncMin_dB
         return minMag, minFreq
     except:
-        logger.exception("Failed to analyze scan")
         return np.nan, np.nan
 
 
@@ -174,20 +180,23 @@ def extractValuesFromScanFile(filename, yAxisLabel):
         # The first few values are known to be inaccurate, and are ignored
         readings = pandas.read_csv(filename)[7:-1]
         if yAxisLabel == 'Signal Strength (Unitless)':
-            return readings['Frequency (MHz)'].values.tolist(), invertAlongYEqualsOne(readings[yAxisLabel].values.tolist())
+            return readings['Frequency (MHz)'].values.tolist(), invertAlongYEqualsOne(
+                readings[yAxisLabel].values.tolist())
         else:
             return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
     except ValueError:
-        logger.exception("Rows named improperly")
+        logging.exception("Rows named improperly")
         return [], []
     except FileNotFoundError:
-        logger.exception(f"File does not exist {filename}")
+        logging.exception(f"File does not exist {filename}")
         return [], []
     except:
-        logger.exception("Unknown error parsing file")
+        logging.exception("Unknown error parsing file")
+
 
 def invertAlongYEqualsOne(volts):
     return [1 - (volt - 1) for volt in volts]
+
 
 def findRawMinimum(frequency, magnitude):
     _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)

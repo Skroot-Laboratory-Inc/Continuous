@@ -1,11 +1,11 @@
 import csv
+import logging
 import threading
 import tkinter as tk
 
 import numpy as np
 from scipy.signal import savgol_filter
 
-import logger
 import text_notification
 from analysis import Analysis
 from dac import Dac
@@ -40,9 +40,9 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
         self.inoculated = True
         self.inoculatedTime = self.time[-1]
         for Reader in self.AppModule.Readers:
-            Reader.setZeroPoint(len(self.time)-1)
+            Reader.setZeroPoint(len(self.time) - 1)
         self.updateExperimentNotes('Inoculated')
-        logger.info(f'Flask {self.readerNumber} is inoculated at time {self.time[-1]}')
+        logging.info(f'Flask {self.readerNumber} is inoculated at time {self.time[-1]}')
 
     def checkHarvest(self):
         if self.inoculated:
@@ -75,7 +75,7 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
                                              -self.consecutivePoints * 2 + 1:-self.consecutivePoints]))  # Checks that the list of 5 is strictly increasing
             if not self.closeToHarvest:
                 if lastFiveIncreasing and previousFiveDecreasing:
-                    logger.info(
+                    logging.info(
                         f'Flask {self.readerNumber} is close to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
                     if self.AppModule.emailSetting:
                         self.Emailer.sendMessage()
@@ -84,7 +84,7 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
                     self.closeToHarvest = True
             else:
                 if lastFiveDecreasing and previousFiveIncreasing:
-                    logger.info(
+                    logging.info(
                         f'Flask {self.readerNumber} is ready to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
                     if self.AppModule.emailSetting:
                         self.Emailer.sendMessage()
@@ -109,7 +109,7 @@ class ContaminationAlgorithm(Analysis, Indicator):
             if not self.contaminated:
                 self.contaminated = self.contaminationAlgorithm(self.time, self.minFrequency, [100, 100])
                 if self.contaminated:
-                    logger.info(f'Flask {self.readerNumber} is contaminated at time {self.time[-1]} hours')
+                    logging.info(f'Flask {self.readerNumber} is contaminated at time {self.time[-1]} hours')
                     self.updateContaminationJson(self.lightRed)
 
     def contaminationAlgorithm(self, time, frequency, window):
@@ -156,7 +156,7 @@ class FoamingAlgorithm(Analysis):
         if self.airFreq != 0:
             self.referenceFrequency = self.minFrequency[0]
             shift = abs(self.minFrequency[-1] - self.referenceFrequency)
-            logger.info(f'shift: {shift}, needed shift {self.waterShift * (self.foamThresh / 100)}')
+            logging.info(f'shift: {shift}, needed shift {self.waterShift * (self.foamThresh / 100)}')
             if shift > (self.waterShift * 0.9) and self.errorThread == '' and self.liquidThread == '':
                 self.liquidThread = threading.Thread(target=self.liquidReachedSensor, args=())
                 self.liquidThread.start()
@@ -168,7 +168,7 @@ class FoamingAlgorithm(Analysis):
                 try:
                     self.Dac.send_ma(4)
                 except:
-                    logger.exception("Failed to initialize DAC")
+                    logging.exception("Failed to initialize DAC")
         else:
             pass
 
@@ -184,7 +184,7 @@ class FoamingAlgorithm(Analysis):
         try:
             self.Dac.send_ma(20)
         except:
-            logger.exception("Failed to initialize DAC")
+            logging.exception("Failed to initialize DAC")
         tk.messagebox.showinfo(f'Foaming notification', f"Foam has reached sensor")
         self.errorThread = ''
         return
