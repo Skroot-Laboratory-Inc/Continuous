@@ -51,7 +51,7 @@ class SoftwareUpdate(AwsBoto3):
         if not self.disabled:
             allReleases = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
             # first, we're just going through the releases and finding the most recent one
-            most_recent_version = (None, None)
+            most_recent_version = (self.newestMajorVersion, self.newestMinorVersion)
             for item in allReleases['Contents']:
                 filename = item['Key']
                 if filename == 'software-releases/':
@@ -65,14 +65,13 @@ class SoftwareUpdate(AwsBoto3):
                 except:
                     logging.exception("failed to get tags of software update file")
                 # find the greatest version in the s3 bucket
-                if (most_recent_version == (None, None)) or \
-                        (most_recent_version[0] < majorVersion) or \
+                if (most_recent_version[0] < majorVersion) or \
                         (most_recent_version[0] == majorVersion and most_recent_version[1] < minorVersion):
                     most_recent_version = (majorVersion, minorVersion)
                 if (self.newestMajorVersion < most_recent_version[0]) or \
-                    (self.newestMajorVersion == most_recent_version[0] and self.newestMinorVersion < most_recent_version[1]):
+                        (self.newestMajorVersion == most_recent_version[0] and self.newestMinorVersion < most_recent_version[1]):
                     out_of_date = True
-                self.updateNewestVersion(majorVersion, minorVersion, filename)
+                    self.updateNewestVersion(majorVersion, minorVersion, filename)
             return f"{most_recent_version[0]}.{most_recent_version[1]}", out_of_date
         else:
             return "", False
