@@ -6,7 +6,7 @@ The package can be installed with: `pip instal sibcontrol`
 
 # Documentation
 
-For API documentation and usage, see files in the "documentation" directory.
+For API documentation and usage, see files in the `sibcontrol/documentation` directory.
 
 # Software Requirements
 
@@ -17,7 +17,33 @@ This package was developed using the following software versions:
 
 # Revision History
 
+### Version 2.1.x
+
+On 02/20/2024 the following changes were made:
+
+* Added a function to print a human-readible message for each error code received by the SIB during a FAIL acknowledgment
+* Updated the version to v2.1.2
+
+On 02/20/2024 the following changes were made:
+
+* Updated the WAKE command function to check for an error return. It now throws an SIBACKException in the event if the ACK is FAIL.
+* Updated documentation.
+* Updated the version to v2.1.1
+
+On 02/15/2024 the following changes were made:
+
+* Added a system reset command to the list of host commands
+* Updated the command_list and the sibcontrol_api documentation to include the new command.
+* Updated the `example.py` script to demonstrate that the SIB must be put into the active state before a frequency sweep can be performed.
+* Updated the version number to 2.1.0
+
 ### Version 2.0.x
+
+On 11/14/2023 the following changes were made:
+
+* The documentation was updated to include a description of the communication protocol.
+* All valid commands and acknowledgements have been described in the documentation.
+
 
 On 10/27/2023 the following changes were made:
 

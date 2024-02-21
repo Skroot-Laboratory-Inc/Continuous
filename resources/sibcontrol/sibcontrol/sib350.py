@@ -82,7 +82,8 @@ class SIB350:
                                     'stop_test' : b'!C81',
                                     'handshake' : b'!C91',
                                     'system_sleep' : b'!C92',
-                                    'system_wake' : b'!C93'}
+                                    'system_wake' : b'!C93',
+                                    'reset' : b'!CRR'}
         
         self._comms.ack_packet = ncomm.Packet(SIB350.cmd_size, SIB350.payload_size)
         self._comms.ack_packet.command_dict = {b'!AA0' : 'ok',
@@ -242,6 +243,33 @@ class SIB350:
             data.append(int().from_bytes(data_as_bytes[i:i+2], 'big'))
 
         return data
+    
+
+
+    def _decode_error(self, error_code):
+        '''Used to decode the error code that is received along with a FAIL
+        acknowledgment. This is used to print more human readible error
+        messages to the user.
+        '''
+
+        if (error_code == 0x21454141):
+            msg = 'SiB received invalid command from host.'
+        elif (error_code == 0x21454242):
+            msg = 'DDS registers could not be correctly configured.'
+        elif (error_code == 0x21454341):
+            msg = 'Host attempted to initiate a frequency sweep while the SIB is in the sleep state.'
+        elif (error_code == 0x21454342):
+            msg = 'Host attepmted to initiate a frequency sweep and the DDS registers are not correctly configured.'
+        else:
+            raise SIBException('ERROR: Unknown error code ({}) received by _decode_error().'.format(error_code))
+
+        return msg
+
+
+
+
+
+
 
 
     '''
@@ -595,7 +623,9 @@ class SIB350:
 
         Raises
         ------
-        None
+        SIBACKException
+          If the DDS cannot be configured. The system should be placed back
+          into the sleep state.
 
         Returns
         -------
@@ -604,6 +634,36 @@ class SIB350:
 
         # Write the system_wake command
         self._write_packet('system_wake', 0)    # The payload is don't care
+
+        # Read the ACK. This command can only respond with OK
+        ack_msg, ack_payload = self._read_packet()
+
+        if ack_msg == 'fail':
+            # The SIB couldn't configure DDS
+            print('Error code: {} : '.format(ack_payload) + self._decode_error(ack_payload))
+            raise SIBACKException('Received a FAIL response from the device after receiving a WAKE command. The received error \
+                                  code is: {}'.format(ack_payload))
+    
+
+
+    def reset_sib(self):
+        """
+        Sends a command to the SIB to perform a full system reset.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        None  
+        """
+        # Write the system reset command
+        self._write_packet('reset', 0)      # The payload is don't care
 
         # Read the ACK. This command can only respond with OK
         self._read_packet()
@@ -688,6 +748,7 @@ class SIB350:
                 data = self._read_data(ack_payload)
         else:
             # Recevied a FAIL acknowledgement
+            print('Error code: {} : '.format(ack_payload) + self._decode_error(ack_payload))
             raise SIBACKException('Received a FAIL response from the device. The received error \
                                   code is: {}'.format(ack_payload))
         
