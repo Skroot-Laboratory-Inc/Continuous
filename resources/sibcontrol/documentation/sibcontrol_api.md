@@ -150,8 +150,15 @@ If the system is in the low-power sleep mode, the self.wake() command must be ca
 
 * Parameters: None
 * Return Arguments: None
-* Exceptions: None
+* Exceptions: SIBACKException - The DDS could not be configured. System is put back to sleep.
 * Description: Wakes the SiB from the low-power sleep mode. Once this command has been sent, the SiB enables all voltage regulators and re-initializes the DDS into the default starting state. This is indicated visually by a steady ON power LED.
+
+### reset_sib()
+
+* Parameters: None
+* Return Arguments: None
+* Exceptions: None
+* Description: Sends a command to the SIB to tell it to perform a power-on reset. The system will send the `OK` acknowledgment before resetting.
 
 ### write_sweep_command()
 

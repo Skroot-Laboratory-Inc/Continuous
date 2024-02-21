@@ -1,15 +1,10 @@
 import sibcontrol
 import sys      # for exit()
 import time     # for sleep()
-from serial.tools import list_ports
 
 
 # Create a new SIB object and attach it to com port COM3
-ports = list_ports.comports()
-portNums = [int(ports[i].device[3:]) for i in range(len(ports))]
-if portNums:
-    port = f'COM{max(portNums)}'
-sib = sibcontrol.SIB350(port)
+sib = sibcontrol.SIB350('com7')
 
 # We can now set up the sweep parameters
 # Set the start frequency in MHz. Must be between 0 and 350 MHz, inclusive
@@ -41,6 +36,7 @@ print(f'Signal amplitude: {sib.amplitude_mA} MHz')
 #################################################
 # A handshake simply sends a random number to the SIB and expects
 # it to be echoed back.
+# NOTE: The system remains in the low-power state while performing this command.
 data = 500332       # Some random 32-bit value
 
 print('Beginning Handshake...')
@@ -68,7 +64,7 @@ print('\n\n')
 
 
 #################################################
-# EXAMPLE OF PERFORMING A SINGLE FREQUENCY SWEEP
+# EXAMPLE OF READING THE FIRMWARE VERSION NUMBER
 #################################################
 # We can also request the version number of the firmware being run
 # on the SIB.
@@ -123,12 +119,24 @@ else:
     print('Configuration data is not valid.')
     sys.exit()
 
-# All configuration data has been sent to the SIB. We can now start a
-# single frequency sweep.
-# First send the command to start the frequency sweep.
+# All of the configuration data has been sent to the SIB while it was
+# in the low-power mode. We now must set the SIB into the active mode before
+# we initiate a frequency sweep. It is possible to wake the SIB before sending
+# the configuration data.
+try:
+    sib.wake()
+except sibcontrol.SIBException:
+    # If this command fails, it is because the DDS could not be correctly configured.
+    sib.close()
+    sys.exit()
+
+
+# We can now start a single frequency sweep. First send the command to 
+# start the frequency sweep.
 try:
     sib.write_sweep_command()
 except sibcontrol.SIBException:
+    # If this command fails, it is becaues the system is still in the low-power mode
     sib.close()
     sys.exit()
 
@@ -172,10 +180,13 @@ while not sweep_complete:
         # This is where you put code to check if the user would like to stop the sweep
         # or anything else.
         time.sleep(0.01)
-print(conversion_results)
+
 # After the sweep is complete, the list CONVERSION_RESULTS holds the 12-bit ADC codes
 # that were received from the SIB. These are then ready to be further processed, written
 # to a file, etc.
+        
+# Put the SIB back into the low-power mode
+sib.sleep()
 
 # Close the serial connection
 sib.close()
