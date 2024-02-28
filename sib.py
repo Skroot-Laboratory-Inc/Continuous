@@ -171,22 +171,18 @@ class Sib(ReaderInterface):
         conversion_results, sweep_complete = list(), False
         while not sweep_complete:
             try:
-                if self.sib.data_waiting() > 0:
-                    ack_msg, tmp_data = self.sib.read_sweep_response()
+                ack_msg, tmp_data = self.sib.read_sweep_response()
 
-                    if ack_msg == 'ok':
-                        # SIB has sent the sweep complete command.
-                        sweep_complete = True
-                    elif ack_msg == 'send_data':
-                        # SIB is sending measurement data. Add it to the conversion results array
-                        conversion_results.extend(tmp_data)
-                    else:
-                        logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
+                if ack_msg == 'ok':
+                    # SIB has sent the sweep complete command.
+                    sweep_complete = True
+                elif ack_msg == 'send_data':
+                    # SIB is sending measurement data. Add it to the conversion results array
+                    conversion_results.extend(tmp_data)
                 else:
-                    # This is where you put code to check if the user would like to stop the sweep
-                    # or anything else.
-                    time.sleep(0.01)
+                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
             except:
+                sweep_complete = True
                 logging.exception("An error occurred while waiting for scan to complete")
         self.sleep()
         return convertAdcToVolts(conversion_results)
@@ -232,7 +228,7 @@ def createScanFile(outputFileName, frequency, volts, yAxisLabel):
 
 
 def calculateFrequencyValues(startFreqMHz, stopFreqMHz, nPoints) -> List[str]:
-    df = (stopFreqMHz - startFreqMHz) * 1.0 / nPoints
+    df = (stopFreqMHz - startFreqMHz) * 1.0 / (nPoints-1)
     frequency = startFreqMHz + df * np.arange(0, nPoints)
     return frequency
 

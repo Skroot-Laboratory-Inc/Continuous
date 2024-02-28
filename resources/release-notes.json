@@ -1,4 +1,16 @@
 {
+  "v2.0.8": {
+    "features": {
+      "1": "Added functionality to account for folders in software-update folder."
+    },
+    "bugfixes": {
+      "1": "Fixed VNA scan errors and dependency on threadpoolctl.",
+      "2": "Fixed errors causing SIB to go into an infinite error loop on failure to check scan status."
+    },
+    "Other": {
+      "1": "Released as an R&D version only."
+    }
+  },
   "v2.0.7": {
     "features": {
       "1": "Updated logging to reduce entries created, and timestamp them.",

@@ -58,8 +58,13 @@ class SoftwareUpdate(AwsBoto3):
                     continue  # Don't try to get tags of the folder itself
                 try:
                     tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
-                    majorVersion = float(tags["TagSet"][0]['Value'])
-                    minorVersion = int(tags["TagSet"][1]['Value'])
+                    if tags["TagSet"] != []:
+                        majorVersion = float(tags["TagSet"][0]['Value'])
+                        minorVersion = int(tags["TagSet"][1]['Value'])
+                    else:
+                        # We are looking at an untagged item, likely a folder.
+                        majorVersion = 0.0
+                        minorVersion = 0
                 except botocore.exceptions.ClientError:
                     continue  # This means it's an R&D update and we are not using an R&D profile
                 except:

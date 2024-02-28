@@ -20,7 +20,7 @@ from reader_interface import ReaderInterface
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
                  scanRate, savePath, readerColor, ReaderInterface: ReaderInterface):
-        if not AppModule.DevMode:
+        if not AppModule.DevMode.isDevMode:
             self.yAxisLabel = ReaderInterface.yAxisLabel
         else:
             self.yAxisLabel = "Signal Strength (Unitless)"

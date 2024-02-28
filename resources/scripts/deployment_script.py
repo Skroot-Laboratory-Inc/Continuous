@@ -50,12 +50,20 @@ with open('../version.json') as j_file:
 
 major_version = version['major_version']
 minor_version = version['minor_version']
-zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
+release_bucket = version['release_bucket']
+if release_bucket == 'R&D':
+    zip_name = f'R&D_DesktopApp_v{major_version}.{minor_version}.zip'
+else:
+    zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
+# TODO Update this to use a software release bucket - after customers are on >v2.0.8
+# zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
 release_notes_fp = '../release-notes.json'
 
 software_releases_bucket = 'software-releases'
+# TODO Update this to use a software release bucket - after customers are on >v2.0.8
+# software_releases_bucket = f'software-releases/{release_bucket}'
 release_notes_bucket = 'release-notes'
 
 try:
