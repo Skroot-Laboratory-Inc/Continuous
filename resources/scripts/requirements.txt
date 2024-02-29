@@ -17,4 +17,5 @@ scp==0.14.5
 ttkSimpleDialog==1.2.1
 urllib3==1.26.16
 botocore==1.29.163
+threadpool==3.3.0
 ../sibcontrol
