@@ -123,9 +123,12 @@ class Analysis:
     def determineFitPoints(self):
         minMag = abs(min(self.scanMagnitude))
         meanMag = abs(mean(self.scanMagnitude))
-        if (minMag - meanMag) < 1:
-            return self.smallPeakPoints
-        elif (minMag - meanMag) > 1:
+        if meanMag < 1:
+            if (minMag - meanMag) < 1:
+                return self.smallPeakPoints
+            elif (minMag - meanMag) > 1:
+                return self.largePeakPoints
+        else:
             return self.largePeakPoints
 
 
