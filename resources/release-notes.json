@@ -1,4 +1,10 @@
 {
+  "v2.0.9": {
+    "features": {
+      "1": "Added number of points to menubar",
+      "2": "Increased number of points for SIB scans"
+    }
+  },
   "v2.0.8": {
     "features": {
       "1": "Added functionality to account for folders in software-update folder."
