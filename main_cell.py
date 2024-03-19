@@ -31,7 +31,7 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell", vesselType="Vessel",
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="5", cellType="Cell", vesselType="Vessel",
                     secondAxisTitle=""):
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
          self.vesselType, self.secondAxisTitle) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,

@@ -40,10 +40,10 @@ class Settings:
                 Reader.updateEmailReceiver(receiver_email)
 
     def freqRangeSetting(self):
-        startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (0.1-250MHz)",
-                                             parent=self.AppModule.root, minvalue=0.1, maxvalue=250)
-        stopFreq = tk.simpledialog.askfloat("Input", "Stop Frequency (MHz): \nRange: (0.1-250MHz)",
-                                            parent=self.AppModule.root, minvalue=0.1, maxvalue=250)
+        startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (50-150MHz)",
+                                             parent=self.AppModule.root, minvalue=50, maxvalue=150)
+        stopFreq = tk.simpledialog.askfloat("Input", "Stop Frequency (MHz): \nRange: (50-150MHz)",
+                                            parent=self.AppModule.root, minvalue=50, maxvalue=150)
         if startFreq is not None:
             for Reader in self.AppModule.Readers:
                 Reader.ReaderInterface.setStartFrequency(startFreq)
@@ -54,15 +54,6 @@ class Settings:
                 Reader.ReaderInterface.setStopFrequency(stopFreq)
             self.AppModule.stopFreq = stopFreq
             logging.info(f'stopFreq changed to {stopFreq}')
-
-    def nPointsSetting(self):
-        nPoints = tk.simpledialog.askfloat("Input", "Number of points per scan: \nRange: (1,000-7,000)",
-                                           parent=self.AppModule.root, minvalue=1000, maxvalue=7000)
-        if nPoints is not None:
-            for Reader in self.AppModule.Readers:
-                Reader.ReaderInterface.setNumberOfPoints(nPoints)
-            self.AppModule.nPoints = nPoints
-            logging.info(f'nPoints changed to {nPoints}')
 
     def saveFilesSetting(self):
         disableSaveFullFiles = tk.messagebox.askyesno("Disable Full File Save",
@@ -128,7 +119,7 @@ class Settings:
                         readersOnScreen = maxReadersPerScreen
                     self.AppModule.Readers.append(FoamingReader(
                         self.AppModule, readerNumber, self.AppModule.airFreq, self.AppModule.waterFreq,
-                        self.AppModule.waterShift, outerFrame, numReaders, self.AppModule.nPoints,
+                        self.AppModule.waterShift, outerFrame, numReaders,
                         self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.scanRate,
                         self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
             elif self.AppModule.cellApp:
@@ -141,8 +132,7 @@ class Settings:
                     else:
                         readersOnScreen = maxReadersPerScreen
                     self.AppModule.Readers.append(Reader(
-                        self.AppModule, readerNumber, outerFrame, readersOnScreen,
-                        self.AppModule.nPoints, self.AppModule.startFreq, self.AppModule.stopFreq,
+                        self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq,
                         self.AppModule.scanRate, self.AppModule.savePath, readerColor,
                         ReaderInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()

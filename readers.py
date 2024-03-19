@@ -18,7 +18,7 @@ from reader_interface import ReaderInterface
 
 
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
-    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, nPoints, startFreq, stopFreq,
+    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq,
                  scanRate, savePath, readerColor, ReaderInterface: ReaderInterface):
         if not AppModule.DevMode.isDevMode:
             self.yAxisLabel = ReaderInterface.yAxisLabel
@@ -44,7 +44,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.totalNumberOfReaders = totalNumberOfReaders
         self.scanRate = scanRate
         if self.AppModule.DevMode.isDevMode == False:
-            ReaderInterface.setNumberOfPoints(nPoints)
             ReaderInterface.setStartFrequency(startFreq)
             ReaderInterface.setStopFrequency(stopFreq)
         self.ReaderInterface = ReaderInterface
@@ -203,8 +202,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
 
 
 class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
-    def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders,
-                 nPoints, startFreq, stopFreq, scanRate, savePath, readerColor, ReaderInterface):
+    def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders, startFreq, stopFreq, scanRate, savePath, readerColor, ReaderInterface):
         self.scanMagnitude = []
         self.scanFrequency = []
         self.scanNumber = 100001
@@ -218,7 +216,6 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.Emailer = Emailer('', f'Foaming Reader {readerNumber}')
         self.Emailer.setMessageFoam()
         self.AppModule = AppModule
-        ReaderInterface.setNumberOfPoints(nPoints)
         ReaderInterface.setStartFrequency(startFreq)
         ReaderInterface.setStopFrequency(stopFreq)
         self.ReaderInterface = ReaderInterface

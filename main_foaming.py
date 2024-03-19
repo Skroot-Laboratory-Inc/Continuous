@@ -19,7 +19,6 @@ class AppModule(MainShared):
         self.scanRate = 0.5
         self.startFreq = 40
         self.stopFreq = 250
-        self.nPoints = 2000
         self.airFreq = 0
         self.waterFreq = 0
         self.waterShift = None
@@ -42,7 +41,7 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="1", cellType="Cell",
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="5", cellType="Cell",
                      vesselType="Vessel"):
         self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate = \
             guided_setup.guidedSetupFoaming(self.root, self.baseSavePath, month, day, year, numReaders, scanRate,

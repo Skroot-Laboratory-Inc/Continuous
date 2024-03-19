@@ -1,4 +1,22 @@
 {
+  "v2.0.11": {
+    "features": {
+      "1": "Updated defaults values for scan rate, stop frequency and start frequency",
+      "2": "Set step size to 10 kHz"
+    }
+  },
+  "v2.0.10": {
+    "features": {
+      "1": "Updated default scan window/points",
+      "2": "Implemented gaussian fit to data with a window around the peak",
+      "3": "Added back firmware version check for v2.3.1",
+      "4": "Removed start/stop frequency checks from SIB"
+    },
+    "bugfixes": {
+      "1": "Fixed issue with SIB not scanning",
+      "2": "Fixed issue with one failed scan crashing summary pdf/csv"
+    }
+  },
   "v2.0.9": {
     "features": {
       "1": "Added number of points to menubar",

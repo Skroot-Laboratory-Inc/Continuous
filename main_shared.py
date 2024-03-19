@@ -77,9 +77,8 @@ class MainShared:
         self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
         self.scanRate = 0.5
-        self.startFreq = 40
-        self.stopFreq = 250
-        self.nPoints = 2000
+        self.startFreq = 95
+        self.stopFreq = 145
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.threadStatus = ''
         self.royalBlue = 'RoyalBlue4'
@@ -123,9 +122,9 @@ class MainShared:
                         if not self.isDevMode:
                             self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.ReaderInterface.takeScan(
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv')
+                            Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                             if not success:
                                 continue
-                            Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
                         else:
                             Reader.addDevPoint()
                         if self.denoiseSet:

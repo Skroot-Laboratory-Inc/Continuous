@@ -22,7 +22,6 @@ class Setup:
 
         settingsMenuReaders = tk.Menu(menubar, tearoff=0)
         settingsMenuReaders.add_command(label="Frequency Range", command=lambda: self.Settings.freqRangeSetting())
-        settingsMenuReaders.add_command(label="Number of Points", command=lambda: self.Settings.nPointsSetting())
         settingsMenuReaders.add_command(label="Scan Rate", command=lambda: self.Settings.rateSetting())
         settingsMenuReaders.add_command(label="File Save", command=lambda: self.Settings.saveFilesSetting())
         menubar.add_cascade(label="Readers", menu=settingsMenuReaders)
