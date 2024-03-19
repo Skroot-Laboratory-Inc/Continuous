@@ -69,12 +69,7 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot.set_ylabel(self.yAxisLabel, color='#1f77b4')
         self.frequencyPlot.set_title(f'Signal Strength Reader {self.readerNumber}')
         if self.AppModule.denoiseSet:
-            if self.yAxisLabel == 'Signal Strength (Unitless)':
-                self.frequencyPlot.scatter(invertAlongYEqualsOne(self.denoiseTimeDbSmooth), self.denoiseTotalMinSmooth,
-                                           s=20,
-                                           color=self.readerColor)
-            else:
-                self.frequencyPlot.scatter(self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth, s=20,
+            self.frequencyPlot.scatter(self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth, s=20,
                                            color=self.readerColor)
 
         else:
@@ -127,14 +122,8 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.frequencyFigure.set_tight_layout(True)
         self.frequencyPlot = self.frequencyFigure.add_subplot(111)
         self.frequencyPlot.set_title(f'Signal Check Reader {self.readerNumber}')
-        if self.yAxisLabel == 'Signal Strength (Unitless)':
-            self.frequencyPlot.scatter(self.scanFrequency, invertAlongYEqualsOne(self.scanMagnitude), s=20,
-                                       color='black')
-            self.frequencyPlot.scatter(self.minFrequencySmooth[-1], invertPointAlongYEqualsOne(self.minDbSmooth[-1]),
-                                       s=30, color='red')
-        else:
-            self.frequencyPlot.scatter(self.scanFrequency, self.scanMagnitude, s=20, color='black')
-            self.frequencyPlot.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], s=30, color='red')
+        self.frequencyPlot.scatter(self.scanFrequency, self.scanMagnitude, s=20, color='black')
+        self.frequencyPlot.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], s=30, color='red')
         self.frequencyPlot.set_xlabel('Frequency (MHz)')
         self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
         if self.frequencyCanvas is None:
@@ -179,11 +168,3 @@ class Plotting(SecondAxis, ExperimentNotes):
 
 def addVerticalLine(plot, x):
     plot.axvline(x=x)
-
-
-def invertAlongYEqualsOne(volts):
-    return [invertPointAlongYEqualsOne(volt) for volt in volts]
-
-
-def invertPointAlongYEqualsOne(volt):
-    return 1 - (volt - 1)

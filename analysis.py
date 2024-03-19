@@ -7,11 +7,13 @@ from statistics import mean
 import numpy as np
 import pandas
 from scipy.interpolate import CubicSpline
+from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
 from exceptions import badFit
+from sib import Sib
 
 
 class Analysis:
@@ -60,16 +62,22 @@ class Analysis:
 
     def findMinDataSmooth(self, filename):
         frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
-        return self.findMin(frequency, self.scanMagnitude, True)
+        if len(magnitude) > 101:
+            self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
+        else:
+            self.scanFrequency, self.scanMagnitude = frequency, magnitude
+        return self.findMin(self.scanFrequency, self.scanMagnitude, True)
 
     def findMin(self, frequency, magnitude, shouldLog):
         try:
             minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
-            points = self.determineFitPoints()
-            quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
-            quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
-            minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
+            if (isinstance(self.ReaderInterface, Sib)):
+                minMag, minFrequency = findMinGaussian(frequency, magnitude)
+            else:
+                points = self.determineFitPoints()
+                quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
+                quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
+                minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
                                                         points)
             return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
         except TypeError:
@@ -181,12 +189,8 @@ def findMinDataSpline(filename, yAxisLabel):
 def extractValuesFromScanFile(filename, yAxisLabel):
     try:
         # The first few values are known to be inaccurate, and are ignored
-        readings = pandas.read_csv(filename)[7:-1]
-        if yAxisLabel == 'Signal Strength (Unitless)':
-            return readings['Frequency (MHz)'].values.tolist(), invertAlongYEqualsOne(
-                readings[yAxisLabel].values.tolist())
-        else:
-            return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
+        readings = pandas.read_csv(filename)[20:-1]
+        return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
     except ValueError:
         logging.exception("Rows named improperly")
         return [], []
@@ -195,10 +199,6 @@ def extractValuesFromScanFile(filename, yAxisLabel):
         return [], []
     except:
         logging.exception("Unknown error parsing file")
-
-
-def invertAlongYEqualsOne(volts):
-    return [1 - (volt - 1) for volt in volts]
 
 
 def findRawMinimum(frequency, magnitude):
@@ -229,3 +229,22 @@ def findQuadraticMinimum(frequency, magnitude, rawMinimum, pointsUsed):
     minMag = min(quadraticFunction)
     minFrequency = frequencies[list(quadraticFunction).index(minMag)]
     return minMag, minFrequency
+def gaussian(x, amplitude, centroid, peak_width):
+    return amplitude * np.exp(-(x - centroid)**2 / (2 * peak_width**2))
+
+def findMinGaussian(x, y):
+    pointsOnEachSide = 500
+    if np.argmax(y) > pointsOnEachSide and np.argmax(y) < len(y)-pointsOnEachSide:
+        xAroundPeak = x[np.argmax(y)-pointsOnEachSide:np.argmax(y)+pointsOnEachSide]
+        yAroundPeak = y[np.argmax(y)-pointsOnEachSide:np.argmax(y)+pointsOnEachSide]
+    elif np.argmax(y) > pointsOnEachSide and np.argmax(y) > len(y)-pointsOnEachSide:
+        xAroundPeak = x[np.argmax(y)-pointsOnEachSide:np.argmax(y)]
+        yAroundPeak = y[np.argmax(y)-pointsOnEachSide:np.argmax(y)]
+    else:
+        xAroundPeak = x[np.argmax(y):np.argmax(y)+pointsOnEachSide]
+        yAroundPeak = y[np.argmax(y):np.argmax(y)+pointsOnEachSide]
+    popt, _ = curve_fit(gaussian, xAroundPeak, yAroundPeak, p0=(max(y), x[np.argmax(y)], 1), bounds=([min(y), min(xAroundPeak), 0], [max(y), max(xAroundPeak), np.inf]))
+    amplitude = popt[0]
+    centroid = popt[1]
+    peakWidth = popt[2]
+    return amplitude, centroid
