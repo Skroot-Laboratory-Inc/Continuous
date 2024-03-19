@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -90,8 +88,10 @@ class SetupForm:
                    highlightthickness=0).grid(row=6, column=1, sticky="ew")
         ttk.Separator(self.window, orient="horizontal").grid(row=7, column=1, sticky="ew")
 
+        scanRateValue = self.scanRateEntry.get()
         tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.5", "1", "2", "3", "5", "10"), wrap=True,
                    borderwidth=0, highlightthickness=0).grid(row=8, column=1, sticky="ew")
+        self.scanRateEntry.set(scanRateValue)
         ttk.Separator(self.window, orient="horizontal").grid(row=9, column=1, sticky="ew")
 
         tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0, highlightthickness=0).grid(row=10,

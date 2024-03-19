@@ -25,9 +25,8 @@ class VnaScanning(ReaderInterface):
         self.port = port
         self.readerNumber = readerNumber
         self.AppModule = AppModule
-        self.startFreqMHz = 1
-        self.stopFreqMHz = 250
-        self.nPoints = 3000
+        self.startFreqMHz = 95
+        self.stopFreqMHz = 145
         self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:
@@ -42,7 +41,7 @@ class VnaScanning(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
+            frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.getNumPoints())
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
             createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase, self.yAxisLabel)
@@ -52,12 +51,11 @@ class VnaScanning(ReaderInterface):
             text_notification.setText(f"Connection lost to Reader {self.readerNumber}, check USB connection")
             logging.exception(f"Lost reader connection for reader {self.readerNumber}")
         except SerialException:
-            self.close()
-            self.socket = serial.Serial(self.port, 115200, timeout=1.5)
             try:
+                self.close()
+                self.socket = serial.Serial(self.port, 115200, timeout=1.5)
                 self.AppModule.currentlyScanning = True
-                frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz,
-                                                                       self.nPoints)
+                frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.getNumPoints())
                 magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
                 calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
                 createScanFile(outputFilename, frequency, calibratedMagnitude, calibratedPhase, self.yAxisLabel)
@@ -71,6 +69,10 @@ class VnaScanning(ReaderInterface):
         finally:
             self.AppModule.currentlyScanning = False
 
+    def getNumPoints(self):
+        return (self.stopFreqMHz - self.startFreqMHz) * 1000 / 10 + 1
+
+
     def calibrateIfRequired(self, readerNumber):
         if self.calibrationRequired:
             self.takeCalibrationScan()
@@ -81,7 +83,7 @@ class VnaScanning(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            frequency, rawMagnitude, rawPhase = self.readVnaValues(0.1, 250, 10000)
+            frequency, rawMagnitude, rawPhase = self.readVnaValues(49.8, 170, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             createScanFile(self.calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
             return True
@@ -113,8 +115,6 @@ class VnaScanning(ReaderInterface):
             text_notification.setText(f"Invalid value, stop frequency must be between 0 and 350."
                                       f"\n stop frequency not changed.")
 
-    def setNumberOfPoints(self, nPoints):
-        self.nPoints = nPoints
 
     def close(self):
         self.socket.close()
@@ -123,7 +123,7 @@ class VnaScanning(ReaderInterface):
 
     def readVnaValues(self, start_freq, stop_freq, num_points):
         khz2dds = 10737.4182
-        df = (stop_freq - start_freq) * 1.0 / num_points
+        df = (stop_freq - start_freq) / num_points
         sleep_time = 0.1
         self.socket.write(b"2\r")
         time.sleep(sleep_time)

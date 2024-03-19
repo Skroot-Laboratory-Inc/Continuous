@@ -17,25 +17,20 @@ class Sib(ReaderInterface):
     def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
         self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (Unitless)'
-        self.startFreqMHz = 1
-        self.stopFreqMHz = 350
-        self.nPoints = 3000
         self.readerNumber = readerNumber
         self.AppModule = AppModule
         self.sib = sibcontrol.SIB350(port)
-        self.setStartFrequency(self.startFreqMHz)
-        self.setStopFrequency(self.stopFreqMHz)
-        self.setNumberOfPoints(self.nPoints)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
+        self.calibrationStartFreq = 50
+        self.calibrationStopFreq = 170
         self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:
             self.loadCalibrationFile()
 
     def loadCalibrationFile(self):
-        self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(
-            self.calibrationFilename)
+        self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(self.calibrationFilename)
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -43,7 +38,7 @@ class Sib(ReaderInterface):
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
             volts = self.performSweepAndWaitForComplete()
-            frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.nPoints)
+            frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz)
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return frequency, volts, [], True
@@ -61,17 +56,14 @@ class Sib(ReaderInterface):
     def takeCalibrationScan(self) -> bool:
         try:
             createCalibrationDirectoryIfNotExists(self.calibrationFilename)
-            self.sib.start_MHz = 1
-            self.sib.stop_MHz = 350
-            self.sib.num_pts = 10000
+            self.sib.start_MHz = self.calibrationStartFreq - 0.2
+            self.sib.stop_MHz = self.calibrationStopFreq
+            self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
             volts = self.performSweepAndWaitForComplete()
-            self.setNumberOfPoints(self.nPoints)
-            self.setStartFrequency(self.startFreqMHz)
-            self.setStopFrequency(self.stopFreqMHz)
-            frequency = calculateFrequencyValues(0.1, 350, 10000)
+            frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStartFreq)
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
         except:
@@ -83,29 +75,30 @@ class Sib(ReaderInterface):
             self.AppModule.currentlyScanning = False
 
     def setStartFrequency(self, startFreqMHz) -> bool:
-        if 0 <= startFreqMHz <= 350 and startFreqMHz < self.stopFreqMHz:
-            self.startFreqMHz = startFreqMHz
-            self.sib.start_MHz = startFreqMHz
+        try:
+            self.startFreqMHz = startFreqMHz - 0.2
+            self.sib.start_MHz = startFreqMHz - 0.2
+            if self.stopFreqMHz:
+                self.setNumberOfPoints()
             return True
-        else:
-            text_notification.setText(f"Invalid value, start frequency must be between 0 and 350."
-                                      f"\n start frequency not changed.")
+        except:
+            text_notification.setText("Failed to set start frequency.")
             return False
 
     def setStopFrequency(self, stopFreqMHz) -> bool:
-        if 0 <= stopFreqMHz <= 350 and stopFreqMHz > self.startFreqMHz:
+        try:
             self.stopFreqMHz = stopFreqMHz
             self.sib.stop_MHz = stopFreqMHz
+            if self.startFreqMHz:
+                self.setNumberOfPoints()
             return True
-        else:
-            text_notification.setText(f"Invalid value, stop frequency must be between 0 and 350."
-                                      f"\n stop frequency not changed.")
+        except:
+            text_notification.setText("Failed to set stop frequency.")
             return False
 
-    def setNumberOfPoints(self, nPoints) -> bool:
+    def setNumberOfPoints(self) -> bool:
         try:
-            self.nPoints = nPoints
-            self.sib.num_pts = nPoints
+            self.sib.num_pts = getNumPointsSweep(self.startFreqMHz, self.stopFreqMHz)
             return True
         except:
             return False
@@ -124,7 +117,7 @@ class Sib(ReaderInterface):
         try:
             return_val = self.sib.handshake(data)
             if return_val == data:
-                # self.getFirmwareVersion()
+                self.getFirmwareVersion()
                 return True
             else:
                 return False
@@ -227,10 +220,10 @@ def createScanFile(outputFileName, frequency, volts, yAxisLabel):
     return
 
 
-def calculateFrequencyValues(startFreqMHz, stopFreqMHz, nPoints) -> List[str]:
-    df = (stopFreqMHz - startFreqMHz) * 1.0 / (nPoints-1)
-    frequency = startFreqMHz + df * np.arange(0, nPoints)
-    return frequency
+def calculateFrequencyValues(startFreqMHz, stopFreqMHz) -> List[str]:
+    df = 0.01
+    nPoints = getNumPointsFrequency(startFreqMHz, stopFreqMHz)
+    return startFreqMHz + df * np.arange(0, nPoints)
 
 
 def find_nearest(freq, freqList, dBlist):
@@ -254,6 +247,14 @@ def createCalibrationDirectoryIfNotExists(filename):
 
 def convertAdcToVolts(adcList):
     return [float(adcValue) * (3.3 / 2 ** 10) for adcValue in adcList]
+
+
+def getNumPointsFrequency(startFreq, stopFreq):
+    return int((stopFreq - startFreq) * 1000 / 10 + 1)
+
+
+def getNumPointsSweep(startFreq, stopFreq):
+    return int((stopFreq - startFreq) * 1000 / 10)
 
 # ports = list_ports.comports()
 # portNums = [int(ports[i][0][3:]) for i in range(len(ports))]

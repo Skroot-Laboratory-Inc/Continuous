@@ -144,7 +144,6 @@ class FoamingAlgorithm(Analysis):
         self.scanRate = 0.1
         self.startFreq = airFreq - 15
         self.stopFreq = airFreq + 15
-        self.nPoints = 350
         self.airFreq = airFreq
         self.waterFreq = waterFreq
         self.waterShift = waterShift
