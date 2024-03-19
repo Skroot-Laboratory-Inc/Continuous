@@ -1,4 +1,10 @@
 {
+  "v2.0.12": {
+    "bugfix": {
+      "1": "Updated settings to max frequency of 170 MHz",
+      "2": "Fixed an issue with calibration using start frequency only."
+    }
+  },
   "v2.0.11": {
     "features": {
       "1": "Updated defaults values for scan rate, stop frequency and start frequency",

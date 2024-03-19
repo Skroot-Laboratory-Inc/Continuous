@@ -40,10 +40,10 @@ class Settings:
                 Reader.updateEmailReceiver(receiver_email)
 
     def freqRangeSetting(self):
-        startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (50-150MHz)",
-                                             parent=self.AppModule.root, minvalue=50, maxvalue=150)
-        stopFreq = tk.simpledialog.askfloat("Input", "Stop Frequency (MHz): \nRange: (50-150MHz)",
-                                            parent=self.AppModule.root, minvalue=50, maxvalue=150)
+        startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
+                                             parent=self.AppModule.root, minvalue=50, maxvalue=170)
+        stopFreq = tk.simpledialog.askfloat("Input", "Stop Frequency (MHz): \nRange: (50-170MHz)",
+                                            parent=self.AppModule.root, minvalue=50, maxvalue=170)
         if startFreq is not None:
             for Reader in self.AppModule.Readers:
                 Reader.ReaderInterface.setStartFrequency(startFreq)

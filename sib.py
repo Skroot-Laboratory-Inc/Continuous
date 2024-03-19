@@ -63,7 +63,7 @@ class Sib(ReaderInterface):
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
             volts = self.performSweepAndWaitForComplete()
-            frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStartFreq)
+            frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
         except:
