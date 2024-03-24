@@ -43,6 +43,13 @@ class NCommUSBCDC:
     in_waiting()
         Returns the number of bytes waiting in the serial read
         buffer.
+    is_open()
+        Indicates if the serial port is currently open.
+    reset_input_buffer()
+        Clears the input buffer, discarding all data in the buffer.
+    reset_output_buffer()
+        Clears the output buffer, abourting the current output and
+        discarding all data in the buffer.
     """
 
     def __init__(self,
@@ -133,7 +140,7 @@ class NCommUSBCDC:
             try:
                 self._ser.open()
             except serial.SerialException:
-                raise NCommConnectionError('Could not open port {}.'.format(self._ser.port)) from None
+                raise NCommConnectionError('Could not open port {}.'.format(self._ser.port))
     
 
     def disconnect(self):
@@ -174,7 +181,8 @@ class NCommUSBCDC:
         Raises
         ------
         NCommConnectionError
-            If the serial connection is not open.
+            If the serial connection is not open. Also raised if the serial.write
+            command fails.
         NCommTimeout
             If the write operation times out.
 
@@ -201,7 +209,9 @@ class NCommUSBCDC:
         try:
             self._ser.write(bytes(command_code + payload))
         except serial.SerialTimeoutException:
-            raise NCommTimeout('Write operation timed out.') from None
+            raise NCommTimeout('Write operation timed out.')
+        except serial.SerialException as e:
+            raise NCommConnectionError('Port appears to be open, but write failed: {}'.format(e))
         
 
 
@@ -240,7 +250,10 @@ class NCommUSBCDC:
         packet_size = command_size + payload_size
 
         # Wait for the packet from the device
-        raw_packet = self._ser.read(packet_size)
+        try:
+            raw_packet = self._ser.read(packet_size)
+        except serial.SerialException as e:
+            raise NCommConnectionError('Port appears to be open but reading packet failed: {}'.format(e))
 
         # Check for read timeout
         if len(raw_packet) != packet_size:
@@ -286,7 +299,10 @@ class NCommUSBCDC:
             raise NCommConnectionError('Device not connected. Cannot read data.')
         
         # Wait for the specified number of bytes
-        rx_data = self._ser.read(num_bytes)
+        try:
+            rx_data = self._ser.read(num_bytes)
+        except serial.SerialException as e:
+            raise NCommConnectionError('Port appears to be open but reading data failed: {}'.format(e))
 
         # Check for read timeout
         if len(rx_data) != num_bytes:
@@ -306,7 +322,7 @@ class NCommUSBCDC:
         Raises
         ------
         NCommConnectionError
-            If the system is unable to read the number of available bytes
+            There is a problem with the serial connection.
 
         Returns
         -------
@@ -317,10 +333,74 @@ class NCommUSBCDC:
 
         try:
             bytes_waiting = self._ser.in_waiting
-        except serial.SerialException:
-            raise NCommConnectionError('Unable to get the number of bytes in the serial buffer.') from None
-        else:
-            return bytes_waiting
+        except serial.SerialException as e:
+            raise NCommConnectionError(e)
+        
+        return bytes_waiting
+    
+
+    def is_open(self) -> bool:
+        """
+        Returns the state of the serial connection.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        is_open : bool
+            True - The serial port is open
+            False - The serial port is not open
+        """
+
+        return self._ser.is_open
+    
+
+    def reset_input_buffer(self):
+        """
+        Clears the input buffer, discarding all data in the buffer.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self._ser.reset_input_buffer()
+    
+
+    def reset_output_buffer(self):
+        """
+        Clears the output buffer, aborting the current output, discarding
+        all data in the buffer.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self._ser.reset_output_buffer()
+
 
 
 
