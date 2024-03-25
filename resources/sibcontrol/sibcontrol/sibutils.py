@@ -9,5 +9,18 @@ class SIBConnectionError(SIBException):
 class SIBTimeoutError(SIBException):
     '''Exception used for timeouts during read/write operations.'''
 
+class SIBError(SIBException):
+    '''Raised when the host detects unexpected behavior from the SIB.'''
+
 class SIBACKException(SIBException):
     '''Exception used to detect when the system sends the FAIL acknowledgmeent.'''
+
+class SIBInvalidCommandError(SIBACKException):
+    '''The host has received the Invalid Command error from the SIB.'''
+
+class SIBDDSConfigError(SIBACKException):
+    '''The host has received the DDS configuration error from the SIB.'''
+
+class SIBRegulatorsNotReadyError(SIBACKException):
+    '''The host has received the Regulators not Ready error from the SIB.'''
+

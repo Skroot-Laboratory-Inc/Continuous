@@ -1,27 +1,28 @@
 import csv
 import logging
 import os
-import time  # for sleep()
+import time
 from bisect import bisect_left
 from typing import List
 
 import numpy as np
 import pandas
 import sibcontrol
+from serial import SerialException
 
+import logger
 import text_notification
 from reader_interface import ReaderInterface
 
 
 class Sib(ReaderInterface):
-    def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+    def __init__(self, port, AppModule, readerNumber, PortAllocator, calibrationRequired=False):
         self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (Unitless)'
         self.readerNumber = readerNumber
         self.AppModule = AppModule
-        self.sib = sibcontrol.SIB350(port)
-        self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
-        self.sib.open()
+        self.PortAllocator = PortAllocator
+        self.initialize(port)
         self.calibrationStartFreq = 50
         self.calibrationStopFreq = 170
         self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
@@ -37,14 +38,25 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            volts = self.performSweepAndWaitForComplete()
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz)
+            volts = self.performSweepAndWaitForComplete()
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return frequency, volts, [], True
-        except sibcontrol.SIBException:
+        except sibcontrol.SIBConnectionError:
+            text_notification.setText("Failed to perform sweep for reader, resetting reader connection.")
+            self.resetSibConnection()
+            return [], [], [], False
+        except sibcontrol.SIBTimeoutError:
+            text_notification.setText("Failed to perform sweep for reader, resetting reader connection.")
+            self.resetSibConnection()
+            return [], [], [], False
+        except sibcontrol.SIBDDSConfigError:
             text_notification.setText("Failed to perform sweep for reader, check reader connection.")
-            logging.exception("Failed to perform sweep for reader, check reader connection.")
+            self.resetDDSConfiguration()
+            return [], [], [], False
+        except sibcontrol.SIBException:
+            logging.exception("Failed to perform sweep for reader with unexpected cause, check reader connection.")
             return [], [], [], False
         finally:
             self.AppModule.currentlyScanning = False
@@ -62,8 +74,8 @@ class Sib(ReaderInterface):
             while self.AppModule.currentlyScanning:
                 time.sleep(0.1)
             self.AppModule.currentlyScanning = True
-            volts = self.performSweepAndWaitForComplete()
             frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
+            volts = self.performSweepAndWaitForComplete()
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
         except:
@@ -105,12 +117,19 @@ class Sib(ReaderInterface):
 
     def close(self) -> bool:
         try:
+            self.PortAllocator.removePort(self.port)
             self.sib.close()
             return True
         except:
             return False
 
     """ End of required implementations, SIB specific below"""
+
+    def initialize(self, port):
+        self.port = port
+        self.sib = sibcontrol.SIB350(port)
+        self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
+        self.sib.open()
 
     def performHandshake(self) -> bool:
         data = 500332  # Some random 32-bit value
@@ -177,6 +196,7 @@ class Sib(ReaderInterface):
             except:
                 sweep_complete = True
                 logging.exception("An error occurred while waiting for scan to complete")
+                raise
         self.sleep()
         return convertAdcToVolts(conversion_results)
 
@@ -188,6 +208,29 @@ class Sib(ReaderInterface):
                                                   self.calibrationVolts)
             calibratedVolts.append((volts[i] / calibrationVoltsOffset))
         return calibratedVolts, calibratedPhase
+
+    def resetDDSConfiguration(self):
+        logger.info("The DDS did not get configured correctly, performing hard reset.")
+        try:
+            self.sib.reset_sib()
+            time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
+            self.resetSibConnection()
+        except SerialException:
+            logger.exception("Failed to reset SIB connection")
+
+    def resetSibConnection(self):
+        logger.info("Problem with serial connection. Closing and then re-opening port.")
+        try:
+            if self.sib.is_open():
+                self.close()
+                time.sleep(1.0)
+            port, readerType = self.PortAllocator.getNewPort()
+            self.initialize(port)
+            self.setStartFrequency(self.startFreqMHz + 0.2)
+            self.setStopFrequency(self.stopFreqMHz)
+            self.checkAndSendConfiguration()
+        except sibcontrol.SIBException:
+            logger.exception("Failed to reset SIB connection")
 
 
 def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]):

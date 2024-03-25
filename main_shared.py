@@ -22,6 +22,7 @@ from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
 from pdf import generatePdf
+from port_allocator import PortAllocator
 from server import ServerFileShare
 from settings import Settings
 from setup import Setup
@@ -83,7 +84,7 @@ class MainShared:
         self.threadStatus = ''
         self.royalBlue = 'RoyalBlue4'
         self.white = 'white'
-        self.ports = []
+        self.PortAllocator = PortAllocator(self.os)
         try:
             self.location = sys._MEIPASS
         except AttributeError:
@@ -94,7 +95,7 @@ class MainShared:
         self.Readers = []
         self.Settings = Settings(self)
         self.Setup = Setup(self.root, self.Settings, self)
-        self.Buttons = ButtonFunctions(self, self.location, self.root)
+        self.Buttons = ButtonFunctions(self, self.location, self.root, self.PortAllocator)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version, self.location)
@@ -306,7 +307,6 @@ class MainShared:
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
-        self.ports = []
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
         self.Buttons.guidedSetupButton.invoke()

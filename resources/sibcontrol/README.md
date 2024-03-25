@@ -17,6 +17,25 @@ This package was developed using the following software versions:
 
 # Revision History
 
+### Version 2.2.x
+
+On 03/14/2024 the following changes were made:
+
+* Additional exceptions were added to sib350 more precisely indicate the error received when the host receives the FAIL acknowledgment.
+* Removed the "from None" from all NComm exceptions and NComm write(), read_command() and read_data() functions now catch all serial.SerialExceptions.
+* Updated the default DDS configuration parameters to:
+    - Start Freq: 94.8 MHz
+    - Stop Freq: 145.0 MHz
+    - Number of Sweep Points: 5021
+* All command calls now check for the correct acknowledgment
+* Added three new functions to sib350.py:
+    - is_open() - Used to test if the serial connection is open
+    - reset_input_buffer() - Resets the input buffer
+    - reset_output_buffer() - Resets the output buffer
+* Updated documentation
+* Updated version number of v2.2.0
+
+
 ### Version 2.1.x
 
 On 02/20/2024 the following changes were made:

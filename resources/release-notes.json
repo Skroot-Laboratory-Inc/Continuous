@@ -1,4 +1,9 @@
 {
+  "v2.1.1": {
+    "features": {
+        "1": "SIB control v2.2.0 and related error handling implementation"
+    }
+  },
   "v2.0.12": {
     "bugfix": {
       "1": "Updated settings to max frequency of 170 MHz",

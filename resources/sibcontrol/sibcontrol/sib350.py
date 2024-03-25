@@ -1,7 +1,15 @@
 from .ncomm import ncomm as ncomm
 from .dds import AD9910
-from .sibutils import SIBException, SIBConnectionError, SIBTimeoutError, SIBACKException
-#from time import sleep
+from .sibutils import (
+    SIBException,
+    SIBConnectionError,
+    SIBTimeoutError,
+    SIBError,
+    SIBACKException,
+    SIBInvalidCommandError,
+    SIBDDSConfigError,
+    SIBRegulatorsNotReadyError
+)
 
 
 
@@ -33,6 +41,13 @@ class SIB350:
         Closes the serial connection to the device
     data_waiting()
         Returns the number of bytes waiting in the read buffer
+    is_open()
+        Indicates if the serial port is open or not.
+    reset_input_buffer()
+        Clears the input buffer, discarding all data in the buffer.
+    reset_output_buffer()
+        Clears the output buffer, aborting the current output, discarding
+        all data in the buffer.
     write_start_ftw()
         Writes the start frequency as an FTW to the device.
     write_stop_ftw()
@@ -90,15 +105,20 @@ class SIB350:
                                     b'!ASD' : 'send_data',
                                     b'!AFF' : 'fail'}
         
+        # Dictionary containing the error codes and meanings
+        self._error_dict = {0x21454141 : 'invalid_command',
+                       0x21454242 : 'dds_config_errr',
+                       0x21454341 : 'regulators_not_ready'}
+        
         # The start and stop frequencies are stored as 32-bit FTW
-        self._start_FTW = 10.0
-        self._stop_FTW = 100.0
+        self._start_FTW = 94.8
+        self._stop_FTW = 145.0
 
         # The amplitude is stored as a 14-bit ASF
         self._asf = 31.6
 
         # The number of points used in the frequency sweep
-        self._num_pts = 1000
+        self._num_pts = 5021
 
         # Initialize the specific DDS configuration used by the sib
         self.dds = AD9910(min_freq = 0,                 # in MHz
@@ -121,7 +141,7 @@ class SIB350:
     def start_MHz(self, freq_MHz):
 
         if not isinstance(freq_MHz, (int, float)):
-            raise ValueError('Start frequency must be a number.')
+            raise TypeError('Start frequency must be a number.')
         
         if self.dds.freq_MHz_in_range(freq_MHz):
             freq_hz = freq_MHz * 1_000_000
@@ -141,7 +161,7 @@ class SIB350:
     def stop_MHz(self, freq_MHz):
 
         if not isinstance(freq_MHz, (int, float)):
-            raise ValueError('Stop frequency must be a number.')
+            raise TypeError('Stop frequency must be a number.')
         
         if self.dds.freq_MHz_in_range(freq_MHz):
             freq_Hz = freq_MHz * 1_000_000
@@ -160,7 +180,7 @@ class SIB350:
     def amplitude_mA(self, amp_mA):
 
         if not isinstance(amp_mA, (int, float)):
-            raise ValueError('Amplitude must be a number.')
+            raise TypeError('Amplitude must be a number.')
         
         if self.dds.amp_mA_in_range(amp_mA):
             self._asf = self.dds.ma_to_asf(amp_mA)
@@ -178,7 +198,7 @@ class SIB350:
     def num_pts(self, num_pts):
 
         if not isinstance(num_pts, int):
-            raise ValueError('Number of points must be an integer.')
+            raise TypeError('Number of points must be an integer.')
         
         if self.dds.num_pts_in_range(num_pts):
             self._num_pts = num_pts
@@ -186,7 +206,7 @@ class SIB350:
             raise ValueError('Amplitude is out of range.')
 
 
-   
+
     '''
     *********************************************************
     Private functions used to communicate with the MCU via the serial port.
@@ -202,9 +222,9 @@ class SIB350:
         try:
             self._comms.write_packet(command_name, data)
         except ncomm.NCommConnectionError:
-            raise SIBConnectionError('Device not connected on port {}. Cannot write packet.'.format(self._comms.com_port))
+            raise SIBConnectionError('Problem with connection to port {}. Cannot write packet.'.format(self._comms.com_port))
         except ncomm.NCommTimeout:
-            raise SIBTimeoutError('Write operation timed out.') from None
+            raise SIBTimeoutError('Write operation timed out. Timeout is {}'.format(self._comms._ser.write_timeout)) from None
 
 
     def _read_packet(self):
@@ -214,9 +234,9 @@ class SIB350:
         try:
             msg, payload = self._comms.read_packet()
         except ncomm.NCommConnectionError:
-            raise SIBConnectionError('Device not connected on port {}. Cannot read packet.'.format(self._comms.com_port))
+            raise SIBConnectionError('Problem with connection to port {}. Cannot read packet.'.format(self._comms.com_port))
         except ncomm.NCommTimeout:
-            raise SIBTimeoutError('Read operation timed out.')
+            raise SIBTimeoutError('Read operation timed out. Timeout is {}'.format(self._comms._ser.timeout)) from None
         
         return(msg, payload)
     
@@ -231,9 +251,9 @@ class SIB350:
         try:
             data_as_bytes = self._comms.read_data(num_bytes)
         except ncomm.NCommConnectionError:
-            raise SIBConnectionError('Device not connected on port {}. Cannot read data.'.format(self._comms.com_port))
+            raise SIBConnectionError('Problem with connection to port {}. Cannot read data.'.format(self._comms.com_port))
         except ncomm.NCommTimeout:
-            raise SIBTimeoutError('Read operating timed out while waiting for data.')
+            raise SIBTimeoutError('Read data timed out. Timeout is {}'.format(self._comms._ser.timeout)) from None
         
         # The data is 12-it and split across two different bytes.
         # Reassemble the data and convert each value to a 12-bit
@@ -243,31 +263,6 @@ class SIB350:
             data.append(int().from_bytes(data_as_bytes[i:i+2], 'big'))
 
         return data
-    
-
-
-    def _decode_error(self, error_code):
-        '''Used to decode the error code that is received along with a FAIL
-        acknowledgment. This is used to print more human readible error
-        messages to the user.
-        '''
-
-        if (error_code == 0x21454141):
-            msg = 'SiB received invalid command from host.'
-        elif (error_code == 0x21454242):
-            msg = 'DDS registers could not be correctly configured.'
-        elif (error_code == 0x21454341):
-            msg = 'Host attempted to initiate a frequency sweep while the SIB is in the sleep state.'
-        elif (error_code == 0x21454342):
-            msg = 'Host attepmted to initiate a frequency sweep and the DDS registers are not correctly configured.'
-        else:
-            raise SIBException('ERROR: Unknown error code ({}) received by _decode_error().'.format(error_code))
-
-        return msg
-
-
-
-
 
 
 
@@ -277,196 +272,6 @@ class SIB350:
     Public functions used to communicate with the MCU via the serial port.
     *********************************************************
     '''
-    def open(self):
-        """
-        Opens a serial connection to the device on com_port.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        SIBConnectionError
-            Cannot open device on COM port.
-
-        Returns
-        -------
-        None        
-        """
-
-        try:
-            self._comms.connect()
-        except ncomm.NCommConnectionError:
-            raise SIBConnectionError('Could not open port {}.'.format(self._comms.com_port)) from None
-        
-        return
-    
-
-    def close(self):
-        '''Closes the connection to the device.'''
-        self._comms.disconnect()
-        return
-    
-
-    def data_waiting(self):
-        """
-        Returns the number of bytes waiting in the serial read buffer.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        SIBConnectionError
-            Cannot get number of bytes waiting.
-
-        Returns
-        -------
-        num_bytes : int
-            The number of bytes waiting to be read.        
-        """
-
-        try:
-            num_bytes = self._comms.in_waiting()
-        except ncomm.NCommConnectionError:
-            raise SIBConnectionError('Unable to get the number of bytes in the serial read buffer.') from None
-        
-        return num_bytes
-    
-
-    def write_start_ftw(self) -> int:
-        """
-        Writes the start frequency as an FTW to the device. The method
-        then waits for the device acknowledgment. The value that was written
-        to the DDS is then returned.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        None.
-
-        Returns
-        -------
-        ack_payload : int
-          The SIB responds with the value written to the DDS.     
-        """
-
-        if not self.valid_config():
-            raise SIBException('Either start frequency is greater than stop frequency, or \
-                               not enough separation between start and stop frequency to \
-                               support the number of points.')
-        
-        # Write command
-        self._write_packet('send_start_ftw', self._start_FTW)
-
-        # Read ACK. This command can on responds with OK.
-        _, ack_payload = self._read_packet()
-
-        return ack_payload
-    
-
-    def write_stop_ftw(self) -> int:
-        """
-        Writes the stop frequency as an FTW to the device. The method
-        then waits for the device acknowledgment. The value that was written
-        to the DDS is then returned.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        None
-
-        Returns
-        -------
-        ack_payload : int
-          The SIB responds with the value written to the DDS.    
-        """
-
-        if not self.valid_config():
-            raise SIBException('Either start frequency is greater than stop frequency, or \
-                               not enough separation between start and stop frequency to \
-                               support the number of points.')
-
-        # Write command
-        self._write_packet('send_stop_ftw', self._stop_FTW)
-
-        # Read ACK. This command can only respond with OK
-        _, ack_payload = self._read_packet()
-
-        return ack_payload
-    
-
-    def write_asf(self) -> int:
-        """
-        Writes the amplitude scale factor to the device. The method
-        then waits for the device acknowledgment. The value that was written
-        to the DDS is then returned.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        None
-
-        Returns
-        -------
-        ack_payload : int
-          The SIB responds with the value written to the DDS.         
-        """
-
-        # Write command
-        self._write_packet('send_asf', self._asf)
-
-        # Read ACK. This command can only respond with OK.
-        _, ack_payload = self._read_packet()
-
-        return ack_payload
-    
-
-    def write_num_pts(self) -> int:
-        """
-        Writes the number of frequency points to the device. The method
-        then waits for the device acknowledgment. The value that was written
-        to the DDS is then returned.
-
-        Parameters
-        ----------
-        None
-
-        Raises
-        ------
-        None
-
-        Returns
-        -------
-        ack_payload : int
-          The SIB responds with the value written to the DDS.       
-        """
-
-        if not self.valid_config():
-            raise SIBException('Either start frequency is greater than stop frequency, or \
-                               not enough separation between start and stop frequency to \
-                               support the number of points.')
-        
-        # Write command
-        self._write_packet('send_num_pts', self._num_pts)
-
-        # Read ACK. This command can only respond with OK
-        _, ack_payload = self._read_packet()
-
-        return ack_payload
-    
-
     def valid_config(self) -> bool:
         """
         Checks that the configuration data stored in the object is valid.
@@ -501,7 +306,288 @@ class SIB350:
         
         # All configuration data is valid
         return True
+    
 
+    def open(self):
+        """
+        Opens a serial connection to the device on com_port.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        SIBConnectionError
+            Cannot open device on COM port.
+
+        Returns
+        -------
+        None        
+        """
+
+        try:
+            self._comms.connect()
+        except ncomm.NCommConnectionError:
+            raise SIBConnectionError('Could not open port {}.'.format(self._comms.com_port))
+        
+        return
+    
+
+    def close(self):
+        '''Closes the connection to the device.'''
+        self._comms.disconnect()
+        return
+    
+
+    def data_waiting(self):
+        """
+        Returns the number of bytes waiting in the serial read buffer.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
+
+        Returns
+        -------
+        num_bytes : int
+            The number of bytes waiting to be read.        
+        """
+
+        try:
+            num_bytes = self._comms.in_waiting()
+        except ncomm.NCommConnectionError as e:
+            raise SIBConnectionError(e)
+        
+        return num_bytes
+    
+
+    def is_open(self) -> bool:
+        """
+        Returns the state of the serial connection.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        is_open : bool
+            True - The serial port is open
+            False - The serial port is not open
+        """
+
+        return self._comms.is_open()
+    
+
+    def reset_input_buffer(self):
+        """
+        Clears the input buffer, discarding all data in the buffer.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self._comms.reset_input_buffer()
+
+
+    def reset_output_buffer(self):
+        """
+        Clears the output buffer, aborting the current output, discarding
+        all data in the buffer.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        None
+
+        Returns
+        -------
+        None
+        """
+
+        self._comms.reset_output_buffer()
+
+
+    def write_start_ftw(self) -> int:
+        """
+        Writes the start frequency as an FTW to the device. The method
+        then waits for the device acknowledgment. The value that was written
+        to the DDS is then returned.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        ValueError
+            The DDS configuration data is not valid.
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
+
+        Returns
+        -------
+        ack_payload : int
+          The SIB responds with the value written to the DDS.     
+        """
+
+        if not self.valid_config():
+            raise ValueError('DDS configuration data is not valid.')
+        
+        # Write command
+        self._write_packet('send_start_ftw', self._start_FTW)
+
+        # Read ACK. This command can on responds with OK.
+        ack_msg, ack_payload = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
+        
+        return ack_payload
+    
+
+    def write_stop_ftw(self) -> int:
+        """
+        Writes the stop frequency as an FTW to the device. The method
+        then waits for the device acknowledgment. The value that was written
+        to the DDS is then returned.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        ValueError
+            The DDS configuration data is not valid.
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
+
+        Returns
+        -------
+        ack_payload : int
+          The SIB responds with the value written to the DDS.    
+        """
+
+        if not self.valid_config():
+            raise ValueError('DDS configuration data is not valid.')
+
+        # Write command
+        self._write_packet('send_stop_ftw', self._stop_FTW)
+
+        # Read ACK. This command can only respond with OK
+        ack_msg, ack_payload = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
+        
+        return ack_payload
+    
+
+    def write_asf(self) -> int:
+        """
+        Writes the amplitude scale factor to the device. The method
+        then waits for the device acknowledgment. The value that was written
+        to the DDS is then returned.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
+
+        Returns
+        -------
+        ack_payload : int
+          The SIB responds with the value written to the DDS.         
+        """
+
+        # Write command
+        self._write_packet('send_asf', self._asf)
+
+        # Read ACK. This command can only respond with OK.
+        ack_msg, ack_payload = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
+        
+        return ack_payload
+    
+
+    def write_num_pts(self) -> int:
+        """
+        Writes the number of frequency points to the device. The method
+        then waits for the device acknowledgment. The value that was written
+        to the DDS is then returned.
+
+        Parameters
+        ----------
+        None
+
+        Raises
+        ------
+        ValueError
+            The DDS configuration data is not valid.
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
+
+        Returns
+        -------
+        ack_payload : int
+          The SIB responds with the value written to the DDS.       
+        """
+
+        if not self.valid_config():
+            raise ValueError('DDS configuration data is not valid.')
+        
+        # Write command
+        self._write_packet('send_num_pts', self._num_pts)
+
+        # Read ACK. This command can only respond with OK
+        ack_msg, ack_payload = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
+        
+        return ack_payload
+    
 
     def handshake(self,
                   data: int
@@ -519,7 +605,14 @@ class SIB350:
 
         Raises
         ------
-        None
+        TypeError
+            The data is not of type int
+        ValueError
+            The data is out of range. Must be less than (2^32 - 1) 
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -537,8 +630,12 @@ class SIB350:
         self._write_packet('handshake', data)
 
         # Read acknowledgment. This command can only respond with OK.
-        _, ack_payload = self._read_packet()
+        ack_msg, ack_payload = self._read_packet()
 
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
+        
         return ack_payload
         
 
@@ -552,7 +649,10 @@ class SIB350:
 
         Raises
         ------
-        None
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -564,7 +664,11 @@ class SIB350:
         self._write_packet('get_version', 0)    # Payload is don't care
 
         # Read ACK. This command can only respond with OK
-        _, ack_payload = self._read_packet()
+        ack_msg, ack_payload = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
 
         # Read packet returns the payload as an integer. Convert back to bytes
         version_num = ack_payload.to_bytes(4, 'big')
@@ -596,7 +700,10 @@ class SIB350:
 
         Raises
         ------
-        None
+        SIBError
+            Host received an unexpected acknowledgment code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -606,8 +713,12 @@ class SIB350:
         # Write the system sleep command
         self._write_packet('system_sleep', 0)   # Payload is don't care
 
-        # Read the ACK. This command can only respond with OK
-        self._read_packet()
+        # Read the ACK. This command can only respond with OK and payload is don't care
+        ack_msg, _ = self._read_packet()
+
+        # Command can only respond with OK
+        if ack_msg != 'ok':
+            raise SIBError('Unexpeced acknowledgment received: {}'.format(ack_msg))
     
 
     def wake(self):
@@ -623,9 +734,12 @@ class SIB350:
 
         Raises
         ------
-        SIBACKException
-          If the DDS cannot be configured. The system should be placed back
-          into the sleep state.
+        SIBDDSConfigError
+            The DDS wasn't configured correctly while waking up.
+        SIBError
+            Host received an unexpected acknowledgment code or unexpected error code
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -638,12 +752,18 @@ class SIB350:
         # Read the ACK. This command can only respond with OK
         ack_msg, ack_payload = self._read_packet()
 
-        if ack_msg == 'fail':
-            # The SIB couldn't configure DDS
-            print('Error code: {} : '.format(ack_payload) + self._decode_error(ack_payload))
-            raise SIBACKException('Received a FAIL response from the device after receiving a WAKE command. The received error \
-                                  code is: {}'.format(ack_payload))
-    
+        if ack_msg == 'ok':
+            return
+        elif ack_msg == 'fail':
+            if (self._error_dict.get(ack_payload) == 'dds_config_error'):
+                # The DDS registers were not configured
+                raise SIBDDSConfigError('DDS did not properly configure during wakeup.')
+            else:
+                # Unexpected error code received
+                raise SIBError('ERROR: Unexpected error code received: {}'.format(ack_payload))
+        else:
+            raise SIBError('Unexpected acknowledgement received: {}'.format(ack_msg))
+
 
 
     def reset_sib(self):
@@ -685,7 +805,8 @@ class SIB350:
 
         Raises
         ------
-        None
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -717,11 +838,13 @@ class SIB350:
 
         Raises
         ------
-        SIBException
-            If the number of bytes to receive is not an even number. This value must
-            be an even number because all 12-bit ADC codes are transmitted as two bytes.
-        SIBACKException
-            If the device does not respond with OK.
+        SIBRegulatorsNotReadyError
+            The voltage regulators are not enabled on the SIB.
+        SIBError
+            The number of bytes to receive is not an even number.
+            Host received an unexpected acknowledgment code or error code.
+        SIBConnectionError
+            There is a problem with the serial connection. It must be reset.
 
         Returns
         -------
@@ -740,17 +863,19 @@ class SIB350:
             data = None
         elif ack_msg == 'send_data':
             # The ack_payload contains the number of bytes to receive
-            # which should be an even value.
+            # which should be an even value
             if (ack_payload % 2) != 0:
-                raise SIBException('Number of received bytes should be even value. Expecting \
-                                   {} bytes.'.format(ack_payload))
+                raise SIBError('Number of received bytes should be an even value: {}'.format(ack_payload))
             else:
                 data = self._read_data(ack_payload)
+        elif ack_msg == 'fail':
+            # Decode the error code
+            if (self._error_dict.get(ack_payload) == 'regulators_not_ready'):
+                raise SIBRegulatorsNotReadyError
+            else:
+                raise SIBError('Unexpected error code received: {}'.format(ack_payload))
         else:
-            # Recevied a FAIL acknowledgement
-            print('Error code: {} : '.format(ack_payload) + self._decode_error(ack_payload))
-            raise SIBACKException('Received a FAIL response from the device. The received error \
-                                  code is: {}'.format(ack_payload))
+            raise SIBError('Unexpected acknowledgment received: {}'.format(ack_msg))
         
         return (ack_msg, data)
     
