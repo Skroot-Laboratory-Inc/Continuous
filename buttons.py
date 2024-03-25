@@ -17,13 +17,14 @@ from vna import VnaScanning
 
 
 class ButtonFunctions:
-    def __init__(self, AppModule, location, root):
+    def __init__(self, AppModule, location, root, PortAllocator):
         self.root = root
         image = Image.open(rf"{location}/resources/help.png")
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
         self.ReaderInterfaces = []
+        self.PortAllocator = PortAllocator
         self.createButtonsOnNewFrame()
 
     def createButtonsOnNewFrame(self):
@@ -141,8 +142,8 @@ class ButtonFunctions:
             while filteredVNAPorts == [] and filteredSIBPorts == [] and attempts <= 3:
                 time.sleep(2)
                 try:
-                    port, readerType = getNewVnaAndSibPorts(self.AppModule.os, self.AppModule.ports)
-                    self.AppModule.ports.append(port)
+
+                    port, readerType = self.PortAllocator.getNewPort()
                     return port, readerType
                 except:
                     attempts += 1
@@ -199,7 +200,7 @@ def pauseUntilUserClicks(readerNumber):
 def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
     try:
         if readerType == 'SIB':
-            sib = Sib(port, AppModule, readerNumber, calibrationRequired)
+            sib = Sib(port, AppModule, readerNumber, AppModule.PortAllocator, calibrationRequired)
             success = sib.performHandshake()
             if success:
                 return sib
