@@ -15,7 +15,7 @@ from reader_interface import ReaderInterface
 
 
 class VnaScanning(ReaderInterface):
-    def __init__(self, port, AppModule, readerNumber, calibrationRequired=False):
+    def __init__(self, port, calibrationFilename, readerNumber, calibrationRequired=False):
         self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (dB)'
         try:
@@ -24,10 +24,9 @@ class VnaScanning(ReaderInterface):
             self.calibrationFailed = True
         self.port = port
         self.readerNumber = readerNumber
-        self.AppModule = AppModule
         self.startFreqMHz = 95
         self.stopFreqMHz = 145
-        self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationFilename = calibrationFilename
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:
             self.loadCalibrationFile()
@@ -38,9 +37,6 @@ class VnaScanning(ReaderInterface):
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
-            while self.AppModule.currentlyScanning:
-                time.sleep(0.1)
-            self.AppModule.currentlyScanning = True
             frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.getNumPoints())
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
@@ -54,7 +50,6 @@ class VnaScanning(ReaderInterface):
             try:
                 self.close()
                 self.socket = serial.Serial(self.port, 115200, timeout=1.5)
-                self.AppModule.currentlyScanning = True
                 frequency, rawMagnitude, rawPhase = self.readVnaValues(self.startFreqMHz, self.stopFreqMHz, self.getNumPoints())
                 magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
                 calibratedMagnitude, calibratedPhase = self.calibrationComparison(frequency, magnitude, phase)
@@ -66,23 +61,18 @@ class VnaScanning(ReaderInterface):
         except:
             logging.exception("Failed to take scan")
             return [], [], [], False
-        finally:
-            self.AppModule.currentlyScanning = False
 
     def getNumPoints(self):
         return (self.stopFreqMHz - self.startFreqMHz) * 1000 / 10 + 1
 
 
-    def calibrateIfRequired(self, readerNumber):
+    def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()
 
     def takeCalibrationScan(self) -> bool:
         try:
             createCalibrationDirectoryIfNotExists(self.calibrationFilename)
-            while self.AppModule.currentlyScanning:
-                time.sleep(0.1)
-            self.AppModule.currentlyScanning = True
             frequency, rawMagnitude, rawPhase = self.readVnaValues(49.8, 170, 10000)
             magnitude, phase = convertAnalogToValues(rawMagnitude, rawPhase)
             createScanFile(self.calibrationFilename, frequency, magnitude, phase, self.yAxisLabel)
@@ -98,8 +88,6 @@ class VnaScanning(ReaderInterface):
             self.calibrationFailed = True
             logging.exception("Failed to take scan")
             return False
-        finally:
-            self.AppModule.currentlyScanning = False
 
     def setStartFrequency(self, startFreqMHz):
         if 0 <= startFreqMHz <= 250 and startFreqMHz < self.stopFreqMHz:

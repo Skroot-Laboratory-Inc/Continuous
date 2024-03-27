@@ -11,6 +11,7 @@ from scp import SCPClient
 import text_notification
 from algorithms import ContaminationAlgorithm, FoamingAlgorithm, HarvestAlgorithm
 from analysis import Analysis
+from aws import AwsBoto3
 from dev import ReaderDevMode
 from emailer import Emailer
 from plotting import Plotting
@@ -25,6 +26,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         else:
             self.yAxisLabel = "Signal Strength (Unitless)"
         self.sshDisabled = False
+        self.Aws = AwsBoto3()
         self.scp = None
         self.sshConnection = None
         self.scanMagnitude = []
@@ -37,8 +39,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.readerName = f"Reader {readerNumber}"
         self.Emailer = Emailer('', f'{self.readerName}')
         self.Emailer.setMessageHarvestClose()
-        self.secret_name = "skroot_lab/ssh_bot_credentials"
-        self.region_name = "us-east-2"
         self.AppModule = AppModule
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
@@ -123,25 +123,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def initializeReaderFolders(self, savePath):
         self.setSavePath(savePath)
 
-    def get_aws_secret(self):
-        try:
-            session = boto3.session.Session()
-            client = session.client(
-                service_name='secretsmanager',
-                region_name=self.region_name
-            )
-
-            get_secret_value_response = client.get_secret_value(
-                SecretId=self.secret_name
-            )
-
-            secret = get_secret_value_response['SecretString']
-            secret = json.loads(secret)
-            return secret
-        except:
-            self.sshDisabled = True
-            return None
-
     def setSavePath(self, savePath):
         if not os.path.exists(savePath):
             os.mkdir(savePath)
@@ -152,13 +133,16 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             else:
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
-            aws_secret = self.get_aws_secret()
-            if aws_secret == None or self.sshDisabled:
-                logging.exception("Failure to find aws secret")
-            else:
-                self.initializeSSHConnection(
-                    aws_secret["host"], aws_secret["port"], aws_secret["username"], aws_secret["password"]
-                )
+            try:
+                aws_secret = self.Aws.getSshSecret()
+                if aws_secret is None or self.sshDisabled:
+                    logging.exception("Failure to find aws secret")
+                else:
+                    self.initializeSSHConnection(
+                        aws_secret["host"], aws_secret["port"], aws_secret["username"], aws_secret["password"]
+                    )
+            except:
+                self.sshDisabled = True
             if not self.sshDisabled:
                 self.serverSavePath = f'D:/data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
                 serverSavePath_ = self.serverSavePath.replace('/', '\\')
