@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 from urllib import parse
@@ -17,9 +18,12 @@ class AwsBoto3:
         self.disabled = False
         self.bucket = 'skroot-data'
         self.dataPrefix = 'data-pdfs/'
+        self.secret_name = "skroot_lab/ssh_bot_credentials"
+        self.region_name = "us-east-2"
         self.dstPdfName = None
         try:
-            self.folders = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=self.dataPrefix, Delimiter='/')['CommonPrefixes']
+            self.folders = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=self.dataPrefix, Delimiter='/')[
+                'CommonPrefixes']
         except:
             self.disabled = True
         self.runUuid = uuid.uuid4()
@@ -77,3 +81,18 @@ class AwsBoto3:
                 self.disabled = True
             except:
                 logging.exception('Failed to download file')
+
+    def getSshSecret(self):
+        session = boto3.session.Session()
+        client = session.client(
+            service_name='secretsmanager',
+            region_name=self.region_name
+        )
+
+        get_secret_value_response = client.get_secret_value(
+            SecretId=self.secret_name
+        )
+
+        secret = get_secret_value_response['SecretString']
+        secret = json.loads(secret)
+        return secret

@@ -10,35 +10,6 @@ import vna
 
 
 class TestButtonsMethods(unittest.TestCase):
-    portParameters = [
-        ("windows", "USB-SERIAL CH340", "VNA"),
-        ("windows", "USB Serial Device", "SIB"),
-        ("linux", "USB Serial", "VNA"),
-        ("linux", "Skroot Laboratory", "SIB")
-    ]
-
-    @patch('serial.tools.list_ports.comports')
-    def test_getNewVnaAndSibPorts(self, mockListComports):
-        """
-        Test that whether on Linux or Windows, the correct ports are found.
-        """
-        portTaken = ListPortInfo("COM6")
-        for os, expectedDescription, expectedReaderType in self.portParameters:
-            with self.subTest(os=os, expectedDescription=expectedDescription, expectedReaderType=expectedReaderType):
-                if os == "linux" and expectedDescription == "Skroot Laboratory":
-                    portTaken.manufacturer = expectedDescription
-                else:
-                    portTaken.description = expectedDescription
-                expectedPortObject = ListPortInfo("COM7")
-                if os == "linux" and expectedDescription == "Skroot Laboratory":
-                    expectedPortObject.manufacturer = expectedDescription
-                else:
-                    expectedPortObject.description = expectedDescription
-                mockListComports.return_value = [expectedPortObject]
-                portInfo, readerType = buttons.getNewVnaAndSibPorts(os, [portTaken])
-                self.assertEqual(expectedReaderType, readerType)
-                self.assertEqual("COM7", portInfo)
-
     @patch("main_shared.MainShared")
     @patch("vna.VnaScanning.__new__")
     def test_readerInstantiationVna(self, mockReaderInterface, mockAppModule):

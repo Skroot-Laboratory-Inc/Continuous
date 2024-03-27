@@ -72,7 +72,6 @@ class MainShared:
         self.freqToggleSet = "Signal Check"
         self.splineToggleSet = False
         self.denoiseSet = True
-        self.currentlyScanning = False
         self.disableSaveFullFiles = False
         self.emailSetting = False
         self.awsTimeBetweenUploads = 30

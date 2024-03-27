@@ -16,16 +16,15 @@ from reader_interface import ReaderInterface
 
 
 class Sib(ReaderInterface):
-    def __init__(self, port, AppModule, readerNumber, PortAllocator, calibrationRequired=False):
+    def __init__(self, port, calibrationFileName, readerNumber, PortAllocator, calibrationRequired=False):
         self.calibrationFailed = False
         self.yAxisLabel = 'Signal Strength (Unitless)'
         self.readerNumber = readerNumber
-        self.AppModule = AppModule
         self.PortAllocator = PortAllocator
         self.initialize(port)
         self.calibrationStartFreq = 50
         self.calibrationStopFreq = 170
-        self.calibrationFilename = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationFilename = calibrationFileName
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:
             self.loadCalibrationFile()
@@ -35,9 +34,6 @@ class Sib(ReaderInterface):
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
-            while self.AppModule.currentlyScanning:
-                time.sleep(0.1)
-            self.AppModule.currentlyScanning = True
             frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz)
             volts = self.performSweepAndWaitForComplete()
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
@@ -58,10 +54,8 @@ class Sib(ReaderInterface):
         except sibcontrol.SIBException:
             logging.exception("Failed to perform sweep for reader with unexpected cause, check reader connection.")
             return [], [], [], False
-        finally:
-            self.AppModule.currentlyScanning = False
 
-    def calibrateIfRequired(self, readerNumber):
+    def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()
 
@@ -71,9 +65,6 @@ class Sib(ReaderInterface):
             self.sib.start_MHz = self.calibrationStartFreq - 0.2
             self.sib.stop_MHz = self.calibrationStopFreq
             self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
-            while self.AppModule.currentlyScanning:
-                time.sleep(0.1)
-            self.AppModule.currentlyScanning = True
             frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
             volts = self.performSweepAndWaitForComplete()
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
@@ -83,8 +74,6 @@ class Sib(ReaderInterface):
             text_notification.setText("Failed to perform calibration.")
             logging.exception("Failed to perform calibration.")
             return False
-        finally:
-            self.AppModule.currentlyScanning = False
 
     def setStartFrequency(self, startFreqMHz) -> bool:
         try:

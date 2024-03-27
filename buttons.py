@@ -120,7 +120,7 @@ class ButtonFunctions:
     def calFunc2(self, readerIndex):
         try:
             logging.info(f"Calibrating reader {readerIndex + 1}")
-            self.ReaderInterfaces[readerIndex].calibrateIfRequired(readerIndex + 1)
+            self.ReaderInterfaces[readerIndex].calibrateIfRequired()
             logging.info(f"Calibration complete for reader {readerIndex + 1}")
             self.ReaderInterfaces[readerIndex].loadCalibrationFile()
         except:
@@ -200,7 +200,7 @@ def pauseUntilUserClicks(readerNumber):
 def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
     try:
         if readerType == 'SIB':
-            sib = Sib(port, AppModule, readerNumber, AppModule.PortAllocator, calibrationRequired)
+            sib = Sib(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, AppModule.PortAllocator, calibrationRequired)
             success = sib.performHandshake()
             if success:
                 return sib
@@ -209,25 +209,7 @@ def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequ
                 text_notification.setText("Failed to connect to SiB")
                 sib.close()
         elif readerType == 'VNA':
-            return VnaScanning(port, AppModule, readerNumber, calibrationRequired)
+            return VnaScanning(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, calibrationRequired)
     except:
         logging.exception(f"Failed to instantiate reader {readerNumber}")
 
-
-def getNewVnaAndSibPorts(currentOs, portsTaken) -> (ListPortInfo, str):
-    ports = list_ports.comports()
-    if currentOs == "windows":
-        filteredVNAPorts = [port.device for port in ports if
-                            "USB-SERIAL CH340" in port.description and port.device not in portsTaken]
-        filteredSIBPorts = [port.device for port in ports if
-                            "USB Serial Device" in port.description and port.device not in portsTaken]
-    else:
-        filteredVNAPorts = [port.device for port in ports
-                            if port.description == "USB Serial" and port.device not in portsTaken]
-        filteredSIBPorts = [port.device for port in ports if
-                            port.manufacturer == "Skroot Laboratory" and port.device not in portsTaken]
-    if filteredSIBPorts:
-        return filteredSIBPorts[0], 'SIB'
-    if filteredVNAPorts:
-        return filteredVNAPorts[0], 'VNA'
-    raise Exception("No ports found")
