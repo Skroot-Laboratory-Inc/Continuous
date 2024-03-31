@@ -31,12 +31,11 @@ class AppModule(MainShared):
             import pyi_splash
             pyi_splash.close()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders=1, scanRate="5", cellType="Cell", vesselType="Vessel",
-                    secondAxisTitle=""):
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell",
+                    secondAxisTitle="", equilibrationTime="24"):
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
-         self.vesselType, self.secondAxisTitle) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
-                                                                               year, numReaders, scanRate, cellType,
-                                                                               vesselType, secondAxisTitle)
+         self.secondAxisTitle, self.equilibrationTime) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
+                                                                               year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeHelpButton()
         self.Buttons.placeConnectReadersButton()

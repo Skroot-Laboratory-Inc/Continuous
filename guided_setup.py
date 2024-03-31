@@ -4,25 +4,24 @@ import tkinter.ttk as ttk
 import pyautogui
 
 
-def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, secondAxisTitle):
-    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType,
-                          secondAxisTitle)
-    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, vesselType = setupForm.getConfiguration()
-    return month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, vesselType
+def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime):
+    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
+                          secondAxisTitle, equilibrationTime)
+    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, equilibrationTime = setupForm.getConfiguration()
+    return month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, equilibrationTime
 
 
-def guidedSetupFoaming(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType):
+def guidedSetupFoaming(root, baseSavePath, month, day, year, numReaders, scanRate, cellType):
     # TODO - update this to account for foaming setup, it will be different values needed
-    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType, "")
-    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, vesselType = setupForm.getConfiguration()
+    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, "")
+    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType = setupForm.getConfiguration()
     return savePath, numReaders, scanRate, calibrate, secondAxisTitle
 
 
 class SetupForm:
-    def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType, vesselType,
-                 secondAxisTitle):
+    def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
+                 secondAxisTitle, equilibrationTime):
         self.secondAxisTitle = ""
-        self.vesselType = None
         self.cellType = None
         self.year = None
         self.month = None
@@ -31,17 +30,18 @@ class SetupForm:
         self.scanRate = None
         self.savePath = None
         self.numReaders = None
-        self.calibrate = False
+        self.equilibrationTime = None
+        self.calibrate = True
         self.secondAxis = False
         self.entrySize = 10
-        self.calibrateRequired = tk.IntVar()
+        self.calibrateRequired = tk.IntVar(value=1)
+        self.equilibrationTimeEntry = tk.StringVar(value=equilibrationTime)
         self.secondAxisEntry = tk.StringVar(value=secondAxisTitle)
         self.cellTypeEntry = tk.StringVar(value=cellType)
-        self.vesselTypeEntry = tk.StringVar(value=vesselType)
         self.monthEntry = tk.IntVar(value=month)
         self.dayEntry = tk.IntVar(value=day)
         self.yearEntry = tk.IntVar(value=year)
-        self.numReadersEntry = tk.IntVar(value=numReaders)
+        self.numReadersEntry = tk.StringVar(value=numReaders)
         self.scanRateEntry = tk.StringVar(value=scanRate)
         self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
         self.window.grid_columnconfigure(1, weight=1)
@@ -55,13 +55,8 @@ class SetupForm:
         y = (hs / 2) - (h / 2)
         self.window.geometry('+%d+%d' % (x, y))
         self.window.tkraise(root)
-        tk.Label(self.window, text="Date", bg='white').grid(row=0, column=0, sticky='w')
-        tk.Label(self.window, text="Cell Type", bg='white').grid(row=2, column=0, sticky='w')
-        tk.Label(self.window, text="Vessel Type", bg='white').grid(row=4, column=0, sticky='w')
-        tk.Label(self.window, text="Number of Readers", bg='white').grid(row=6, column=0, sticky='w')
-        tk.Label(self.window, text="Scan Rate", bg='white').grid(row=8, column=0, sticky='w')
-        tk.Label(self.window, text="Second Axis (optional)", bg='white').grid(row=10, column=0, sticky='w')
 
+        ''' MM DD YYYY Date entry '''
         dateFrame = tk.Frame(self.window, bg='white')
         tk.Spinbox(dateFrame, textvariable=self.monthEntry, width=round(self.entrySize / 4), from_=1, to=12,
                    borderwidth=0, highlightthickness=0).grid(row=0, column=1)
@@ -71,50 +66,53 @@ class SetupForm:
         tk.Label(dateFrame, text="/", bg='white', width=round(self.entrySize / 10)).grid(row=0, column=4)
         tk.Spinbox(dateFrame, textvariable=self.yearEntry, width=round(self.entrySize / 2), from_=2023, to=2050,
                    borderwidth=0, highlightthickness=0).grid(row=0, column=5)
-        dateFrame.grid(row=0, column=1, sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=1, column=1, sticky="ew")
 
-        tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0, highlightthickness=0).grid(row=2,
-                                                                                                         column=1,
-                                                                                                         sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=3, column=1, sticky="ew")
+        ''' Normal entries '''
+        entriesMap = {}
+        row = 0
 
-        tk.Entry(self.window, textvariable=self.vesselTypeEntry, borderwidth=0, highlightthickness=0).grid(row=4,
-                                                                                                           column=1,
-                                                                                                           sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=5, column=1, sticky="ew")
+        entriesMap['Date'] = dateFrame
 
-        tk.Spinbox(self.window, textvariable=self.numReadersEntry, from_=1, to=12, wrap=True, borderwidth=0,
-                   highlightthickness=0).grid(row=6, column=1, sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=7, column=1, sticky="ew")
+        entriesMap['Cell Type'] = tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0, highlightthickness=0, justify="center")
 
-        scanRateValue = self.scanRateEntry.get()
-        tk.Spinbox(self.window, textvariable=self.scanRateEntry, values=("0.5", "1", "2", "3", "5", "10"), wrap=True,
-                   borderwidth=0, highlightthickness=0).grid(row=8, column=1, sticky="ew")
-        self.scanRateEntry.set(scanRateValue)
-        ttk.Separator(self.window, orient="horizontal").grid(row=9, column=1, sticky="ew")
+        options = ["1", "2", "3", "4"]
+        entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
 
-        tk.Entry(self.window, textvariable=self.secondAxisEntry, borderwidth=0, highlightthickness=0).grid(row=10,
-                                                                                                           column=1,
-                                                                                                           sticky="ew")
-        ttk.Separator(self.window, orient="horizontal").grid(row=11, column=1, sticky="ew")
+        options = ["2", "5", "10"]
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, True)
 
+        options = ["2", "12", "24"]
+        entriesMap["Equillibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, True)
+
+        options = ["", "Glucose", "Lactate", "Optical Density", "Cell Count"]
+        entriesMap["Additional User Input"] = createDropdown(self.window, self.secondAxisEntry, options, False)
+
+        ''' Create Label and Entry Widgets'''
+        for entryLabelText, entry in entriesMap.items():
+            tk.Label(self.window, text=entryLabelText, bg='white').grid(row=row, column=0, sticky='w')
+            entry.grid(row=row, column=1, sticky="ew")
+            row += 1
+            ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
+            row += 1
+
+        ''' Create Spacer between entries and submit option '''
         spacer = tk.Entry(self.window, borderwidth=0, highlightthickness=0, disabledbackground="white", cursor='arrow')
-        spacer.grid(row=12, column=1, sticky="ew")
+        row += 1
+        spacer.grid(row=row, column=1, sticky="ew")
         spacer['state'] = "disabled"
 
-        tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
-                       command=self.setCalibrate, bg='white', borderwidth=0, highlightthickness=0).grid(row=13,
-                                                                                                        column=1,
-                                                                                                        sticky="ew")
+        var = tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
+                       command=self.setCalibrate, bg='white', borderwidth=0, highlightthickness=0)
+        var.grid(row=row, column=1, sticky="ew")
 
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit())
-        self.submitButton.grid(row=13, column=0, sticky="sw")
+        row += 1
+        self.submitButton.grid(row=row, column=0, sticky="sw")
         self.submitButton['style'] = 'W.TButton'
         root.wait_window(self.window)
 
     def getConfiguration(self):
-        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.cellType, self.vesselType, self.secondAxisTitle
+        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime
 
     def setCalibrate(self):
         if self.calibrateRequired.get() == 1:
@@ -123,22 +121,21 @@ class SetupForm:
             self.calibrate = False
 
     def onSubmit(self):
-        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != ""
-                and self.numReadersEntry.get() != "" and self.scanRateEntry.get() != ""
-                and self.vesselTypeEntry.get() != "" and self.cellTypeEntry.get() != ""):
+        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.cellTypeEntry.get() != ""):
             date = f"{self.monthEntry.get()}-{self.dayEntry.get()}-{self.yearEntry.get()}"
             self.numReaders = int(self.numReadersEntry.get())
+            self.equilibrationTime = int(self.equilibrationTimeEntry.get())
             self.scanRate = float(self.scanRateEntry.get())
             if not os.path.exists(
-                    f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()}"):
-                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()}"
+                    f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}"):
+                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}"
             else:
                 incrementalNumber = 0
                 while os.path.exists(
-                        f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()} ({incrementalNumber})"):
+                        f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"):
                     incrementalNumber += 1
-                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}_{self.vesselTypeEntry.get()} ({incrementalNumber})"
-            self.month, self.day, self.year, self.vesselType, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.vesselTypeEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
+                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"
+            self.month, self.day, self.year, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
             self.takeScreenshot()
             self.window.destroy()
         else:
@@ -153,4 +150,15 @@ class SetupForm:
             os.mkdir(os.path.dirname(self.savePath))
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
-        pyautogui.screenshot(f'{self.savePath}/setupForm.png', region=(x, y, w, round(h*0.75)))
+        pyautogui.screenshot(f'{self.savePath}/setupForm.png', region=(x, y, w, round(h * 0.75)))
+
+
+def createDropdown(root, entryVariable, options, addSpace):
+    if addSpace:
+        options = [f"             {option}             " for option in options]
+    scanRateValue = entryVariable.get()
+    optionMenu = tk.OptionMenu(root, entryVariable, *options)
+    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False)
+    optionMenu["menu"].config(bg="white")
+    entryVariable.set(scanRateValue)
+    return optionMenu
