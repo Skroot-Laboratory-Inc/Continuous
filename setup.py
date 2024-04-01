@@ -34,15 +34,6 @@ class Setup:
         settingsMenuAnalysis.add_command(label="Email Notification", command=lambda: self.Settings.foamEmailSetting())
         settingsMenuAnalysis.add_command(label="Foaming Threshold", command=lambda: self.Settings.foamThreshSetting())
         menubar.add_cascade(label="Analysis", menu=settingsMenuAnalysis)
-
-        settingsMenuDisplay = tk.Menu(menubar, tearoff=0)
-        settingsMenuDisplay.add_command(label="SGI", command=lambda: self.Settings.freqToggleSetting("SGI"))
-        settingsMenuDisplay.add_command(label="Signal Strength",
-                                        command=lambda: self.Settings.freqToggleSetting("Signal Strength"))
-        settingsMenuDisplay.add_command(label="Signal Check",
-                                        command=lambda: self.Settings.freqToggleSetting("Signal Check"))
-        menubar.add_cascade(label="Display", menu=settingsMenuDisplay)
-
         return menubar
 
     def createTheme(self):

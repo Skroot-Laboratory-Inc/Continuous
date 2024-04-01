@@ -39,8 +39,6 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
     def updateInoculation(self):
         self.inoculated = True
         self.inoculatedTime = self.time[-1]
-        for Reader in self.AppModule.Readers:
-            Reader.setZeroPoint(len(self.time) - 1)
         self.updateExperimentNotes('Inoculated')
         logging.info(f'Flask {self.readerNumber} is inoculated at time {self.time[-1]}')
 

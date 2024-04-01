@@ -13,12 +13,13 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
 from exceptions import badFit
+from helper_functions import frequencyToIndex
 from sib import Sib
 
 
 class Analysis:
     def __init__(self, savePath, smallPeakPoints, largePeakPoints):
-        self.zeroPoint = 0
+        self.zeroPoint = 1
         self.denoiseFrequencySmooth = []
         self.denoiseTimeSmooth = []
         self.denoiseTotalMinSmooth = []
@@ -102,17 +103,17 @@ class Analysis:
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequency), self.minDb))
+            writer.writerows(zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequency), self.minDb))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(
-                zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySmooth), self.minDbSmooth))
+                zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequencySmooth), self.minDbSmooth))
         with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
             writer.writerows(
-                zip(self.time, self.timestamp, self.frequencyToIndex(self.minFrequencySpline), self.minDbSpline))
+                zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequencySpline), self.minDbSpline))
         with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', self.yAxisLabel])
@@ -120,13 +121,10 @@ class Analysis:
         with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)'])
-            writer.writerows(zip(self.denoiseTime, self.frequencyToIndex(self.denoiseFrequency)))
+            writer.writerows(zip(self.denoiseTime, frequencyToIndex(self.zeroPoint, self.denoiseFrequency)))
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
-
-    def frequencyToIndex(self, frequencyVector):
-        return [-(val - frequencyVector[self.zeroPoint]) for val in frequencyVector]
 
     def determineFitPoints(self):
         minMag = abs(min(self.scanMagnitude))

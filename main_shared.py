@@ -21,6 +21,7 @@ import text_notification
 from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
+from helper_functions import frequencyToIndex, zeroAtEquilibration
 from pdf import generatePdf
 from port_allocator import PortAllocator
 from server import ServerFileShare
@@ -129,6 +130,9 @@ class MainShared:
                             Reader.addDevPoint()
                         if self.denoiseSet:
                             Reader.denoiseResults()
+                        if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
+                            self.freqToggleSet = "SGI"
+                            Reader.setZeroPoint(np.nansum(Reader.minFrequencySmooth[-3:])/3)
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()
                         if not self.ServerFileShare.disabled:
@@ -145,10 +149,11 @@ class MainShared:
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
-                self.createSummaryAnalyzedFile()
-                self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
-                generatePdf(self.savePath, self.Readers)
-                self.awsUploadPdfFile()
+                if self.freqToggleSet == "SGI":
+                    self.createSummaryAnalyzedFile()
+                    self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
+                    generatePdf(self.savePath, self.Readers)
+                    self.awsUploadPdfFile()
             except:
                 logging.exception('Unknown error has occurred')
             finally:
@@ -233,30 +238,21 @@ class MainShared:
             self.summaryPlot.tick_params(axis='both', which='major', labelsize=7)
             self.ColorCycler.reset()
 
-            if self.freqToggleSet == "SGI" or self.freqToggleSet == "Signal Check":
-                self.summaryPlot.set_ylabel('Skroot Growth Index (SGI)', fontsize=9)
-                self.summaryPlot.set_title(f'Summary', fontsize=9)
-                for Reader in self.Readers:
-                    readerColor = self.ColorCycler.getNext()
-                    if self.denoiseSet:
-                        y = Reader.frequencyToIndex(Reader.denoiseFrequencySmooth)
-                        self.summaryPlot.scatter(Reader.denoiseTimeSmooth, y, s=20, color=readerColor)
-                    else:
-                        y = Reader.frequencyToIndex(Reader.minFrequencySmooth)
-                        self.summaryPlot.scatter(Reader.time, y, s=20, color=readerColor)
-                    if self.freqToggleSet == "SGI":
-                        self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
-            elif self.freqToggleSet == "Signal Strength":
-                self.summaryPlot.set_ylabel(f'Change in Signal Strength', fontsize=9)
-                self.summaryPlot.set_title(f'Summary', fontsize=9)
-                for Reader in self.Readers:
-                    readerColor = self.ColorCycler.getNext()
-                    if self.denoiseSet:
-                        y = [yval - Reader.denoiseTotalMinSmooth[0] for yval in Reader.denoiseTotalMinSmooth]
-                        self.summaryPlot.scatter(Reader.denoiseTimedBSmooth, y, s=20, color=readerColor)
-                    else:
-                        y = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
-                        self.summaryPlot.scatter(Reader.time, y, s=20, color=readerColor)
+            self.summaryPlot.set_ylabel('Skroot Growth Index (SGI)', fontsize=9)
+            self.summaryPlot.set_title(f'Summary', fontsize=9)
+            for Reader in self.Readers:
+                readerColor = self.ColorCycler.getNext()
+                if self.denoiseSet:
+                    xPlot, y = zeroAtEquilibration(self.equilibrationTime, Reader.denoiseTimeSmooth, Reader.denoiseFrequencySmooth)
+                    yPlot = frequencyToIndex(Reader.zeroPoint, y)
+                    self.summaryPlot.scatter(xPlot, yPlot, s=20, color=readerColor)
+                else:
+                    xPlot, y = zeroAtEquilibration(self.equilibrationTime, Reader.time, Reader.minFrequencySmooth)
+                    yPlot = frequencyToIndex(Reader.zeroPoint, y)
+                    self.summaryPlot.scatter(xPlot, yPlot, s=20, color=readerColor)
+                if self.freqToggleSet == "SGI":
+                    self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
+            self.summaryPlot.set_xlim(xmin=self.equilibrationTime)
             self.summaryPlot.set_xlabel('Time (hours)', fontsize=7)
             self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg', dpi=500)
             try:
@@ -279,7 +275,7 @@ class MainShared:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
                 rowHeaders.append(f'Reader {Reader.readerNumber} Frequency')
                 rowHeaders.append(f'Reader {Reader.readerNumber} Signal Strength')
-                readerSGI = Reader.frequencyToIndex(Reader.minFrequencySmooth)
+                readerSGI = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
                 readerMagnitude = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
                 rowData.append(readerSGI)
                 rowData.append(Reader.minFrequencySmooth)
@@ -296,6 +292,7 @@ class MainShared:
     def resetRun(self):
         for Reader in self.Readers:
             try:
+                Reader.zeroPoint = 1
                 Reader.ReaderInterface.close()
             except AttributeError:
                 Reader.socket = None
@@ -304,6 +301,7 @@ class MainShared:
             widgets.destroy()
         versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
+        self.freqToggleSet = "Signal Check"
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []

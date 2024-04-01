@@ -188,8 +188,8 @@ class ButtonFunctions:
                                                                                        self.AppModule.numReaders,
                                                                                        self.AppModule.scanRate,
                                                                                        self.AppModule.cellType,
-                                                                                       self.AppModule.vesselType,
-                                                                                       self.AppModule.secondAxisTitle))
+                                                                                       self.AppModule.secondAxisTitle,
+                                                                                       self.AppModule.equilibrationTime))
 
 
 def pauseUntilUserClicks(readerNumber):

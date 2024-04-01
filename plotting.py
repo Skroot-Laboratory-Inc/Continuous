@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 
 from analysis import Analysis
+from helper_functions import frequencyToIndex, zeroAtEquilibration
 from notes import ExperimentNotes
 
 
@@ -54,36 +55,8 @@ class Plotting(SecondAxis, ExperimentNotes):
     def plotFrequencies(self):
         if self.AppModule.freqToggleSet == "SGI":
             self.plotGrowthIndex()
-        elif self.AppModule.freqToggleSet == "Signal Strength":
-            self.plotMagnitude()
         elif self.AppModule.freqToggleSet == "Signal Check":
             self.plotSignal()
-
-    def plotMagnitude(self):
-        try:
-            self.frequencyFigure.clear()
-        except AttributeError:
-            self.frequencyFigure = Figure(figsize=(3, 3))
-            self.frequencyFigure.set_tight_layout(True)
-        self.frequencyPlot = self.frequencyFigure.add_subplot(111)
-        self.frequencyPlot.set_ylabel(self.yAxisLabel, color='#1f77b4')
-        self.frequencyPlot.set_title(f'Signal Strength Reader {self.readerNumber}')
-        if self.AppModule.denoiseSet:
-            self.frequencyPlot.scatter(self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth, s=20,
-                                           color=self.readerColor)
-
-        else:
-            self.frequencyPlot.scatter(self.time, self.minDbSmooth, s=20, color=self.readerColor)
-        for xvalue in self.notesTimestamps:
-            addVerticalLine(self.frequencyPlot, xvalue)
-        self.addSecondAxis(self.frequencyPlot)
-        self.frequencyPlot.set_xlabel('Time (hours)')
-        self.frequencyPlot.set_facecolor(self.backgroundColor)
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
-        if self.frequencyCanvas is None:
-            self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
-        self.frequencyCanvas.draw()
-        self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def plotGrowthIndex(self):
         try:
@@ -95,17 +68,19 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot.set_ylabel('Skroot Growth Index (SGI)', color=self.readerColor)
         self.frequencyPlot.set_title(f'SGI Reader {self.readerNumber}')
         if self.AppModule.denoiseSet:
-            self.frequencyPlot.scatter(self.denoiseTimeSmooth, self.frequencyToIndex(self.denoiseFrequencySmooth), s=20,
-                                       color=self.readerColor)
+            xPlot, y = zeroAtEquilibration(self.AppModule.equilibrationTime, self.denoiseTimeSmooth, self.denoiseFrequencySmooth)
+            yPlot = frequencyToIndex(self.zeroPoint, y)
+            self.frequencyPlot.scatter(xPlot, yPlot, s=20,color=self.readerColor)
         else:
-            self.frequencyPlot.scatter(self.time, self.frequencyToIndex(self.minFrequencySmooth), s=20,
-                                       color=self.readerColor)
+            xPlot, y = zeroAtEquilibration(self.AppModule.equilibrationTime, self.time, self.minFrequencySmooth)
+            yPlot = frequencyToIndex(self.zeroPoint, y)
+            self.frequencyPlot.scatter(xPlot, yPlot, s=20, color=self.readerColor)
         for xvalue in self.notesTimestamps:
             addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)
         if self.waterShift is not None:
             self.frequencyPlot.set_ylim([self.waterFreq - 2, self.airFreq + 2])
-        self.frequencyPlot.set_xlim([self.inoculatedTime, None])
+        self.frequencyPlot.set_xlim([self.AppModule.equilibrationTime, None])
         self.frequencyPlot.set_xlabel('Time (hours)')
         self.frequencyPlot.set_facecolor(self.backgroundColor)
         self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
