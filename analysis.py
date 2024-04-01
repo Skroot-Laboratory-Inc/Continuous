@@ -72,14 +72,14 @@ class Analysis:
     def findMin(self, frequency, magnitude, shouldLog):
         try:
             minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
-            # if (isinstance(self.ReaderInterface, Sib)):
-            minMag, minFrequency = findMinGaussian(frequency, magnitude)
-            # else:
-            #     points = self.determineFitPoints()
-            #     quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
-            #     quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
-            #     minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
-            #                                             points)
+            if (isinstance(self.ReaderInterface, Sib)):
+                minMag, minFrequency = findMinGaussian(frequency, magnitude)
+            else:
+                points = self.determineFitPoints()
+                quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
+                quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
+                minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
+                                                        points)
             return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
         except TypeError:
             if shouldLog:

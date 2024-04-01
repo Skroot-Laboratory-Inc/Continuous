@@ -45,7 +45,6 @@ class Setup:
         style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.white,
                         background=self.AppModule.royalBlue)
         style.map('W.TButton', background=[("disabled", "gray23"), ("active", "royal blue")])
-        style.map('TMenuButton', background=[("disabled", "gray23"), ("active", "royal blue")])
         canvas = tk.Canvas(self.root, height=height, width=width)
         canvas.pack()
         self.AppModule.royalBlue = 'RoyalBlue4'
