@@ -3,7 +3,8 @@
     "features": {
         "1": "Updates to guided setup form to use equilibration time and dropdowns",
         "2": "Updates to plotting/analysis to use an equilibration period",
-        "3": "Updates to SGI to use percentage based shift"
+        "3": "Updates to SGI to use percentage based shift",
+        "4": "Removed signal strength view mode"
     }
   },
   "v2.1.1": {
