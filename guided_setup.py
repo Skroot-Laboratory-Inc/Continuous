@@ -8,7 +8,7 @@ def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, 
     setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
                           secondAxisTitle, equilibrationTime)
     month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, equilibrationTime = setupForm.getConfiguration()
-    return month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, equilibrationTime
+    return month, day, year, savePath, numReaders, scanRate, calibrate, cellType, secondAxisTitle, equilibrationTime
 
 
 def guidedSetupFoaming(root, baseSavePath, month, day, year, numReaders, scanRate, cellType):

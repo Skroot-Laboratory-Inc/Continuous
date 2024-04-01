@@ -1,4 +1,11 @@
 {
+  "v2.1.2": {
+    "features": {
+        "1": "Updates to guided setup form to use equilibration time and dropdowns",
+        "2": "Updates to plotting/analysis to use an equilibration period",
+        "3": "Updates to SGI to use percentage based shift"
+    }
+  },
   "v2.1.1": {
     "features": {
         "1": "SIB control v2.2.0 and related error handling implementation"

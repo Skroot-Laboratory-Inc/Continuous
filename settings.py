@@ -77,10 +77,6 @@ class Settings:
                                                            'Would you like to denoise and smooth the results before displaying them?')
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
-    def freqToggleSetting(self, toggle):
-        self.AppModule.freqToggleSet = toggle
-        logging.info(f'freqToggleSet changed to {toggle}')
-
     def splineToggleSetting(self):
         self.AppModule.splineToggleSet = tk.messagebox.askyesno('Quadratic/Spline',
                                                                 'Would you like to switch analysis to spline? '
@@ -133,8 +129,7 @@ class Settings:
                         readersOnScreen = maxReadersPerScreen
                     self.AppModule.Readers.append(Reader(
                         self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq,
-                        self.AppModule.scanRate, self.AppModule.savePath, readerColor,
-                        ReaderInterfaces[readerNumber - 1]))
+                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()
