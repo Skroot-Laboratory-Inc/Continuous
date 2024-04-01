@@ -130,7 +130,7 @@ class MainShared:
                             Reader.addDevPoint()
                         if self.denoiseSet:
                             Reader.denoiseResults()
-                        if Reader.time[-1] >= self.equilibrationTime/120 and Reader.zeroPoint == 1:
+                        if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
                             Reader.setZeroPoint(np.nansum(Reader.minFrequencySmooth[-3:])/3)
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -252,7 +252,7 @@ class MainShared:
                     self.summaryPlot.scatter(xPlot, yPlot, s=20, color=readerColor)
                 if self.freqToggleSet == "SGI":
                     self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
-            self.summaryPlot.set_xlim(xmin=self.equilibrationTime/120)
+            self.summaryPlot.set_xlim(xmin=self.equilibrationTime)
             self.summaryPlot.set_xlabel('Time (hours)', fontsize=7)
             self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg', dpi=500)
             try:
