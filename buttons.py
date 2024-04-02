@@ -28,11 +28,11 @@ class ButtonFunctions:
         self.createButtonsOnNewFrame()
 
     def createButtonsOnNewFrame(self):
-        self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start", command=lambda: self.startFunc())
+        self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start Experiment", command=lambda: self.startFunc())
         self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
                                                       command=lambda: self.AppModule.plotSummary())
-        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="Stop", command=lambda: self.stopFunc())
+        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment", command=lambda: self.stopFunc())
         self.helpButton = ttk.Button(self.AppModule.readerPlotFrame, text="Need help?", image=self.helpIcon,
                                      compound=tk.LEFT,
                                      command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
@@ -60,15 +60,17 @@ class ButtonFunctions:
             self.AppModule.thread.start()
 
     def stopFunc(self):
-        logging.info("Stop Button Pressed")
-        try:
-            self.AppModule.thread.shutdown_flag.set()
-        except:
-            text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
-                                      self.AppModule.white)
-            self.AppModule.resetRun()
-        self.stopButton.destroy()
-        text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+        endExperiment = tk.messagebox.askquestion('End Experiment', 'Are you sure you wish to end the experiment?')
+        if endExperiment == 'yes':
+            logging.info('Experiment ended by user.')
+            try:
+                self.AppModule.thread.shutdown_flag.set()
+            except:
+                text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
+                                          self.AppModule.white)
+                self.AppModule.resetRun()
+            self.stopButton.destroy()
+            text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
     def findReaders(self, numReaders):
         logging.info(f'calibrate button pressed')
@@ -157,7 +159,7 @@ class ButtonFunctions:
             return '', ''
 
     def placeStartButton(self):
-        self.startButton.place(relx=0.47, rely=0.47)
+        self.startButton.place(relx=0.45, rely=0.47)
         self.startButton['style'] = 'W.TButton'
 
     def placeStopButton(self):
