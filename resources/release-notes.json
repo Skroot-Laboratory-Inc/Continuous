@@ -7,6 +7,14 @@
       "4": "Removed signal strength view mode",
       "5": "Removed feature where inoculation set the SGI zero point",
       "6": "Added a confirmation dialog to stop button and renamed it"
+    },
+    "bugfixes": {
+      "1": "Analyzed files now correlate 1:1 with on screen plots"
+    },
+    "other": {
+      "1": "Spline and signal strength have been removed from codebase.",
+      "2": "Logger max size reduced to 10 kb",
+      "3": "Reduced the number of analyzed files generated"
     }
   },
   "v2.1.1": {

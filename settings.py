@@ -77,12 +77,6 @@ class Settings:
                                                            'Would you like to denoise and smooth the results before displaying them?')
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
-    def splineToggleSetting(self):
-        self.AppModule.splineToggleSet = tk.messagebox.askyesno('Quadratic/Spline',
-                                                                'Would you like to switch analysis to spline? '
-                                                                '(yes for Spline no for Quadratic) ')
-        logging.info(f'splineToggleSet changed to {self.AppModule.denoiseSet}')
-
     def weakSignalToggleSetting(self):
         self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno('Ignore Weak Signal',
                                                                     'Are you sure you would like to ignore '

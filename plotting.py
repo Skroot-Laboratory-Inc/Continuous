@@ -8,7 +8,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
 from matplotlib.figure import Figure
 
 from analysis import Analysis
-from helper_functions import frequencyToIndex, zeroAtEquilibration
+from helper_functions import frequencyToIndex
 from notes import ExperimentNotes
 
 
@@ -68,13 +68,11 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.frequencyPlot.set_ylabel('Skroot Growth Index (SGI)', color=self.readerColor)
         self.frequencyPlot.set_title(f'SGI Reader {self.readerNumber}')
         if self.AppModule.denoiseSet:
-            xPlot, y = zeroAtEquilibration(self.AppModule.equilibrationTime, self.denoiseTimeSmooth, self.denoiseFrequencySmooth)
-            yPlot = frequencyToIndex(self.zeroPoint, y)
-            self.frequencyPlot.scatter(xPlot, yPlot, s=20,color=self.readerColor)
+            yPlot = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
+            self.frequencyPlot.scatter(self.denoiseTimeSmooth, yPlot, s=20, color=self.readerColor)
         else:
-            xPlot, y = zeroAtEquilibration(self.AppModule.equilibrationTime, self.time, self.minFrequencySmooth)
-            yPlot = frequencyToIndex(self.zeroPoint, y)
-            self.frequencyPlot.scatter(xPlot, yPlot, s=20, color=self.readerColor)
+            yPlot = frequencyToIndex(self.zeroPoint, self.minFrequencySmooth)
+            self.frequencyPlot.scatter(self.time, yPlot, s=20, color=self.readerColor)
         for xvalue in self.notesTimestamps:
             addVerticalLine(self.frequencyPlot, xvalue)
         self.addSecondAxis(self.frequencyPlot)

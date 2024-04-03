@@ -4,7 +4,6 @@ import os
 import shutil
 import socket
 
-import boto3
 import paramiko
 from scp import SCPClient
 
@@ -62,9 +61,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 f'{self.savePath}/{self.scanNumber}.csv',
                 f'{self.savePath}/Analyzed.csv',
                 f'{self.savePath}/smoothAnalyzed.csv',
-                f'{self.savePath}/denoisedAnalyzed.csv',
-                f'{self.savePath}/splineAnalyzed.csv',
-                f'{self.savePath}/noFitAnalyzed.csv',
                 f'{self.savePath}/secondAxis.csv',
                 f'{os.path.dirname(self.savePath)}/Summary.pdf',
                 f'{self.savePath}/{self.jsonTextLocation}',
@@ -180,6 +176,12 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                                           ('Courier', 12, 'bold'), self.AppModule.royalBlue, 'red')
                 logging.info(f"No calibration found for Reader {self.readerNumber}")
 
+    def resetReaderRun(self):
+        self.time = []
+        self.timestamp = []
+        self.minFrequency = []
+        self.minFrequencySmooth = []
+
     # no ops
     def checkFoaming(self):
         pass
@@ -216,9 +218,6 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.sendToServer(f'{self.savePath}/{self.scanNumber}.csv')
         self.sendToServer(f'{self.savePath}/Analyzed.csv')
         self.sendToServer(f'{self.savePath}/smoothAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/denoisedAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/splineAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/noFitAnalyzed.csv')
         self.sendToServer(f'{self.savePath}/secondAxis.csv')
         self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
         self.sendToServer(f'{os.path.dirname(self.savePath)}/summaryAnalyzed.csv')

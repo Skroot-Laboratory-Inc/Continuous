@@ -6,7 +6,6 @@ from statistics import mean
 
 import numpy as np
 import pandas
-from scipy.interpolate import CubicSpline
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
@@ -20,40 +19,29 @@ from sib import Sib
 class Analysis:
     def __init__(self, savePath, smallPeakPoints, largePeakPoints):
         self.zeroPoint = 1
-        self.denoiseFrequencySmooth = []
-        self.denoiseTimeSmooth = []
-        self.denoiseTotalMinSmooth = []
-        self.denoiseTimeDbSmooth = []
-        self.denoiseTime = []
-        self.denoiseTimeDb = []
-        self.denoiseFrequency = []
-        self.denoiseTotalMin = []
-        self.savePath = savePath
-        self.minFrequency = []
-        self.minFrequencySpline = []
-        self.minFrequencyRaw = []
-        self.minFrequencySmooth = []
-        self.minDb = []
-        self.minDbSpline = []
-        self.minDbRaw = []
-        self.minDbSmooth = []
-        self.time = []
+
         self.timestamp = []
+        self.time = []
+        self.denoiseTimeSmooth = []
+        self.denoiseTime = []
+
+        self.minDbSmooth = []
+
+        self.minFrequency = []
+        self.minFrequencySmooth = []
+        self.denoiseFrequencySmooth = []
+        self.denoiseFrequency = []
+
+        self.savePath = savePath
         self.smallPeakPoints = smallPeakPoints
         self.largePeakPoints = largePeakPoints
 
     def analyzeScan(self, filename):
         minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
-        self.minDb.append(minMag)
         self.minFrequency.append(minFreq)
-        self.minDbRaw.append(minMag)
-        self.minFrequencyRaw.append(minFreq)
         minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
         self.minDbSmooth.append(minMag)
         self.minFrequencySmooth.append(minFreq)
-        minMag, minFreq = findMinDataSpline(filename, self.yAxisLabel)
-        self.minDbSpline.append(minMag)
-        self.minFrequencySpline.append(minFreq)
         self.time.append((self.scanNumber - 100000) / 60)
         self.timestamp.append(datetime.now())
 
@@ -95,33 +83,18 @@ class Analysis:
         self.denoiseTime, self.denoiseFrequency = denoise(self.time, self.minFrequency, denoiseRadius, denoisePoints)
         self.denoiseTimeSmooth, self.denoiseFrequencySmooth = denoise(self.time, self.minFrequencySmooth,
                                                                       denoiseRadius, denoisePoints)
-        self.denoiseTimeDb, self.denoiseTotalMin = denoise(self.time, self.minDb, denoiseRadius, denoisePoints)
-        self.denoiseTimeDbSmooth, self.denoiseTotalMinSmooth = denoise(self.time, self.minDbSmooth,
-                                                                       denoiseRadius, denoisePoints)
 
     def createAnalyzedFiles(self):
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequency), self.minDb))
+            equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequency)
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)'])
+            writer.writerows(zip(self.denoiseTime, self.timestamp, equilibratedY))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(
-                zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequencySmooth), self.minDbSmooth))
-        with open(f'{self.savePath}/splineAnalyzed.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', self.yAxisLabel])
-            writer.writerows(
-                zip(self.time, self.timestamp, frequencyToIndex(self.zeroPoint, self.minFrequencySpline), self.minDbSpline))
-        with open(f'{self.savePath}/noFitAnalyzed.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Frequency (MHz)', self.yAxisLabel])
-            writer.writerows(zip(self.time, self.timestamp, self.minFrequencyRaw, self.minDbRaw))
-        with open(f'{self.savePath}/denoisedAnalyzed.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['Time (hours)', 'Skroot Growth Index (SGI)'])
-            writer.writerows(zip(self.denoiseTime, frequencyToIndex(self.zeroPoint, self.denoiseFrequency)))
+            equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
+            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)'])
+            writer.writerows(zip(self.denoiseTimeSmooth, self.timestamp, equilibratedY))
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
@@ -152,22 +125,6 @@ def denoise(x, y, threshold, points):
     return denoiseX, denoiseY
 
 
-def findMinSpline(frequency, magnitude):
-    try:
-        denoisedFrequency, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
-        raw_min_index = denoisedMagnitude.index(min(denoisedMagnitude))
-        MinFunc = CubicSpline(denoisedFrequency, denoisedMagnitude)
-        xrange = np.arange(denoisedFrequency[raw_min_index] - 5, denoisedFrequency[raw_min_index] + 5, 0.001)
-        yrange = MinFunc(xrange)
-        FuncMin = min(yrange)
-        FuncMin_dB = xrange[list(yrange).index(FuncMin)]
-        minMag = FuncMin
-        minFreq = FuncMin_dB
-        return minMag, minFreq
-    except:
-        return np.nan, np.nan
-
-
 def getDenoiseParameters(numberOfTimePoints):
     if len(numberOfTimePoints) > 1000:
         return 0.2, 20
@@ -177,11 +134,6 @@ def getDenoiseParameters(numberOfTimePoints):
         return 0.6, 2
     else:
         return 1, 1
-
-
-def findMinDataSpline(filename, yAxisLabel):
-    frequency, magnitude = extractValuesFromScanFile(filename, yAxisLabel)
-    return findMinSpline(frequency, magnitude)
 
 
 def extractValuesFromScanFile(filename, yAxisLabel):
@@ -229,6 +181,7 @@ def findQuadraticMinimum(frequency, magnitude, rawMinimum, pointsUsed):
     return minMag, minFrequency
 def gaussian(x, amplitude, centroid, peak_width):
     return amplitude * np.exp(-(x - centroid)**2 / (2 * peak_width**2))
+
 
 def findMinGaussian(x, y):
     pointsOnEachSide = 500

@@ -6,7 +6,6 @@ from datetime import datetime
 import pandas
 from scipy.signal import savgol_filter
 
-from analysis import Analysis
 from plotting import Plotting
 
 
@@ -21,6 +20,7 @@ class DevMode:
             self.isDevMode = False
         self.startTime = 0
         self.scanRate = 0.2
+        self.equilibrationTime = 1 / 60  # (1 minute)
         # self.mode = "GUI"
         self.mode = "Analysis"
 
@@ -30,10 +30,12 @@ class ReaderDevMode(Plotting):
         self.DevMode = AppModule.DevMode
         if self.DevMode.isDevMode:
             AppModule.scanRate = self.DevMode.scanRate
+            AppModule.equilibrationTime = self.DevMode.equilibrationTime
             self.scanNumber = self.DevMode.startTime + 100000
             self.scanRate = self.DevMode.scanRate
+            self.equilibrationTime = self.DevMode.equilibrationTime
             self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
-            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/noFitAnalyzed.csv')
+            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
             self.devTime = readings['Time (hours)'].values.tolist()
             try:
                 self.devFrequency = readings['Frequency (MHz)'].values.tolist()
@@ -53,11 +55,7 @@ class ReaderDevMode(Plotting):
     def loadDevMode(self):
         self.time = self.devTime[0:self.DevMode.startTime]
 
-        self.minDb = self.devDb[0:self.DevMode.startTime]
         self.minFrequency = self.devFrequency[0:self.DevMode.startTime]
-
-        self.minDbSpline = self.devDb[0:self.DevMode.startTime]
-        self.minFrequencySpline = self.devFrequency[0:self.DevMode.startTime]
 
         self.minDbSmooth = self.devDb[0:self.DevMode.startTime]
         self.minFrequencySmooth = self.devFrequency[0:self.DevMode.startTime]
@@ -78,10 +76,7 @@ class ReaderDevMode(Plotting):
                 self.timestamp.append(datetime.now())
 
                 self.minFrequency.append(self.devFrequency[nextPointIndex])
-                self.minDb.append(self.devDb[nextPointIndex])
 
-                self.minFrequencySpline.append(self.devFrequency[nextPointIndex])
-                self.minDbSpline.append(self.devDb[nextPointIndex])
                 self.minFrequencySmooth.append(self.devFrequency[nextPointIndex])
                 self.minDbSmooth.append(self.devDb[nextPointIndex])
             except:
