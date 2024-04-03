@@ -30,7 +30,6 @@ class Setup:
         settingsMenuAnalysis.add_command(label="Noise Reduction", command=lambda: self.Settings.denoiseSetting())
         settingsMenuAnalysis.add_command(label="Weak Signal Turn Off",
                                          command=lambda: self.Settings.weakSignalToggleSetting())
-        settingsMenuAnalysis.add_command(label="Spline Analysis", command=lambda: self.Settings.splineToggleSetting())
         settingsMenuAnalysis.add_command(label="Email Notification", command=lambda: self.Settings.foamEmailSetting())
         settingsMenuAnalysis.add_command(label="Foaming Threshold", command=lambda: self.Settings.foamThreshSetting())
         menubar.add_cascade(label="Analysis", menu=settingsMenuAnalysis)

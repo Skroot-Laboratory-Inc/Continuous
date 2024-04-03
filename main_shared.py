@@ -21,7 +21,7 @@ import text_notification
 from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
-from helper_functions import frequencyToIndex, zeroAtEquilibration
+from helper_functions import frequencyToIndex
 from pdf import generatePdf
 from port_allocator import PortAllocator
 from server import ServerFileShare
@@ -71,7 +71,6 @@ class MainShared:
         self.cellApp = False
         self.foamingApp = False
         self.freqToggleSet = "Signal Check"
-        self.splineToggleSet = False
         self.denoiseSet = True
         self.disableSaveFullFiles = False
         self.emailSetting = False
@@ -132,7 +131,8 @@ class MainShared:
                             Reader.denoiseResults()
                         if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
-                            Reader.setZeroPoint(np.nansum(Reader.minFrequencySmooth[-3:])/3)
+                            Reader.setZeroPoint(np.nanmean(Reader.minFrequencySmooth[-3:]))
+                            Reader.resetReaderRun()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()
                         if not self.ServerFileShare.disabled:
@@ -243,13 +243,11 @@ class MainShared:
             for Reader in self.Readers:
                 readerColor = self.ColorCycler.getNext()
                 if self.denoiseSet:
-                    xPlot, y = zeroAtEquilibration(self.equilibrationTime, Reader.denoiseTimeSmooth, Reader.denoiseFrequencySmooth)
-                    yPlot = frequencyToIndex(Reader.zeroPoint, y)
-                    self.summaryPlot.scatter(xPlot, yPlot, s=20, color=readerColor)
+                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.denoiseFrequencySmooth)
+                    self.summaryPlot.scatter(Reader.denoiseTimeSmooth, yPlot, s=20, color=readerColor)
                 else:
-                    xPlot, y = zeroAtEquilibration(self.equilibrationTime, Reader.time, Reader.minFrequencySmooth)
-                    yPlot = frequencyToIndex(Reader.zeroPoint, y)
-                    self.summaryPlot.scatter(xPlot, yPlot, s=20, color=readerColor)
+                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
+                    self.summaryPlot.scatter(Reader.time, yPlot, s=20, color=readerColor)
                 if self.freqToggleSet == "SGI":
                     self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
             self.summaryPlot.set_xlim(xmin=self.equilibrationTime)
@@ -273,13 +271,8 @@ class MainShared:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
-                rowHeaders.append(f'Reader {Reader.readerNumber} Frequency')
-                rowHeaders.append(f'Reader {Reader.readerNumber} Signal Strength')
                 readerSGI = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
-                readerMagnitude = [yval - Reader.minDb[0] for yval in Reader.minDbSmooth]
                 rowData.append(readerSGI)
-                rowData.append(Reader.minFrequencySmooth)
-                rowData.append(readerMagnitude)
             writer.writerow(rowHeaders)
             # array transpose converts it to write columns instead of rows
             writer.writerows(np.array(rowData).transpose())
