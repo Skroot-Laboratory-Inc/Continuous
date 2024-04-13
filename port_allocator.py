@@ -15,6 +15,9 @@ class PortAllocator:
     def removePort(self, port):
         self.ports.remove(port)
 
+    def resetPorts(self):
+        self.ports = []
+
 
 def getNewVnaAndSibPorts(currentOs, portsTaken) -> (ListPortInfo, str):
     ports = list_ports.comports()
