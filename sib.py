@@ -60,7 +60,7 @@ class Sib(ReaderInterface):
 
     def removeInitialSpike(self, frequency, volts):
         pointsRemoved = self.initialSpikeMhz / self.stepSize
-        return frequency[pointsRemoved:], volts[pointsRemoved]
+        return frequency[pointsRemoved:], volts[pointsRemoved:]
 
     def calibrateIfRequired(self):
         if self.calibrationRequired:
