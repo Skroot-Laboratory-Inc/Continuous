@@ -4,10 +4,8 @@ import os
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
-from matplotlib.figure import Figure
-
 from analysis import Analysis
+from figure import FigureCanvas
 from helper_functions import frequencyToIndex
 from notes import ExperimentNotes
 
@@ -46,10 +44,17 @@ class Plotting(SecondAxis, ExperimentNotes):
         ExperimentNotes.__init__(self, readerNumber)
         self.AppModule = AppModule
         self.frequencyPlot = None
-        self.frequencyFigure = None
         self.frequencyCanvas = None
         self.frequencyFrame = None
         self.readerColor = readerColor
+        self.ReaderFigureCanvas = FigureCanvas(
+            readerColor,
+            f'Signal Check Reader {self.readerNumber}',
+            'Frequency (MHz)',
+            None,
+            f'Signal Check Reader {self.readerNumber}',
+            self.secondAxisTitle
+        )
         self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())
 
     def plotFrequencies(self):
@@ -59,56 +64,28 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.plotSignal()
 
     def plotGrowthIndex(self):
-        try:
-            self.frequencyFigure.clear()
-        except AttributeError:
-            self.frequencyFigure = Figure(figsize=(3, 3))
-            self.frequencyFigure.set_tight_layout(True)
-        self.frequencyPlot = self.frequencyFigure.add_subplot(111)
-        self.frequencyPlot.set_ylabel('Skroot Growth Index (SGI)', color=self.readerColor)
-        self.frequencyPlot.set_title(f'SGI Reader {self.readerNumber}')
+        self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
+        self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')
+        self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
+        self.ReaderFigureCanvas.redrawPlot()
         if self.AppModule.denoiseSet:
             yPlot = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
-            self.frequencyPlot.scatter(self.denoiseTimeSmooth, yPlot, s=20, color=self.readerColor)
+            self.ReaderFigureCanvas.scatter(self.denoiseTimeSmooth, yPlot, 20, self.readerColor)
         else:
             yPlot = frequencyToIndex(self.zeroPoint, self.minFrequencySmooth)
-            self.frequencyPlot.scatter(self.time, yPlot, s=20, color=self.readerColor)
+            self.ReaderFigureCanvas.scatter(self.time, yPlot, 20, self.readerColor)
         for xvalue in self.notesTimestamps:
-            addVerticalLine(self.frequencyPlot, xvalue)
-        self.addSecondAxis(self.frequencyPlot)
-        if self.waterShift is not None:
-            self.frequencyPlot.set_ylim([self.waterFreq - 2, self.airFreq + 2])
-        self.frequencyPlot.set_xlim([self.AppModule.equilibrationTime, None])
-        self.frequencyPlot.set_xlabel('Time (hours)')
-        self.frequencyPlot.set_facecolor(self.backgroundColor)
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
-        if self.frequencyCanvas is None:
-            self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
-        self.frequencyCanvas.draw()
-        self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            self.ReaderFigureCanvas.addVerticalLine(xvalue)
+        self.ReaderFigureCanvas.addSecondAxis(self.secondAxisTime, self.secondAxisValues)
+        self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
+        self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
 
     def plotSignal(self):
-        try:
-            self.frequencyFigure.clear()
-        except AttributeError:
-            self.frequencyFigure = Figure(figsize=(3, 3))
-            self.frequencyFigure.set_tight_layout(True)
-        self.frequencyPlot = self.frequencyFigure.add_subplot(111)
-        self.frequencyPlot.set_title(f'Signal Check Reader {self.readerNumber}')
-        self.frequencyPlot.scatter(self.scanFrequency, self.scanMagnitude, s=20, color='black')
-        self.frequencyPlot.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], s=30, color='red')
-        self.frequencyPlot.set_xlabel('Frequency (MHz)')
-        self.frequencyFigure.savefig(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', dpi=500)
-        if self.frequencyCanvas is None:
-            self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=self.frequencyFrame)
-        self.frequencyCanvas.draw()
-        self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-    def addSecondAxis(self, plot):
-        if self.secondAxisTitle != "":
-            ax2 = plot.twinx()
-            ax2.scatter(self.secondAxisTime, self.secondAxisValues, s=20, color='k')
-            ax2.set_ylabel(self.secondAxisTitle, color='k')
+        self.ReaderFigureCanvas.redrawPlot()
+        self.ReaderFigureCanvas.scatter(self.scanFrequency, self.scanMagnitude, 20, 'black')
+        self.ReaderFigureCanvas.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], 30, 'red')
+        self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
+        self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
 
     def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
         spaceForPlots = 0.9
@@ -137,7 +114,3 @@ class Plotting(SecondAxis, ExperimentNotes):
                 self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9 * spaceForPlots)
             else:
                 self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.67, relheight=0.9 * spaceForPlots)
-
-
-def addVerticalLine(plot, x):
-    plot.axvline(x=x)

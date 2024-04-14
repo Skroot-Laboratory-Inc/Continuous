@@ -179,8 +179,13 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def resetReaderRun(self):
         self.time = []
         self.timestamp = []
+        self.denoiseTime = []
+        self.denoiseTimeSmooth = []
         self.minFrequency = []
         self.minFrequencySmooth = []
+        self.denoiseFrequency = []
+        self.denoiseFrequencySmooth = []
+        self.minDbSmooth = []
 
     # no ops
     def checkFoaming(self):

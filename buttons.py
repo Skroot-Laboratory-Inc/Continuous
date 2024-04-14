@@ -28,13 +28,14 @@ class ButtonFunctions:
         self.createButtonsOnNewFrame()
 
     def createButtonsOnNewFrame(self):
-        self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start Experiment", command=lambda: self.startFunc())
+        self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start Experiment",
+                                      command=lambda: self.startFunc())
         self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
-                                                      command=lambda: self.AppModule.plotSummary())
-        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment", command=lambda: self.stopFunc())
-        self.helpButton = ttk.Button(self.AppModule.readerPlotFrame, text="Need help?", image=self.helpIcon,
-                                     compound=tk.LEFT,
+                                                      command=lambda: self.AppModule.plotSummary(self.AppModule.summaryFrame))
+        self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment",
+                                     command=lambda: self.stopFunc())
+        self.helpButton = ttk.Button(self.root, text="Need help?", image=self.helpIcon, compound=tk.LEFT,
                                      command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
 
     def startFunc(self):
@@ -159,7 +160,7 @@ class ButtonFunctions:
             return '', ''
 
     def placeStartButton(self):
-        self.startButton.place(relx=0.45, rely=0.47)
+        self.startButton.place(relx=0.46, rely=0.47)
         self.startButton['style'] = 'W.TButton'
 
     def placeStopButton(self):
@@ -167,7 +168,7 @@ class ButtonFunctions:
         self.stopButton['style'] = 'W.TButton'
 
     def placeHelpButton(self):
-        self.helpButton.pack(side='bottom', anchor='ne')
+        self.helpButton.pack(side='bottom', anchor='se')
         self.helpButton['style'] = 'W.TButton'
 
     def placeConnectReadersButton(self):
@@ -182,8 +183,8 @@ class ButtonFunctions:
         self.calibrateReadersButton.place(relx=0.46, rely=0.47)
         self.calibrateReadersButton['style'] = 'W.TButton'
 
-    def createGuidedSetupButton(self):
-        self.guidedSetupButton = ttk.Button(self.AppModule.root, text="",
+    def createGuidedSetupButton(self, frame):
+        self.guidedSetupButton = ttk.Button(frame, text="Start new experiment",
                                             command=lambda: self.AppModule.guidedSetup(self.AppModule.month,
                                                                                        self.AppModule.day,
                                                                                        self.AppModule.year,
@@ -192,6 +193,13 @@ class ButtonFunctions:
                                                                                        self.AppModule.cellType,
                                                                                        self.AppModule.secondAxisTitle,
                                                                                        self.AppModule.equilibrationTime))
+
+
+
+    def placeGuidedSetupButton(self, frame):
+        self.createGuidedSetupButton(frame)
+        self.guidedSetupButton.pack(side='bottom', anchor='ne')
+        self.guidedSetupButton['style'] = 'W.TButton'
 
 
 def pauseUntilUserClicks(readerNumber):

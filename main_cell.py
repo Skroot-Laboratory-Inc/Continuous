@@ -26,18 +26,24 @@ class AppModule(MainShared):
 
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
-        self.Buttons.createGuidedSetupButton()
+        self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
+        self.Buttons.placeHelpButton()
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()
 
     def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell",
                     secondAxisTitle="", equilibrationTime="24"):
+        try:
+            self.Buttons.guidedSetupButton.destroy()
+            for widgets in self.endOfExperimentFrame.winfo_children():
+                widgets.destroy()
+        except:
+            pass
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
          self.secondAxisTitle, self.equilibrationTime) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
                                                                                year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
         self.Buttons.createButtonsOnNewFrame()
-        self.Buttons.placeHelpButton()
         self.Buttons.placeConnectReadersButton()
         if calibrate:
             self.Buttons.connectReadersButton.destroy()
