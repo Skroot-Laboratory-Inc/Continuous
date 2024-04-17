@@ -59,7 +59,7 @@ class Sib(ReaderInterface):
             return [], [], [], False
 
     def removeInitialSpike(self, frequency, volts):
-        pointsRemoved = self.initialSpikeMhz / self.stepSize
+        pointsRemoved = int(self.initialSpikeMhz / self.stepSize)
         return frequency[pointsRemoved:], volts[pointsRemoved:]
 
     def calibrateIfRequired(self):
@@ -72,7 +72,7 @@ class Sib(ReaderInterface):
             self.sib.start_MHz = self.calibrationStartFreq - self.initialSpikeMhz
             self.sib.stop_MHz = self.calibrationStopFreq
             self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq)
-            frequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq)
+            frequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
             volts = self.performSweepAndWaitForComplete()
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
