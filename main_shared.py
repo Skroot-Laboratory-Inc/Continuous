@@ -292,6 +292,7 @@ class MainShared:
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
+        self.PortAllocator.resetPorts()
         versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         self.freqToggleSet = "Signal Check"

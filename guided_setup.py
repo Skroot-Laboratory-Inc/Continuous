@@ -75,7 +75,7 @@ class SetupForm:
 
         entriesMap['Cell Type'] = tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0, highlightthickness=0, justify="center")
 
-        options = ["1", "2", "3", "4"]
+        options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
         entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
 
         options = ["2", "5", "10"]

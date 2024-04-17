@@ -24,6 +24,8 @@ class Sib(ReaderInterface):
         self.initialize(port)
         self.calibrationStartFreq = 50
         self.calibrationStopFreq = 170
+        self.stepSize = 0.01
+        self.initialSpikeMhz = 0.2
         self.calibrationFilename = calibrationFileName
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:
@@ -34,8 +36,9 @@ class Sib(ReaderInterface):
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
-            frequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz)
-            volts = self.performSweepAndWaitForComplete()
+            allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
+            allVolts = self.performSweepAndWaitForComplete()
+            frequency, volts = self.removeInitialSpike(allFrequency, allVolts)
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return frequency, volts, [], True
@@ -55,6 +58,10 @@ class Sib(ReaderInterface):
             logging.exception("Failed to perform sweep for reader with unexpected cause, check reader connection.")
             return [], [], [], False
 
+    def removeInitialSpike(self, frequency, volts):
+        pointsRemoved = int(self.initialSpikeMhz / self.stepSize)
+        return frequency[pointsRemoved:], volts[pointsRemoved:]
+
     def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()
@@ -62,10 +69,10 @@ class Sib(ReaderInterface):
     def takeCalibrationScan(self) -> bool:
         try:
             createCalibrationDirectoryIfNotExists(self.calibrationFilename)
-            self.sib.start_MHz = self.calibrationStartFreq - 0.2
+            self.sib.start_MHz = self.calibrationStartFreq - self.initialSpikeMhz
             self.sib.stop_MHz = self.calibrationStopFreq
-            self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
-            frequency = calculateFrequencyValues(self.calibrationStartFreq - 0.2, self.calibrationStopFreq)
+            self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq)
+            frequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
             volts = self.performSweepAndWaitForComplete()
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
@@ -77,8 +84,8 @@ class Sib(ReaderInterface):
 
     def setStartFrequency(self, startFreqMHz) -> bool:
         try:
-            self.startFreqMHz = startFreqMHz - 0.2
-            self.sib.start_MHz = startFreqMHz - 0.2
+            self.startFreqMHz = startFreqMHz - self.initialSpikeMhz
+            self.sib.start_MHz = startFreqMHz - self.initialSpikeMhz
             if self.stopFreqMHz:
                 self.setNumberOfPoints()
             return True
@@ -215,7 +222,7 @@ class Sib(ReaderInterface):
                 time.sleep(1.0)
             port, readerType = self.PortAllocator.getNewPort()
             self.initialize(port)
-            self.setStartFrequency(self.startFreqMHz + 0.2)
+            self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
             self.checkAndSendConfiguration()
         except sibcontrol.SIBException:
@@ -252,8 +259,7 @@ def createScanFile(outputFileName, frequency, volts, yAxisLabel):
     return
 
 
-def calculateFrequencyValues(startFreqMHz, stopFreqMHz) -> List[str]:
-    df = 0.01
+def calculateFrequencyValues(startFreqMHz, stopFreqMHz, df) -> List[str]:
     nPoints = getNumPointsFrequency(startFreqMHz, stopFreqMHz)
     return startFreqMHz + df * np.arange(0, nPoints)
 
