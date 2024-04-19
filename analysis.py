@@ -138,8 +138,7 @@ def getDenoiseParameters(numberOfTimePoints):
 
 def extractValuesFromScanFile(filename, yAxisLabel):
     try:
-        # The first few values are known to be inaccurate, and are ignored
-        readings = pandas.read_csv(filename)[20:-1]
+        readings = pandas.read_csv(filename)[:-1]
         return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
     except ValueError:
         logging.exception("Rows named improperly")

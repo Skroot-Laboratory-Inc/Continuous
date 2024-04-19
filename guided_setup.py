@@ -150,7 +150,8 @@ class SetupForm:
             os.mkdir(os.path.dirname(self.savePath))
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
-        pyautogui.screenshot(f'{self.savePath}/setupForm.png', region=(x, y, w, round(h * 0.75)))
+        im = pyautogui.screenshot(region=(x, y, w, round(h * 0.77)))
+        im.save(f'{self.savePath}/setupForm.png')
 
 
 def createDropdown(root, entryVariable, options, addSpace):

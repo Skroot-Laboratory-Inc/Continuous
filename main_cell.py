@@ -38,6 +38,7 @@ class AppModule(MainShared):
             self.Buttons.guidedSetupButton.destroy()
             for widgets in self.endOfExperimentFrame.winfo_children():
                 widgets.destroy()
+            self.endOfExperimentFrame.destroy()
         except:
             pass
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,

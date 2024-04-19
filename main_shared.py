@@ -136,7 +136,7 @@ class MainShared:
                                 continue
                         else:
                             Reader.addDevPoint()
-                        if Reader.time[-1] + self.scanRate*2/60 >= self.equilibrationTime and Reader.zeroPoint == 1:
+                        if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
                             Reader.setZeroPoint(np.nanmean(Reader.minFrequencySmooth[-5:]))
                             Reader.resetReaderRun()
@@ -270,13 +270,13 @@ class MainShared:
             self.root.destroy()
 
     def resetRun(self):
+        for widgets in self.readerPlotFrame.winfo_children():
+            widgets.destroy()
         if self.freqToggleSet == "SGI":
             self.createEndOfExperimentView()
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
             self.Buttons.guidedSetupButton.invoke()
-        for widgets in self.readerPlotFrame.winfo_children():
-            widgets.destroy()
         for Reader in self.Readers:
             try:
                 Reader.zeroPoint = 1
@@ -284,11 +284,7 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        for widgets in self.readerPlotFrame.winfo_children():
-            widgets.destroy()
         self.PortAllocator.resetPorts()
-        versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
-        versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         self.freqToggleSet = "Signal Check"
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
