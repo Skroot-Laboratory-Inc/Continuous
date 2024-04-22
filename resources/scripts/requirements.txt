@@ -1,4 +1,6 @@
+../sibcontrol
 boto3==1.26.163
+universal-startfile==0.2
 fonttools==4.40.0
 fpdf==1.7.2
 hidapi==0.14.0
@@ -18,4 +20,3 @@ ttkSimpleDialog==1.2.1
 urllib3==1.26.16
 botocore==1.29.163
 threadpoolctl==3.3.0
-../sibcontrol

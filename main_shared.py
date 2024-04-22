@@ -9,18 +9,20 @@ import sys
 import threading
 import time
 import tkinter as tk
+import tkinter.ttk as ttk
 from zipfile import ZipFile
 
 import matplotlib as mpl
 import numpy as np
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg)
-from matplotlib.figure import Figure
+from PIL import ImageTk, Image
 
+import helper_functions
 import logger
 import text_notification
 from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
+from figure import FigureCanvas
 from helper_functions import frequencyToIndex
 from pdf import generatePdf
 from port_allocator import PortAllocator
@@ -40,9 +42,6 @@ class MainShared:
         self.scanFrequency = None
         self.foundPorts = False
         self.currentFrame = None
-        self.summaryPlot = None
-        self.summaryCanvas = None
-        self.summaryFig = None
         self.summaryPlotButton = None
         self.summaryFrame = None
         self.submitButton = None
@@ -99,6 +98,16 @@ class MainShared:
         self.ServerFileShare = ServerFileShare(self)
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version, self.location)
         self.isDevMode = self.DevMode.isDevMode
+        self.SummaryFigureCanvas = FigureCanvas(
+            'k',
+            'Skroot Growth Index (SGI)',
+            'Time (hrs)',
+            self.white,
+            'Summary',
+            '',
+            7,
+            9
+        )
 
     def createRoot(self):
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
@@ -127,12 +136,12 @@ class MainShared:
                                 continue
                         else:
                             Reader.addDevPoint()
-                        if self.denoiseSet:
-                            Reader.denoiseResults()
                         if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
-                            Reader.setZeroPoint(np.nanmean(Reader.minFrequencySmooth[-3:]))
+                            Reader.setZeroPoint(np.nanmean(Reader.minFrequencySmooth[-5:]))
                             Reader.resetReaderRun()
+                        if self.denoiseSet:
+                            Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
                         Reader.createAnalyzedFiles()
                         if not self.ServerFileShare.disabled:
@@ -225,42 +234,20 @@ class MainShared:
             self.Timer.updateTime()
             currentTime = time.time()
 
-    def plotSummary(self):
+    def plotSummary(self, frame):
         try:
-            try:
-                self.summaryFig.clear()
-            except AttributeError:
-                size = 3
-                self.summaryFig = Figure(figsize=(size, size))
-                self.summaryFig.set_tight_layout(True)
-            self.summaryPlot = self.summaryFig.add_subplot(111)
-            self.summaryPlot.tick_params(axis='both', which='minor', labelsize=7)
-            self.summaryPlot.tick_params(axis='both', which='major', labelsize=7)
+            self.SummaryFigureCanvas.redrawPlot()
             self.ColorCycler.reset()
-
-            self.summaryPlot.set_ylabel('Skroot Growth Index (SGI)', fontsize=9)
-            self.summaryPlot.set_title(f'Summary', fontsize=9)
             for Reader in self.Readers:
                 readerColor = self.ColorCycler.getNext()
                 if self.denoiseSet:
                     yPlot = frequencyToIndex(Reader.zeroPoint, Reader.denoiseFrequencySmooth)
-                    self.summaryPlot.scatter(Reader.denoiseTimeSmooth, yPlot, s=20, color=readerColor)
+                    self.SummaryFigureCanvas.scatter(Reader.denoiseTimeSmooth, yPlot, 20, readerColor)
                 else:
                     yPlot = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
-                    self.summaryPlot.scatter(Reader.time, yPlot, s=20, color=readerColor)
-                if self.freqToggleSet == "SGI":
-                    self.summaryPlot.set_xlim([Reader.inoculatedTime, None])
-            self.summaryPlot.set_xlim(xmin=self.equilibrationTime)
-            self.summaryPlot.set_xlabel('Time (hours)', fontsize=7)
-            self.summaryFig.savefig(f'{self.savePath}/Summary Figure.jpg', dpi=500)
-            try:
-                self.summaryCanvas.get_tk_widget().pack()
-            except AttributeError:
-                self.summaryCanvas = FigureCanvasTkAgg(self.summaryFig, master=self.summaryFrame)
-            except:
-                self.summaryCanvas = FigureCanvasTkAgg(self.summaryFig, master=self.summaryFrame)
-            self.summaryCanvas.draw()
-            self.summaryCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+                    self.SummaryFigureCanvas.scatter(Reader.time, yPlot, 20, readerColor)
+            self.SummaryFigureCanvas.saveAs(f'{self.savePath}/Summary Figure.jpg')
+            self.SummaryFigureCanvas.drawCanvas(frame)
         except:
             logging.exception("Failed to generate summaryPlot")
 
@@ -283,6 +270,13 @@ class MainShared:
             self.root.destroy()
 
     def resetRun(self):
+        for widgets in self.readerPlotFrame.winfo_children():
+            widgets.destroy()
+        if self.freqToggleSet == "SGI":
+            self.createEndOfExperimentView()
+        else:
+            self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
+            self.Buttons.guidedSetupButton.invoke()
         for Reader in self.Readers:
             try:
                 Reader.zeroPoint = 1
@@ -290,17 +284,45 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        for widgets in self.readerPlotFrame.winfo_children():
-            widgets.destroy()
         self.PortAllocator.resetPorts()
-        versionLabel = tk.Label(self.readerPlotFrame, text=f'Version: v{self.version}', bg='white')
-        versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         self.freqToggleSet = "Signal Check"
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
-        self.Buttons.guidedSetupButton.invoke()
+
+    def createEndOfExperimentView(self):
+        endOfExperimentFrame = tk.Frame(self.root, bg=self.white)
+        endOfExperimentFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
+        endOfExperimentFrame.grid_rowconfigure(0, weight=1)
+        endOfExperimentFrame.grid_rowconfigure(1, weight=10)
+        endOfExperimentFrame.grid_rowconfigure(2, weight=1)
+        endOfExperimentFrame.grid_columnconfigure(0, weight=2)
+        endOfExperimentFrame.grid_columnconfigure(1, weight=3)
+
+        fileExplorerLabel = tk.Label(endOfExperimentFrame, text='Experiment File Location: ', bg='white')
+        fileExplorerLabel.grid(row=0, column=0, sticky='ne', padx=10)
+        fileExplorerButton = ttk.Button(endOfExperimentFrame, text=self.savePath,
+                                       command=lambda: helper_functions.openFileExplorer(self.savePath))
+        fileExplorerButton.grid(row=0, column=1, sticky='nw', padx=10)
+        fileExplorerButton['style'] = 'W.TButton'
+
+        self.guidedSetupImage = ImageTk.PhotoImage(file=f'{self.savePath}/setupForm.png')
+        image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.white)
+        image_label.grid(row=1, column=0, sticky='nesw')
+
+        image = Image.open(f'{self.savePath}/Summary Figure.jpg').resize((600, 400), Image.ANTIALIAS)
+        self.summaryPlotImage = ImageTk.PhotoImage(image)
+        image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.white)
+        image_label.grid(row=1, column=1, sticky='nesw')
+
+        self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
+        self.Buttons.guidedSetupButton.grid(row=2, column=1, sticky='se', padx=10, pady=10)
+        self.Buttons.guidedSetupButton['style'] = 'W.TButton'
+
+        self.SummaryFigureCanvas.frequencyCanvas = None
+        self.endOfExperimentFrame = endOfExperimentFrame
+
 
     def showFrame(self, frame):
         self.currentFrame = frame

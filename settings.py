@@ -133,7 +133,7 @@ class Settings:
             if (screenNumber + 1) != len(self.AppModule.outerFrames):
                 nextReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
                                         highlightbackground='black')
-                nextReaders.place(relx=0.85, rely=0.94, relwidth=0.15, relheight=0.04)
+                nextReaders.place(relx=0.85, rely=0.96, relwidth=0.15, relheight=0.04)
                 nextReaders.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
                     screenNumber + 1]: self.AppModule.showFrame(frame))
                 nextText = ttk.Label(nextReaders, text="Next", font=("Arial", 12), background='gray93', borderwidth=0)
@@ -143,7 +143,7 @@ class Settings:
             else:
                 nextReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
                                         highlightbackground='black')
-                nextReaders.place(relx=0.85, rely=0.94, relwidth=0.15, relheight=0.04)
+                nextReaders.place(relx=0.85, rely=0.96, relwidth=0.15, relheight=0.04)
                 nextReaders.bind("<Button>",
                                  lambda event, frame=self.AppModule.outerFrames[0]: self.AppModule.showFrame(frame))
                 nextText = ttk.Label(nextReaders, text="Next", font=("Arial", 12), background='gray93', borderwidth=0)
@@ -153,7 +153,7 @@ class Settings:
 
             previousReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
                                         highlightbackground='black')
-            previousReaders.place(relx=0, rely=0.94, relwidth=0.15, relheight=0.04)
+            previousReaders.place(relx=0, rely=0.96, relwidth=0.15, relheight=0.04)
             previousReaders.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
                 screenNumber - 1]: self.AppModule.showFrame(frame))
             previousText = ttk.Label(previousReaders, text="Previous", font=("Arial", 12), background='gray93',

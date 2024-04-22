@@ -37,22 +37,17 @@ class Setup:
 
     def createTheme(self):
         self.root.title("Skroot Reader GUI")
-        height = self.root.winfo_screenheight()  # 800 # height of the window
-        width = self.root.winfo_screenwidth()  # 1200 # width of the window
         style = ttk.Style()
         style.theme_use('clam')
+        self.root.configure(background='white')
         style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.white,
                         background=self.AppModule.royalBlue)
-        style.map('W.TButton', background=[("disabled", "gray23"), ("active", "royal blue")])
-        canvas = tk.Canvas(self.root, height=height, width=width)
-        canvas.pack()
-        self.AppModule.royalBlue = 'RoyalBlue4'
-        self.AppModule.white = 'white'
+        style.map('W.TButton', background=[("disabled", "gray23"), ("active", self.AppModule.royalBlue)])
 
     def createFrames(self):
         self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.white)
-        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.95)
-        versionLabel = tk.Label(self.AppModule.readerPlotFrame, text=f'Version: v{self.AppModule.version}', bg='white')
+        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.93)
+        versionLabel = tk.Label(self.root, text=f'Version: v{self.AppModule.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
 
         textFrame = tk.Frame(self.root, bg=self.AppModule.white)

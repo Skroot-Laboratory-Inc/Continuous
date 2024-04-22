@@ -36,7 +36,7 @@ class AppModule(MainShared):
         self.Buttons.placeHelpButton()
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
-        self.Buttons.createGuidedSetupButton()
+        self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
         if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.close()

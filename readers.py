@@ -177,10 +177,15 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
                 logging.info(f"No calibration found for Reader {self.readerNumber}")
 
     def resetReaderRun(self):
-        self.time = []
-        self.timestamp = []
-        self.minFrequency = []
-        self.minFrequencySmooth = []
+        self.time = self.time[-1:]
+        self.timestamp = self.timestamp[-1:]
+        self.denoiseTime = self.denoiseTime[-1:]
+        self.denoiseTimeSmooth = self.denoiseTimeSmooth[-1:]
+        self.minFrequency = self.minFrequency[-1:]
+        self.minFrequencySmooth = self.minFrequencySmooth[-1:]
+        self.denoiseFrequency = self.denoiseFrequency[-1:]
+        self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
+        self.minDbSmooth = self.minDbSmooth[-1:]
 
     # no ops
     def checkFoaming(self):
