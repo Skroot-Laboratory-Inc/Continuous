@@ -1,4 +1,10 @@
 {
+  "v2.2.3": {
+    "other": {
+      "1": "Updated sweep range to 115-165 MHz",
+      "2": "Added logging for sibcontrol version"
+    }
+  },
   "v2.2.2": {
     "bugfixes": {
       "1": "Fixed install-script on software update"
