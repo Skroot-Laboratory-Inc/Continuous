@@ -206,16 +206,16 @@ class Sib(ReaderInterface):
         return calibratedVolts, calibratedPhase
 
     def resetDDSConfiguration(self):
-        logger.info("The DDS did not get configured correctly, performing hard reset.")
+        logging.info("The DDS did not get configured correctly, performing hard reset.")
         try:
             self.sib.reset_sib()
             time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
             self.resetSibConnection()
         except SerialException:
-            logger.exception("Failed to reset SIB connection")
+            logging.exception("Failed to reset SIB connection")
 
     def resetSibConnection(self):
-        logger.info("Problem with serial connection. Closing and then re-opening port.")
+        logging.info("Problem with serial connection. Closing and then re-opening port.")
         try:
             if self.sib.is_open():
                 self.close()
@@ -226,7 +226,7 @@ class Sib(ReaderInterface):
             self.setStopFrequency(self.stopFreqMHz)
             self.checkAndSendConfiguration()
         except sibcontrol.SIBException:
-            logger.exception("Failed to reset SIB connection")
+            logging.exception("Failed to reset SIB connection")
 
 
 def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]):

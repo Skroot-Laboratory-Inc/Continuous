@@ -1,4 +1,9 @@
 {
+  "v2.2.2": {
+    "bugfixes": {
+      "1": "Fixed install-script on software update"
+    }
+  },
   "v2.2.1": {
     "features": {
       "1": "Added an end of experiment view that summarizes the results"
