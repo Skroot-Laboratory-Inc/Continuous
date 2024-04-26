@@ -1,4 +1,12 @@
 {
+  "v2.2.2": {
+    "bugfixes": {
+      "1": "Fixed install-script on software update"
+    },
+    "other": {
+      "1": "Updated sweep range to 115-165 MHz"
+    }
+  },
   "v2.2.1": {
     "features": {
       "1": "Added an end of experiment view that summarizes the results"

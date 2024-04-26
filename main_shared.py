@@ -10,6 +10,7 @@ import threading
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
+from importlib.metadata import version as version_api
 from zipfile import ZipFile
 
 import matplotlib as mpl
@@ -190,7 +191,9 @@ class MainShared:
                 if self.os == "linux":
                     shutil.copyfile(rf'{self.location}/resources/desktopApp.desktop',
                                     rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
-                    runShScript(f'{self.location}/resources/scripts/install-script.sh')
+                    text_notification.setText(
+                        "Installing new dependencies... please wait. This may take up to a minute.")
+                    runShScript(f'{self.location}/resources/scripts/install-script.sh', self.desktop)
                 text_notification.setText(
                     f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
             else:
@@ -342,9 +345,9 @@ def deleteScanFile(filename):
     os.remove(filename)
 
 
-def runShScript(shScriptFilename):
+def runShScript(shScriptFilename, desktop):
     st = os.stat(shScriptFilename)
     os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
-    process = subprocess.Popen(["sh", shScriptFilename])
-    text_notification.setText("Installing new dependencies... please wait. This may take up to a minute.")
+    logFile = open(f'{desktop}/Calibration/log.txt', 'w+')
+    process = subprocess.Popen(["sh", shScriptFilename], stdout=logFile, stderr=logFile, cwd=os.path.dirname(shScriptFilename))
     process.wait()
