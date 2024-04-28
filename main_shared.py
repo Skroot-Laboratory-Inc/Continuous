@@ -10,10 +10,10 @@ import threading
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
-from importlib.metadata import version as version_api
 from zipfile import ZipFile
 
 import matplotlib as mpl
+from importlib.metadata import version as version_api
 import numpy as np
 from PIL import ImageTk, Image
 
@@ -65,6 +65,7 @@ class MainShared:
         if not os.path.exists(self.baseSavePath):
             os.mkdir(self.baseSavePath)
         logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
+        logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
         self.version = f'{major_version}.{minor_version}'
         self.numReaders = None
         self.savePath = ''
@@ -77,8 +78,8 @@ class MainShared:
         self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
         self.scanRate = 0.5
-        self.startFreq = 95
-        self.stopFreq = 145
+        self.startFreq = 115
+        self.stopFreq = 165
         self.thread = threading.Thread(target=self.mainLoop, args=())
         self.threadStatus = ''
         self.royalBlue = 'RoyalBlue4'
