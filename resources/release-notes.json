@@ -1,5 +1,13 @@
 {
+  "v2.2.4": {
+    "other": {
+      "1": "Recreation of v2.2.3 for updating purposes"
+    }
+  },
   "v2.2.3": {
+    "bugfixes": {
+      "1": "Fixed app failing to startup"
+    },
     "other": {
       "1": "Updated sweep range to 115-165 MHz",
       "2": "Added logging for sibcontrol version"
