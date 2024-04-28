@@ -350,5 +350,6 @@ def runShScript(shScriptFilename, desktop):
     st = os.stat(shScriptFilename)
     os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
     logFile = open(f'{desktop}/Calibration/log.txt', 'w+')
-    process = subprocess.Popen(["sh", shScriptFilename], stdout=logFile, stderr=logFile, cwd=os.path.dirname(shScriptFilename))
+    process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile, stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
+    process.communicate("skroot".encode())
     process.wait()
