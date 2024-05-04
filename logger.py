@@ -1,18 +1,11 @@
 import logging
 import os
-import shutil
-from datetime import datetime
 
 
 def loggerSetup(location, version):
     if not os.path.exists(os.path.dirname(location)):
         os.mkdir(os.path.dirname(location))
-    if not os.path.exists(location):
-        open(location, 'w+').close()
-    elif os.path.getsize(location) > 10000:
-        # log is greater than 10 kB, make a copy and create a new one
-        shutil.copy(location, f"{location[:-4]}_{datetime.now().date()}.txt")
-        open(location, 'w+').close()
+    open(location, 'w+').close()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",

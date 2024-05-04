@@ -80,7 +80,7 @@ class MainShared:
         self.scanRate = 0.5
         self.startFreq = 115
         self.stopFreq = 165
-        self.thread = threading.Thread(target=self.mainLoop, args=())
+        self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.threadStatus = ''
         self.royalBlue = 'RoyalBlue4'
         self.white = 'white'
@@ -271,16 +271,12 @@ class MainShared:
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
+            self.copyFilesToDebuggingFolder()
             self.root.destroy()
 
     def resetRun(self):
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
-        if self.freqToggleSet == "SGI":
-            self.createEndOfExperimentView()
-        else:
-            self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
-            self.Buttons.guidedSetupButton.invoke()
         for Reader in self.Readers:
             try:
                 Reader.zeroPoint = 1
@@ -288,12 +284,30 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
+        self.copyFilesToDebuggingFolder()
         self.PortAllocator.resetPorts()
         self.freqToggleSet = "Signal Check"
-        self.thread = threading.Thread(target=self.mainLoop, args=())
+        self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
+        if self.freqToggleSet == "SGI":
+            self.createEndOfExperimentView()
+        else:
+            self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
+            self.Buttons.guidedSetupButton.invoke()
+
+    def copyFilesToDebuggingFolder(self):
+        logSubdir = f'{self.savePath}/Log'
+        os.mkdir(logSubdir)
+        filesToCopy = {}
+        filesToCopy[f'{self.desktop}/Calibration/log.txt'] = 'Experiment Log.txt'
+        filesToCopy[f'{self.savePath}/summaryAnalyzed.csv'] = 'Experiment Summary.csv'
+        filesToCopy[f'{self.savePath}/Summary.pdf'] = 'Experiment Summary.pdf'
+        filesToCopy[f'{self.savePath}/setupForm.png'] = 'Setup Form.png'
+        for currentFileLocation, newFileLocation in filesToCopy.items():
+            if os.path.exists(currentFileLocation):
+                shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
 
     def createEndOfExperimentView(self):
         endOfExperimentFrame = tk.Frame(self.root, bg=self.white)
