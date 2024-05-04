@@ -1,12 +1,25 @@
+import os
+import sys
+
+try:
+    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+except KeyError:
+    desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+    sys.path = [
+        '/usr/lib/python3.10',
+        '/usr/lib/python3.10/lib-dynload',
+        '/usr/local/lib/python3.10/dist-packages',
+        '/usr/lib/python3/dist-packages',
+        '.'
+    ]
 import importlib.util
-import os, json
-import threading
+import os
+import json
 from datetime import datetime
 
 import matplotlib as mpl
 
 import guided_setup
-import text_notification
 from main_shared import MainShared
 
 mpl.use('TkAgg')
@@ -42,8 +55,11 @@ class AppModule(MainShared):
         except:
             pass
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
-         self.secondAxisTitle, self.equilibrationTime) = guided_setup.guidedSetupCell(self.root, self.baseSavePath, month, day,
-                                                                               year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
+         self.secondAxisTitle, self.equilibrationTime) = guided_setup.guidedSetupCell(self.root, self.baseSavePath,
+                                                                                      month, day,
+                                                                                      year, numReaders, scanRate,
+                                                                                      cellType, secondAxisTitle,
+                                                                                      equilibrationTime)
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if calibrate:
