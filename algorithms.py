@@ -155,11 +155,11 @@ class FoamingAlgorithm(Analysis):
             shift = abs(self.minFrequency[-1] - self.referenceFrequency)
             logging.info(f'shift: {shift}, needed shift {self.waterShift * (self.foamThresh / 100)}')
             if shift > (self.waterShift * 0.9) and self.errorThread == '' and self.liquidThread == '':
-                self.liquidThread = threading.Thread(target=self.liquidReachedSensor, args=())
+                self.liquidThread = threading.Thread(target=self.liquidReachedSensor, args=(), daemon=True)
                 self.liquidThread.start()
             elif shift > self.waterShift * (
                     self.foamThresh / 100) and self.errorThread == '' and self.liquidThread == '':
-                self.errorThread = threading.Thread(target=self.foamReachedSensor, args=())
+                self.errorThread = threading.Thread(target=self.foamReachedSensor, args=(), daemon=True)
                 self.errorThread.start()
             else:
                 try:

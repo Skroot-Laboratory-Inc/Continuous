@@ -1,4 +1,10 @@
 {
+  "v2.2.7": {
+    "features": {
+      "1": "Updated foldering scheme to remove _Cell from folders and added Log and Analysis folders",
+      "2": "Added logging of self resonant frequency for debugging purposes"
+    }
+  },
   "v2.2.4": {
     "other": {
       "1": "Recreation of v2.2.3 for updating purposes"

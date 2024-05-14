@@ -10,6 +10,7 @@ import pandas
 import sibcontrol
 from serial import SerialException
 
+import helper_functions
 import logger
 import text_notification
 from reader_interface import ReaderInterface
@@ -33,6 +34,8 @@ class Sib(ReaderInterface):
 
     def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(self.calibrationFilename)
+        selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
+        logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
 
     def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
         try:
@@ -294,12 +297,9 @@ def getNumPointsFrequency(startFreq, stopFreq):
 def getNumPointsSweep(startFreq, stopFreq):
     return int((stopFreq - startFreq) * 1000 / 10)
 
-# ports = list_ports.comports()
-# portNums = [int(ports[i][0][3:]) for i in range(len(ports))]
-# if portNums:
-#     port = f'COM{max(portNums)}'
-# Sib = Sib(port)
-# succeeded = Sib.performHandshake()
-# resultDb = Sib.performSweep()
-# firmwareVersion = Sib.getFirmwareVersion()
-# Sib.sib.close()
+
+def findSelfResonantFrequency(frequency, volts, scanRange, threshold):
+    inRangeFrequencies, inRangeVolts = helper_functions.truncateByX(scanRange[0], scanRange[1], frequency, volts)
+    for index, yval in enumerate(inRangeVolts):
+        if yval > threshold:
+            return inRangeFrequencies[index]
