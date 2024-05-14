@@ -14,3 +14,12 @@ def openFileExplorer(path):
         import startfile
     startfile.startfile(path)
 
+
+def truncateByX(minX, maxX, x, y):
+    truncatedX, truncatedY = [], []
+    for index, xval in enumerate(x):
+        if minX < xval < maxX:
+            truncatedX.append(xval)
+            truncatedY.append(y[index])
+    return truncatedX, truncatedY
+

@@ -271,7 +271,8 @@ class MainShared:
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
-            self.copyFilesToDebuggingFolder()
+            self.copyFilesToDebuggingFolder(self.numReaders)
+            self.copyFilesToAnalysisFolder()
             self.root.destroy()
 
     def resetRun(self):
@@ -284,7 +285,8 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        self.copyFilesToDebuggingFolder()
+        self.copyFilesToDebuggingFolder(self.numReaders)
+        self.copyFilesToAnalysisFolder()
         self.PortAllocator.resetPorts()
         self.freqToggleSet = "Signal Check"
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
@@ -297,17 +299,27 @@ class MainShared:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
             self.Buttons.guidedSetupButton.invoke()
 
-    def copyFilesToDebuggingFolder(self):
+    def copyFilesToDebuggingFolder(self, numReaders):
         logSubdir = f'{self.savePath}/Log'
         os.mkdir(logSubdir)
         filesToCopy = {}
         filesToCopy[f'{self.desktop}/Calibration/log.txt'] = 'Experiment Log.txt'
+        for readerNumber in range(1, numReaders + 1):
+            filesToCopy[f'{self.desktop}/Calibration/{readerNumber}/Calibration.csv'] = f'Calibration_{readerNumber}.csv'
+        for currentFileLocation, newFileLocation in filesToCopy.items():
+            if os.path.exists(currentFileLocation):
+                shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
+
+    def copyFilesToAnalysisFolder(self):
+        analysisSubdir = f'{self.savePath}/Analysis'
+        os.mkdir(analysisSubdir)
+        filesToCopy = {}
         filesToCopy[f'{self.savePath}/summaryAnalyzed.csv'] = 'Experiment Summary.csv'
         filesToCopy[f'{self.savePath}/Summary.pdf'] = 'Experiment Summary.pdf'
         filesToCopy[f'{self.savePath}/setupForm.png'] = 'Setup Form.png'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
-                shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
+                shutil.copy(currentFileLocation, f'{analysisSubdir}/{newFileLocation}')
 
     def createEndOfExperimentView(self):
         endOfExperimentFrame = tk.Frame(self.root, bg=self.white)

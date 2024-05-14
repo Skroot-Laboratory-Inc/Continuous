@@ -31,7 +31,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.scanMagnitude = []
         self.scanFrequency = []
         self.scanNumber = 100001
-        self.folderSuffix = "_Cell"
         self.jsonTextLocation = "serverInfo.json"
         self.waterShift = None
         self.calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
@@ -122,10 +121,10 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def setSavePath(self, savePath):
         if not os.path.exists(savePath):
             os.mkdir(savePath)
-        self.savePath = rf'{savePath}/{self.readerNumber}{self.folderSuffix}'
+        self.savePath = rf'{savePath}/Reader {self.readerNumber}'
         if self.AppModule.os == "windows":
             if not self.AppModule.ServerFileShare.disabled:
-                self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/{self.readerNumber}{self.folderSuffix}'
+                self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/Reader {self.readerNumber}'
             else:
                 self.serverSavePath = 'incorrect/path'
         if self.AppModule.os == "linux":
@@ -140,7 +139,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             except:
                 self.sshDisabled = True
             if not self.sshDisabled:
-                self.serverSavePath = f'D:/data/{socket.gethostname()}/{self.readerNumber}{self.folderSuffix}'
+                self.serverSavePath = f'D:/data/{socket.gethostname()}/Reader {self.readerNumber}'
                 serverSavePath_ = self.serverSavePath.replace('/', '\\')
                 stdin_, stdout_, stderr_ = self.sshConnection.exec_command(rf"md {serverSavePath_}")
                 stdout, stderr = stdout_.read(), stderr_.read()
@@ -197,7 +196,6 @@ class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
         self.scanMagnitude = []
         self.scanFrequency = []
         self.scanNumber = 100001
-        self.folderSuffix = "_Foaming"
         self.backgroundColor = '#FFFFFF'
         self.waterShift = waterShift
         self.airFreq = airFreq

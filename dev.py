@@ -12,7 +12,7 @@ from plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = True
+        self.tryDevMode = False
         self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
@@ -46,7 +46,7 @@ class ReaderDevMode(Plotting):
             except:
                 try:
                     self.devDb = readings['Signal Strength (Unitless)'].values.tolist()
-                except ValueError:
+                except:
                     self.devDb = [0] * len(self.devFrequency)
 
 
