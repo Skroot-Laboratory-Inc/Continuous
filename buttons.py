@@ -85,10 +85,10 @@ class ButtonFunctions:
     def calFunc(self, numReaders):
         calThreads = []
         for readerIndex in range(numReaders):
-            # self.calFunc2(readerIndex)
-            calThread = threading.Thread(target=self.calFunc2, args=(readerIndex,), daemon=True)
-            calThreads.append(calThread)
-            calThread.start()
+            self.calFunc2(readerIndex)
+            # calThread = threading.Thread(target=self.calFunc2, args=(readerIndex,), daemon=True)
+            # calThreads.append(calThread)
+            # calThread.start()
         return calThreads
 
     def calibrateReaders(self):
