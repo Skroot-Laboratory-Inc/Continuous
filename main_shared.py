@@ -140,7 +140,9 @@ class MainShared:
                             Reader.addDevPoint()
                         if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
-                            Reader.setZeroPoint(np.nanmean(Reader.minFrequencySmooth[-5:]))
+                            zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
+                            Reader.setZeroPoint(zeroPoint)
+                            logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
                             Reader.resetReaderRun()
                         if self.denoiseSet:
                             Reader.denoiseResults()
