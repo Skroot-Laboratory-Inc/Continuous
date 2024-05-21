@@ -178,6 +178,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def resetReaderRun(self):
         self.time = self.time[-1:]
         self.timestamp = self.timestamp[-1:]
+        self.filenames = self.filenames[-1:]
         self.denoiseTime = self.denoiseTime[-1:]
         self.denoiseTimeSmooth = self.denoiseTimeSmooth[-1:]
         self.minFrequency = self.minFrequency[-1:]
