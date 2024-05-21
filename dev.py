@@ -12,7 +12,7 @@ from plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
@@ -20,7 +20,6 @@ class DevMode:
             self.isDevMode = False
         self.startTime = 0
         self.scanRate = 0.2
-        self.equilibrationTime = 1 / 60  # (1 minute)
         # self.mode = "GUI"
         self.mode = "Analysis"
 
@@ -30,10 +29,8 @@ class ReaderDevMode(Plotting):
         self.DevMode = AppModule.DevMode
         if self.DevMode.isDevMode:
             AppModule.scanRate = self.DevMode.scanRate
-            AppModule.equilibrationTime = self.DevMode.equilibrationTime
             self.scanNumber = self.DevMode.startTime + 100000
             self.scanRate = self.DevMode.scanRate
-            self.equilibrationTime = self.DevMode.equilibrationTime
             self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
             readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
             self.devTime = readings['Time (hours)'].values.tolist()

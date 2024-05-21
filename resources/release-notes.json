@@ -1,4 +1,9 @@
 {
+  "v2.4.1": {
+    "features": {
+      "1": "Added support for setting equilibration period to 0"
+    }
+  },
   "v2.2.7": {
     "features": {
       "1": "Updated foldering scheme to remove _Cell from folders and added Log and Analysis folders",
