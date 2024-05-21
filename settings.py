@@ -77,6 +77,10 @@ class Settings:
                                                            'Would you like to denoise and smooth the results before displaying them?')
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
+    def freqToggleSetting(self, toggle):
+        self.AppModule.freqToggleSet = toggle
+        logging.info(f'freqToggleSet changed to {toggle}')
+
     def weakSignalToggleSetting(self):
         self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno('Ignore Weak Signal',
                                                                     'Are you sure you would like to ignore '
