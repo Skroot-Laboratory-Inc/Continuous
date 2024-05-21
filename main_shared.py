@@ -140,7 +140,10 @@ class MainShared:
                             Reader.addDevPoint()
                         if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
-                            zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
+                            if self.equilibrationTime == 0:
+                                zeroPoint = Reader.minFrequencySmooth[-1]
+                            else:
+                                zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
                             Reader.setZeroPoint(zeroPoint)
                             logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
                             Reader.resetReaderRun()
@@ -303,7 +306,8 @@ class MainShared:
 
     def copyFilesToDebuggingFolder(self, numReaders):
         logSubdir = f'{self.savePath}/Log'
-        os.mkdir(logSubdir)
+        if not os.path.exists(logSubdir):
+            os.mkdir(logSubdir)
         filesToCopy = {}
         filesToCopy[f'{self.desktop}/Calibration/log.txt'] = 'Experiment Log.txt'
         for readerNumber in range(1, numReaders + 1):
