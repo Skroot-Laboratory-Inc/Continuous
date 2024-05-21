@@ -80,6 +80,7 @@ class MainShared:
         self.scanRate = 0.5
         self.startFreq = 115
         self.stopFreq = 165
+        self.zeroPoint = 1
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.threadStatus = ''
         self.royalBlue = 'RoyalBlue4'
@@ -141,11 +142,11 @@ class MainShared:
                         if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
                             self.freqToggleSet = "SGI"
                             if self.equilibrationTime == 0:
-                                zeroPoint = Reader.minFrequencySmooth[-1]
+                                self.zeroPoint = Reader.minFrequencySmooth[-1]
                             else:
-                                zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
-                            Reader.setZeroPoint(zeroPoint)
-                            logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
+                                self.zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
+                            Reader.setZeroPoint(self.zeroPoint)
+                            logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
                             Reader.resetReaderRun()
                         if self.denoiseSet:
                             Reader.denoiseResults()
@@ -165,7 +166,7 @@ class MainShared:
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
-                if self.freqToggleSet == "SGI":
+                if self.zeroPoint != 1:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                     generatePdf(self.savePath, self.Readers)
@@ -290,6 +291,7 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
+        self.zeroPoint = 1
         self.copyFilesToDebuggingFolder(self.numReaders)
         self.copyFilesToAnalysisFolder()
         self.PortAllocator.resetPorts()
@@ -318,7 +320,8 @@ class MainShared:
 
     def copyFilesToAnalysisFolder(self):
         analysisSubdir = f'{self.savePath}/Analysis'
-        os.mkdir(analysisSubdir)
+        if not os.path.exists(analysisSubdir):
+            os.mkdir(analysisSubdir)
         filesToCopy = {}
         filesToCopy[f'{self.savePath}/summaryAnalyzed.csv'] = 'Experiment Summary.csv'
         filesToCopy[f'{self.savePath}/Summary.pdf'] = 'Experiment Summary.pdf'
