@@ -3,7 +3,8 @@
     "features": {
       "1": "Added support for setting equilibration period to 0.",
       "2": "Added back toggle to view signal check in ribbon.",
-      "3": "Added Skroot copyright as app footer."
+      "3": "Added Skroot copyright as app footer.",
+      "4": "Added frequency and filename columns to smooth analyzed."
     },
     "bugfixes": {
       "1": "Fixed sorting of the release notes dialog to accurately represent versioning."

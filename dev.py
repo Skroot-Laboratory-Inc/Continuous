@@ -12,7 +12,7 @@ from plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
@@ -51,6 +51,7 @@ class ReaderDevMode(Plotting):
 
     def loadDevMode(self):
         self.time = self.devTime[0:self.DevMode.startTime]
+        self.filenames = self.devFiles[0:self.DevMode.startTime]
 
         self.minFrequency = self.devFrequency[0:self.DevMode.startTime]
 
@@ -70,6 +71,7 @@ class ReaderDevMode(Plotting):
                 self.addDevScan(self.devFiles[nextPointIndex])
                 shutil.copy(self.devFiles[nextPointIndex], f'{self.savePath}/{self.scanNumber}.csv')
                 self.time.append(self.devTime[nextPointIndex])
+                self.filenames.append(self.devFiles[nextPointIndex])
                 self.timestamp.append(datetime.now())
 
                 self.minFrequency.append(self.devFrequency[nextPointIndex])

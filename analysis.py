@@ -31,6 +31,7 @@ class Analysis:
         self.minFrequencySmooth = []
         self.denoiseFrequencySmooth = []
         self.denoiseFrequency = []
+        self.filenames = []
 
         self.savePath = savePath
         self.smallPeakPoints = smallPeakPoints
@@ -43,6 +44,7 @@ class Analysis:
         self.minDbSmooth.append(minMag)
         self.minFrequencySmooth.append(minFreq)
         self.time.append((self.scanNumber - 100000) / 60)
+        self.filenames.append(f"{self.scanNumber}.csv")
         self.timestamp.append(datetime.now())
 
     def findMinData(self, filename):
@@ -89,13 +91,13 @@ class Analysis:
         with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequency)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)'])
-            writer.writerows(zip(self.denoiseTime, self.timestamp, equilibratedY))
+            writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
+            writer.writerows(zip(self.filenames, self.denoiseTime, self.timestamp, equilibratedY, self.denoiseFrequency))
         with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
-            writer.writerow(['Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)'])
-            writer.writerows(zip(self.denoiseTimeSmooth, self.timestamp, equilibratedY))
+            writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
+            writer.writerows(zip(self.filenames, self.denoiseTimeSmooth, self.timestamp, equilibratedY, self.denoiseFrequencySmooth))
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
