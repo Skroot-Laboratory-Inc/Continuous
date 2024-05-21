@@ -53,9 +53,13 @@ class Setup:
 
     def createFrames(self):
         self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.white)
-        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.93)
-        versionLabel = tk.Label(self.root, text=f'Version: v{self.AppModule.version}', bg='white')
+        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.92)
+        footer = tk.Frame(self.root, bg=self.AppModule.white)
+        footer.place(relx=0, rely=0.97, relwidth=1, relheight=0.03)
+        versionLabel = tk.Label(footer, text=f'Version: v{self.AppModule.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
+        copyrightLabel = tk.Label(footer, text='\u00A9 Skroot Laboratory, Inc 2018-2024. All rights reserved.', bg='white')
+        copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
 
         textFrame = tk.Frame(self.root, bg=self.AppModule.white)
         text_notification.createWidget(textFrame)
