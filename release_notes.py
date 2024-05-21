@@ -1,10 +1,11 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+from distutils.version import StrictVersion
 
 
 class ReleaseNotes:
     def __init__(self, releaseNotes, root):
-        self.releaseNotes = self.sortNotes(releaseNotes)
+        self.releaseNotes = sortNotes(releaseNotes)
         self.windowRoot = tk.Toplevel(root, bg='white', borderwidth=0, pady=25, padx=25)
         self.windowRoot.minsize(width=650, height=550)
         self.windowRoot.maxsize(width=800, height=550)
@@ -28,12 +29,6 @@ class ReleaseNotes:
         self.windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
         self.download = False
         root.wait_window(self.windowCanvas)
-
-    def sortNotes(self, releaseNotes):
-        keys = list(releaseNotes.keys())
-        keys.sort()
-        keys = keys[::-1]
-        return {i: releaseNotes[i] for i in keys}
 
     def fillInVersions(self):
         row = 0
@@ -98,22 +93,9 @@ class ReleaseNotes:
         row += 1
         return row
 
-# root = tk.Tk()
-# ReleaseNotes({
-#     "v1.0.1": {
-#         "features": {"1": "Updated inoculation to zero out y-axis",
-#                      "2": "Updated plotting to use Skroot Growth Index (SGI)"},
-#         "bugfixes": {"1": "Fixed AWS Integrations"}},
-#     "v1.1.2": {
-#         "features": {"1": "Updated inoculation to zero out y-axis",
-#                      "2": "Updated plotting to use Skroot Growth Index (SGI)"},
-#         "bugfixes": {"1": "Fixed AWS Integrations"}},
-#     "v1.1.1": {
-#         "features": {"1": "Updated inoculation to zero out y-axis",
-#                      "2": "Updated plotting to use Skroot Growth Index (SGI)"},
-#         "bugfixes": {"1": "Fixed AWS Integrations"}},
-#     "v1.1.0": {
-#         "features": {"1": "Updated inoculation to zero out y-axis",
-#                      "2": "Updated plotting to use Skroot Growth Index (SGI)"},
-#         "bugfixes": {"1": "Fixed AWS Integrations"}}}, root)
-# root.mainloop()
+def sortNotes(releaseNotes):
+    keys = list(releaseNotes.keys())
+    keysWithoutV = [k[1:] for k in keys]
+    keysWithoutV.sort(key=StrictVersion)
+    keys = keysWithoutV[::-1]
+    return {f'v{i}': releaseNotes[f'v{i}'] for i in keys}

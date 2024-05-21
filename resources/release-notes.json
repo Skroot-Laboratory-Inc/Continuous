@@ -4,6 +4,9 @@
       "1": "Added support for setting equilibration period to 0.",
       "2": "Added back toggle to view signal check in ribbon.",
       "3": "Added Skroot copyright as app footer."
+    },
+    "bugfixes": {
+      "1": "Fixed sorting of the release notes dialog to accurately represent versioning."
     }
   },
   "v2.2.7": {
