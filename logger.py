@@ -24,14 +24,6 @@ def loggerSetup(location, version):
     return
 
 
-def info(infoText):
-    logging.info(infoText)
-
-
-def exception(exceptionText):
-    logging.exception(exceptionText)
-
-
 class DuplicateFilter(logging.Filter):
     def __init__(self):
         self.consecutive_repeats = 0

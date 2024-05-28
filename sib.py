@@ -3,17 +3,19 @@ import logging
 import os
 import time
 from bisect import bisect_left
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pandas
 import sibcontrol
 from serial import SerialException
+from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDSConfigError
 
 import helper_functions
 import logger
 import text_notification
 from reader_interface import ReaderInterface
+from sib_exception import SIBReconnectException
 
 
 class Sib(ReaderInterface):
@@ -44,22 +46,18 @@ class Sib(ReaderInterface):
             frequency, volts = self.removeInitialSpike(allFrequency, allVolts)
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
-            return frequency, volts, [], True
-        except sibcontrol.SIBConnectionError:
-            text_notification.setText("Failed to perform sweep for reader, resetting reader connection.")
+            return frequency, volts, []
+        except SIBConnectionError:
             self.resetSibConnection()
-            return [], [], [], False
-        except sibcontrol.SIBTimeoutError:
-            text_notification.setText("Failed to perform sweep for reader, resetting reader connection.")
+            raise SIBConnectionError()
+        except SIBTimeoutError:
             self.resetSibConnection()
-            return [], [], [], False
-        except sibcontrol.SIBDDSConfigError:
-            text_notification.setText("Failed to perform sweep for reader, check reader connection.")
+            raise SIBConnectionError()
+        except SIBDDSConfigError:
             self.resetDDSConfiguration()
-            return [], [], [], False
-        except sibcontrol.SIBException:
-            logging.exception("Failed to perform sweep for reader with unexpected cause, check reader connection.")
-            return [], [], [], False
+            raise SIBDDSConfigError()
+        except SIBException:
+            raise
 
     def removeInitialSpike(self, frequency, volts):
         pointsRemoved = int(self.initialSpikeMhz / self.stepSize)
@@ -81,7 +79,7 @@ class Sib(ReaderInterface):
             return True
         except:
             self.calibrationFailed = True
-            text_notification.setText("Failed to perform calibration.")
+            text_notification.setText(f"Failed to perform calibration for reader {self.readerNumber}.")
             logging.exception("Failed to perform calibration.")
             return False
 
@@ -158,22 +156,15 @@ class Sib(ReaderInterface):
     def wake(self) -> None:
         self.sib.wake()
 
-    def checkAndSendConfiguration(self) -> bool:
+    def checkAndSendConfiguration(self):
         if self.sib.valid_config():
-            try:
-                self.sib.write_start_ftw()  # Send the start frequency ot the SIB
-                self.sib.write_stop_ftw()  # Send the stop frequency to the SIB
-                self.sib.write_num_pts()  # Send the number of points to the SIB
-                self.sib.write_asf()  # Send the signal amplitude to the SIB
-                return True
-            except sibcontrol.SIBException:
-                text_notification.setText("Failed to set reader configuration, check reader connection.")
-                logging.exception("Failed to set reader configuration, check reader connection.")
-                return False
+            self.sib.write_start_ftw()  # Send the start frequency ot the SIB
+            self.sib.write_stop_ftw()  # Send the stop frequency to the SIB
+            self.sib.write_num_pts()  # Send the number of points to the SIB
+            self.sib.write_asf()  # Send the signal amplitude to the SIB
         else:
-            text_notification.setText("Reader configuration is not valid. Change the reader frequency or number of "
+            text_notification.setText(f"Reader {self.readerNumber} configuration is not valid. Change the reader frequency or number of "
                                       "points.")
-            return False
 
     def performSweepAndWaitForComplete(self) -> List[str]:
         self.checkAndSendConfiguration()
@@ -210,26 +201,26 @@ class Sib(ReaderInterface):
 
     def resetDDSConfiguration(self):
         logging.info("The DDS did not get configured correctly, performing hard reset.")
-        try:
-            self.sib.reset_sib()
-            time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
-            self.resetSibConnection()
-        except SerialException:
-            logging.exception("Failed to reset SIB connection")
+        self.sib.reset_sib()
+        time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
+        self.resetSibConnection()
 
     def resetSibConnection(self):
         logging.info("Problem with serial connection. Closing and then re-opening port.")
+        if self.sib.is_open():
+            self.close()
+            time.sleep(1.0)
         try:
-            if self.sib.is_open():
-                self.close()
-                time.sleep(1.0)
             port, readerType = self.PortAllocator.getNewPort()
             self.initialize(port)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
             self.checkAndSendConfiguration()
-        except sibcontrol.SIBException:
-            logging.exception("Failed to reset SIB connection")
+            raise SIBReconnectException
+        except SIBReconnectException:
+            raise
+        except:
+            pass
 
 
 def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]):

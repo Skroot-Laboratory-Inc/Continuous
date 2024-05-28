@@ -60,7 +60,6 @@ class AwsBoto3:
                 self.disabled = True
             except:
                 logging.exception('Failed to upload file')
-                text_notification.setText("Failed to upload file")
 
     def deleteFile(self, fileName):
         if not self.disabled:
