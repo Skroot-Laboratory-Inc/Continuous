@@ -16,10 +16,12 @@ import matplotlib as mpl
 from importlib.metadata import version as version_api
 import numpy as np
 from PIL import ImageTk, Image
+from sibcontrol import SIBException, SIBConnectionError
 
 import helper_functions
 import logger
 import text_notification
+from analysis_exception import AnalysisException, ZeroPointException
 from buttons import ButtonFunctions
 from colors import ColorCycler
 from dev import DevMode
@@ -30,6 +32,7 @@ from port_allocator import PortAllocator
 from server import ServerFileShare
 from settings import Settings
 from setup import Setup
+from sib_exception import SIBReconnectException
 from software_update import SoftwareUpdate
 from timer import RunningTimer
 
@@ -40,7 +43,6 @@ class MainShared:
     def __init__(self, version, major_version, minor_version):
         self.root = tk.Tk()  # everything in the application comes after this
         self.readerPlotFrame = None
-        self.scanFrequency = None
         self.foundPorts = False
         self.currentFrame = None
         self.summaryPlotButton = None
@@ -127,27 +129,31 @@ class MainShared:
     def mainLoop(self):
         self.thread.shutdown_flag = threading.Event()
         while not self.thread.shutdown_flag.is_set():
+            errorOccurredWhileTakingScans = False
             startTime = time.time()
             try:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
-                            self.scanFrequency, self.scanMagnitude, self.scanPhase, success = Reader.ReaderInterface.takeScan(
+                            self.scanFrequency, self.scanMagnitude, self.scanPhase = Reader.ReaderInterface.takeScan(
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv')
                             Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
-                            if not success:
-                                continue
                         else:
                             Reader.addDevPoint()
-                        if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
-                            self.freqToggleSet = "SGI"
-                            if self.equilibrationTime == 0:
-                                self.zeroPoint = Reader.minFrequencySmooth[-1]
-                            else:
-                                self.zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
-                            Reader.setZeroPoint(self.zeroPoint)
-                            logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
-                            Reader.resetReaderRun()
+                        try:
+                            if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
+                                self.freqToggleSet = "SGI"
+                                if self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] != np.nan:
+                                    self.zeroPoint = Reader.minFrequencySmooth[-1]
+                                elif self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] == np.nan:
+                                    raise Exception()
+                                else:
+                                    self.zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
+                                Reader.setZeroPoint(self.zeroPoint)
+                                logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
+                                Reader.resetReaderRun()
+                        except:
+                            raise ZeroPointException(f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.minFrequencySmooth[-5:]}")
                         if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -157,12 +163,28 @@ class MainShared:
                             Reader.sendFilesToServer()
                         if self.disableSaveFullFiles:
                             deleteScanFile(f'{Reader.savePath}/{Reader.scanNumber}.csv')
-                        Reader.printScanFreq()
                         Reader.checkFoaming()
                         # Reader.checkContamination()
                         Reader.checkHarvest()
-                    except:
-                        logging.exception(f'Unchecked error, Reader {Reader.readerNumber} failed to take scan')
+                    except SIBConnectionError:
+                        errorOccurredWhileTakingScans = True
+                        Reader.recordFailedScan()
+                        logging.exception(f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                        text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
+                    except SIBReconnectException:
+                        errorOccurredWhileTakingScans = True
+                        Reader.recordFailedScan()
+                        logging.exception(f'Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}, but reconnected successfully')
+                        text_notification.setText(f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
+                    except SIBException:
+                        errorOccurredWhileTakingScans = True
+                        Reader.recordFailedScan()
+                        logging.exception(f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                        text_notification.setText(f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
+                    except AnalysisException:
+                        errorOccurredWhileTakingScans = True
+                        logging.exception(f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.scanNumber}')
+                        text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
@@ -171,15 +193,17 @@ class MainShared:
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                     generatePdf(self.savePath, self.Readers)
                     self.awsUploadPdfFile()
+                if not errorOccurredWhileTakingScans:
+                    text_notification.setText("All readers successfully recorded data.")
             except:
                 logging.exception('Unknown error has occurred')
             finally:
                 currentTime = time.time()
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-        text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.royalBlue, self.white)
+        text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.royalBlue, self.white)
         self.resetRun()
-        logging.info('Stopped scanning')
+        logging.info('Experiment Ended')
 
     def awsCheckSoftwareUpdates(self):
         if not self.DevMode.isDevMode:

@@ -102,10 +102,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         else:
             pass
 
-    def printScanFreq(self):
-        text_notification.setText(f"Reader {self.readerNumber} \nFreq: {round(self.minFrequencySmooth[-1], 3)} MHz",
-                                  ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
-
     def createServerJsonFile(self):
         dictionary = {
             "backgroundColor": self.backgroundColor,

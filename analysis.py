@@ -11,9 +11,8 @@ from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from exceptions import badFit
+from analysis_exception import BadFitException, RawScanException, SmoothedScanException
 from helper_functions import frequencyToIndex
-from sib import Sib
 
 
 class Analysis:
@@ -38,18 +37,44 @@ class Analysis:
         self.largePeakPoints = largePeakPoints
 
     def analyzeScan(self, filename):
-        minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
-        self.minFrequency.append(minFreq)
-        minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
-        self.minDbSmooth.append(minMag)
-        self.minFrequencySmooth.append(minFreq)
+        try:
+            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
+            self.minFrequency.append(minFreq)
+        except:
+            self.minFrequency.append(np.nan)
+            self.minDbSmooth.append(np.nan)
+            self.minFrequencySmooth.append(np.nan)
+            self.time.append((self.scanNumber - 100000) / 60)
+            self.filenames.append(f"{self.scanNumber}.csv")
+            self.timestamp.append(datetime.now())
+            raise RawScanException()
+        try:
+            minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
+            self.minDbSmooth.append(minMag)
+            self.minFrequencySmooth.append(minFreq)
+        except:
+            self.minDbSmooth.append(np.nan)
+            self.minFrequencySmooth.append(np.nan)
+            self.time.append((self.scanNumber - 100000) / 60)
+            self.filenames.append(f"{self.scanNumber}.csv")
+            self.timestamp.append(datetime.now())
+            raise SmoothedScanException()
+        self.time.append((self.scanNumber - 100000) / 60)
+        self.filenames.append(f"{self.scanNumber}.csv")
+        self.timestamp.append(datetime.now())
+
+    def recordFailedScan(self):
+        self.scanFrequency, self.scanMagnitude, self.scanPhase = [], [], []
+        self.minFrequency.append(np.nan)
+        self.minDbSmooth.append(np.nan)
+        self.minFrequencySmooth.append(np.nan)
         self.time.append((self.scanNumber - 100000) / 60)
         self.filenames.append(f"{self.scanNumber}.csv")
         self.timestamp.append(datetime.now())
 
     def findMinData(self, filename):
         self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        return self.findMin(self.scanFrequency, self.scanMagnitude, False)
+        return self.findMin(self.scanFrequency, self.scanMagnitude)
 
     def findMinDataSmooth(self, filename):
         frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
@@ -57,29 +82,12 @@ class Analysis:
             self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
         else:
             self.scanFrequency, self.scanMagnitude = frequency, magnitude
-        return self.findMin(self.scanFrequency, self.scanMagnitude, True)
+        return self.findMin(self.scanFrequency, self.scanMagnitude)
 
-    def findMin(self, frequency, magnitude, shouldLog):
-        try:
-            minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
-            # if (isinstance(self.ReaderInterface, Sib)):
-            minMag, minFrequency = findMinGaussian(frequency, magnitude)
-            # Removing VNA usage, since it was breaking dev mode
-            # else:
-            #     points = self.determineFitPoints()
-            #     quadraticFrequency = frequency[minimumIndex - points:minimumIndex + points]
-            #     quadraticMagnitude = magnitude[minimumIndex - points:minimumIndex + points]
-            #     minMag, minFrequency = findQuadraticMinimum(quadraticFrequency, quadraticMagnitude, rawMagnitudeMinimum,
-            #                                             points)
-            return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
-        except TypeError:
-            if shouldLog:
-                logging.info("Weak signal, could not analyze scan")
-            return np.nan, np.nan, np.nan, np.nan
-        except:
-            if shouldLog:
-                logging.exception("Failed to analyze scan")
-            return np.nan, np.nan, np.nan, np.nan
+    def findMin(self, frequency, magnitude):
+        minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
+        minMag, minFrequency = findMinGaussian(frequency, magnitude)
+        return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
 
     def denoiseResults(self):
         denoiseRadius, denoisePoints = getDenoiseParameters(self.time)
@@ -175,7 +183,7 @@ def findQuadraticMinimum(frequency, magnitude, rawMinimum, pointsUsed):
         try:
             quadraticCoefficients = np.polyfit(frequenciesUsed, finalMagnitude, 2)
         except np.RankWarning:
-            raise badFit()
+            raise BadFitException(f"Number of points used, frequency: {len(frequenciesUsed)}, magnitude: {len(finalMagnitude)}")
     frequencies = np.linspace(frequenciesUsed[0], frequenciesUsed[-1], 1000)
     quadraticFunction = np.polyval(quadraticCoefficients, frequencies)
     minMag = min(quadraticFunction)
