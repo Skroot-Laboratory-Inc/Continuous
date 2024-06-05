@@ -28,6 +28,7 @@ class TestPortAllocatorMethods(unittest.TestCase):
                 else:
                     portTaken.description = expectedDescription
                 expectedPortObject = ListPortInfo("COM7")
+                expectedPortObject.serial_number = "serial_number"
                 if os == "linux" and expectedDescription == "Skroot Laboratory":
                     expectedPortObject.manufacturer = expectedDescription
                 else:
@@ -35,7 +36,13 @@ class TestPortAllocatorMethods(unittest.TestCase):
                 mockListComports.return_value = [expectedPortObject]
                 portInfo, readerType = port_allocator.getNewVnaAndSibPorts(os, [portTaken])
                 self.assertEqual(expectedReaderType, readerType)
-                self.assertEqual("COM7", portInfo)
+                self.assertEqual("COM7", portInfo.device)
+
+    def test_getNewVnaAndSibPortsReal(self):
+        """
+        Test used to connect to the reader and see information.
+        """
+        _, _ = port_allocator.getNewVnaAndSibPorts('windows', [])
 
 
 if __name__ == '__main__':
