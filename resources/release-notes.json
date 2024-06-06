@@ -1,4 +1,10 @@
 {
+  "v2.4.3": {
+    "features": {
+      "1": "Added a README.md file containing information about the files in the Analysis directory",
+      "2": "Copied over second axis files into the Analysis directory."
+    }
+  },
   "v2.4.2": {
     "bugfixes": {
       "1": "Ensured readers reconnect on the same port using their serial number."
