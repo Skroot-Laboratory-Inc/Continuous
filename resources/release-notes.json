@@ -2,7 +2,8 @@
   "v2.4.3": {
     "features": {
       "1": "Added a README.md file containing information about the files in the Analysis directory",
-      "2": "Copied over second axis files into the Analysis directory."
+      "2": "Copied over second axis files into the Analysis directory.",
+      "3": "Created instantaneous flip from SGI to signal check."
     }
   },
   "v2.4.2": {
@@ -81,95 +82,6 @@
   "v2.1.1": {
     "features": {
       "1": "SIB control v2.2.0 and related error handling implementation"
-    }
-  },
-  "v2.0.12": {
-    "bugfix": {
-      "1": "Updated settings to max frequency of 170 MHz",
-      "2": "Fixed an issue with calibration using start frequency only."
-    }
-  },
-  "v2.0.11": {
-    "features": {
-      "1": "Updated defaults values for scan rate, stop frequency and start frequency",
-      "2": "Set step size to 10 kHz"
-    }
-  },
-  "v2.0.10": {
-    "features": {
-      "1": "Updated default scan window/points",
-      "2": "Implemented gaussian fit to data with a window around the peak",
-      "3": "Added back firmware version check for v2.3.1",
-      "4": "Removed start/stop frequency checks from SIB"
-    },
-    "bugfixes": {
-      "1": "Fixed issue with SIB not scanning",
-      "2": "Fixed issue with one failed scan crashing summary pdf/csv"
-    }
-  },
-  "v2.0.9": {
-    "features": {
-      "1": "Added number of points to menubar",
-      "2": "Increased number of points for SIB scans"
-    }
-  },
-  "v2.0.8": {
-    "features": {
-      "1": "Added functionality to account for folders in software-update folder."
-    },
-    "bugfixes": {
-      "1": "Fixed VNA scan errors and dependency on threadpoolctl.",
-      "2": "Fixed errors causing SIB to go into an infinite error loop on failure to check scan status."
-    },
-    "Other": {
-      "1": "Released as an R&D version only."
-    }
-  },
-  "v2.0.7": {
-    "features": {
-      "1": "Updated logging to reduce entries created, and timestamp them.",
-      "2": "Updated SiB firmware to v2.1.1"
-    },
-    "bugfixes": {
-      "1": "Corrected noFitAnalyzed.csv column headers",
-      "2": "Moved guided setup form to be on top of desktop app.",
-      "3": "Updated software update algorithm to find most recent version only."
-    },
-    "other": {
-      "1": "Fixed dev mode to work with new reader interfaces."
-    }
-  },
-  "v2.0.6": {
-    "bugfixes": {
-      "1": "Updated release notes to sort and display most recent first"
-    },
-    "other": {
-      "1": "Updated sib integration with sleep/wake, disabled firmware version check.",
-      "2": "Added gnome-screenshot to dependencies for asus lapop"
-    }
-  },
-  "v2.0.3": {
-    "other": {
-      "1": "Fixed sib algorithm and units"
-    }
-  },
-  "v2.0.4": {
-    "features": {
-      "1": "Added simultaneous calibration, after connecting readers"
-    }
-  },
-  "v2.0.5": {
-    "features": {
-      "1": "Increased max time between scans",
-      "2": "Added a cleanup process for data/log files older than a month"
-    },
-    "bugfixes": {
-      "1": "Fixed an issue with the ssh connection failing and crashing on asus laptops"
-    }
-  },
-  "v2.0.2": {
-    "bugfixes": {
-      "1": "Fixed a bug causing release notes dialog to format improperly"
     }
   }
 }

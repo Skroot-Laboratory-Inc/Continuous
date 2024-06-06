@@ -53,6 +53,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
         self.createServerJsonFile()
+        self.AppModule.freqToggleSet.subscribe(lambda toggle: self.setToggle(toggle))
 
     def sendFilesToServer(self):
         try:

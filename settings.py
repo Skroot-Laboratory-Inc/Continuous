@@ -78,7 +78,7 @@ class Settings:
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
     def freqToggleSetting(self, toggle):
-        self.AppModule.freqToggleSet = toggle
+        self.AppModule.freqToggleSet.on_next(toggle)
         logging.info(f'freqToggleSet changed to {toggle}')
 
     def weakSignalToggleSetting(self):
