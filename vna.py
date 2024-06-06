@@ -22,7 +22,7 @@ class VnaScanning(ReaderInterface):
             self.socket = serial.Serial(port, 115200, timeout=1.5)
         except:
             self.calibrationFailed = True
-        self.port = port
+        self.port = port.device
         self.readerNumber = readerNumber
         self.startFreqMHz = 95
         self.stopFreqMHz = 145

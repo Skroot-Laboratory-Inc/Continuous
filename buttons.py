@@ -67,11 +67,11 @@ class ButtonFunctions:
             try:
                 self.AppModule.thread.shutdown_flag.set()
             except:
-                text_notification.setText("Stopped.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
+                text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
                                           self.AppModule.white)
                 self.AppModule.resetRun()
             self.stopButton.destroy()
-            text_notification.setText("Stopping...", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+            text_notification.setText("Ending experiment once current scan is complete.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
     def findReaders(self, numReaders):
         logging.info(f'calibrate button pressed')

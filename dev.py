@@ -63,6 +63,7 @@ class ReaderDevMode(Plotting):
             try:
                 nextPointIndex = len(self.time)
                 self.analyzeScan(self.devFiles[nextPointIndex])
+                self.time[-1] = self.devTime[nextPointIndex]
             except:
                 pass
         else:

@@ -3,16 +3,14 @@ import logging
 import os
 import time
 from bisect import bisect_left
-from typing import List, Union
+from typing import List
 
 import numpy as np
 import pandas
 import sibcontrol
-from serial import SerialException
 from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDSConfigError
 
 import helper_functions
-import logger
 import text_notification
 from reader_interface import ReaderInterface
 from sib_exception import SIBReconnectException
@@ -24,7 +22,8 @@ class Sib(ReaderInterface):
         self.yAxisLabel = 'Signal Strength (Unitless)'
         self.readerNumber = readerNumber
         self.PortAllocator = PortAllocator
-        self.initialize(port)
+        self.initialize(port.device)
+        self.serialNumber = port.serial_number
         self.calibrationStartFreq = 50
         self.calibrationStopFreq = 170
         self.stepSize = 0.01
@@ -120,6 +119,13 @@ class Sib(ReaderInterface):
         except:
             return False
 
+    def reset(self) -> bool:
+        try:
+            self.sib.close()
+            return True
+        except:
+            return False
+
     """ End of required implementations, SIB specific below"""
 
     def initialize(self, port):
@@ -208,10 +214,10 @@ class Sib(ReaderInterface):
     def resetSibConnection(self):
         logging.info("Problem with serial connection. Closing and then re-opening port.")
         if self.sib.is_open():
-            self.close()
+            self.reset()
             time.sleep(1.0)
         try:
-            port, readerType = self.PortAllocator.getNewPort()
+            port = self.PortAllocator.getMatchingPort(self.serialNumber)
             self.initialize(port)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
