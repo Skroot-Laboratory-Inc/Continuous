@@ -70,7 +70,7 @@ class MainShared:
         logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
         self.version = f'{major_version}.{minor_version}'
-        self.numReaders = None
+        self.numReaders = 0
         self.savePath = ''
         self.cellApp = False
         self.foamingApp = False
