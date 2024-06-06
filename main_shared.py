@@ -302,7 +302,7 @@ class MainShared:
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
             self.copyFilesToDebuggingFolder(self.numReaders)
-            self.copyFilesToAnalysisFolder()
+            self.copyFilesToAnalysisFolder(self.Readers)
             self.root.destroy()
 
     def resetRun(self):
@@ -317,7 +317,7 @@ class MainShared:
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         self.zeroPoint = 1
         self.copyFilesToDebuggingFolder(self.numReaders)
-        self.copyFilesToAnalysisFolder()
+        self.copyFilesToAnalysisFolder(self.Readers)
         self.PortAllocator.resetPorts()
         self.freqToggleSet = "Signal Check"
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
@@ -342,7 +342,7 @@ class MainShared:
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
 
-    def copyFilesToAnalysisFolder(self):
+    def copyFilesToAnalysisFolder(self, Readers):
         analysisSubdir = f'{self.savePath}/Analysis'
         if not os.path.exists(analysisSubdir):
             os.mkdir(analysisSubdir)
@@ -350,6 +350,9 @@ class MainShared:
         filesToCopy[f'{self.savePath}/summaryAnalyzed.csv'] = 'Experiment Summary.csv'
         filesToCopy[f'{self.savePath}/Summary.pdf'] = 'Experiment Summary.pdf'
         filesToCopy[f'{self.savePath}/setupForm.png'] = 'Setup Form.png'
+        filesToCopy[f'{self.location}/resources/README_Analysis.md'] = 'README.md'
+        for Reader in Readers:
+            filesToCopy[f'{Reader.savePath}/secondAxis.csv'] = f'Reader {Reader.readerNumber} Second Axis.csv'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{analysisSubdir}/{newFileLocation}')
