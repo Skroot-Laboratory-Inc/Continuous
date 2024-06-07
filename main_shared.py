@@ -74,7 +74,7 @@ class MainShared:
         self.savePath = ''
         self.cellApp = False
         self.foamingApp = False
-        self.freqToggleSet = BehaviorSubject("SGI")
+        self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
         self.emailSetting = False
