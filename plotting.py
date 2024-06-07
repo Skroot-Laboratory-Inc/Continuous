@@ -56,12 +56,19 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.secondAxisTitle
         )
         self.plotFrequencyButton = ttk.Button(outerFrame, text="Real Time Plot", command=lambda: self.plotFrequencies())
+        self.freqToggleSet = ''
+
+    def setToggle(self, toggle):
+        self.freqToggleSet = toggle
+        # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
+        self.plotFrequencyButton.invoke()
 
     def plotFrequencies(self):
-        if self.AppModule.freqToggleSet == "SGI":
-            self.plotGrowthIndex()
-        elif self.AppModule.freqToggleSet == "Signal Check":
-            self.plotSignal()
+        if len(self.time) > 0:
+            if self.freqToggleSet == "SGI":
+                self.plotGrowthIndex()
+            elif self.freqToggleSet == "Signal Check":
+                self.plotSignal()
 
     def plotGrowthIndex(self):
         self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
@@ -81,6 +88,9 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
 
     def plotSignal(self):
+        self.ReaderFigureCanvas.setYAxisLabel('Signal Check')
+        self.ReaderFigureCanvas.setXAxisLabel('Frequency (MHz)')
+        self.ReaderFigureCanvas.setTitle(f'Signal Check Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
         self.ReaderFigureCanvas.scatter(self.scanFrequency, self.scanMagnitude, 20, 'black')
         self.ReaderFigureCanvas.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], 30, 'red')

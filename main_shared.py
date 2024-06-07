@@ -10,12 +10,13 @@ import threading
 import time
 import tkinter as tk
 import tkinter.ttk as ttk
+from importlib.metadata import version as version_api
 from zipfile import ZipFile
 
 import matplotlib as mpl
-from importlib.metadata import version as version_api
 import numpy as np
 from PIL import ImageTk, Image
+from reactivex.subject import BehaviorSubject
 from sibcontrol import SIBException, SIBConnectionError
 
 import helper_functions
@@ -73,7 +74,7 @@ class MainShared:
         self.savePath = ''
         self.cellApp = False
         self.foamingApp = False
-        self.freqToggleSet = "Signal Check"
+        self.freqToggleSet = BehaviorSubject("SGI")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
         self.emailSetting = False
@@ -142,7 +143,7 @@ class MainShared:
                             Reader.addDevPoint()
                         try:
                             if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
-                                self.freqToggleSet = "SGI"
+                                self.freqToggleSet.on_next("SGI")
                                 if self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] != np.nan:
                                     self.zeroPoint = Reader.minFrequencySmooth[-1]
                                 elif self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] == np.nan:
@@ -315,16 +316,17 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
+        currentZeroPoint = self.zeroPoint
         self.zeroPoint = 1
         self.copyFilesToDebuggingFolder(self.numReaders)
         self.copyFilesToAnalysisFolder(self.Readers)
         self.PortAllocator.resetPorts()
-        self.freqToggleSet = "Signal Check"
+        self.freqToggleSet.on_next("Signal Check")
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
-        if self.freqToggleSet == "SGI":
+        if currentZeroPoint == 1:
             self.createEndOfExperimentView()
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
