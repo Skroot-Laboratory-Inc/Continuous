@@ -10,6 +10,7 @@ from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
 import text_notification
+from common_exceptions import UserExitedException
 from information_panel import InformationPanel
 from reader_interface import ReaderInterface
 from sib import Sib
@@ -71,7 +72,7 @@ class ButtonFunctions:
                                           self.AppModule.white)
                 self.AppModule.resetRun()
             self.stopButton.destroy()
-            text_notification.setText("Ending experiment once current scan is complete.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+            text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
 
     def findReaders(self, numReaders):
         logging.info(f'calibrate button pressed')
@@ -79,6 +80,10 @@ class ButtonFunctions:
             try:
                 port, readerType = self.findPort(readerNumber)
                 self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, True))
+            except UserExitedException:
+                self.AppModule.root.destroy()
+                logging.exception("User exited during port finding.")
+                raise
             except:
                 logging.exception(f'Failed to instantiate reader {readerNumber}')
 
@@ -133,8 +138,13 @@ class ButtonFunctions:
     def connectReaders(self, numReaders):
         self.connectReadersButton.destroy()
         for readerNumber in range(1, numReaders + 1):
-            port, readerType = self.findPort(readerNumber)
-            self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, False))
+            try:
+                port, readerType = self.findPort(readerNumber)
+                self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, False))
+            except UserExitedException:
+                self.AppModule.root.destroy()
+                logging.exception("User exited during port finding.")
+                raise
         self.AppModule.foundPorts = True
         self.placeStartButton()
 
@@ -145,17 +155,21 @@ class ButtonFunctions:
             while filteredVNAPorts == [] and filteredSIBPorts == [] and attempts <= 3:
                 time.sleep(2)
                 try:
-
                     port, readerType = self.PortAllocator.getNewPort()
                     return port, readerType
                 except:
                     attempts += 1
                     if attempts > 3:
-                        tk.messagebox.showinfo(f'Reader {readerNumber}',
-                                               f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp restart required to avoid infinite loop')
+                        tk.messagebox.showerror(f'Reader {readerNumber}',
+                                               f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
+                        break
                     else:
-                        tk.messagebox.showinfo(f'Reader {readerNumber}',
-                                               f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK')
+                        shouldContinue = tk.messagebox.askokcancel(f'Reader {readerNumber}',
+                                               f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
+                                               f'Press cancel to shutdown the app.')
+                        if not shouldContinue:
+                            break
+            raise UserExitedException("The user chose not to go forward during port finding.")
         else:
             return '', ''
 

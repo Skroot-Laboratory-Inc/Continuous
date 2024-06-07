@@ -29,7 +29,7 @@ class SetupForm:
         self.baseSavePath = baseSavePath
         self.scanRate = None
         self.savePath = None
-        self.numReaders = None
+        self.numReaders = 0
         self.equilibrationTime = None
         self.calibrate = True
         self.secondAxis = False

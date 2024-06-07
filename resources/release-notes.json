@@ -4,6 +4,9 @@
       "1": "Added a README.md file containing information about the files in the Analysis directory",
       "2": "Copied over second axis files into the Analysis directory.",
       "3": "Created instantaneous flip from SGI to signal check."
+    },
+    "bugfixes": {
+      "1": "Gave the user the option of cancelling the port finding process to restart the app."
     }
   },
   "v2.4.2": {
