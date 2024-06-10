@@ -1,7 +1,6 @@
 import importlib.util
 import json
 import os
-import threading
 from datetime import datetime
 
 import matplotlib as mpl

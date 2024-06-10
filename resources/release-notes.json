@@ -1,4 +1,12 @@
 {
+  "v2.4.4": {
+    "features": {
+      "1": "Added a button to download the analysis folder into a zip file."
+    },
+    "bugfixes": {
+      "1": "Fixed bug causing end of experiment view to not show up."
+    }
+  },
   "v2.4.3": {
     "features": {
       "1": "Added a README.md file containing information about the files in the Analysis directory",
