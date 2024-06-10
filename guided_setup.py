@@ -105,10 +105,9 @@ class SetupForm:
                        command=self.setCalibrate, bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
 
-        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit())
+        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='W.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
-        self.submitButton['style'] = 'W.TButton'
         root.wait_window(self.window)
 
     def getConfiguration(self):

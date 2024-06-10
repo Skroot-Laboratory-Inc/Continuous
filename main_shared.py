@@ -28,6 +28,7 @@ from colors import ColorCycler
 from dev import DevMode
 from figure import FigureCanvas
 from helper_functions import frequencyToIndex
+from link_button import Linkbutton
 from pdf import generatePdf
 from port_allocator import PortAllocator
 from server import ServerFileShare
@@ -89,6 +90,7 @@ class MainShared:
         self.royalBlue = 'RoyalBlue4'
         self.white = 'white'
         self.PortAllocator = PortAllocator(self.os)
+        self.showEndOfExperimentView = False
         try:
             self.location = sys._MEIPASS
         except AttributeError:
@@ -114,6 +116,9 @@ class MainShared:
             7,
             9
         )
+        image = Image.open(rf"{self.location}/resources/download.png")
+        resizedImage = image.resize((15, 15), Image.LANCZOS)
+        self.downloadIcon = ImageTk.PhotoImage(resizedImage)
 
     def createRoot(self):
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
@@ -143,7 +148,6 @@ class MainShared:
                             Reader.addDevPoint()
                         try:
                             if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
-                                self.freqToggleSet.on_next("SGI")
                                 if self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] != np.nan:
                                     self.zeroPoint = Reader.minFrequencySmooth[-1]
                                 elif self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] == np.nan:
@@ -151,10 +155,13 @@ class MainShared:
                                 else:
                                     self.zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
                                 Reader.setZeroPoint(self.zeroPoint)
+                                self.freqToggleSet.on_next("SGI")
+                                self.showEndOfExperimentView = True
                                 logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
                                 Reader.resetReaderRun()
                         except:
-                            raise ZeroPointException(f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.minFrequencySmooth[-5:]}")
+                            raise ZeroPointException(
+                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.minFrequencySmooth[-5:]}")
                         if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -170,26 +177,33 @@ class MainShared:
                     except SIBConnectionError:
                         errorOccurredWhileTakingScans = True
                         Reader.recordFailedScan()
-                        logging.exception(f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                        logging.exception(
+                            f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
                         errorOccurredWhileTakingScans = True
                         Reader.recordFailedScan()
-                        logging.exception(f'Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}, but reconnected successfully')
-                        text_notification.setText(f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
+                        logging.exception(
+                            f'Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}, but reconnected successfully')
+                        text_notification.setText(
+                            f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
                         errorOccurredWhileTakingScans = True
                         Reader.recordFailedScan()
-                        logging.exception(f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
-                        text_notification.setText(f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
+                        logging.exception(
+                            f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                        text_notification.setText(
+                            f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
                         errorOccurredWhileTakingScans = True
-                        logging.exception(f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.scanNumber}')
-                        text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
+                        logging.exception(
+                            f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.scanNumber}')
+                        text_notification.setText(
+                            f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
-                if self.zeroPoint != 1:
+                if self.showEndOfExperimentView:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                     generatePdf(self.savePath, self.Readers)
@@ -316,21 +330,22 @@ class MainShared:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        currentZeroPoint = self.zeroPoint
         self.zeroPoint = 1
         self.copyFilesToDebuggingFolder(self.numReaders)
         self.copyFilesToAnalysisFolder(self.Readers)
         self.PortAllocator.resetPorts()
-        self.freqToggleSet.on_next("Signal Check")
+        self.freqToggleSet.on_completed()
+        self.freqToggleSet = BehaviorSubject("Signal Check")
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
-        if currentZeroPoint == 1:
+        if self.showEndOfExperimentView:
             self.createEndOfExperimentView()
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
             self.Buttons.guidedSetupButton.invoke()
+        self.showEndOfExperimentView = False
 
     def copyFilesToDebuggingFolder(self, numReaders):
         logSubdir = f'{self.savePath}/Log'
@@ -339,7 +354,8 @@ class MainShared:
         filesToCopy = {}
         filesToCopy[f'{self.desktop}/Calibration/log.txt'] = 'Experiment Log.txt'
         for readerNumber in range(1, numReaders + 1):
-            filesToCopy[f'{self.desktop}/Calibration/{readerNumber}/Calibration.csv'] = f'Calibration_{readerNumber}.csv'
+            filesToCopy[
+                f'{self.desktop}/Calibration/{readerNumber}/Calibration.csv'] = f'Calibration_{readerNumber}.csv'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
@@ -368,12 +384,15 @@ class MainShared:
         endOfExperimentFrame.grid_columnconfigure(0, weight=2)
         endOfExperimentFrame.grid_columnconfigure(1, weight=3)
 
-        fileExplorerLabel = tk.Label(endOfExperimentFrame, text='Experiment File Location: ', bg='white')
-        fileExplorerLabel.grid(row=0, column=0, sticky='ne', padx=10)
-        fileExplorerButton = ttk.Button(endOfExperimentFrame, text=self.savePath,
-                                       command=lambda: helper_functions.openFileExplorer(self.savePath))
-        fileExplorerButton.grid(row=0, column=1, sticky='nw', padx=10)
-        fileExplorerButton['style'] = 'W.TButton'
+        fileExplorerFrame = tk.Frame(endOfExperimentFrame, bg=self.white)
+        fileExplorerFrame.grid(row=0, column=0, columnspan=3)
+        fileExplorerLabel = tk.Label(fileExplorerFrame, text='Experiment File Location: ', bg='white')
+        fileExplorerLabel.pack(side=tk.LEFT)
+        fileExplorerButton = Linkbutton(fileExplorerFrame, text=self.savePath, command=lambda: helper_functions.openFileExplorer(self.savePath))
+        fileExplorerButton.pack(side=tk.LEFT)
+        downloadButton = tk.Button(fileExplorerFrame, bg=self.white, highlightthickness=0, borderwidth=0,
+                                   image=self.downloadIcon, command=lambda: self.downloadExperimentAsZip())
+        downloadButton.pack(side=tk.LEFT, padx=10)
 
         self.guidedSetupImage = ImageTk.PhotoImage(file=f'{self.savePath}/setupForm.png')
         image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.white)
@@ -386,11 +405,13 @@ class MainShared:
 
         self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
         self.Buttons.guidedSetupButton.grid(row=2, column=1, sticky='se', padx=10, pady=10)
-        self.Buttons.guidedSetupButton['style'] = 'W.TButton'
 
         self.SummaryFigureCanvas.frequencyCanvas = None
         self.endOfExperimentFrame = endOfExperimentFrame
 
+    def downloadExperimentAsZip(self):
+        downloadThread = threading.Thread(target=helper_functions.downloadAsZip, args=(f"{self.savePath}/Analysis",f"{os.path.basename(self.savePath)}.zip",), daemon=True)
+        downloadThread.start()
 
     def showFrame(self, frame):
         self.currentFrame = frame
@@ -414,6 +435,7 @@ def runShScript(shScriptFilename, desktop):
     st = os.stat(shScriptFilename)
     os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
     logFile = open(f'{desktop}/Calibration/log.txt', 'w+')
-    process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile, stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
+    process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile,
+                               stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
     process.communicate("skroot".encode())
     process.wait()

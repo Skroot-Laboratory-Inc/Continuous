@@ -1,4 +1,10 @@
-import subprocess
+import os
+import tkinter as tk
+import zipfile
+
+import startfile
+
+import text_notification
 
 
 def frequencyToIndex(zeroPoint, frequencyVector):
@@ -6,14 +12,23 @@ def frequencyToIndex(zeroPoint, frequencyVector):
 
 
 def openFileExplorer(path):
-    # TODO Once all customers are on >= v2.3.0 remove this, it is bad practice
-    try:
-        import startfile
-    except:
-        subprocess.run(['pip3', 'install', 'universal-startfile'])
-        import startfile
     startfile.startfile(path)
 
+
+def downloadAsZip(path, zipName):
+    saveDirectory = tk.filedialog.askdirectory()
+    if saveDirectory != "":
+        saveFilename = f"{saveDirectory}/{zipName}"
+        text_notification.setText(f"Downloading experiment as zip file to {saveFilename}...")
+        with zipfile.ZipFile(saveFilename, 'w') as zipf:
+            for foldername, subfolders_, filenames in os.walk(path):
+                for filename in filenames:
+                    file_path = os.path.join(foldername, filename)
+                    arcname = os.path.relpath(file_path, path)
+                    zipf.write(file_path, arcname)
+        text_notification.setText(f"Finished downloading experiment at {saveFilename}")
+    else:
+        text_notification.setText("No directory selected, download canceled.")
 
 def truncateByX(minX, maxX, x, y):
     truncatedX, truncatedY = [], []

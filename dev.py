@@ -12,7 +12,7 @@ from plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True

@@ -72,11 +72,9 @@ class ReleaseNotes:
 
     def createDownloadAndCancelButtons(self, row):
         row = self.createSpacer(row)
-        downloadButton = ttk.Button(self.window, text="Download", command=lambda: self.setDownload(True))
-        downloadButton['style'] = 'W.TButton'
+        downloadButton = ttk.Button(self.window, text="Download", command=lambda: self.setDownload(True), style='W.TButton')
         downloadButton.grid(row=row, column=0, sticky='w')
-        cancelButton = ttk.Button(self.window, text="Cancel", command=lambda: self.setDownload(False))
-        cancelButton['style'] = 'W.TButton'
+        cancelButton = ttk.Button(self.window, text="Cancel", command=lambda: self.setDownload(False), style='W.TButton')
         cancelButton.grid(row=row, column=1, sticky='w')
 
     def setDownload(self, value):

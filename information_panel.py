@@ -12,9 +12,8 @@ class InformationPanel:
         self.createUploadLogButton()
 
     def createUploadLogButton(self):
-        self.uploadLogButton = ttk.Button(self.window, text="Didn't solve your problem?", image=self.helpIcon,
+        self.uploadLogButton = ttk.Button(self.window, text="Didn't solve your problem?", image=self.helpIcon, style='W.TButton',
                                           compound=tk.LEFT, command=lambda: self.uploadLogAndDisable())
-        self.uploadLogButton['style'] = 'W.TButton'
         self.uploadLogButton.grid(row=2, column=0, sticky='w')
 
     def uploadLogAndDisable(self):
