@@ -383,7 +383,6 @@ class MainShared:
         endOfExperimentFrame.grid_rowconfigure(2, weight=1)
         endOfExperimentFrame.grid_columnconfigure(0, weight=2)
         endOfExperimentFrame.grid_columnconfigure(1, weight=3)
-        endOfExperimentFrame.grid_columnconfigure(2, weight=4)
 
         fileExplorerFrame = tk.Frame(endOfExperimentFrame, bg=self.white)
         fileExplorerFrame.grid(row=0, column=0, columnspan=3)
