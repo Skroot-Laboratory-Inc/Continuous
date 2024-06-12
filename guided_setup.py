@@ -34,6 +34,7 @@ class SetupForm:
         self.calibrate = True
         self.secondAxis = False
         self.entrySize = 10
+        self.root = root
         self.calibrateRequired = tk.IntVar(value=1)
         self.equilibrationTimeEntry = tk.StringVar(value=equilibrationTime)
         self.secondAxisEntry = tk.StringVar(value=secondAxisTitle)
@@ -46,7 +47,7 @@ class SetupForm:
         self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
         self.window.grid_columnconfigure(1, weight=1)
         self.window.minsize(200, 200)
-        self.window.protocol("WM_DELETE_WINDOW", self.onSubmit)
+        self.window.protocol("WM_DELETE_WINDOW", self.onClosing)
         w = self.window.winfo_reqwidth()
         h = self.window.winfo_reqheight()
         ws = self.window.winfo_screenwidth()
@@ -141,6 +142,13 @@ class SetupForm:
             tk.messagebox.showerror("Incorrect Formatting", "One (or more) of the values entered is not formatted "
                                                             "properly")
             self.window.tkraise()
+
+    def onClosing(self):
+        if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
+            self.window.destroy()
+            self.root.destroy()
+        else:
+            self.window.tkraise(self.root)
 
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
