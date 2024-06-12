@@ -82,8 +82,8 @@ class MainShared:
         self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
         self.scanRate = 0.5
-        self.startFreq = 115
-        self.stopFreq = 165
+        self.startFreq = 110
+        self.stopFreq = 160
         self.zeroPoint = 1
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.threadStatus = ''
