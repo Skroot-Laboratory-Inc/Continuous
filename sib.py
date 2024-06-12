@@ -42,7 +42,7 @@ class Sib(ReaderInterface):
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
-            frequency, volts = self.removeInitialSpike(allFrequency, allVolts)
+            frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return frequency, volts, []
@@ -58,10 +58,6 @@ class Sib(ReaderInterface):
         except SIBException:
             raise
 
-    def removeInitialSpike(self, frequency, volts):
-        pointsRemoved = int(self.initialSpikeMhz / self.stepSize)
-        return frequency[pointsRemoved:], volts[pointsRemoved:]
-
     def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()
@@ -72,8 +68,9 @@ class Sib(ReaderInterface):
             self.sib.start_MHz = self.calibrationStartFreq - self.initialSpikeMhz
             self.sib.stop_MHz = self.calibrationStopFreq
             self.sib.num_pts = getNumPointsSweep(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq)
-            frequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
-            volts = self.performSweepAndWaitForComplete()
+            allFrequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
+            allVolts = self.performSweepAndWaitForComplete()
+            frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
             return True
         except:
@@ -300,3 +297,8 @@ def findSelfResonantFrequency(frequency, volts, scanRange, threshold):
     for index, yval in enumerate(inRangeVolts):
         if yval > threshold:
             return inRangeFrequencies[index]
+
+
+def removeInitialSpike(frequency, volts, initialSpikeMhz, stepSize):
+    pointsRemoved = int(initialSpikeMhz / stepSize)
+    return frequency[pointsRemoved:], volts[pointsRemoved:]
