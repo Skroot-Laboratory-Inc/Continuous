@@ -1,4 +1,12 @@
 {
+  "v2.4.5": {
+    "features": {
+      "1": "Updated default sweep frequency to 110-160 MHz",
+      "2": "Closing guided setup now asks to close the app, rather than submitting the data.",
+      "3": "Updated help dialog popup to only send the log to AWS, without placeholder text",
+      "4": "Calibration now removes the first 0.2 MHz from the scan."
+    }
+  },
   "v2.4.4": {
     "features": {
       "1": "Added a button to download the analysis folder into a zip file."
