@@ -261,7 +261,6 @@ class MainShared:
         if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
             self.SoftwareUpdate.uploadFile(f'{self.desktop}/Calibration/log.txt', self.SoftwareUpdate.dstLogName,
                                            'text/plain')
-            text_notification.setText("Log sent to Skroot, please contact a representative with more context.")
             return True
         return False
 
