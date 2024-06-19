@@ -6,7 +6,7 @@ import tkinter.ttk as ttk
 
 from analysis import Analysis
 from figure import FigureCanvas
-from helper_functions import frequencyToIndex
+from helper_functions import frequencyToIndex, convertToPercent, convertListToPercent
 from notes import ExperimentNotes
 
 
@@ -92,8 +92,8 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.ReaderFigureCanvas.setXAxisLabel('Frequency (MHz)')
         self.ReaderFigureCanvas.setTitle(f'Signal Check Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
-        self.ReaderFigureCanvas.scatter(self.scanFrequency, self.scanMagnitude, 20, 'black')
-        self.ReaderFigureCanvas.scatter(self.minFrequencySmooth[-1], self.minDbSmooth[-1], 30, 'red')
+        self.ReaderFigureCanvas.scatter(self.scanFrequency, convertListToPercent(self.scanMagnitude), 20, 'black')
+        self.ReaderFigureCanvas.scatter(self.minFrequencySmooth[-1], convertToPercent(self.minDbSmooth[-1]), 30, 'red')
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
 
