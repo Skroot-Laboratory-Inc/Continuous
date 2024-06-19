@@ -40,8 +40,8 @@ class Indicator(Colors):
         self.updateHarvestJson(self.yellow)
 
     def changeIndicatorRed(self):
-        self.indicatorCanvas.itemconfig(self.indicator, fill=self.red)
-        self.updateHarvestJson(self.red)
+        self.indicatorCanvas.itemconfig(self.indicator, fill=self.lightRed)
+        self.updateHarvestJson(self.lightRed)
 
     def updateHarvestJson(self, harvestColor):
         self.indicatorColor = harvestColor
