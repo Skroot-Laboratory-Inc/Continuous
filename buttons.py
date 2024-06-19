@@ -6,15 +6,12 @@ import tkinter as tk
 from tkinter import ttk
 
 from PIL import Image, ImageTk
-from serial.tools import list_ports
-from serial.tools.list_ports_common import ListPortInfo
 
 import text_notification
 from common_exceptions import UserExitedException
 from information_panel import InformationPanel
 from reader_interface import ReaderInterface
 from sib import Sib
-from vna import VnaScanning
 
 
 class ButtonFunctions:
@@ -50,8 +47,7 @@ class ButtonFunctions:
         self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.ReaderInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
-        if self.AppModule.cellApp:
-            self.AppModule.Settings.addInoculation()
+        self.AppModule.Settings.addInoculation()
         self.placeStopButton()
         self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
@@ -78,8 +74,8 @@ class ButtonFunctions:
         logging.info(f'calibrate button pressed')
         for readerNumber in range(1, numReaders + 1):
             try:
-                port, readerType = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, True))
+                port = self.findPort(readerNumber)
+                self.ReaderInterfaces.append(instantiateReader(port, self.AppModule, readerNumber, True))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -139,8 +135,8 @@ class ButtonFunctions:
         self.connectReadersButton.destroy()
         for readerNumber in range(1, numReaders + 1):
             try:
-                port, readerType = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(readerType, port, self.AppModule, readerNumber, False))
+                port = self.findPort(readerNumber)
+                self.ReaderInterfaces.append(instantiateReader(port, self.AppModule, readerNumber, False))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -150,13 +146,13 @@ class ButtonFunctions:
 
     def findPort(self, readerNumber):
         if not self.AppModule.isDevMode:
-            filteredSIBPorts, filteredVNAPorts, attempts, port, readerType = [], [], 0, '', ''
+            filteredPorts, attempts, port = [], 0, ''
             pauseUntilUserClicks(readerNumber)
-            while filteredVNAPorts == [] and filteredSIBPorts == [] and attempts <= 3:
+            while filteredPorts == [] and attempts <= 3:
                 time.sleep(2)
                 try:
-                    port, readerType = self.PortAllocator.getNewPort()
-                    return port, readerType
+                    port = self.PortAllocator.getNewPort()
+                    return port
                 except:
                     attempts += 1
                     if attempts > 3:
@@ -215,19 +211,16 @@ def pauseUntilUserClicks(readerNumber):
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 
-def instantiateReader(readerType, port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
+def instantiateReader(port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
     try:
-        if readerType == 'SIB':
-            sib = Sib(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, AppModule.PortAllocator, calibrationRequired)
-            success = sib.performHandshake()
-            if success:
-                return sib
-            else:
-                logging.info(f"Failed to handshake SIB #{readerNumber} on port {port}")
-                text_notification.setText("Failed to connect to SiB")
-                sib.close()
-        elif readerType == 'VNA':
-            return VnaScanning(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, calibrationRequired)
+        sib = Sib(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, AppModule.PortAllocator, calibrationRequired)
+        success = sib.performHandshake()
+        if success:
+            return sib
+        else:
+            logging.info(f"Failed to handshake SIB #{readerNumber} on port {port}")
+            text_notification.setText("Failed to connect to SiB")
+            sib.close()
     except:
         logging.exception(f"Failed to instantiate reader {readerNumber}")
 

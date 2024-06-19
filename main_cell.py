@@ -28,8 +28,6 @@ mpl.use('TkAgg')
 class AppModule(MainShared):
     def __init__(self, version, major_version, minor_version):
         super().__init__(version, major_version, minor_version)
-        self.foamingApp = False
-        self.cellApp = True
         self.setupApp()
         self.root.mainloop()  # everything comes before this
 

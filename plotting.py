@@ -79,7 +79,7 @@ class Plotting(SecondAxis, ExperimentNotes):
             yPlot = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
             self.ReaderFigureCanvas.scatter(self.denoiseTimeSmooth, yPlot, 20, self.readerColor)
         else:
-            yPlot = frequencyToIndex(self.zeroPoint, self.minFrequencySmooth)
+            yPlot = frequencyToIndex(self.zeroPoint, self.maxFrequencySmooth)
             self.ReaderFigureCanvas.scatter(self.time, yPlot, 20, self.readerColor)
         for xvalue in self.notesTimestamps:
             self.ReaderFigureCanvas.addVerticalLine(xvalue)
@@ -93,7 +93,7 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.ReaderFigureCanvas.setTitle(f'Signal Check Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
         self.ReaderFigureCanvas.scatter(self.scanFrequency, convertListToPercent(self.scanMagnitude), 20, 'black')
-        self.ReaderFigureCanvas.scatter(self.minFrequencySmooth[-1], convertToPercent(self.minDbSmooth[-1]), 30, 'red')
+        self.ReaderFigureCanvas.scatter(self.maxFrequencySmooth[-1], convertToPercent(self.maxVoltsSmooth[-1]), 30, 'red')
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
 
@@ -114,13 +114,7 @@ class Plotting(SecondAxis, ExperimentNotes):
                 relx, rely = 0.33, 0.5 * spaceForPlots
             else:
                 pass
-            if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
-            else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
+            self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
         else:
             relx, rely = 0, 0
-            if self.AppModule.cellApp:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9 * spaceForPlots)
-            else:
-                self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.67, relheight=0.9 * spaceForPlots)
+            self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9 * spaceForPlots)

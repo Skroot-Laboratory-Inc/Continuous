@@ -9,7 +9,7 @@ a = Analysis(
     ['../main_cell.py'],
     pathex=[],
     binaries=[],
-    datas=[('../algorithms.py', '.'), ('../analysis.py', '.'), ('../aws.py', '.'), ('../buttons.py', '.'), ('../colors.py', '.'), ('../dac.py', '.'), ('../dev.py', '.'), ('../emailer.py', '.'), ('../exceptions.py', '.'), ('../guided_setup.py', '.'), ('../indicator.py', '.'), ('../logger.py', '.'), ('../main_foaming.py', '.'), ('../main_shared.py', '.'), ('../notes.py', '.'), ('../pdf.py', '.'), ('../plotting.py', '.'), ('../readers.py', '.'), ('../server.py', '.'), ('../settings.py', '.'), ('../setup.py', '.'), ('../text_notification.py', '.'), ('../information_panel.py', '.'), ('../timer.py', '.'), ('../vna.py', '.')],
+    datas=[('../algorithms.py', '.'), ('../analysis.py', '.'), ('../aws.py', '.'), ('../buttons.py', '.'), ('../colors.py', '.'), ('../dev.py', '.'), ('../exceptions.py', '.'), ('../guided_setup.py', '.'), ('../indicator.py', '.'), ('../logger.py', '.'), ('../main_shared.py', '.'), ('../notes.py', '.'), ('../pdf.py', '.'), ('../plotting.py', '.'), ('../readers.py', '.'), ('../server.py', '.'), ('../settings.py', '.'), ('../setup.py', '.'), ('../text_notification.py', '.'), ('../information_panel.py', '.'), ('../timer.py', '.')],
     hiddenimports=['sklearn.utils._weight_vector'],
     hookspath=[],
     hooksconfig={},

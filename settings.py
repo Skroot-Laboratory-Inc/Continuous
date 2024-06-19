@@ -5,39 +5,12 @@ import tkinter.ttk as ttk
 
 import matplotlib as mpl
 
-from readers import Reader, FoamingReader
+from readers import Reader
 
 
 class Settings:
     def __init__(self, AppModule):
         self.AppModule = AppModule
-
-    def foamThreshSetting(self):
-        foamThresh = tk.simpledialog.askfloat("Input",
-                                              "Threshold for when defoamer notification is needed: \nRange: (1-100)",
-                                              parent=self.AppModule.root, minvalue=1, maxvalue=100)
-        if foamThresh is not None:
-            self.AppModule.foamThresh = foamThresh
-            logging.info(f'foamThresh changed to {foamThresh}')
-
-    def foamEmailSetting(self):
-        receiver_email = ""
-        if not self.AppModule.emailSetting:
-            self.AppModule.emailSetting = tk.messagebox.askyesno('Email Setting',
-                                                                 'Would you like to receive email notifications?')
-            if self.AppModule.emailSetting:
-                receiver_email = tk.simpledialog.askstring("Email recipient",
-                                                           "What email should the notification be sent to? \n"
-                                                           "Keep an eye on the spam folder.",
-                                                           show='*@gmail.com')
-        else:
-            receiver_email = tk.simpledialog.askstring("Email recipient",
-                                                       "What email should the notification be sent to? \n"
-                                                       "Keep an eye on the spam folder.",
-                                                       show='*@gmail.com')
-        for Reader in self.AppModule.Readers:
-            if receiver_email != "":
-                Reader.updateEmailReceiver(receiver_email)
 
     def freqRangeSetting(self):
         startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
@@ -92,8 +65,7 @@ class Settings:
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
         self.addReaderSecondAxis()
-        if self.AppModule.cellApp:
-            self.addInoculation()
+        self.addInoculation()
         if numReaders is not None:
             self.AppModule.outerFrames = []
             numScreens = math.ceil(numReaders / maxReadersPerScreen)
@@ -102,32 +74,17 @@ class Settings:
                 readersOnLastScreen = maxReadersPerScreen
             for i in range(numScreens):
                 self.AppModule.outerFrames.append(tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white))
-            if self.AppModule.foamingApp:
-                for readerNumber in range(1, numReaders + 1):
-                    readerColor = self.AppModule.ColorCycler.getNext()
-                    screenNumber = math.ceil(readerNumber / 5) - 1
-                    outerFrame = self.AppModule.outerFrames[screenNumber]
-                    if screenNumber == numScreens - 1:
-                        readersOnScreen = readersOnLastScreen
-                    else:
-                        readersOnScreen = maxReadersPerScreen
-                    self.AppModule.Readers.append(FoamingReader(
-                        self.AppModule, readerNumber, self.AppModule.airFreq, self.AppModule.waterFreq,
-                        self.AppModule.waterShift, outerFrame, numReaders,
-                        self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.scanRate,
-                        self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
-            elif self.AppModule.cellApp:
-                for readerNumber in range(1, numReaders + 1):
-                    readerColor = self.AppModule.ColorCycler.getNext()
-                    screenNumber = math.ceil(readerNumber / maxReadersPerScreen) - 1
-                    outerFrame = self.AppModule.outerFrames[screenNumber]
-                    if screenNumber == numScreens - 1:
-                        readersOnScreen = readersOnLastScreen
-                    else:
-                        readersOnScreen = maxReadersPerScreen
-                    self.AppModule.Readers.append(Reader(
-                        self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq,
-                        self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
+            for readerNumber in range(1, numReaders + 1):
+                readerColor = self.AppModule.ColorCycler.getNext()
+                screenNumber = math.ceil(readerNumber / maxReadersPerScreen) - 1
+                outerFrame = self.AppModule.outerFrames[screenNumber]
+                if screenNumber == numScreens - 1:
+                    readersOnScreen = readersOnLastScreen
+                else:
+                    readersOnScreen = maxReadersPerScreen
+                self.AppModule.Readers.append(Reader(
+                    self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq,
+                    self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()

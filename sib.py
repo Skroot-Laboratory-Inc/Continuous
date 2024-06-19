@@ -34,18 +34,18 @@ class Sib(ReaderInterface):
             self.loadCalibrationFile()
 
     def loadCalibrationFile(self):
-        self.calibrationFrequency, self.calibrationVolts, self.calibrationPhase = loadCalibrationFile(self.calibrationFilename)
+        self.calibrationFrequency, self.calibrationVolts = loadCalibrationFile(self.calibrationFilename)
         selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
         logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
 
-    def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
+    def takeScan(self, outputFilename) -> (List[float], List[float]):
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
-            calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
+            calibratedVolts = self.calibrationComparison(frequency, volts)
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
-            return frequency, calibratedVolts, []
+            return frequency, calibratedVolts
         except SIBConnectionError:
             self.resetSibConnection()
             raise SIBConnectionError()
@@ -193,14 +193,13 @@ class Sib(ReaderInterface):
         self.sleep()
         return convertAdcToVolts(conversion_results)
 
-    def calibrationComparison(self, frequency, volts, phase):
-        """Phase is filler for if it will be required/output for SIB or not."""
-        calibratedVolts, calibratedPhase = [], []
+    def calibrationComparison(self, frequency, volts):
+        calibratedVolts = []
         for i in range(len(frequency)):
             calibrationVoltsOffset = find_nearest(frequency[i], self.calibrationFrequency,
                                                   self.calibrationVolts)
             calibratedVolts.append((volts[i] / calibrationVoltsOffset))
-        return calibratedVolts, calibratedPhase
+        return calibratedVolts
 
     def resetDDSConfiguration(self):
         logging.info("The DDS did not get configured correctly, performing hard reset.")
@@ -231,15 +230,9 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
         readings = pandas.read_csv(calibrationFilename)
         calibrationVolts = list(readings['Signal Strength (V)'].values.tolist())
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
-        return calibrationFrequency, calibrationVolts, []
+        return calibrationFrequency, calibrationVolts
     except KeyError or ValueError:
-        try:
-            list(readings['Signal Strength (dB)'].values.tolist())
-            text_notification.setText("Calibration exists for VNA not SiB.",
-                                      ('Courier', 9, 'bold'), "black", "red")
-            logging.exception("Calibration found for VNA, not SiB")
-        except:
-            logging.exception("Column did not exist")
+        logging.exception("Column did not exist")
     except Exception:
         logging.exception("Failed to load in calibration")
 

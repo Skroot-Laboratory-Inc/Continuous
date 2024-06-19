@@ -53,10 +53,10 @@ class ReaderDevMode(Plotting):
         self.time = self.devTime[0:self.DevMode.startTime]
         self.filenames = self.devFiles[0:self.DevMode.startTime]
 
-        self.minFrequency = self.devFrequency[0:self.DevMode.startTime]
+        self.maxFrequency = self.devFrequency[0:self.DevMode.startTime]
 
-        self.minDbSmooth = self.devDb[0:self.DevMode.startTime]
-        self.minFrequencySmooth = self.devFrequency[0:self.DevMode.startTime]
+        self.maxVoltsSmooth = self.devDb[0:self.DevMode.startTime]
+        self.maxFrequencySmooth = self.devFrequency[0:self.DevMode.startTime]
 
     def addDevPoint(self):
         if self.DevMode.mode == "Analysis":
@@ -76,10 +76,10 @@ class ReaderDevMode(Plotting):
                 self.filenames.append(self.devFiles[nextPointIndex])
                 self.timestamp.append(datetime.now())
 
-                self.minFrequency.append(self.devFrequency[nextPointIndex])
+                self.maxFrequency.append(self.devFrequency[nextPointIndex])
 
-                self.minFrequencySmooth.append(self.devFrequency[nextPointIndex])
-                self.minDbSmooth.append(self.devDb[nextPointIndex])
+                self.maxFrequencySmooth.append(self.devFrequency[nextPointIndex])
+                self.maxVoltsSmooth.append(self.devDb[nextPointIndex])
             except:
                 pass
 
