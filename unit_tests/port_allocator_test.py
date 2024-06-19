@@ -9,20 +9,18 @@ import port_allocator
 
 class TestPortAllocatorMethods(unittest.TestCase):
     portParameters = [
-        ("windows", "USB-SERIAL CH340", "VNA"),
-        ("windows", "USB Serial Device", "SIB"),
-        ("linux", "USB Serial", "VNA"),
-        ("linux", "Skroot Laboratory", "SIB")
+        ("windows", "USB Serial Device"),
+        ("linux", "Skroot Laboratory")
     ]
 
     @patch('serial.tools.list_ports.comports')
-    def test_getNewVnaAndSibPorts(self, mockListComports):
+    def test_getNewPorts(self, mockListComports):
         """
         Test that whether on Linux or Windows, the correct ports are found.
         """
         portTaken = ListPortInfo("COM6")
-        for os, expectedDescription, expectedReaderType in self.portParameters:
-            with self.subTest(os=os, expectedDescription=expectedDescription, expectedReaderType=expectedReaderType):
+        for os, expectedDescription in self.portParameters:
+            with self.subTest(os=os, expectedDescription=expectedDescription):
                 if os == "linux" and expectedDescription == "Skroot Laboratory":
                     portTaken.manufacturer = expectedDescription
                 else:
@@ -34,15 +32,14 @@ class TestPortAllocatorMethods(unittest.TestCase):
                 else:
                     expectedPortObject.description = expectedDescription
                 mockListComports.return_value = [expectedPortObject]
-                portInfo, readerType = port_allocator.getNewVnaAndSibPorts(os, [portTaken])
-                self.assertEqual(expectedReaderType, readerType)
+                portInfo = port_allocator.getNewPorts(os, [portTaken])
                 self.assertEqual("COM7", portInfo.device)
 
-    def test_getNewVnaAndSibPortsReal(self):
+    def test_getNewPortsReal(self):
         """
         Test used to connect to the reader and see information.
         """
-        _, _ = port_allocator.getNewVnaAndSibPorts('windows', [])
+        _, _ = port_allocator.getNewPorts('windows', [])
 
 
 if __name__ == '__main__':

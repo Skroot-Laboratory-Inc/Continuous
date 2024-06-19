@@ -8,9 +8,9 @@ class PortAllocator:
         self.os = os
 
     def getNewPort(self) -> (ListPortInfo, str):
-        port, readerType = getNewVnaAndSibPorts(self.os, self.ports)
+        port = getNewPorts(self.os, self.ports)
         self.ports.append(port.device)
-        return port, readerType
+        return port
 
     def getMatchingPort(self, serialNumber) -> ListPortInfo:
         port = getMatchingPort(serialNumber)
@@ -23,22 +23,16 @@ class PortAllocator:
         self.ports = []
 
 
-def getNewVnaAndSibPorts(currentOs, portsTaken) -> (ListPortInfo, str):
+def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
     ports = list_ports.comports()
     if currentOs == "windows":
-        filteredVNAPorts = [port for port in ports if
-                            "USB-SERIAL CH340" in port.description and port.device not in portsTaken]
-        filteredSIBPorts = [port for port in ports if
+        filteredPorts = [port for port in ports if
                             "USB Serial Device" in port.description and port.device not in portsTaken]
     else:
-        filteredVNAPorts = [port for port in ports
-                            if port.description == "USB Serial" and port.device not in portsTaken]
-        filteredSIBPorts = [port for port in ports if
+        filteredPorts = [port for port in ports if
                             port.manufacturer == "Skroot Laboratory" and port.device not in portsTaken]
-    if filteredSIBPorts:
-        return filteredSIBPorts[0], 'SIB'
-    if filteredVNAPorts:
-        return filteredVNAPorts[0], 'VNA'
+    if filteredPorts:
+        return filteredPorts[0]
     raise Exception("No ports found")
 
 

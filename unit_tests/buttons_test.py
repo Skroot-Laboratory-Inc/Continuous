@@ -2,37 +2,27 @@ import unittest
 from unittest import mock
 
 from mock import patch
-from serial.tools.list_ports_common import ListPortInfo
 
 import buttons
 import sib
-import vna
 
 
 class TestButtonsMethods(unittest.TestCase):
     @patch("main_shared.MainShared")
-    @patch("vna.VnaScanning.__new__")
-    def test_readerInstantiationVna(self, mockReaderInterface, mockAppModule):
-        """
-        Test that a Vna is instantiated when instantiateReader is called with readerType 'VNA'
-        """
-        mockReaderInterface.return_value = mock.MagicMock()
-
-        buttons.instantiateReader('VNA', "COM7", mockAppModule, 1, False)
-
-        mockReaderInterface.assert_called_with(vna.VnaScanning, "COM7", mockAppModule, 1, False)
-
     @patch("main_shared.MainShared")
     @patch("sib.Sib.__new__")
-    def test_readerInstantiationSib(self, mockReaderInterface, mockAppModule):
+    def test_readerInstantiation(self, mockReaderInterface, mockAppModule, mockPortAllocator):
         """
-        Test that an Sib is instantiated when instantiateReader is called with readerType 'SIB'
+        Test that an Sib is instantiated with the correct arguments when instantiateReader is called
         """
         mockReaderInterface.return_value = mock.MagicMock()
+        mockPortAllocator.return_value = mock.MagicMock()
+        mockAppModule.desktop = "/desktop"
+        mockAppModule.PortAllocator = mockPortAllocator
 
-        buttons.instantiateReader('SIB', "COM7", mockAppModule, 1, False)
+        buttons.instantiateReader("COM7", mockAppModule, 1, False)
 
-        mockReaderInterface.assert_called_with(sib.Sib, "COM7", mockAppModule, 1, False)
+        mockReaderInterface.assert_called_with(sib.Sib, "COM7", f'/desktop/Calibration/1/Calibration.csv', 1, mockPortAllocator, False)
 
 
 if __name__ == '__main__':
