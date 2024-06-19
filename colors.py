@@ -1,9 +1,9 @@
 class Colors:
     def __init__(self):
-        self.red = '#CD0000'
-        self.yellow = '#FFFF00'
-        self.green = '#006400'
-        self.lightRed = '#FC9AAA'
+        self.red = '#CD0000'  # red
+        self.yellow = '#FFFE71'  # pastel yellow
+        self.green = '#5CA904'  # leaf green
+        self.lightRed = '#FF474C'  # light red
         self.white = '#FFFFFF'
 
 

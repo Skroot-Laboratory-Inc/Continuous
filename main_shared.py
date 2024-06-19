@@ -141,6 +141,7 @@ class MainShared:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
+                            Reader.changeIndicatorYellow()
                             Reader.scanFrequency, Reader.scanMagnitude, Reader.scanPhase = Reader.ReaderInterface.takeScan(
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv')
                             Reader.analyzeScan()
@@ -171,17 +172,19 @@ class MainShared:
                             Reader.sendFilesToServer()
                         if self.disableSaveFullFiles:
                             deleteScanFile(f'{Reader.savePath}/{Reader.scanNumber}.csv')
-                        Reader.checkFoaming()
                         # Reader.checkContamination()
-                        Reader.checkHarvest()
+                        # Reader.checkHarvest()
+                        Reader.changeIndicatorGreen()
                     except SIBConnectionError:
                         errorOccurredWhileTakingScans = True
+                        Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
                         errorOccurredWhileTakingScans = True
+                        Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}, but reconnected successfully')
@@ -189,6 +192,7 @@ class MainShared:
                             f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
                         errorOccurredWhileTakingScans = True
+                        Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
@@ -196,6 +200,7 @@ class MainShared:
                             f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
                         errorOccurredWhileTakingScans = True
+                        Reader.changeIndicatorRed()
                         logging.exception(
                             f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.scanNumber}')
                         text_notification.setText(

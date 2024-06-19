@@ -1,7 +1,8 @@
 {
-  "2.4.6": {
+  "v2.4.6": {
     "features": {
-      "1": "Updated signal check to use percentages instead of values."
+      "1": "Updated signal check to use percentages instead of values.",
+      "2": "Added an indicator to check the state of a reader (errored, working, scanning)."
     }
   },
   "v2.4.5": {
