@@ -45,7 +45,7 @@ class Sib(ReaderInterface):
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts, calibratedPhase = self.calibrationComparison(frequency, volts, [])
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
-            return frequency, volts, []
+            return frequency, calibratedVolts, []
         except SIBConnectionError:
             self.resetSibConnection()
             raise SIBConnectionError()
@@ -248,6 +248,7 @@ def createScanFile(outputFileName, frequency, volts, yAxisLabel):
     if 'Calibration.csv' in outputFileName:
         yAxisLabel = 'Signal Strength (V)'
     else:
+        volts = helper_functions.convertListToPercent(volts)
         yAxisLabel = yAxisLabel
     with open(outputFileName, 'w', newline='') as f:
         writer = csv.writer(f)

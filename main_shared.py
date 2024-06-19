@@ -141,9 +141,9 @@ class MainShared:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
-                            self.scanFrequency, self.scanMagnitude, self.scanPhase = Reader.ReaderInterface.takeScan(
+                            Reader.scanFrequency, Reader.scanMagnitude, Reader.scanPhase = Reader.ReaderInterface.takeScan(
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv')
-                            Reader.analyzeScan(f'{Reader.savePath}/{Reader.scanNumber}.csv')
+                            Reader.analyzeScan()
                         else:
                             Reader.addDevPoint()
                         try:

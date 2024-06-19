@@ -36,9 +36,9 @@ class Analysis:
         self.smallPeakPoints = smallPeakPoints
         self.largePeakPoints = largePeakPoints
 
-    def analyzeScan(self, filename):
+    def analyzeScan(self):
         try:
-            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData(filename)
+            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData()
             self.minFrequency.append(minFreq)
         except:
             self.minFrequency.append(np.nan)
@@ -49,7 +49,7 @@ class Analysis:
             self.timestamp.append(datetime.now())
             raise RawScanException()
         try:
-            minMag, minFreq, _, _ = self.findMinDataSmooth(filename)
+            minMag, minFreq, _, _ = self.findMinDataSmooth()
             self.minDbSmooth.append(minMag)
             self.minFrequencySmooth.append(minFreq)
         except:
@@ -72,16 +72,14 @@ class Analysis:
         self.filenames.append(f"{self.scanNumber}.csv")
         self.timestamp.append(datetime.now())
 
-    def findMinData(self, filename):
-        self.scanFrequency, self.scanMagnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
+    def findMinData(self):
         return self.findMin(self.scanFrequency, self.scanMagnitude)
 
-    def findMinDataSmooth(self, filename):
-        frequency, magnitude = extractValuesFromScanFile(filename, self.yAxisLabel)
-        if len(magnitude) > 101:
-            self.scanFrequency, self.scanMagnitude = frequency, savgol_filter(magnitude, 101, 2)
+    def findMinDataSmooth(self):
+        if len(self.scanMagnitude) > 101:
+            self.scanFrequency, self.scanMagnitude = self.scanFrequency, savgol_filter(self.scanMagnitude, 101, 2)
         else:
-            self.scanFrequency, self.scanMagnitude = frequency, magnitude
+            self.scanFrequency, self.scanMagnitude = self.scanFrequency, self.scanMagnitude
         return self.findMin(self.scanFrequency, self.scanMagnitude)
 
     def findMin(self, frequency, magnitude):
@@ -123,6 +121,8 @@ class Analysis:
 
 
 def denoise(x, y, threshold, points):
+    x = list(x)
+    y = list(y)
     ycopy = y.copy()
     for y_index in range(len(ycopy)):
         if np.isnan(ycopy[y_index]):
@@ -145,20 +145,6 @@ def getDenoiseParameters(numberOfTimePoints):
         return 0.6, 2
     else:
         return 1, 1
-
-
-def extractValuesFromScanFile(filename, yAxisLabel):
-    try:
-        readings = pandas.read_csv(filename)[:-1]
-        return readings['Frequency (MHz)'].values.tolist(), readings[yAxisLabel].values.tolist()
-    except ValueError:
-        logging.exception("Rows named improperly")
-        return [], []
-    except FileNotFoundError:
-        logging.exception(f"File does not exist {filename}")
-        return [], []
-    except:
-        logging.exception("Unknown error parsing file")
 
 
 def findRawMinimum(frequency, magnitude):

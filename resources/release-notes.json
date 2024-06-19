@@ -1,4 +1,9 @@
 {
+  "2.4.6": {
+    "features": {
+      "1": "Updated signal check to use percentages instead of values."
+    }
+  },
   "v2.4.5": {
     "features": {
       "1": "Updated default sweep frequency to 110-160 MHz",
