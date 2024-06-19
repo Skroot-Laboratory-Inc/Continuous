@@ -25,7 +25,7 @@ class ReaderInterfaceMetaClass(type):
 
 class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
-    def takeScan(self, outputFilename) -> (List[float], List[float], List[float], bool):
+    def takeScan(self, outputFilename) -> (List[float], List[float]):
         """The reader takes a scan and returns magnitude values."""
 
     def calibrateIfRequired(self):

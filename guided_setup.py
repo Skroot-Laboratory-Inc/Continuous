@@ -11,13 +11,6 @@ def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, 
     return month, day, year, savePath, numReaders, scanRate, calibrate, cellType, secondAxisTitle, equilibrationTime
 
 
-def guidedSetupFoaming(root, baseSavePath, month, day, year, numReaders, scanRate, cellType):
-    # TODO - update this to account for foaming setup, it will be different values needed
-    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, "")
-    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType = setupForm.getConfiguration()
-    return savePath, numReaders, scanRate, calibrate, secondAxisTitle
-
-
 class SetupForm:
     def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
                  secondAxisTitle, equilibrationTime):

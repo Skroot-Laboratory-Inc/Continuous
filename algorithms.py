@@ -1,22 +1,17 @@
 import csv
 import logging
-import threading
-import tkinter as tk
 
 import numpy as np
 from scipy.signal import savgol_filter
 
-import text_notification
 from analysis import Analysis
-from dac import Dac
 from indicator import Indicator
 from notes import ExperimentNotes
 
 
 class HarvestAlgorithm(Indicator, ExperimentNotes):
-    def __init__(self, outerFrame, AppModule, Emailer):
+    def __init__(self, outerFrame, AppModule):
         Indicator.__init__(self)
-        self.Emailer = Emailer
         self.AppModule = AppModule
         self.inoculated = False
         self.indicatorColor = None
@@ -75,23 +70,18 @@ class HarvestAlgorithm(Indicator, ExperimentNotes):
                 if lastFiveIncreasing and previousFiveDecreasing:
                     logging.info(
                         f'Flask {self.readerNumber} is close to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
-                    if self.AppModule.emailSetting:
-                        self.Emailer.sendMessage()
-                        self.Emailer.setMessageHarvestReady()
                     self.changeIndicatorYellow()
                     self.closeToHarvest = True
             else:
                 if lastFiveDecreasing and previousFiveIncreasing:
                     logging.info(
                         f'Flask {self.readerNumber} is ready to harvest at time {self.time[-1]} hours for {self.time[-self.backwardPoints]}')
-                    if self.AppModule.emailSetting:
-                        self.Emailer.sendMessage()
                     self.changeIndicatorRed()
                     self.readyToHarvest = True
 
 
 class ContaminationAlgorithm(Analysis, Indicator):
-    def __init__(self, outerFrame, AppModule, Emailer, readerNumber):
+    def __init__(self, outerFrame, AppModule, readerNumber):
         Indicator.__init__(self)
         self.readerNumber = readerNumber
         self.AppModule = AppModule
@@ -100,12 +90,11 @@ class ContaminationAlgorithm(Analysis, Indicator):
         self.contaminated = False
         self.createIndicator(outerFrame)
         self.updateContaminationJson(self.white)
-        self.Emailer = Emailer
 
     def checkContamination(self):
-        if len(self.time) > 201 and self.AppModule.cellApp is True:
+        if len(self.time) > 201:
             if not self.contaminated:
-                self.contaminated = self.contaminationAlgorithm(self.time, self.minFrequency, [100, 100])
+                self.contaminated = self.contaminationAlgorithm(self.time, self.maxFrequency, [100, 100])
                 if self.contaminated:
                     logging.info(f'Flask {self.readerNumber} is contaminated at time {self.time[-1]} hours')
                     self.updateContaminationJson(self.lightRed)
@@ -131,57 +120,3 @@ class ContaminationAlgorithm(Analysis, Indicator):
 
     def updateContaminationJson(self, contaminationColor):
         self.backgroundColor = contaminationColor
-
-
-class FoamingAlgorithm(Analysis):
-    def __init__(self, airFreq, waterFreq, waterShift, AppModule, Emailer):
-        self.AppModule = AppModule
-        self.Emailer = Emailer
-        self.referenceFrequency = None
-        self.foamThresh = 10
-        self.scanRate = 0.1
-        self.startFreq = airFreq - 15
-        self.stopFreq = airFreq + 15
-        self.airFreq = airFreq
-        self.waterFreq = waterFreq
-        self.waterShift = waterShift
-        self.errorThread = ''
-        self.liquidThread = ''
-        self.Dac = Dac()
-
-    def checkFoaming(self):
-        if self.airFreq != 0:
-            self.referenceFrequency = self.minFrequency[0]
-            shift = abs(self.minFrequency[-1] - self.referenceFrequency)
-            logging.info(f'shift: {shift}, needed shift {self.waterShift * (self.foamThresh / 100)}')
-            if shift > (self.waterShift * 0.9) and self.errorThread == '' and self.liquidThread == '':
-                self.liquidThread = threading.Thread(target=self.liquidReachedSensor, args=(), daemon=True)
-                self.liquidThread.start()
-            elif shift > self.waterShift * (
-                    self.foamThresh / 100) and self.errorThread == '' and self.liquidThread == '':
-                self.errorThread = threading.Thread(target=self.foamReachedSensor, args=(), daemon=True)
-                self.errorThread.start()
-            else:
-                try:
-                    self.Dac.send_ma(4)
-                except:
-                    logging.exception("Failed to initialize DAC")
-        else:
-            pass
-
-    def liquidReachedSensor(self):
-        text_notification.setText("LIQUID \nOVERFLOW", ('Courier', 9, 'bold'), self.AppModule.royalBlue, 'red')
-        tk.messagebox.showwarning(f'LIQUID OVERFLOW', "LIQUID OVERFLOW!")
-        self.liquidThread = ''
-        return
-
-    def foamReachedSensor(self):
-        text_notification.setText(f"Foam reached sensor", ('Courier', 12, 'bold'), self.AppModule.royalBlue,
-                                  self.AppModule.white)
-        try:
-            self.Dac.send_ma(20)
-        except:
-            logging.exception("Failed to initialize DAC")
-        tk.messagebox.showinfo(f'Foaming notification', f"Foam has reached sensor")
-        self.errorThread = ''
-        return

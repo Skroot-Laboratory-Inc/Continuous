@@ -8,11 +8,10 @@ import paramiko
 from scp import SCPClient
 
 import text_notification
-from algorithms import ContaminationAlgorithm, FoamingAlgorithm, HarvestAlgorithm
+from algorithms import ContaminationAlgorithm, HarvestAlgorithm
 from analysis import Analysis
 from aws import AwsBoto3
 from dev import ReaderDevMode
-from emailer import Emailer
 from plotting import Plotting
 from reader_interface import ReaderInterface
 
@@ -35,8 +34,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.waterShift = None
         self.calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
         self.readerName = f"Reader {readerNumber}"
-        self.Emailer = Emailer('', f'{self.readerName}')
-        self.Emailer.setMessageHarvestClose()
         self.AppModule = AppModule
         self.readerNumber = readerNumber
         self.totalNumberOfReaders = totalNumberOfReaders
@@ -47,10 +44,10 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.ReaderInterface = ReaderInterface
         self.initializeReaderFolders(savePath)
         Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
-        Analysis.__init__(self, self.savePath, 41, 61)
+        Analysis.__init__(self, self.savePath)
         ReaderDevMode.__init__(self, AppModule, readerNumber)
-        ContaminationAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer, readerNumber)
-        HarvestAlgorithm.__init__(self, outerFrame, AppModule, self.Emailer)
+        ContaminationAlgorithm.__init__(self, outerFrame, AppModule, readerNumber)
+        HarvestAlgorithm.__init__(self, outerFrame, AppModule)
         self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
         self.createServerJsonFile()
         self.AppModule.freqToggleSet.subscribe(lambda toggle: self.setToggle(toggle))
@@ -89,9 +86,6 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         else:
             pdf.drawCircle(currentX, currentY, 0.02, 'red')
         return currentX, currentY
-
-    def updateEmailReceiver(self, receiver_email):
-        self.Emailer.changeReceiver(receiver_email)
 
     def sendToServer(self, filename):
         if not self.AppModule.ServerFileShare.disabled:
@@ -178,67 +172,9 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.filenames = self.filenames[-1:]
         self.denoiseTime = self.denoiseTime[-1:]
         self.denoiseTimeSmooth = self.denoiseTimeSmooth[-1:]
-        self.minFrequency = self.minFrequency[-1:]
-        self.minFrequencySmooth = self.minFrequencySmooth[-1:]
+        self.maxFrequency = self.maxFrequency[-1:]
+        self.maxFrequencySmooth = self.maxFrequencySmooth[-1:]
         self.denoiseFrequency = self.denoiseFrequency[-1:]
         self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
-        self.minDbSmooth = self.minDbSmooth[-1:]
+        self.maxVoltsSmooth = self.maxVoltsSmooth[-1:]
 
-    # no ops
-    def checkFoaming(self):
-        pass
-
-
-class FoamingReader(Reader, FoamingAlgorithm, ReaderDevMode):
-    def __init__(self, AppModule, readerNumber, airFreq, waterFreq, waterShift, outerFrame, totalNumberOfReaders, startFreq, stopFreq, scanRate, savePath, readerColor, ReaderInterface):
-        self.scanMagnitude = []
-        self.scanFrequency = []
-        self.scanNumber = 100001
-        self.backgroundColor = '#FFFFFF'
-        self.waterShift = waterShift
-        self.airFreq = airFreq
-        self.waterFreq = waterFreq
-        self.scanRate = scanRate
-        self.calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        self.Emailer = Emailer('', f'Foaming Reader {readerNumber}')
-        self.Emailer.setMessageFoam()
-        self.AppModule = AppModule
-        ReaderInterface.setStartFrequency(startFreq)
-        ReaderInterface.setStopFrequency(stopFreq)
-        self.ReaderInterface = ReaderInterface
-        self.readerNumber = readerNumber
-        self.totalNumberOfReaders = totalNumberOfReaders
-        self.initializeReaderFolders(savePath)
-        Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule)
-        Analysis.__init__(self, self.savePath, 11, 21)
-        FoamingAlgorithm.__init__(self, airFreq, waterFreq, waterShift, AppModule, self.Emailer)
-        ReaderDevMode.__init__(self, AppModule, readerNumber)
-        self.createFrequencyFrame(outerFrame, totalNumberOfReaders)
-
-    def sendFilesToServer(self):
-        self.sendToServer(f'{self.savePath}/{self.scanNumber}.csv')
-        self.sendToServer(f'{self.savePath}/Analyzed.csv')
-        self.sendToServer(f'{self.savePath}/smoothAnalyzed.csv')
-        self.sendToServer(f'{self.savePath}/secondAxis.csv')
-        self.sendToServer(f'{os.path.dirname(self.savePath)}/Summary.pdf')
-        self.sendToServer(f'{os.path.dirname(self.savePath)}/summaryAnalyzed.csv')
-
-    def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
-                       plotWidth,
-                       plotHeight)
-        currentX += plotWidth
-        return currentX, currentY
-
-    # no ops
-    def createServerJsonFile(self):
-        pass
-
-    def checkContamination(self):
-        pass
-
-    def checkHarvest(self):
-        pass
-
-    def addInoculationMenuBar(self, menu):
-        pass

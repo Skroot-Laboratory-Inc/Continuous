@@ -16,7 +16,7 @@ from helper_functions import frequencyToIndex
 
 
 class Analysis:
-    def __init__(self, savePath, smallPeakPoints, largePeakPoints):
+    def __init__(self, savePath):
         self.zeroPoint = 1
 
         self.timestamp = []
@@ -24,37 +24,35 @@ class Analysis:
         self.denoiseTimeSmooth = []
         self.denoiseTime = []
 
-        self.minDbSmooth = []
+        self.maxVoltsSmooth = []
 
-        self.minFrequency = []
-        self.minFrequencySmooth = []
+        self.maxFrequency = []
+        self.maxFrequencySmooth = []
         self.denoiseFrequencySmooth = []
         self.denoiseFrequency = []
         self.filenames = []
 
         self.savePath = savePath
-        self.smallPeakPoints = smallPeakPoints
-        self.largePeakPoints = largePeakPoints
 
     def analyzeScan(self):
         try:
-            minMag, minFreq, rawMinMag, rawMinFreq = self.findMinData()
-            self.minFrequency.append(minFreq)
+            maxMag, maxFreq = self.findMaximumData()
+            self.maxFrequency.append(maxFreq)
         except:
-            self.minFrequency.append(np.nan)
-            self.minDbSmooth.append(np.nan)
-            self.minFrequencySmooth.append(np.nan)
+            self.maxFrequency.append(np.nan)
+            self.maxVoltsSmooth.append(np.nan)
+            self.maxFrequencySmooth.append(np.nan)
             self.time.append((self.scanNumber - 100000) / 60)
             self.filenames.append(f"{self.scanNumber}.csv")
             self.timestamp.append(datetime.now())
             raise RawScanException()
         try:
-            minMag, minFreq, _, _ = self.findMinDataSmooth()
-            self.minDbSmooth.append(minMag)
-            self.minFrequencySmooth.append(minFreq)
+            maxMag, maxFreq = self.findMaximumDataSmooth()
+            self.maxVoltsSmooth.append(maxMag)
+            self.maxFrequencySmooth.append(maxFreq)
         except:
-            self.minDbSmooth.append(np.nan)
-            self.minFrequencySmooth.append(np.nan)
+            self.maxVoltsSmooth.append(np.nan)
+            self.maxFrequencySmooth.append(np.nan)
             self.time.append((self.scanNumber - 100000) / 60)
             self.filenames.append(f"{self.scanNumber}.csv")
             self.timestamp.append(datetime.now())
@@ -64,33 +62,32 @@ class Analysis:
         self.timestamp.append(datetime.now())
 
     def recordFailedScan(self):
-        self.scanFrequency, self.scanMagnitude, self.scanPhase = [], [], []
-        self.minFrequency.append(np.nan)
-        self.minDbSmooth.append(np.nan)
-        self.minFrequencySmooth.append(np.nan)
+        self.scanFrequency, self.scanMagnitude = [], []
+        self.maxFrequency.append(np.nan)
+        self.maxVoltsSmooth.append(np.nan)
+        self.maxFrequencySmooth.append(np.nan)
         self.time.append((self.scanNumber - 100000) / 60)
         self.filenames.append(f"{self.scanNumber}.csv")
         self.timestamp.append(datetime.now())
 
-    def findMinData(self):
-        return self.findMin(self.scanFrequency, self.scanMagnitude)
+    def findMaximumData(self):
+        return self.findMaximum(self.scanFrequency, self.scanMagnitude)
 
-    def findMinDataSmooth(self):
+    def findMaximumDataSmooth(self):
         if len(self.scanMagnitude) > 101:
             self.scanFrequency, self.scanMagnitude = self.scanFrequency, savgol_filter(self.scanMagnitude, 101, 2)
         else:
             self.scanFrequency, self.scanMagnitude = self.scanFrequency, self.scanMagnitude
-        return self.findMin(self.scanFrequency, self.scanMagnitude)
+        return self.findMaximum(self.scanFrequency, self.scanMagnitude)
 
-    def findMin(self, frequency, magnitude):
-        minimumIndex, rawFrequencyMinimum, rawMagnitudeMinimum = findRawMinimum(frequency, magnitude)
-        minMag, minFrequency = findMinGaussian(frequency, magnitude)
-        return minMag, minFrequency, rawMagnitudeMinimum, rawFrequencyMinimum
+    def findMaximum(self, frequency, magnitude):
+        maxMag, maxFrequency = findMaxGaussian(frequency, magnitude)
+        return maxMag, maxFrequency
 
     def denoiseResults(self):
         denoiseRadius, denoisePoints = getDenoiseParameters(self.time)
-        self.denoiseTime, self.denoiseFrequency = denoise(self.time, self.minFrequency, denoiseRadius, denoisePoints)
-        self.denoiseTimeSmooth, self.denoiseFrequencySmooth = denoise(self.time, self.minFrequencySmooth,
+        self.denoiseTime, self.denoiseFrequency = denoise(self.time, self.maxFrequency, denoiseRadius, denoisePoints)
+        self.denoiseTimeSmooth, self.denoiseFrequencySmooth = denoise(self.time, self.maxFrequencySmooth,
                                                                       denoiseRadius, denoisePoints)
 
     def createAnalyzedFiles(self):
@@ -107,18 +104,6 @@ class Analysis:
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
-
-    def determineFitPoints(self):
-        minMag = abs(min(self.scanMagnitude))
-        meanMag = abs(mean(self.scanMagnitude))
-        if meanMag < 1:
-            if (minMag - meanMag) < 1:
-                return self.smallPeakPoints
-            elif (minMag - meanMag) > 1:
-                return self.largePeakPoints
-        else:
-            return self.largePeakPoints
-
 
 def denoise(x, y, threshold, points):
     x = list(x)
@@ -147,39 +132,11 @@ def getDenoiseParameters(numberOfTimePoints):
         return 1, 1
 
 
-def findRawMinimum(frequency, magnitude):
-    _, denoisedMagnitude = denoise(frequency, magnitude, 0.2, 3)
-    rawMinimum = min(denoisedMagnitude)
-    minIndeces = [index for index, element in enumerate(denoisedMagnitude) if element == rawMinimum]
-    minIndex = int(round(mean(minIndeces), 0))
-    rawFreq = frequency[minIndex]
-    return minIndex, rawFreq, rawMinimum
-
-
-def findQuadraticMinimum(frequency, magnitude, rawMinimum, pointsUsed):
-    Max = 0.1
-    finalMagnitude = []
-    while len(finalMagnitude) <= pointsUsed and Max < 4:
-        Max += .05
-        finalMagnitude = [dB for dB in magnitude if rawMinimum < dB < rawMinimum + Max]
-    magnitudeIndeces = [index for index, mag in enumerate(finalMagnitude) if rawMinimum < mag < rawMinimum + Max]
-    frequenciesUsed = [frequency[index] for index in magnitudeIndeces]
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
-        try:
-            quadraticCoefficients = np.polyfit(frequenciesUsed, finalMagnitude, 2)
-        except np.RankWarning:
-            raise BadFitException(f"Number of points used, frequency: {len(frequenciesUsed)}, magnitude: {len(finalMagnitude)}")
-    frequencies = np.linspace(frequenciesUsed[0], frequenciesUsed[-1], 1000)
-    quadraticFunction = np.polyval(quadraticCoefficients, frequencies)
-    minMag = min(quadraticFunction)
-    minFrequency = frequencies[list(quadraticFunction).index(minMag)]
-    return minMag, minFrequency
 def gaussian(x, amplitude, centroid, peak_width):
     return amplitude * np.exp(-(x - centroid)**2 / (2 * peak_width**2))
 
 
-def findMinGaussian(x, y):
+def findMaxGaussian(x, y):
     pointsOnEachSide = 500
     if np.argmax(y) > pointsOnEachSide and np.argmax(y) < len(y)-pointsOnEachSide:
         xAroundPeak = x[np.argmax(y)-pointsOnEachSide:np.argmax(y)+pointsOnEachSide]

@@ -73,12 +73,9 @@ class MainShared:
         self.version = f'{major_version}.{minor_version}'
         self.numReaders = 0
         self.savePath = ''
-        self.cellApp = False
-        self.foamingApp = False
         self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
-        self.emailSetting = False
         self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
         self.scanRate = 0.5
@@ -90,7 +87,7 @@ class MainShared:
         self.royalBlue = 'RoyalBlue4'
         self.white = 'white'
         self.PortAllocator = PortAllocator(self.os)
-        self.showEndOfExperimentView = False
+        self.finishedEquilibrationPeriod = False
         try:
             self.location = sys._MEIPASS
         except AttributeError:
@@ -142,27 +139,27 @@ class MainShared:
                     try:
                         if not self.isDevMode:
                             Reader.changeIndicatorYellow()
-                            Reader.scanFrequency, Reader.scanMagnitude, Reader.scanPhase = Reader.ReaderInterface.takeScan(
+                            Reader.scanFrequency, Reader.scanMagnitude = Reader.ReaderInterface.takeScan(
                                 f'{Reader.savePath}/{Reader.scanNumber}.csv')
                             Reader.analyzeScan()
                         else:
                             Reader.addDevPoint()
                         try:
                             if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
-                                if self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] != np.nan:
-                                    self.zeroPoint = Reader.minFrequencySmooth[-1]
-                                elif self.equilibrationTime == 0 and Reader.minFrequencySmooth[-1] == np.nan:
+                                if self.equilibrationTime == 0 and Reader.maxFrequencySmooth[-1] != np.nan:
+                                    self.zeroPoint = Reader.maxFrequencySmooth[-1]
+                                elif self.equilibrationTime == 0 and Reader.maxFrequencySmooth[-1] == np.nan:
                                     raise Exception()
                                 else:
-                                    self.zeroPoint = np.nanmean(Reader.minFrequencySmooth[-5:])
+                                    self.zeroPoint = np.nanmean(Reader.maxFrequencySmooth[-5:])
                                 Reader.setZeroPoint(self.zeroPoint)
                                 self.freqToggleSet.on_next("SGI")
-                                self.showEndOfExperimentView = True
+                                self.finishedEquilibrationPeriod = True
                                 logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
                                 Reader.resetReaderRun()
                         except:
                             raise ZeroPointException(
-                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.minFrequencySmooth[-5:]}")
+                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.maxFrequencySmooth[-5:]}")
                         if self.denoiseSet:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main thread
@@ -208,7 +205,7 @@ class MainShared:
                     finally:
                         self.Timer.updateTime()
                         incrementScan(Reader)
-                if self.showEndOfExperimentView:
+                if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main thread
                     generatePdf(self.savePath, self.Readers)
@@ -297,7 +294,7 @@ class MainShared:
                     yPlot = frequencyToIndex(Reader.zeroPoint, Reader.denoiseFrequencySmooth)
                     self.SummaryFigureCanvas.scatter(Reader.denoiseTimeSmooth, yPlot, 20, readerColor)
                 else:
-                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
+                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.maxFrequencySmooth)
                     self.SummaryFigureCanvas.scatter(Reader.time, yPlot, 20, readerColor)
             self.SummaryFigureCanvas.saveAs(f'{self.savePath}/Summary Figure.jpg')
             self.SummaryFigureCanvas.drawCanvas(frame)
@@ -311,7 +308,7 @@ class MainShared:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
-                readerSGI = frequencyToIndex(Reader.zeroPoint, Reader.minFrequencySmooth)
+                readerSGI = frequencyToIndex(Reader.zeroPoint, Reader.maxFrequencySmooth)
                 rowData.append(readerSGI)
             writer.writerow(rowHeaders)
             # array transpose converts it to write columns instead of rows
@@ -344,12 +341,12 @@ class MainShared:
         self.foundPorts = False
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
-        if self.showEndOfExperimentView:
+        if self.finishedEquilibrationPeriod:
             self.createEndOfExperimentView()
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
             self.Buttons.guidedSetupButton.invoke()
-        self.showEndOfExperimentView = False
+        self.finishedEquilibrationPeriod = False
 
     def copyFilesToDebuggingFolder(self, numReaders):
         logSubdir = f'{self.savePath}/Log'
