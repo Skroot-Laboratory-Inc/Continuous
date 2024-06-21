@@ -1,2 +1,0 @@
-#!bash
-pyinstaller SkrootReadersCell.spec
