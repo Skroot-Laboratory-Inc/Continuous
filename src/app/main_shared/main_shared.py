@@ -5,7 +5,6 @@ import os
 import shutil
 import stat
 import subprocess
-import sys
 import threading
 import time
 import tkinter as tk
@@ -18,22 +17,22 @@ from PIL import ImageTk, Image
 from reactivex.subject import BehaviorSubject
 from sibcontrol import SIBException, SIBConnectionError
 
-from src.app.helper import helper_functions
-from src.app.widget import logger, text_notification
 from src.app.exception.analysis_exception import AnalysisException, ZeroPointException
-from src.app.initialization.buttons import ButtonFunctions
-from src.app.theme.colors import ColorCycler
-from src.app.initialization.dev import DevMode
-from src.app.widget.figure import FigureCanvas
+from src.app.exception.sib_exception import SIBReconnectException
+from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex
-from src.app.widget.link_button import Linkbutton
-from src.app.widget.pdf import generatePdf
-from src.app.sib.port_allocator import PortAllocator
-from src.app.main_shared.server import ServerFileShare
+from src.app.initialization.buttons import ButtonFunctions
+from src.app.initialization.dev import DevMode
 from src.app.initialization.settings import Settings
 from src.app.initialization.setup import Setup
-from src.app.exception.sib_exception import SIBReconnectException
 from src.app.initialization.software_update import SoftwareUpdate
+from src.app.main_shared.server import ServerFileShare
+from src.app.sib.port_allocator import PortAllocator
+from src.app.theme.colors import ColorCycler
+from src.app.widget import logger, text_notification
+from src.app.widget.figure import FigureCanvas
+from src.app.widget.link_button import Linkbutton
+from src.app.widget.pdf import generatePdf
 from src.app.widget.timer import RunningTimer
 
 mpl.use('TkAgg')

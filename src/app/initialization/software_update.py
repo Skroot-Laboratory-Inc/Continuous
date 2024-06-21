@@ -4,8 +4,8 @@ import os
 
 import botocore
 
-from src.app.widget import release_notes
 from src.app.aws.aws import AwsBoto3
+from src.app.widget import release_notes
 
 
 class SoftwareUpdate(AwsBoto3):

@@ -7,11 +7,11 @@ from tkinter import ttk
 
 from PIL import Image, ImageTk
 
-from src.app.widget import text_notification
 from src.app.exception.common_exceptions import UserExitedException
-from src.app.widget.information_panel import InformationPanel
 from src.app.sib.reader_interface import ReaderInterface
 from src.app.sib.sib import Sib
+from src.app.widget import text_notification
+from src.app.widget.information_panel import InformationPanel
 
 
 class ButtonFunctions:

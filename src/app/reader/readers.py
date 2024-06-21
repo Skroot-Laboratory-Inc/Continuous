@@ -12,8 +12,8 @@ from src.app.aws.aws import AwsBoto3
 from src.app.initialization.dev import ReaderDevMode
 from src.app.reader.analysis import Analysis
 from src.app.reader.plotting import Plotting
-from src.app.widget import text_notification
 from src.app.sib.reader_interface import ReaderInterface
+from src.app.widget import text_notification
 
 
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
