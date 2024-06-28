@@ -18,6 +18,7 @@ from sibcontrol import SIBException, SIBConnectionError
 
 from src.app.exception.analysis_exception import AnalysisException, ZeroPointException
 from src.app.exception.sib_exception import SIBReconnectException
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
 from src.app.initialization.buttons import ButtonFunctions
@@ -25,8 +26,6 @@ from src.app.initialization.dev import DevMode
 from src.app.initialization.settings import Settings
 from src.app.initialization.setup import Setup
 from src.app.initialization.software_update import SoftwareUpdate
-from src.app.main_shared.server import ServerFileShare
-from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.properties import CommonProperties
 from src.app.sib.port_allocator import PortAllocator
 from src.app.theme.colors import ColorCycler, Colors
@@ -87,7 +86,6 @@ class MainShared:
         self.Setup = Setup(self.root, self.Settings, self)
         self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
         self.DevMode = DevMode()
-        self.ServerFileShare = ServerFileShare(self)
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version)
         self.isDevMode = self.DevMode.isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
@@ -151,9 +149,6 @@ class MainShared:
                             Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
                         Reader.createAnalyzedFiles()
-                        if not self.ServerFileShare.disabled:
-                            Reader.createServerJsonFile()
-                            Reader.sendFilesToServer()
                         if self.disableSaveFullFiles:
                             deleteScanFile(Reader.FileManager.getCurrentScan())
                         # Reader.checkContamination()

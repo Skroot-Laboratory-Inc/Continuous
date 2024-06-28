@@ -45,8 +45,6 @@ class ButtonFunctions:
                                           relheight=0.45 * spaceForPlots)
         self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
-        if not self.AppModule.ServerFileShare.disabled and getOperatingSystem() == "windows":
-            self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
         self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.ReaderInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()

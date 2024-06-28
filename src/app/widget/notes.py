@@ -31,7 +31,6 @@ class ExperimentNotes:
                 self.notes = f'{self.notes}\n{round(timestamp, 2)} hrs: {newNotes}'
             with open(self.FileManager.getExperimentNotes(), 'w') as f:
                 f.write(self.notes)
-            self.sendToServer(self.FileManager.getExperimentNotes())
 
     def addNotesToPdf(self, pdf, currentX, currentY, notesWidth, notesLineHeight, plotHeight, paddingY):
         currentY += plotHeight / 8

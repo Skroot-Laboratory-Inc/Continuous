@@ -12,8 +12,7 @@ from src.app.reader.plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = True
-        self.fakeServer = False
+        self.tryDevMode = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:
