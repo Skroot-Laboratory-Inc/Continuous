@@ -9,7 +9,9 @@ from scp import SCPClient
 
 from src.app.algorithm.algorithms import ContaminationAlgorithm, HarvestAlgorithm
 from src.app.aws.aws import AwsBoto3
+from src.app.helper.helper_functions import getOperatingSystem
 from src.app.initialization.dev import ReaderDevMode
+from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.reader.analysis import Analysis
 from src.app.reader.plotting import Plotting
 from src.app.sib.reader_interface import ReaderInterface
@@ -19,6 +21,15 @@ from src.app.widget import text_notification
 class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq,
                  scanRate, savePath, readerColor, ReaderInterface: ReaderInterface):
+        self.FileManager = ReaderFileManager(savePath, readerNumber)
+        self.AppModule = AppModule
+        self.readerNumber = readerNumber
+        self.totalNumberOfReaders = totalNumberOfReaders
+        self.initializeReaderFolders(savePath)
+        if not self.AppModule.DevMode.isDevMode:
+            ReaderInterface.setStartFrequency(startFreq)
+            ReaderInterface.setStopFrequency(stopFreq)
+        self.ReaderInterface = ReaderInterface
         if not AppModule.DevMode.isDevMode:
             self.yAxisLabel = ReaderInterface.yAxisLabel
         else:
@@ -29,22 +40,9 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
         self.sshConnection = None
         self.scanMagnitude = []
         self.scanFrequency = []
-        self.scanNumber = 100001
-        self.jsonTextLocation = "serverInfo.json"
-        self.waterShift = None
-        self.calFileLocation = f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv'
-        self.readerName = f"Reader {readerNumber}"
-        self.AppModule = AppModule
-        self.readerNumber = readerNumber
-        self.totalNumberOfReaders = totalNumberOfReaders
         self.scanRate = scanRate
-        if self.AppModule.DevMode.isDevMode == False:
-            ReaderInterface.setStartFrequency(startFreq)
-            ReaderInterface.setStopFrequency(stopFreq)
-        self.ReaderInterface = ReaderInterface
-        self.initializeReaderFolders(savePath)
-        Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.AppModule.secondAxisTitle)
-        Analysis.__init__(self, self.savePath)
+        Plotting.__init__(self, readerColor, outerFrame, readerNumber, AppModule, self.FileManager, self.AppModule.secondAxisTitle)
+        Analysis.__init__(self, self.FileManager)
         ReaderDevMode.__init__(self, AppModule, readerNumber)
         ContaminationAlgorithm.__init__(self, outerFrame, AppModule, readerNumber)
         HarvestAlgorithm.__init__(self, outerFrame, AppModule)
@@ -55,31 +53,29 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def sendFilesToServer(self):
         try:
             all_files = [
-                f'{self.savePath}/{self.scanNumber}.csv',
-                f'{self.savePath}/Analyzed.csv',
-                f'{self.savePath}/smoothAnalyzed.csv',
-                f'{self.savePath}/secondAxis.csv',
-                f'{os.path.dirname(self.savePath)}/Summary.pdf',
-                f'{self.savePath}/{self.jsonTextLocation}',
+                self.FileManager.getCurrentScan(),
+                self.FileManager.getAnalyzed(),
+                self.FileManager.getSmoothAnalyzed(),
+                self.FileManager.getSecondAxis(),
+                self.FileManager.getSummaryPdf(),
+                self.FileManager.getServerInfo(),
             ]
 
             files_to_send = []
             for file in all_files:
                 if os.path.exists(file):
                     files_to_send.append(file)
-
-            if self.AppModule.os == "windows":
+            operatingSystem = getOperatingSystem()
+            if operatingSystem == "windows":
                 for file in files_to_send:
                     self.sendToServer(file)
-            elif self.AppModule.os == "linux" and not self.sshDisabled:
+            elif operatingSystem == "linux" and not self.sshDisabled:
                 self.scp.put(files_to_send, self.serverSavePath)
         except:
             logging.exception("Failed to send files to server")
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeImage(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg', currentX, currentY,
-                       plotWidth,
-                       plotHeight)
+        pdf.placeImage(self.FileManager.getReaderPlotJpg(), currentX, currentY, plotWidth, plotHeight)
         currentX += plotWidth
         if not self.harvested:
             pdf.drawCircle(currentX, currentY, 0.02, 'green')
@@ -103,7 +99,7 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             "indicatorColor": self.indicatorColor,
         }
         json_object = json.dumps(dictionary, indent=4)
-        with open(f'{self.savePath}/{self.jsonTextLocation}', 'w') as f:
+        with open(self.FileManager.getServerInfo(), 'w') as f:
             f.write(json_object)
 
     def initializeReaderFolders(self, savePath):
@@ -112,13 +108,13 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
     def setSavePath(self, savePath):
         if not os.path.exists(savePath):
             os.mkdir(savePath)
-        self.savePath = rf'{savePath}/Reader {self.readerNumber}'
-        if self.AppModule.os == "windows":
+        operatingSystem = getOperatingSystem()
+        if operatingSystem == "windows":
             if not self.AppModule.ServerFileShare.disabled:
                 self.serverSavePath = rf'{self.AppModule.ServerFileShare.serverLocation}/Reader {self.readerNumber}'
             else:
                 self.serverSavePath = 'incorrect/path'
-        if self.AppModule.os == "linux":
+        if operatingSystem == "linux":
             try:
                 aws_secret = self.Aws.getSshSecret()
                 if aws_secret is None or self.sshDisabled:
@@ -153,17 +149,17 @@ class Reader(ContaminationAlgorithm, HarvestAlgorithm, ReaderDevMode):
             logging.exception("There was an error SSH connecting to the server")
 
     def createFolders(self):
-        if self.AppModule.os == "windows" and not os.path.exists(
+        if getOperatingSystem() == "windows" and not os.path.exists(
                 self.serverSavePath) and not self.AppModule.ServerFileShare.disabled:
             os.mkdir(self.serverSavePath)
-        if not os.path.exists(self.savePath):
-            os.mkdir(self.savePath)
-        if not os.path.exists(f'{self.savePath}/Calibration.csv'):
-            if os.path.exists(self.calFileLocation):
-                shutil.copy(self.calFileLocation, f'{self.savePath}/Calibration.csv')
+        if not os.path.exists(self.FileManager.getReaderSavePath()):
+            os.mkdir(self.FileManager.getReaderSavePath())
+        if not os.path.exists(self.FileManager.getCalibrationLocalLocation()):
+            if os.path.exists(self.FileManager.getCalibrationGlobalLocation()):
+                shutil.copy(self.FileManager.getCalibrationGlobalLocation(), self.FileManager.getCalibrationLocalLocation())
             else:
                 text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
-                                          ('Courier', 12, 'bold'), self.AppModule.royalBlue, 'red')
+                                          ('Courier', 12, 'bold'), self.AppModule.primaryColor, 'red')
                 logging.info(f"No calibration found for Reader {self.readerNumber}")
 
     def resetReaderRun(self):

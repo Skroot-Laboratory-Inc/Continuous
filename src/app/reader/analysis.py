@@ -1,4 +1,5 @@
 import csv
+import os.path
 from datetime import datetime
 
 import numpy as np
@@ -9,10 +10,11 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import RawScanException, SmoothedScanException
 from src.app.helper.helper_functions import frequencyToIndex
+from src.app.file_manager.reader_file_manager import ReaderFileManager
 
 
 class Analysis:
-    def __init__(self, savePath):
+    def __init__(self, FileManager: ReaderFileManager):
         self.zeroPoint = 1
 
         self.timestamp = []
@@ -28,7 +30,7 @@ class Analysis:
         self.denoiseFrequency = []
         self.filenames = []
 
-        self.savePath = savePath
+        self.FileManager = FileManager
 
     def analyzeScan(self):
         try:
@@ -38,8 +40,8 @@ class Analysis:
             self.maxFrequency.append(np.nan)
             self.maxVoltsSmooth.append(np.nan)
             self.maxFrequencySmooth.append(np.nan)
-            self.time.append((self.scanNumber - 100000) / 60)
-            self.filenames.append(f"{self.scanNumber}.csv")
+            self.time.append((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+            self.filenames.append(os.path.basename(self.FileManager.getCurrentScan()))
             self.timestamp.append(datetime.now())
             raise RawScanException()
         try:
@@ -49,12 +51,12 @@ class Analysis:
         except:
             self.maxVoltsSmooth.append(np.nan)
             self.maxFrequencySmooth.append(np.nan)
-            self.time.append((self.scanNumber - 100000) / 60)
-            self.filenames.append(f"{self.scanNumber}.csv")
+            self.time.append((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+            self.filenames.append(os.path.basename(self.FileManager.getCurrentScan()))
             self.timestamp.append(datetime.now())
             raise SmoothedScanException()
-        self.time.append((self.scanNumber - 100000) / 60)
-        self.filenames.append(f"{self.scanNumber}.csv")
+        self.time.append((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+        self.filenames.append(os.path.basename(self.FileManager.getCurrentScan()))
         self.timestamp.append(datetime.now())
 
     def recordFailedScan(self):
@@ -62,8 +64,8 @@ class Analysis:
         self.maxFrequency.append(np.nan)
         self.maxVoltsSmooth.append(np.nan)
         self.maxFrequencySmooth.append(np.nan)
-        self.time.append((self.scanNumber - 100000) / 60)
-        self.filenames.append(f"{self.scanNumber}.csv")
+        self.time.append((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+        self.filenames.append(os.path.basename(self.FileManager.getCurrentScan()))
         self.timestamp.append(datetime.now())
 
     def findMaximumData(self):
@@ -87,12 +89,12 @@ class Analysis:
                                                                       denoiseRadius, denoisePoints)
 
     def createAnalyzedFiles(self):
-        with open(f'{self.savePath}/Analyzed.csv', 'w', newline='') as f:
+        with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequency)
             writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
             writer.writerows(zip(self.filenames, self.denoiseTime, self.timestamp, equilibratedY, self.denoiseFrequency))
-        with open(f'{self.savePath}/smoothAnalyzed.csv', 'w', newline='') as f:
+        with open(self.FileManager.getSmoothAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.denoiseFrequencySmooth)
             writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])

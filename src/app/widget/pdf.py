@@ -2,11 +2,14 @@ import logging
 
 from fpdf import FPDF
 
+from src.app.file_manager.common_file_manager import CommonFileManager
+
 
 class PDF(FPDF):
     def header(self):
         # padding = 10
-        self.image("../resources/squareLogo.PNG", self.pdf_w - 40, self.pdf_h, 30, self.footerHeight)
+        FileManager = CommonFileManager()
+        self.image(FileManager.getSquareLogo(), self.pdf_w - 40, self.pdf_h, 30, self.footerHeight)
 
     def setFooterHeight(self, footerHeight):
         self.footerHeight = footerHeight
@@ -45,22 +48,22 @@ class PDF(FPDF):
         self.set_author('Skroot Laboratory')
 
 
-def generatePdf(location, Readers):
+def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation):
     pdf = PDF(orientation='L', unit='mm',
               format='A4')  # default = (orientation='P', unit='mm', format='A4')
     pdf.setFooterHeight(30)
     pdf.setPageWidthHeight(210, 297)
-    generateIntroPage(pdf, location)
-    generateReaderPages(pdf, location, Readers, pdf.footerHeight)
+    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation)
+    generateReaderPages(pdf, summaryPdfLocation, Readers, pdf.footerHeight)
 
 
-def generateIntroPage(pdf, location):
+def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation):
     pdf.add_page()
-    pdf.placeImage(f'{location}/setupForm.png', 0.03, 0.2, 0.3, 0.3)
-    pdf.placeImage(f'{location}/Summary Figure.jpg', 0.35, 0.05, 0.6, 0.7)
+    pdf.placeImage(setupFormLocation, 0.03, 0.2, 0.3, 0.3)
+    pdf.placeImage(summaryFigureLocation, 0.35, 0.05, 0.6, 0.7)
 
 
-def generateReaderPages(pdf, location, Readers, headerHeight):
+def generateReaderPages(pdf, summaryPdfLocation, Readers, headerHeight):
     try:
         labelWidth = 0.5
         plotWidth = 0.41
@@ -90,7 +93,7 @@ def generateReaderPages(pdf, location, Readers, headerHeight):
             except:
                 logging.exception(f'Failed to update pdf')
         pdf.setAuthor()  # uses Skroot Laboratory
-        pdf.output(f'{location}/Summary.pdf', 'F')  # saves the plot, F refers to file
+        pdf.output(summaryPdfLocation, 'F')  # saves the plot, F refers to file
     except:
         logging.exception("Failed to generate summary PDF")
 

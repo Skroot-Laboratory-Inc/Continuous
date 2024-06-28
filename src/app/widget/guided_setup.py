@@ -4,23 +4,19 @@ import tkinter.ttk as ttk
 
 import pyautogui
 
-
-def guidedSetupCell(root, baseSavePath, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime):
-    setupForm = SetupForm(root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
-                          secondAxisTitle, equilibrationTime)
-    month, day, year, savePath, numReaders, scanRate, calibrate, secondAxisTitle, cellType, equilibrationTime = setupForm.getConfiguration()
-    return month, day, year, savePath, numReaders, scanRate, calibrate, cellType, secondAxisTitle, equilibrationTime
+from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.file_manager.global_file_manager import GlobalFileManager
 
 
 class SetupForm:
-    def __init__(self, root, baseSavePath, month, day, year, numReaders, scanRate, cellType,
+    def __init__(self, root, month, day, year, numReaders, scanRate, cellType,
                  secondAxisTitle, equilibrationTime):
         self.secondAxisTitle = ""
         self.cellType = None
+        self.GlobalFileManager = None
         self.year = None
         self.month = None
         self.day = None
-        self.baseSavePath = baseSavePath
         self.scanRate = None
         self.savePath = None
         self.numReaders = 0
@@ -106,7 +102,7 @@ class SetupForm:
         root.wait_window(self.window)
 
     def getConfiguration(self):
-        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime
+        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime, self.GlobalFileManager
 
     def setCalibrate(self):
         if self.calibrateRequired.get() == 1:
@@ -120,15 +116,8 @@ class SetupForm:
             self.numReaders = int(self.numReadersEntry.get())
             self.equilibrationTime = int(self.equilibrationTimeEntry.get())
             self.scanRate = float(self.scanRateEntry.get())
-            if not os.path.exists(
-                    f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}"):
-                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()}"
-            else:
-                incrementalNumber = 0
-                while os.path.exists(
-                        f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"):
-                    incrementalNumber += 1
-                self.savePath = f"{self.baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"
+            self.savePath = self.getSavePath(date)
+            self.GlobalFileManager = GlobalFileManager(self.savePath)
             self.month, self.day, self.year, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
             self.takeScreenshot()
             self.window.destroy()
@@ -136,6 +125,21 @@ class SetupForm:
             tk.messagebox.showerror("Incorrect Formatting", "One (or more) of the values entered is not formatted "
                                                             "properly")
             self.window.tkraise()
+
+    def getSavePath(self, date):
+        FileManager = CommonFileManager()
+        baseSavePath = FileManager.getDataSavePath()
+        if not os.path.exists(baseSavePath):
+            os.mkdir(baseSavePath)
+        if not os.path.exists(
+                f"{baseSavePath}/{date}_{self.cellTypeEntry.get()}"):
+            return f"{baseSavePath}/{date}_{self.cellTypeEntry.get()}"
+        else:
+            incrementalNumber = 0
+            while os.path.exists(
+                    f"{baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"):
+                incrementalNumber += 1
+            return f"{baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
@@ -152,7 +156,7 @@ class SetupForm:
         if not os.path.exists(self.savePath):
             os.mkdir(self.savePath)
         im = pyautogui.screenshot(region=(x, y, w, round(h * 0.77)))
-        im.save(f'{self.savePath}/setupForm.png')
+        im.save(self.GlobalFileManager.getSetupForm())
 
 
 def createDropdown(root, entryVariable, options, addSpace):

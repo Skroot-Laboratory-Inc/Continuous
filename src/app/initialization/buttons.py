@@ -8,6 +8,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 from src.app.exception.common_exceptions import UserExitedException
+from src.app.helper.helper_functions import getDesktopLocation, getOperatingSystem
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.sib.reader_interface import ReaderInterface
 from src.app.sib.sib import Sib
 from src.app.widget import text_notification
@@ -15,9 +17,10 @@ from src.app.widget.information_panel import InformationPanel
 
 
 class ButtonFunctions:
-    def __init__(self, AppModule, location, root, PortAllocator):
+    def __init__(self, AppModule, root, PortAllocator):
         self.root = root
-        image = Image.open(rf"{location}/../resources/help.png")
+        fileManager = CommonFileManager()
+        image = Image.open(fileManager.getHelpIcon())
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
@@ -28,7 +31,7 @@ class ButtonFunctions:
     def createButtonsOnNewFrame(self):
         self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start Experiment", style='W.TButton',
                                       command=lambda: self.startFunc())
-        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white, bd=0)
+        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.secondaryColor, bd=0)
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
                                                       command=lambda: self.AppModule.plotSummary(self.AppModule.summaryFrame))
         self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment", style='W.TButton',
@@ -42,7 +45,7 @@ class ButtonFunctions:
                                           relheight=0.45 * spaceForPlots)
         self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
-        if not self.AppModule.ServerFileShare.disabled and self.AppModule.os == "windows":
+        if not self.AppModule.ServerFileShare.disabled and getOperatingSystem() == "windows":
             self.AppModule.ServerFileShare.makeNextFolder(os.path.basename(self.AppModule.savePath))
         self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.ReaderInterfaces)
         self.AppModule.Settings.addReaderNotes()
@@ -64,18 +67,18 @@ class ButtonFunctions:
             try:
                 self.AppModule.thread.shutdown_flag.set()
             except:
-                text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.AppModule.royalBlue,
-                                          self.AppModule.white)
+                text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.AppModule.primaryColor,
+                                          self.AppModule.secondaryColor)
                 self.AppModule.resetRun()
             self.stopButton.destroy()
-            text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+            text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'), self.AppModule.primaryColor, self.AppModule.secondaryColor)
 
     def findReaders(self, numReaders):
         logging.info(f'calibrate button pressed')
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(port, self.AppModule, readerNumber, True))
+                self.ReaderInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -99,7 +102,7 @@ class ButtonFunctions:
 
     def calibrateReaders1(self):
         text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
-                                  self.AppModule.royalBlue, self.AppModule.white)
+                                  self.AppModule.primaryColor, self.AppModule.secondaryColor)
         threads = self.calFunc(self.AppModule.numReaders)
         for t in threads:
             t.join()
@@ -109,16 +112,16 @@ class ButtonFunctions:
             if ReaderInterface.calibrationFailed:
                 calibrationFailed = True
                 text_notification.setText(f"Calibration failed for reader {ReaderInterface.readerNumber}",
-                                          ('Courier', 9, 'bold'), self.AppModule.royalBlue, self.AppModule.white)
+                                          ('Courier', 9, 'bold'), self.AppModule.primaryColor, self.AppModule.secondaryColor)
                 readersCalibrationFailed = readersCalibrationFailed.join(f" {ReaderInterface.readerNumber}")
         if calibrationFailed:
             text_notification.setText(f"Calibration failed for readers:{readersCalibrationFailed}",
                                       ('Courier', 9, 'bold'),
-                                      self.AppModule.royalBlue, self.AppModule.white)
+                                      self.AppModule.primaryColor, self.AppModule.secondaryColor)
             self.placeStopButton()
         else:
             text_notification.setText(f"Calibration Complete", ('Courier', 9, 'bold'),
-                                      self.AppModule.royalBlue, self.AppModule.white)
+                                      self.AppModule.primaryColor, self.AppModule.secondaryColor)
             self.placeStartButton()
 
     def calFunc2(self, readerIndex):
@@ -136,7 +139,7 @@ class ButtonFunctions:
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(port, self.AppModule, readerNumber, False))
+                self.ReaderInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, False))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -211,9 +214,9 @@ def pauseUntilUserClicks(readerNumber):
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 
-def instantiateReader(port, AppModule, readerNumber, calibrationRequired) -> ReaderInterface:
+def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) -> ReaderInterface:
     try:
-        sib = Sib(port, f'{AppModule.desktop}/Calibration/{readerNumber}/Calibration.csv', readerNumber, AppModule.PortAllocator, calibrationRequired)
+        sib = Sib(port, f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv', readerNumber, PortAllocator, calibrationRequired)
         success = sib.performHandshake()
         if success:
             return sib

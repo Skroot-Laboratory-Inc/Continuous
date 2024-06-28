@@ -5,7 +5,7 @@ import tkinter.ttk as ttk
 
 import matplotlib as mpl
 
-from src.app.reader.readers import Reader
+from src.app.reader.reader import Reader
 
 
 class Settings:
@@ -73,7 +73,7 @@ class Settings:
             if readersOnLastScreen == 0:
                 readersOnLastScreen = maxReadersPerScreen
             for i in range(numScreens):
-                self.AppModule.outerFrames.append(tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.white))
+                self.AppModule.outerFrames.append(tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.secondaryColor))
             for readerNumber in range(1, numReaders + 1):
                 readerColor = self.AppModule.ColorCycler.getNext()
                 screenNumber = math.ceil(readerNumber / maxReadersPerScreen) - 1

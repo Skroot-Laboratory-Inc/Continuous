@@ -4,7 +4,8 @@ class Colors:
         self.yellow = '#FFFE71'  # pastel yellow
         self.green = '#5CA904'  # leaf green
         self.lightRed = '#FF474C'  # light red
-        self.white = '#FFFFFF'
+        self.secondaryColor = '#FFFFFF'
+        self.primaryColor = 'RoyalBlue4'
 
 
 class ColorCycler:

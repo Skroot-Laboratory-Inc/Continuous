@@ -11,7 +11,6 @@ import tkinter as tk
 from importlib.metadata import version as version_api
 from zipfile import ZipFile
 
-import matplotlib as mpl
 import numpy as np
 from PIL import ImageTk, Image
 from reactivex.subject import BehaviorSubject
@@ -20,27 +19,28 @@ from sibcontrol import SIBException, SIBConnectionError
 from src.app.exception.analysis_exception import AnalysisException, ZeroPointException
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
-from src.app.helper.helper_functions import frequencyToIndex
+from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
 from src.app.initialization.buttons import ButtonFunctions
 from src.app.initialization.dev import DevMode
 from src.app.initialization.settings import Settings
 from src.app.initialization.setup import Setup
 from src.app.initialization.software_update import SoftwareUpdate
 from src.app.main_shared.server import ServerFileShare
+from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.properties.properties import CommonProperties
 from src.app.sib.port_allocator import PortAllocator
-from src.app.theme.colors import ColorCycler
+from src.app.theme.colors import ColorCycler, Colors
 from src.app.widget import logger, text_notification
 from src.app.widget.figure import FigureCanvas
 from src.app.widget.link_button import Linkbutton
 from src.app.widget.pdf import generatePdf
 from src.app.widget.timer import RunningTimer
 
-mpl.use('TkAgg')
-
 
 class MainShared:
     def __init__(self, version, major_version, minor_version):
         self.root = tk.Tk()  # everything in the application comes after this
+        self.GlobalFileManager = None
         self.readerPlotFrame = None
         self.foundPorts = False
         self.currentFrame = None
@@ -56,16 +56,13 @@ class MainShared:
         self.year = None
         self.day = None
         self.month = None
-        try:
-            self.desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-            self.os = 'windows'
-        except KeyError:
-            self.desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-            self.os = 'linux'
-        self.baseSavePath = self.desktop + "/data"
-        if not os.path.exists(self.baseSavePath):
-            os.mkdir(self.baseSavePath)
-        logger.loggerSetup(f'{self.desktop}/Calibration/log.txt', version)
+        self.Properties = CommonProperties()
+        self.CommonFileManager = CommonFileManager()
+        self.Colors = Colors()
+        self.awsTimeBetweenUploads = self.Properties.awsTimeBetweenUploads
+        self.startFreq = self.Properties.defaultStartFrequency
+        self.stopFreq = self.Properties.defaultEndFrequency
+        logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
         self.version = f'{major_version}.{minor_version}'
         self.numReaders = 0
@@ -73,17 +70,14 @@ class MainShared:
         self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
-        self.awsTimeBetweenUploads = 30
         self.awsLastUploadTime = 0
-        self.scanRate = 0.5
-        self.startFreq = 110
-        self.stopFreq = 160
+        self.scanRate = 0
         self.zeroPoint = 1
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.threadStatus = ''
-        self.royalBlue = 'RoyalBlue4'
-        self.white = 'white'
-        self.PortAllocator = PortAllocator(self.os)
+        self.primaryColor = self.Colors.primaryColor
+        self.secondaryColor = self.Colors.secondaryColor
+        self.PortAllocator = PortAllocator()
         self.finishedEquilibrationPeriod = False
         self.createRoot()
         self.ColorCycler = ColorCycler()
@@ -91,30 +85,31 @@ class MainShared:
         self.Readers = []
         self.Settings = Settings(self)
         self.Setup = Setup(self.root, self.Settings, self)
-        self.Buttons = ButtonFunctions(self, self.location, self.root, self.PortAllocator)
+        self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
         self.DevMode = DevMode()
         self.ServerFileShare = ServerFileShare(self)
-        self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version, self.location)
+        self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version)
         self.isDevMode = self.DevMode.isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
             'k',
             'Skroot Growth Index (SGI)',
             'Time (hrs)',
-            self.white,
+            self.secondaryColor,
             'Summary',
             '',
             7,
             9
         )
-        image = Image.open(rf"{self.location}/../resources/download.png")
+        image = Image.open(self.CommonFileManager.getDownloadIcon())
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.downloadIcon = ImageTk.PhotoImage(resizedImage)
 
     def createRoot(self):
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
-        if self.os == 'windows':
+        operatingSystem = getOperatingSystem()
+        if operatingSystem == 'windows':
             self.root.state('zoomed')
-        elif self.os == 'linux':
+        elif operatingSystem == 'linux':
             self.root.attributes('-zoomed', True)
 
         def _create_circle(this, x, y, r, **kwargs):
@@ -132,8 +127,7 @@ class MainShared:
                     try:
                         if not self.isDevMode:
                             Reader.changeIndicatorYellow()
-                            Reader.scanFrequency, Reader.scanMagnitude = Reader.ReaderInterface.takeScan(
-                                f'{Reader.savePath}/{Reader.scanNumber}.csv')
+                            Reader.scanFrequency, Reader.scanMagnitude = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
                             Reader.analyzeScan()
                         else:
                             Reader.addDevPoint()
@@ -161,7 +155,7 @@ class MainShared:
                             Reader.createServerJsonFile()
                             Reader.sendFilesToServer()
                         if self.disableSaveFullFiles:
-                            deleteScanFile(f'{Reader.savePath}/{Reader.scanNumber}.csv')
+                            deleteScanFile(Reader.FileManager.getCurrentScan())
                         # Reader.checkContamination()
                         # Reader.checkHarvest()
                         Reader.changeIndicatorGreen()
@@ -170,14 +164,14 @@ class MainShared:
                         Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
-                            f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                            f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
                         errorOccurredWhileTakingScans = True
                         Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
-                            f'Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}, but reconnected successfully')
+                            f'Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}, but reconnected successfully')
                         text_notification.setText(
                             f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
@@ -185,23 +179,26 @@ class MainShared:
                         Reader.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
-                            f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.scanNumber}')
+                            f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(
                             f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
                         errorOccurredWhileTakingScans = True
                         Reader.changeIndicatorRed()
                         logging.exception(
-                            f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.scanNumber}')
+                            f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(
                             f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
                     finally:
                         self.Timer.updateTime()
-                        incrementScan(Reader)
+                        Reader.FileManager.incrementScanNumber(Reader.scanRate)
                 if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
-                    generatePdf(self.savePath, self.Readers)
+                    generatePdf(self.Readers,
+                                self.GlobalFileManager.getSetupForm(),
+                                self.GlobalFileManager.getSummaryFigure(),
+                                self.GlobalFileManager.getSummaryPdf())
                     self.awsUploadPdfFile()
                 if not errorOccurredWhileTakingScans:
                     text_notification.setText("All readers successfully recorded data.")
@@ -211,7 +208,7 @@ class MainShared:
                 currentTime = time.time()
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-        text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.royalBlue, self.white)
+        text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.primaryColor, self.secondaryColor)
         self.resetRun()
         logging.info('Experiment Ended')
 
@@ -224,17 +221,15 @@ class MainShared:
 
     def downloadSoftwareUpdate(self):
         try:
-            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(
-                fr'{os.path.dirname(self.location)}/DesktopApp.zip')
+            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(self.CommonFileManager.getTempUpdateFile())
             if downloadUpdate:
-                with ZipFile(fr'{os.path.dirname(self.location)}/DesktopApp.zip', 'r') as file:
+                with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
                     file.extractall()
-                if self.os == "linux":
-                    shutil.copyfile(rf'{self.location}/../resources/desktopApp.desktop',
-                                    rf'{os.path.dirname(self.location)}/share/applications/desktopApp.desktop')
+                if getOperatingSystem() == "linux":
+                    shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(), self.CommonFileManager.getRemoteDesktopFile())
                     text_notification.setText(
                         "Installing new dependencies... please wait. This may take up to a minute.")
-                    runShScript(f'{self.location}/../resources/scripts/install-script.sh', self.desktop)
+                    runShScript(self.CommonFileManager.getInstallScript(), self.CommonFileManager.getExperimentLog())
                 text_notification.setText(
                     f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
             else:
@@ -245,16 +240,16 @@ class MainShared:
     def awsUploadPdfFile(self):
         if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
             if self.SoftwareUpdate.dstPdfName is None:
-                self.SoftwareUpdate.findFolderAndUploadFile(f'{self.savePath}/Summary.pdf', "application/pdf")
+                self.SoftwareUpdate.findFolderAndUploadFile(self.GlobalFileManager.getSummaryPdf(), "application/pdf")
             else:
-                if (self.Readers[0].scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                    self.SoftwareUpdate.uploadFile(f'{self.savePath}/Summary.pdf', self.SoftwareUpdate.dstPdfName,
+                if (self.Readers[0].FileManager.getCurrentScanNumber() - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
+                    self.SoftwareUpdate.uploadFile(self.GlobalFileManager.getSummaryPdf(), self.SoftwareUpdate.dstPdfName,
                                                    'application/pdf')
-                    self.awsLastUploadTime = self.Readers[0].scanNumber
+                    self.awsLastUploadTime = self.Readers[0].FileManager.getCurrentScanNumber()
 
     def awsUploadLogFile(self):
         if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
-            self.SoftwareUpdate.uploadFile(f'{self.desktop}/Calibration/log.txt', self.SoftwareUpdate.dstLogName,
+            self.SoftwareUpdate.uploadFile(self.CommonFileManager.getExperimentLog(), self.SoftwareUpdate.dstLogName,
                                            'text/plain')
             return True
         return False
@@ -289,7 +284,7 @@ class MainShared:
                 else:
                     yPlot = frequencyToIndex(Reader.zeroPoint, Reader.maxFrequencySmooth)
                     self.SummaryFigureCanvas.scatter(Reader.time, yPlot, 20, readerColor)
-            self.SummaryFigureCanvas.saveAs(f'{self.savePath}/Summary Figure.jpg')
+            self.SummaryFigureCanvas.saveAs(self.GlobalFileManager.getSummaryFigure())
             self.SummaryFigureCanvas.drawCanvas(frame)
         except:
             logging.exception("Failed to generate summaryPlot")
@@ -297,7 +292,7 @@ class MainShared:
     def createSummaryAnalyzedFile(self):
         rowHeaders = ['Time (hours)']
         rowData = [self.Readers[0].time]
-        with open(f'{self.savePath}/summaryAnalyzed.csv', 'w', newline='') as f:
+        with open(self.GlobalFileManager.getSummaryAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
@@ -310,7 +305,7 @@ class MainShared:
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
-            self.copyFilesToDebuggingFolder(self.numReaders)
+            self.copyFilesToDebuggingFolder(self.Readers)
             self.copyFilesToAnalysisFolder(self.Readers)
             self.root.destroy()
 
@@ -325,7 +320,7 @@ class MainShared:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
         self.zeroPoint = 1
-        self.copyFilesToDebuggingFolder(self.numReaders)
+        self.copyFilesToDebuggingFolder(self.Readers)
         self.copyFilesToAnalysisFolder(self.Readers)
         self.PortAllocator.resetPorts()
         self.freqToggleSet.on_completed()
@@ -341,36 +336,37 @@ class MainShared:
             self.Buttons.guidedSetupButton.invoke()
         self.finishedEquilibrationPeriod = False
 
-    def copyFilesToDebuggingFolder(self, numReaders):
-        logSubdir = f'{self.savePath}/Log'
+    def copyFilesToDebuggingFolder(self, Readers):
+        logSubdir = f'{self.GlobalFileManager.getSavePath()}/Log'
         if not os.path.exists(logSubdir):
             os.mkdir(logSubdir)
-        filesToCopy = {}
-        filesToCopy[f'{self.desktop}/Calibration/log.txt'] = 'Experiment Log.txt'
-        for readerNumber in range(1, numReaders + 1):
+        filesToCopy = {self.CommonFileManager.getExperimentLog(): 'Experiment Log.txt'}
+        for Reader in Readers:
             filesToCopy[
-                f'{self.desktop}/Calibration/{readerNumber}/Calibration.csv'] = f'Calibration_{readerNumber}.csv'
+                Reader.FileManager.getCalibrationLocalLocation()] = f'Calibration_{Reader.readerNumber}.csv'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{logSubdir}/{newFileLocation}')
 
     def copyFilesToAnalysisFolder(self, Readers):
-        analysisSubdir = f'{self.savePath}/Analysis'
+        analysisSubdir = f'{self.GlobalFileManager.getSavePath()}/Analysis'
         if not os.path.exists(analysisSubdir):
             os.mkdir(analysisSubdir)
-        filesToCopy = {}
-        filesToCopy[f'{self.savePath}/summaryAnalyzed.csv'] = 'Experiment Summary.csv'
-        filesToCopy[f'{self.savePath}/Summary.pdf'] = 'Experiment Summary.pdf'
-        filesToCopy[f'{self.savePath}/setupForm.png'] = 'Setup Form.png'
-        filesToCopy[f'{self.location}/../resources/README_Analysis.md'] = 'README.md'
+        filesToCopy = {
+            self.GlobalFileManager.getSummaryAnalyzed(): 'Experiment Summary.csv',
+            self.GlobalFileManager.getSummaryPdf(): 'Experiment Summary.pdf',
+            self.GlobalFileManager.getSetupForm(): 'Setup Form.png',
+            self.CommonFileManager.getReadme(): 'README.md',
+        }
         for Reader in Readers:
-            filesToCopy[f'{Reader.savePath}/secondAxis.csv'] = f'Reader {Reader.readerNumber} Second Axis.csv'
+            filesToCopy[Reader.FileManager.getSecondAxis()] = f'Reader {Reader.readerNumber} Second Axis.csv'
+            filesToCopy[Reader.FileManager.getExperimentNotes()] = f'Reader {Reader.readerNumber} Experiment Notes.txt'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{analysisSubdir}/{newFileLocation}')
 
     def createEndOfExperimentView(self):
-        endOfExperimentFrame = tk.Frame(self.root, bg=self.white)
+        endOfExperimentFrame = tk.Frame(self.root, bg=self.secondaryColor)
         endOfExperimentFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
         endOfExperimentFrame.grid_rowconfigure(0, weight=1)
         endOfExperimentFrame.grid_rowconfigure(1, weight=10)
@@ -378,23 +374,23 @@ class MainShared:
         endOfExperimentFrame.grid_columnconfigure(0, weight=2)
         endOfExperimentFrame.grid_columnconfigure(1, weight=3)
 
-        fileExplorerFrame = tk.Frame(endOfExperimentFrame, bg=self.white)
+        fileExplorerFrame = tk.Frame(endOfExperimentFrame, bg=self.secondaryColor)
         fileExplorerFrame.grid(row=0, column=0, columnspan=3)
         fileExplorerLabel = tk.Label(fileExplorerFrame, text='Experiment File Location: ', bg='white')
         fileExplorerLabel.pack(side=tk.LEFT)
         fileExplorerButton = Linkbutton(fileExplorerFrame, text=self.savePath, command=lambda: helper_functions.openFileExplorer(self.savePath))
         fileExplorerButton.pack(side=tk.LEFT)
-        downloadButton = tk.Button(fileExplorerFrame, bg=self.white, highlightthickness=0, borderwidth=0,
+        downloadButton = tk.Button(fileExplorerFrame, bg=self.secondaryColor, highlightthickness=0, borderwidth=0,
                                    image=self.downloadIcon, command=lambda: self.downloadExperimentAsZip())
         downloadButton.pack(side=tk.LEFT, padx=10)
 
-        self.guidedSetupImage = ImageTk.PhotoImage(file=f'{self.savePath}/setupForm.png')
-        image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.white)
+        self.guidedSetupImage = ImageTk.PhotoImage(file=self.GlobalFileManager.getSetupForm())
+        image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.secondaryColor)
         image_label.grid(row=1, column=0, sticky='nesw')
 
-        image = Image.open(f'{self.savePath}/Summary Figure.jpg').resize((600, 400), Image.ANTIALIAS)
+        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.ANTIALIAS)
         self.summaryPlotImage = ImageTk.PhotoImage(image)
-        image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.white)
+        image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.secondaryColor)
         image_label.grid(row=1, column=1, sticky='nesw')
 
         self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
@@ -417,18 +413,14 @@ class MainShared:
         self.summaryFrame.tkraise()
 
 
-def incrementScan(Reader):
-    Reader.scanNumber += Reader.scanRate
-
-
 def deleteScanFile(filename):
     os.remove(filename)
 
 
-def runShScript(shScriptFilename, desktop):
+def runShScript(shScriptFilename, experimentLog):
     st = os.stat(shScriptFilename)
     os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
-    logFile = open(f'{desktop}/Calibration/log.txt', 'w+')
+    logFile = open(experimentLog, 'w+')
     process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile,
                                stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
     process.communicate("skroot".encode())
