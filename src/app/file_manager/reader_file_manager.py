@@ -10,7 +10,6 @@ class ReaderFileManager:
         self.smoothAnalyzed = rf"{self.readerSavePath}/smoothAnalyzed.csv"
         self.calibrationLocalLocation = f'{self.readerSavePath}/Calibration.csv'
         self.calibrationGlobalLocation = f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv'
-        self.serverInfo = rf"{self.readerSavePath}/serverInfo.json"
         self.summaryPdf = f'{self.globalSavePath}/Summary.pdf'
         self.readerPlotJpg = f'{self.globalSavePath}/Reader {readerNumber}.jpg'
         self.experimentNotesTxt = f'{self.readerSavePath}/notes.txt'
@@ -27,9 +26,6 @@ class ReaderFileManager:
 
     def getSmoothAnalyzed(self):
         return self.smoothAnalyzed
-
-    def getServerInfo(self):
-        return self.serverInfo
 
     def getCalibrationLocalLocation(self):
         return self.calibrationLocalLocation
