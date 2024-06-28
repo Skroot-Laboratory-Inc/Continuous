@@ -5,15 +5,15 @@ import os
 import botocore
 
 from src.app.aws.aws import AwsBoto3
+from src.app.helper.helper_functions import getCwd
 from src.app.widget import release_notes
 
 
 class SoftwareUpdate(AwsBoto3):
-    def __init__(self, root, major_version, minor_version, location):
+    def __init__(self, root, major_version, minor_version):
         super().__init__()
         self.newestMajorVersion = major_version
         self.newestMinorVersion = minor_version
-        self.location = location
         self.root = root
         self.newestZipVersion = ''
         self.releaseNotesPrefix = 'release-notes'
@@ -21,7 +21,7 @@ class SoftwareUpdate(AwsBoto3):
             self.releaseNotes = json.load(f)
 
     def getCurrentReleaseNotes(self):
-        localFilename = f"{self.location}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
+        localFilename = f"{getCwd()}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
         self.downloadFile(
             f"{self.releaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
             localFilename

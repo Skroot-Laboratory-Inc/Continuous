@@ -89,7 +89,7 @@ class ContaminationAlgorithm(Analysis, Indicator):
         self.backgroundColor = None
         self.contaminated = False
         self.createIndicator(outerFrame)
-        self.updateContaminationJson(self.white)
+        self.updateContaminationJson(self.secondaryColor)
 
     def checkContamination(self):
         if len(self.time) > 201:

@@ -1,6 +1,8 @@
 import os
 import sys
 
+from src.app.widget.guided_setup import SetupForm
+
 try:
     desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 except KeyError:
@@ -27,10 +29,6 @@ mpl.use('TkAgg')
 
 class AppModule(MainShared):
     def __init__(self, version, major_version, minor_version):
-        try:
-            self.location = sys._MEIPASS
-        except AttributeError:
-            self.location = os.getcwd()
         super().__init__(version, major_version, minor_version)
         self.setupApp()
         self.root.mainloop()  # everything comes before this
@@ -56,19 +54,17 @@ class AppModule(MainShared):
             self.endOfExperimentFrame.destroy()
         except:
             pass
+        setupForm = SetupForm(self.root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
-         self.secondAxisTitle, self.equilibrationTime) = guided_setup.guidedSetupCell(self.root, self.baseSavePath,
-                                                                                      month, day,
-                                                                                      year, numReaders, scanRate,
-                                                                                      cellType, secondAxisTitle,
-                                                                                      equilibrationTime)
+         self.secondAxisTitle, self.equilibrationTime, self.GlobalFileManager) = setupForm.getConfiguration()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if calibrate:
-            self.Buttons.connectReadersButton.destroy()
             self.foundPorts = True
-            self.Buttons.findReaders(self.numReaders)
-            self.Buttons.placeCalibrateReadersButton()
+            if not self.isDevMode:
+                self.Buttons.connectReadersButton.destroy()
+                self.Buttons.findReaders(self.numReaders)
+                self.Buttons.placeCalibrateReadersButton()
 
 
 with open('../resources/version.json') as j_file:
@@ -76,4 +72,5 @@ with open('../resources/version.json') as j_file:
 
 major_version = version['major_version']
 minor_version = version['minor_version']
+mpl.use('TkAgg')
 AppModule(f"Version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

@@ -45,21 +45,21 @@ class Setup:
         style = ttk.Style()
         style.theme_use('clam')
         self.root.configure(background='white')
-        style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.white,
-                        background=self.AppModule.royalBlue)
-        style.map('W.TButton', background=[("disabled", "gray23"), ("active", self.AppModule.royalBlue)])
+        style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.secondaryColor,
+                        background=self.AppModule.primaryColor)
+        style.map('W.TButton', background=[("disabled", "gray23"), ("active", self.AppModule.primaryColor)])
 
     def createFrames(self):
-        self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.white)
+        self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
         self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.92)
-        footer = tk.Frame(self.root, bg=self.AppModule.white)
+        footer = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
         footer.place(relx=0, rely=0.97, relwidth=1, relheight=0.03)
         versionLabel = tk.Label(footer, text=f'Version: v{self.AppModule.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         copyrightLabel = tk.Label(footer, text='\u00A9 Skroot Laboratory, Inc 2018-2024. All rights reserved.', bg='white')
         copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
 
-        textFrame = tk.Frame(self.root, bg=self.AppModule.white)
+        textFrame = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
         text_notification.createWidget(textFrame)
         text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
         textFrame.place(relx=0, rely=0, relwidth=1, relheight=0.05)

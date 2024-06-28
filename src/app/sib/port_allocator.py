@@ -1,11 +1,13 @@
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
+from src.app.helper.helper_functions import getOperatingSystem
+
 
 class PortAllocator:
-    def __init__(self, os):
+    def __init__(self):
         self.ports = []
-        self.os = os
+        self.os = getOperatingSystem()
 
     def getNewPort(self) -> (ListPortInfo, str):
         port = getNewPorts(self.os, self.ports)

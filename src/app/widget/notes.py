@@ -1,11 +1,14 @@
 import tkinter as tk
 
+from src.app.file_manager.reader_file_manager import ReaderFileManager
+
 
 class ExperimentNotes:
-    def __init__(self, readerNumber):
+    def __init__(self, readerNumber, FileManager: ReaderFileManager):
         self.readerNumber = readerNumber
         self.notes = ''
         self.notesTimestamps = []
+        self.FileManager = FileManager
 
     def addExperimentNotesMenubar(self, menu):
         menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeExperimentNotes())
@@ -26,9 +29,9 @@ class ExperimentNotes:
                 self.notes = f'{self.notes}{round(timestamp, 2)} hrs: {newNotes}'
             else:
                 self.notes = f'{self.notes}\n{round(timestamp, 2)} hrs: {newNotes}'
-            with open(f'{self.savePath}/notes.txt', 'w') as f:
+            with open(self.FileManager.getExperimentNotes(), 'w') as f:
                 f.write(self.notes)
-            self.sendToServer(f'{self.savePath}/notes.txt')
+            self.sendToServer(self.FileManager.getExperimentNotes())
 
     def addNotesToPdf(self, pdf, currentX, currentY, notesWidth, notesLineHeight, plotHeight, paddingY):
         currentY += plotHeight / 8

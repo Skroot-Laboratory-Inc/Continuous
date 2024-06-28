@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 import zipfile
 
@@ -51,4 +52,29 @@ def convertListToPercent(list):
 def convertToPercent(item):
     """ This converts a single value into a percent i.e. 1.08 into 8%"""
     return (item-1)*100
+
+
+def getDesktopLocation():
+    """ This gets the path to the computer's desktop. """
+    try:
+        return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    except KeyError:
+        return os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+
+
+def getOperatingSystem():
+    """ This gets the current operating system, linux or windows. """
+    try:
+        os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        return 'windows'
+    except KeyError:
+        return 'linux'
+
+
+def getCwd():
+    """ This gets the current working directory of the application. """
+    try:
+        return sys._MEIPASS
+    except AttributeError:
+        return os.getcwd()
 

@@ -12,6 +12,7 @@ from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDS
 
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
+from src.app.properties.sib_properties import SibProperties
 from src.app.sib.reader_interface import ReaderInterface
 from src.app.widget import text_notification
 
@@ -19,15 +20,16 @@ from src.app.widget import text_notification
 class Sib(ReaderInterface):
     def __init__(self, port, calibrationFileName, readerNumber, PortAllocator, calibrationRequired=False):
         self.calibrationFailed = False
-        self.yAxisLabel = 'Signal Strength (Unitless)'
         self.readerNumber = readerNumber
         self.PortAllocator = PortAllocator
         self.initialize(port.device)
         self.serialNumber = port.serial_number
-        self.calibrationStartFreq = 50
-        self.calibrationStopFreq = 170
-        self.stepSize = 0.01
-        self.initialSpikeMhz = 0.2
+        Properties = SibProperties()
+        self.calibrationStartFreq = Properties.calibrationStartFreq
+        self.calibrationStopFreq = Properties.calibrationStopFreq
+        self.stepSize = Properties.stepSize
+        self.initialSpikeMhz = Properties.initialSpikeMhz
+        self.yAxisLabel = Properties.yAxisLabel
         self.calibrationFilename = calibrationFileName
         self.calibrationRequired = calibrationRequired
         if not calibrationRequired:

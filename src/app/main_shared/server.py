@@ -3,6 +3,8 @@ import logging
 import os
 import subprocess as sp
 
+from src.app.helper.helper_functions import getOperatingSystem
+
 
 class ServerFileShare:
     def __init__(self, AppModule):
@@ -10,7 +12,7 @@ class ServerFileShare:
         self.AppModule = AppModule
         self.DevMode = AppModule.DevMode
         self.disabled = False
-        if self.AppModule.os == "windows":
+        if getOperatingSystem() == "windows":
             self.setServerLocation()
 
     def setServerLocation(self):

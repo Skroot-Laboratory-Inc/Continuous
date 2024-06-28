@@ -12,7 +12,7 @@ from src.app.reader.plotting import Plotting
 class DevMode:
     def __init__(self):
         self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.fakeServer = False
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
@@ -29,7 +29,7 @@ class ReaderDevMode(Plotting):
         self.DevMode = AppModule.DevMode
         if self.DevMode.isDevMode:
             AppModule.scanRate = self.DevMode.scanRate
-            self.scanNumber = self.DevMode.startTime + 100000
+            self.FileManager.scanNumber = self.DevMode.startTime + 100000
             self.scanRate = self.DevMode.scanRate
             self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
             readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
@@ -71,7 +71,7 @@ class ReaderDevMode(Plotting):
             try:
                 nextPointIndex = len(self.time)
                 self.addDevScan(self.devFiles[nextPointIndex])
-                shutil.copy(self.devFiles[nextPointIndex], f'{self.savePath}/{self.scanNumber}.csv')
+                shutil.copy(self.devFiles[nextPointIndex], self.FileManager.getCurrentScan())
                 self.time.append(self.devTime[nextPointIndex])
                 self.filenames.append(self.devFiles[nextPointIndex])
                 self.timestamp.append(datetime.now())

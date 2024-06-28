@@ -1,21 +1,22 @@
 import csv
 import logging
-import os
 import tkinter as tk
 import tkinter.ttk as ttk
 
 from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
+from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.reader.analysis import Analysis
 from src.app.widget.figure import FigureCanvas
 from src.app.widget.notes import ExperimentNotes
 
 
 class SecondAxis(Analysis):
-    def __init__(self, readerNumber, secondAxisTitle):
+    def __init__(self, readerNumber, secondAxisTitle, FileManager: ReaderFileManager):
         self.secondAxisValues = []
         self.secondAxisTime = []
         self.readerNumber = readerNumber
         self.secondAxisTitle = secondAxisTitle
+        self.FileManager = FileManager
 
     def addSecondAxisMenubar(self, menu):
         menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeSecondAxisValues())
@@ -31,7 +32,7 @@ class SecondAxis(Analysis):
         if value is not None:
             self.secondAxisTime.append(self.time[-1])
             self.secondAxisValues.append(value)
-            with open(f'{self.savePath}/secondAxis.csv', 'w', newline='') as f:
+            with open(self.FileManager.getSecondAxis(), 'w', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(['Time (hours)', self.secondAxisTitle])
                 writer.writerows(zip(self.secondAxisTime, self.secondAxisValues))
@@ -39,9 +40,9 @@ class SecondAxis(Analysis):
 
 
 class Plotting(SecondAxis, ExperimentNotes):
-    def __init__(self, readerColor, outerFrame, readerNumber, AppModule, secondAxisTitle=""):
-        SecondAxis.__init__(self, readerNumber, secondAxisTitle)
-        ExperimentNotes.__init__(self, readerNumber)
+    def __init__(self, readerColor, outerFrame, readerNumber, AppModule, FileManager: ReaderFileManager, secondAxisTitle=""):
+        SecondAxis.__init__(self, readerNumber, secondAxisTitle, FileManager)
+        ExperimentNotes.__init__(self, readerNumber, FileManager)
         self.AppModule = AppModule
         self.frequencyPlot = None
         self.frequencyCanvas = None
@@ -85,7 +86,7 @@ class Plotting(SecondAxis, ExperimentNotes):
             self.ReaderFigureCanvas.addVerticalLine(xvalue)
         self.ReaderFigureCanvas.addSecondAxis(self.secondAxisTime, self.secondAxisValues)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
-        self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
+        self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 
     def plotSignal(self):
         self.ReaderFigureCanvas.setYAxisLabel('Signal Check')
@@ -95,11 +96,11 @@ class Plotting(SecondAxis, ExperimentNotes):
         self.ReaderFigureCanvas.scatter(self.scanFrequency, convertListToPercent(self.scanMagnitude), 20, 'black')
         self.ReaderFigureCanvas.scatter(self.maxFrequencySmooth[-1], convertToPercent(self.maxVoltsSmooth[-1]), 30, 'red')
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
-        self.ReaderFigureCanvas.saveAs(f'{os.path.dirname(self.savePath)}/Reader {self.readerNumber}.jpg')
+        self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 
     def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
         spaceForPlots = 0.9
-        self.frequencyFrame = tk.Frame(outerFrame, bg=self.AppModule.white, bd=5)
+        self.frequencyFrame = tk.Frame(outerFrame, bg=self.AppModule.secondaryColor, bd=5)
         relx, rely = 0, 0
         if totalNumberOfReaders > 1:
             if (self.readerNumber % 5) == 1:
