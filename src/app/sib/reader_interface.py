@@ -1,4 +1,4 @@
-from typing import List
+from src.app.model.sweep_data import SweepData
 
 
 class ReaderInterfaceMetaClass(type):
@@ -19,13 +19,15 @@ class ReaderInterfaceMetaClass(type):
                 callable(subclass.setStartFrequency) and
                 hasattr(subclass, 'setStopFrequency') and
                 callable(subclass.setStopFrequency) and
+                hasattr(subclass, 'getYAxisLabel') and
+                callable(subclass.getYAxisLabel) and
                 hasattr(subclass, 'close') and
                 callable(subclass.close))
 
 
 class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
-    def takeScan(self, outputFilename) -> (List[float], List[float]):
+    def takeScan(self, outputFilename) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
 
     def calibrateIfRequired(self):
@@ -45,4 +47,7 @@ class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
     def close(self) -> bool:
         """The reader closes the port that it is using to connect."""
+
+    def getYAxisLabel(self) -> str:
+        """ Returns the yaxislabel, or units of the magnitude of the graph. """
 

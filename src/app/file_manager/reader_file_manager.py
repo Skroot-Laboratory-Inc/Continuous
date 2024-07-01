@@ -13,6 +13,7 @@ class ReaderFileManager:
         self.summaryPdf = f'{self.globalSavePath}/Summary.pdf'
         self.readerPlotJpg = f'{self.globalSavePath}/Reader {readerNumber}.jpg'
         self.experimentNotesTxt = f'{self.readerSavePath}/notes.txt'
+        self.accelerationCsv = f'{self.readerSavePath}/Acceleration.csv'
         self.scanNumber = 100001
 
     def getReaderSavePath(self):
@@ -43,6 +44,9 @@ class ReaderFileManager:
         return self.readerPlotJpg
 
     def getExperimentNotes(self):
+        return self.experimentNotesTxt
+
+    def getAccelerationCsv(self):
         return self.experimentNotesTxt
 
     def getCurrentScanNumber(self):

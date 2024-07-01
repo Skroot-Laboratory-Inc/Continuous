@@ -125,8 +125,8 @@ class MainShared:
                     try:
                         if not self.isDevMode:
                             Reader.changeIndicatorYellow()
-                            Reader.scanFrequency, Reader.scanMagnitude = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
-                            Reader.analyzeScan()
+                            sweepData = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
+                            Reader.Analyzer.analyzeScan(sweepData, self.denoiseSet)
                         else:
                             Reader.addDevPoint()
                         try:
@@ -145,14 +145,12 @@ class MainShared:
                         except:
                             raise ZeroPointException(
                                 f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.maxFrequencySmooth[-5:]}")
-                        if self.denoiseSet:
-                            Reader.denoiseResults()
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
                         Reader.createAnalyzedFiles()
                         if self.disableSaveFullFiles:
                             deleteScanFile(Reader.FileManager.getCurrentScan())
-                        # Reader.checkContamination()
-                        # Reader.checkHarvest()
+                        # Reader.ContaminationAlgorithm.check(Reader.getAnalyzer())
+                        # Reader.check(Reader.getAnalyzer())
                         Reader.changeIndicatorGreen()
                     except SIBConnectionError:
                         errorOccurredWhileTakingScans = True

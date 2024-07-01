@@ -159,7 +159,7 @@ class Settings:
 
     def inoculateAllReaders(self):
         for Reader in self.AppModule.Readers:
-            Reader.updateInoculation()
+            Reader.updateInoculation(Reader.Analyzer)
 
     def addNotesAllReaders(self):
         newNotes = tk.simpledialog.askstring(f'All Reader Notes',

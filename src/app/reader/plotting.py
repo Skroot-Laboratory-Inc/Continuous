@@ -5,12 +5,12 @@ import tkinter.ttk as ttk
 
 from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.reader.analysis import Analysis
+from src.app.reader.analyzer import Analyzer
 from src.app.widget.figure import FigureCanvas
 from src.app.widget.notes import ExperimentNotes
 
 
-class SecondAxis(Analysis):
+class SecondAxis(Analyzer):
     def __init__(self, readerNumber, secondAxisTitle, FileManager: ReaderFileManager):
         self.secondAxisValues = []
         self.secondAxisTime = []

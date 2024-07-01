@@ -12,6 +12,7 @@ from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDS
 
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
+from src.app.model.sweep_data import SweepData
 from src.app.properties.sib_properties import SibProperties
 from src.app.sib.reader_interface import ReaderInterface
 from src.app.widget import text_notification
@@ -35,19 +36,22 @@ class Sib(ReaderInterface):
         if not calibrationRequired:
             self.loadCalibrationFile()
 
+    def getYAxisLabel(self) -> str:
+        return self.yAxisLabel
+
     def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationVolts = loadCalibrationFile(self.calibrationFilename)
         selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
         logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
 
-    def takeScan(self, outputFilename) -> (List[float], List[float]):
+    def takeScan(self, outputFilename) -> SweepData:
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts = self.calibrationComparison(frequency, volts)
             createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
-            return frequency, calibratedVolts
+            return SweepData(frequency, calibratedVolts)
         except SIBConnectionError:
             self.resetSibConnection()
             raise SIBConnectionError()
