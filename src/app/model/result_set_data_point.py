@@ -1,0 +1,46 @@
+import numpy as np
+
+
+class ResultSetDataPoint:
+    def __init__(self):
+        self.time = np.nan
+        self.maxFrequency = np.nan
+        self.maxVoltsSmooth = np.nan
+        self.maxFrequencySmooth = np.nan
+        self.filename = ""
+        self.timestamp = np.nan
+
+        self.denoiseTimeSmooth = np.nan
+        self.denoiseTime = np.nan
+        self.denoiseFrequencySmooth = np.nan
+        self.denoiseFrequency = np.nan
+
+    def setTime(self, time):
+        self.time = time
+
+    def setDenoiseTime(self, time):
+        self.denoiseTime = time
+
+    def setDenoiseTimeSmooth(self, time):
+        self.denoiseTimeSmooth = time
+
+    def setDenoiseFrequency(self, frequency):
+        self.denoiseFrequency = frequency
+
+    def setDenoiseFrequencySmooth(self, frequency):
+        self.denoiseFrequencySmooth = frequency
+
+    def setMaxFrequency(self, maxFrequency):
+        self.maxFrequency = maxFrequency
+
+    def setMaxVoltsSmooth(self, maxVolts):
+        self.maxVoltsSmooth = maxVolts
+
+    def setMaxFrequencySmooth(self, maxFrequencySmoothed):
+        self.maxFrequencySmooth = maxFrequencySmoothed
+
+    def setFilename(self, filename):
+        self.filename = filename
+
+    def setTimestamp(self, timestamp):
+        self.timestamp = timestamp

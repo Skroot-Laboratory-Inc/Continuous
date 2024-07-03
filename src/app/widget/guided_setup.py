@@ -9,8 +9,7 @@ from src.app.file_manager.global_file_manager import GlobalFileManager
 
 
 class SetupForm:
-    def __init__(self, root, month, day, year, numReaders, scanRate, cellType,
-                 secondAxisTitle, equilibrationTime):
+    def __init__(self, root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime):
         self.secondAxisTitle = ""
         self.cellType = None
         self.GlobalFileManager = None

@@ -21,13 +21,12 @@ from datetime import datetime
 
 import matplotlib as mpl
 
-from src.app.widget import guided_setup
 from src.app.main_shared.main_shared import MainShared
 
 mpl.use('TkAgg')
 
 
-class AppModule(MainShared):
+class Main(MainShared):
     def __init__(self, version, major_version, minor_version):
         super().__init__(version, major_version, minor_version)
         self.setupApp()
@@ -55,8 +54,8 @@ class AppModule(MainShared):
         except:
             pass
         setupForm = SetupForm(self.root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
-        (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, calibrate, self.cellType,
-         self.secondAxisTitle, self.equilibrationTime, self.GlobalFileManager) = setupForm.getConfiguration()
+        (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate,
+         calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime, self.GlobalFileManager) = setupForm.getConfiguration()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if calibrate:
@@ -73,4 +72,4 @@ with open('../resources/version.json') as j_file:
 major_version = version['major_version']
 minor_version = version['minor_version']
 mpl.use('TkAgg')
-AppModule(f"Version: Cell_v{major_version}.{minor_version}", major_version, minor_version)
+Main(f"Version: Cell_v{major_version}.{minor_version}", major_version, minor_version)

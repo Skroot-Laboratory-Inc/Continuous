@@ -22,13 +22,14 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
 from src.app.initialization.buttons import ButtonFunctions
-from src.app.initialization.dev import DevMode
 from src.app.initialization.settings import Settings
 from src.app.initialization.setup import Setup
 from src.app.initialization.software_update import SoftwareUpdate
+from src.app.properties.dev_properties import DevProperties
 from src.app.properties.properties import CommonProperties
 from src.app.sib.port_allocator import PortAllocator
-from src.app.theme.colors import ColorCycler, Colors
+from src.app.theme.color_cycler import ColorCycler
+from src.app.theme.colors import Colors
 from src.app.widget import logger, text_notification
 from src.app.widget.figure import FigureCanvas
 from src.app.widget.link_button import Linkbutton
@@ -71,7 +72,6 @@ class MainShared:
         self.disableSaveFullFiles = False
         self.awsLastUploadTime = 0
         self.scanRate = 0
-        self.zeroPoint = 1
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.threadStatus = ''
         self.primaryColor = self.Colors.primaryColor
@@ -85,9 +85,9 @@ class MainShared:
         self.Settings = Settings(self)
         self.Setup = Setup(self.root, self.Settings, self)
         self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
-        self.DevMode = DevMode()
+        self.DevProperties = DevProperties()
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version)
-        self.isDevMode = self.DevMode.isDevMode
+        self.isDevMode = self.DevProperties.isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
             'k',
             'Skroot Growth Index (SGI)',
@@ -124,46 +124,44 @@ class MainShared:
                 for Reader in self.Readers:
                     try:
                         if not self.isDevMode:
-                            Reader.changeIndicatorYellow()
-                            Reader.scanFrequency, Reader.scanMagnitude = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
-                            Reader.analyzeScan()
+                            Reader.Indicator.changeIndicatorYellow()
+                            sweepData = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
+                            Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
                         else:
                             Reader.addDevPoint()
                         try:
-                            if Reader.time[-1] >= self.equilibrationTime and Reader.zeroPoint == 1:
-                                if self.equilibrationTime == 0 and Reader.maxFrequencySmooth[-1] != np.nan:
-                                    self.zeroPoint = Reader.maxFrequencySmooth[-1]
-                                elif self.equilibrationTime == 0 and Reader.maxFrequencySmooth[-1] == np.nan:
+                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
+                                if self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[-1] != np.nan:
+                                    zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
+                                elif self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[-1] == np.nan:
                                     raise Exception()
                                 else:
-                                    self.zeroPoint = np.nanmean(Reader.maxFrequencySmooth[-5:])
-                                Reader.setZeroPoint(self.zeroPoint)
+                                    zeroPoint = np.nanmean(Reader.getResultSet().getMaxFrequencySmooth()[-5:])
+                                Reader.getAnalyzer().setZeroPoint(zeroPoint)
                                 self.freqToggleSet.on_next("SGI")
                                 self.finishedEquilibrationPeriod = True
-                                logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {self.zeroPoint} MHz")
+                                logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
                                 Reader.resetReaderRun()
                         except:
                             raise ZeroPointException(
-                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.maxFrequencySmooth[-5:]}")
-                        if self.denoiseSet:
-                            Reader.denoiseResults()
+                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
-                        Reader.createAnalyzedFiles()
+                        Reader.Analyzer.createAnalyzedFiles()
                         if self.disableSaveFullFiles:
                             deleteScanFile(Reader.FileManager.getCurrentScan())
-                        # Reader.checkContamination()
-                        # Reader.checkHarvest()
-                        Reader.changeIndicatorGreen()
+                        # Reader.ContaminationAlgorithm.check(Reader.getResultSet())
+                        # Reader.check(Reader.getResultSet())
+                        Reader.Indicator.changeIndicatorGreen()
                     except SIBConnectionError:
                         errorOccurredWhileTakingScans = True
-                        Reader.changeIndicatorRed()
+                        Reader.Indicator.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
                         errorOccurredWhileTakingScans = True
-                        Reader.changeIndicatorRed()
+                        Reader.Indicator.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}, but reconnected successfully')
@@ -171,7 +169,7 @@ class MainShared:
                             f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
                         errorOccurredWhileTakingScans = True
-                        Reader.changeIndicatorRed()
+                        Reader.Indicator.changeIndicatorRed()
                         Reader.recordFailedScan()
                         logging.exception(
                             f'Hardware Problem: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
@@ -179,7 +177,7 @@ class MainShared:
                             f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
                         errorOccurredWhileTakingScans = True
-                        Reader.changeIndicatorRed()
+                        Reader.Indicator.changeIndicatorRed()
                         logging.exception(
                             f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(
@@ -208,7 +206,7 @@ class MainShared:
         logging.info('Experiment Ended')
 
     def awsCheckSoftwareUpdates(self):
-        if not self.DevMode.isDevMode:
+        if not self.DevProperties.isDevMode:
             newestVersion, updateRequired = self.SoftwareUpdate.checkForSoftwareUpdates()
             if updateRequired:
                 text_notification.setText(
@@ -221,7 +219,8 @@ class MainShared:
                 with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
                     file.extractall()
                 if getOperatingSystem() == "linux":
-                    shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(), self.CommonFileManager.getRemoteDesktopFile())
+                    shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(),
+                                    self.CommonFileManager.getRemoteDesktopFile())
                     text_notification.setText(
                         "Installing new dependencies... please wait. This may take up to a minute.")
                     runShScript(self.CommonFileManager.getInstallScript(), self.CommonFileManager.getExperimentLog())
@@ -233,17 +232,19 @@ class MainShared:
             logging.exception("failed to update software")
 
     def awsUploadPdfFile(self):
-        if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
+        if not self.DevProperties.isDevMode and not self.SoftwareUpdate.disabled:
             if self.SoftwareUpdate.dstPdfName is None:
                 self.SoftwareUpdate.findFolderAndUploadFile(self.GlobalFileManager.getSummaryPdf(), "application/pdf")
             else:
-                if (self.Readers[0].FileManager.getCurrentScanNumber() - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                    self.SoftwareUpdate.uploadFile(self.GlobalFileManager.getSummaryPdf(), self.SoftwareUpdate.dstPdfName,
+                if (self.Readers[
+                        0].FileManager.getCurrentScanNumber() - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
+                    self.SoftwareUpdate.uploadFile(self.GlobalFileManager.getSummaryPdf(),
+                                                   self.SoftwareUpdate.dstPdfName,
                                                    'application/pdf')
                     self.awsLastUploadTime = self.Readers[0].FileManager.getCurrentScanNumber()
 
     def awsUploadLogFile(self):
-        if not self.DevMode.isDevMode and not self.SoftwareUpdate.disabled:
+        if not self.DevProperties.isDevMode and not self.SoftwareUpdate.disabled:
             self.SoftwareUpdate.uploadFile(self.CommonFileManager.getExperimentLog(), self.SoftwareUpdate.dstLogName,
                                            'text/plain')
             return True
@@ -272,13 +273,13 @@ class MainShared:
             self.SummaryFigureCanvas.redrawPlot()
             self.ColorCycler.reset()
             for Reader in self.Readers:
-                readerColor = self.ColorCycler.getNext()
-                if self.denoiseSet:
-                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.denoiseFrequencySmooth)
-                    self.SummaryFigureCanvas.scatter(Reader.denoiseTimeSmooth, yPlot, 20, readerColor)
-                else:
-                    yPlot = frequencyToIndex(Reader.zeroPoint, Reader.maxFrequencySmooth)
-                    self.SummaryFigureCanvas.scatter(Reader.time, yPlot, 20, readerColor)
+                readerPlottable = Reader.getSummaryPlottable(self.denoiseSet)
+                self.SummaryFigureCanvas.scatter(
+                    readerPlottable.getXValues(),
+                    readerPlottable.getYValues(),
+                    20,
+                    readerPlottable.getColor(),
+                )
             self.SummaryFigureCanvas.saveAs(self.GlobalFileManager.getSummaryFigure())
             self.SummaryFigureCanvas.drawCanvas(frame)
         except:
@@ -286,12 +287,15 @@ class MainShared:
 
     def createSummaryAnalyzedFile(self):
         rowHeaders = ['Time (hours)']
-        rowData = [self.Readers[0].time]
+        rowData = [self.Readers[0].getResultSet().getTime()]
         with open(self.GlobalFileManager.getSummaryAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
-                readerSGI = frequencyToIndex(Reader.zeroPoint, Reader.maxFrequencySmooth)
+                readerSGI = frequencyToIndex(
+                    Reader.getZeroPoint(),
+                    Reader.getResultSet().getMaxFrequencySmooth()
+                )
                 rowData.append(readerSGI)
             writer.writerow(rowHeaders)
             # array transpose converts it to write columns instead of rows
@@ -309,12 +313,10 @@ class MainShared:
             widgets.destroy()
         for Reader in self.Readers:
             try:
-                Reader.zeroPoint = 1
                 Reader.ReaderInterface.close()
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        self.zeroPoint = 1
         self.copyFilesToDebuggingFolder(self.Readers)
         self.copyFilesToAnalysisFolder(self.Readers)
         self.PortAllocator.resetPorts()
@@ -373,7 +375,8 @@ class MainShared:
         fileExplorerFrame.grid(row=0, column=0, columnspan=3)
         fileExplorerLabel = tk.Label(fileExplorerFrame, text='Experiment File Location: ', bg='white')
         fileExplorerLabel.pack(side=tk.LEFT)
-        fileExplorerButton = Linkbutton(fileExplorerFrame, text=self.savePath, command=lambda: helper_functions.openFileExplorer(self.savePath))
+        fileExplorerButton = Linkbutton(fileExplorerFrame, text=self.savePath,
+                                        command=lambda: helper_functions.openFileExplorer(self.savePath))
         fileExplorerButton.pack(side=tk.LEFT)
         downloadButton = tk.Button(fileExplorerFrame, bg=self.secondaryColor, highlightthickness=0, borderwidth=0,
                                    image=self.downloadIcon, command=lambda: self.downloadExperimentAsZip())
@@ -395,7 +398,9 @@ class MainShared:
         self.endOfExperimentFrame = endOfExperimentFrame
 
     def downloadExperimentAsZip(self):
-        downloadThread = threading.Thread(target=helper_functions.downloadAsZip, args=(f"{self.savePath}/Analysis", f"{os.path.basename(self.savePath)}.zip",), daemon=True)
+        downloadThread = threading.Thread(target=helper_functions.downloadAsZip,
+                                          args=(f"{self.savePath}/Analysis", f"{os.path.basename(self.savePath)}.zip",),
+                                          daemon=True)
         downloadThread.start()
 
     def showFrame(self, frame):

@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.model.result_set import ResultSet
 
 
 class ExperimentNotes:
@@ -10,20 +11,17 @@ class ExperimentNotes:
         self.notesTimestamps = []
         self.FileManager = FileManager
 
-    def addExperimentNotesMenubar(self, menu):
-        menu.add_command(label=f"Reader {self.readerNumber}", command=lambda: self.typeExperimentNotes())
-
-    def typeExperimentNotes(self):
+    def typeExperimentNotes(self, resultSet: ResultSet):
         newNotes = tk.simpledialog.askstring(f'Reader {self.readerNumber} notes',
                                              f'Add any experiment notes for {self.readerNumber} here. \nThey can be viewed in the pdf generated.')
-        self.updateExperimentNotes(newNotes)
+        self.updateExperimentNotes(newNotes, resultSet)
 
-    def updateExperimentNotes(self, newNotes):
+    def updateExperimentNotes(self, newNotes, resultSet: ResultSet):
         if newNotes != '':
-            if not self.time:
+            if not resultSet.getTime():
                 timestamp = 0
             else:
-                timestamp = round(self.time[-1], 4)
+                timestamp = round(resultSet.getTime()[-1], 4)
             self.notesTimestamps.append(timestamp)
             if self.notes == '':
                 self.notes = f'{self.notes}{round(timestamp, 2)} hrs: {newNotes}'

@@ -81,15 +81,16 @@ def generateReaderPages(pdf, summaryPdfLocation, Readers, headerHeight):
         for Reader in Readers:
             try:
                 oldX = currentX
-                currentX, currentY = Reader.addToPdf(pdf, currentX, currentY, labelWidth,
-                                                     plotWidth,
-                                                     plotHeight, notesWidth, paddingY)
-                currentX, currentY = Reader.addNotesToPdf(pdf, currentX, currentY, notesWidth, notesLineHeight,
-                                                          plotHeight, paddingY)
+                currentX, currentY = Reader.addToPdf(
+                    pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY
+                )
+                currentX, currentY = Reader.ExperimentNotes.addNotesToPdf(
+                    pdf, currentX, currentY, notesWidth, notesLineHeight, plotHeight, paddingY
+                )
                 if Reader != Readers[-1]:
-                    currentX, currentY = checkIfNewPage(pdf, currentX, currentY, plotHeight,
-                                                        paddingX,
-                                                        oldX, labelWidth, headerHeight)
+                    currentX, currentY = checkIfNewPage(
+                        pdf, currentX, currentY, plotHeight, paddingX, oldX, labelWidth, headerHeight
+                    )
             except:
                 logging.exception(f'Failed to update pdf')
         pdf.setAuthor()  # uses Skroot Laboratory
