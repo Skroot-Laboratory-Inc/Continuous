@@ -1,8 +1,10 @@
 import numpy as np
 
+from src.app.model.result_set import ResultSet
+
 
 class ResultSetDataPoint:
-    def __init__(self):
+    def __init__(self, previousResultSet: ResultSet):
         self.time = np.nan
         self.maxFrequency = np.nan
         self.maxVoltsSmooth = np.nan
@@ -10,10 +12,10 @@ class ResultSetDataPoint:
         self.filename = ""
         self.timestamp = np.nan
 
-        self.denoiseTimeSmooth = np.nan
-        self.denoiseTime = np.nan
-        self.denoiseFrequencySmooth = np.nan
-        self.denoiseFrequency = np.nan
+        self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
+        self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
+        self.denoiseFrequencySmooth = previousResultSet.denoiseFrequencySmooth + [np.nan]
+        self.denoiseFrequency = previousResultSet.denoiseFrequency + [np.nan]
 
     def setTime(self, time):
         self.time = time

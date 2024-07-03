@@ -25,7 +25,7 @@ class Analyzer:
 
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
-        resultSet = ResultSetDataPoint()
+        resultSet = ResultSetDataPoint(self.ResultSet)
         resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(datetime.now())
@@ -55,7 +55,7 @@ class Analyzer:
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
-        resultSet = ResultSetDataPoint()
+        resultSet = ResultSetDataPoint(self.ResultSet)
         resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(datetime.now())
