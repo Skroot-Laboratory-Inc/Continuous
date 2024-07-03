@@ -33,10 +33,12 @@ class ButtonFunctions:
                                       command=lambda: self.startFunc())
         self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.secondaryColor, bd=0)
         self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
-                                                      command=lambda: self.AppModule.plotSummary(self.AppModule.summaryFrame))
+                                                      command=lambda: self.AppModule.plotSummary(
+                                                          self.AppModule.summaryFrame))
         self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment", style='W.TButton',
                                      command=lambda: self.stopFunc())
-        self.helpButton = ttk.Button(self.root, text="Need help?", image=self.helpIcon, compound=tk.LEFT, style='W.TButton',
+        self.helpButton = ttk.Button(self.root, text="Need help?", image=self.helpIcon, compound=tk.LEFT,
+                                     style='W.TButton',
                                      command=lambda: InformationPanel(self.AppModule, self.helpIcon, self.root))
 
     def startFunc(self):
@@ -69,7 +71,8 @@ class ButtonFunctions:
                                           self.AppModule.secondaryColor)
                 self.AppModule.resetRun()
             self.stopButton.destroy()
-            text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'), self.AppModule.primaryColor, self.AppModule.secondaryColor)
+            text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'),
+                                      self.AppModule.primaryColor, self.AppModule.secondaryColor)
 
     def findReaders(self, numReaders):
         logging.info(f'calibrate button pressed')
@@ -110,7 +113,8 @@ class ButtonFunctions:
             if ReaderInterface.calibrationFailed:
                 calibrationFailed = True
                 text_notification.setText(f"Calibration failed for reader {ReaderInterface.readerNumber}",
-                                          ('Courier', 9, 'bold'), self.AppModule.primaryColor, self.AppModule.secondaryColor)
+                                          ('Courier', 9, 'bold'), self.AppModule.primaryColor,
+                                          self.AppModule.secondaryColor)
                 readersCalibrationFailed = readersCalibrationFailed.join(f" {ReaderInterface.readerNumber}")
         if calibrationFailed:
             text_notification.setText(f"Calibration failed for readers:{readersCalibrationFailed}",
@@ -158,12 +162,12 @@ class ButtonFunctions:
                     attempts += 1
                     if attempts > 3:
                         tk.messagebox.showerror(f'Reader {readerNumber}',
-                                               f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
+                                                f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
                         break
                     else:
                         shouldContinue = tk.messagebox.askokcancel(f'Reader {readerNumber}',
-                                               f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
-                                               f'Press cancel to shutdown the app.')
+                                                                   f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
+                                                                   f'Press cancel to shutdown the app.')
                         if not shouldContinue:
                             break
             raise UserExitedException("The user chose not to go forward during port finding.")
@@ -180,7 +184,8 @@ class ButtonFunctions:
         self.helpButton.pack(side='bottom', anchor='se')
 
     def placeConnectReadersButton(self):
-        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers", style='W.TButton',
+        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers",
+                                               style='W.TButton',
                                                command=lambda: self.connectReaders(self.AppModule.numReaders))
         self.connectReadersButton.place(relx=0.46, rely=0.47)
 
@@ -191,16 +196,16 @@ class ButtonFunctions:
 
     def createGuidedSetupButton(self, frame):
         self.guidedSetupButton = ttk.Button(frame, text="Start new experiment", style='W.TButton',
-                                            command=lambda: self.AppModule.guidedSetup(self.AppModule.month,
-                                                                                       self.AppModule.day,
-                                                                                       self.AppModule.year,
-                                                                                       self.AppModule.numReaders,
-                                                                                       self.AppModule.scanRate,
-                                                                                       self.AppModule.cellType,
-                                                                                       self.AppModule.secondAxisTitle,
-                                                                                       self.AppModule.equilibrationTime))
-
-
+                                            command=lambda: self.AppModule.guidedSetup(
+                                                self.AppModule.month,
+                                                self.AppModule.day,
+                                                self.AppModule.year,
+                                                self.AppModule.numReaders,
+                                                self.AppModule.scanRate,
+                                                self.AppModule.cellType,
+                                                self.AppModule.secondAxisTitle,
+                                                self.AppModule.equilibrationTime)
+                                            )
 
     def placeGuidedSetupButton(self, frame):
         self.createGuidedSetupButton(frame)
@@ -214,7 +219,8 @@ def pauseUntilUserClicks(readerNumber):
 
 def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) -> ReaderInterface:
     try:
-        sib = Sib(port, f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv', readerNumber, PortAllocator, calibrationRequired)
+        sib = Sib(port, f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv', readerNumber,
+                  PortAllocator, calibrationRequired)
         success = sib.performHandshake()
         if success:
             return sib
@@ -224,4 +230,3 @@ def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) ->
             sib.close()
     except:
         logging.exception(f"Failed to instantiate reader {readerNumber}")
-

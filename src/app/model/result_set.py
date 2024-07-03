@@ -66,7 +66,8 @@ class ResultSet:
         self.filenames.append(values.filename)
         self.timestamps.append(values.timestamp)
 
-        self.denoiseTime.append(values.denoiseTime)
-        self.denoiseTimeSmooth.append(values.denoiseTimeSmooth)
-        self.denoiseFrequency.append(values.denoiseFrequency)
-        self.denoiseFrequencySmooth.append(values.denoiseFrequencySmooth)
+        # Denoise values change with time, so the entire array gets set at once.
+        self.denoiseTime = values.denoiseTime
+        self.denoiseTimeSmooth = values.denoiseTimeSmooth
+        self.denoiseFrequency =values.denoiseFrequency
+        self.denoiseFrequencySmooth =values.denoiseFrequencySmooth

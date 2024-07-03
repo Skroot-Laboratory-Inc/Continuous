@@ -104,7 +104,7 @@ class Reader:
             command=lambda: self.Plotter.ExperimentNotes.typeExperimentNotes(self.getAnalyzer().ResultSet)
         )
 
-    def getSummaryPlottable(self, denoiseSet) -> Plottable:
+    def getCurrentPlottable(self, denoiseSet) -> Plottable:
         if denoiseSet:
             return Plottable(
                 self.Analyzer.ResultSet.getDenoiseTimeSmooth(),
