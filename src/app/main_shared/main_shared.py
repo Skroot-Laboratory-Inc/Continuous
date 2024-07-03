@@ -12,19 +12,18 @@ from importlib.metadata import version as version_api
 from zipfile import ZipFile
 
 import numpy as np
-from PIL import ImageTk, Image
 from reactivex.subject import BehaviorSubject
 from sibcontrol import SIBException, SIBConnectionError
 
 from src.app.exception.analysis_exception import AnalysisException, ZeroPointException
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
 from src.app.initialization.buttons import ButtonFunctions
 from src.app.initialization.settings import Settings
 from src.app.initialization.setup import Setup
 from src.app.initialization.software_update import SoftwareUpdate
+from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.properties import CommonProperties
 from src.app.sib.port_allocator import PortAllocator
@@ -32,7 +31,6 @@ from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
 from src.app.widget import logger, text_notification
 from src.app.widget.figure import FigureCanvas
-from src.app.widget.link_button import Linkbutton
 from src.app.widget.pdf import generatePdf
 from src.app.widget.timer import RunningTimer
 
@@ -98,9 +96,6 @@ class MainShared:
             7,
             9
         )
-        image = Image.open(self.CommonFileManager.getDownloadIcon())
-        resizedImage = image.resize((15, 15), Image.LANCZOS)
-        self.downloadIcon = ImageTk.PhotoImage(resizedImage)
 
     def createRoot(self):
         self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
@@ -130,10 +125,13 @@ class MainShared:
                         else:
                             Reader.addDevPoint()
                         try:
-                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
-                                if self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[-1] != np.nan:
+                            if Reader.getResultSet().getTime()[
+                                -1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
+                                if self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[
+                                    -1] != np.nan:
                                     zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
-                                elif self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[-1] == np.nan:
+                                elif self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[
+                                    -1] == np.nan:
                                     raise Exception()
                                 else:
                                     zeroPoint = np.nanmean(Reader.getResultSet().getMaxFrequencySmooth()[-5:])
@@ -273,7 +271,7 @@ class MainShared:
             self.SummaryFigureCanvas.redrawPlot()
             self.ColorCycler.reset()
             for Reader in self.Readers:
-                readerPlottable = Reader.getSummaryPlottable(self.denoiseSet)
+                readerPlottable = Reader.getCurrentPlottable(self.denoiseSet)
                 self.SummaryFigureCanvas.scatter(
                     readerPlottable.getXValues(),
                     readerPlottable.getYValues(),
@@ -327,7 +325,12 @@ class MainShared:
         self.Buttons.ReaderInterfaces = []
         self.Readers = []
         if self.finishedEquilibrationPeriod:
-            self.createEndOfExperimentView()
+            endOfExperimentView = EndOfExperimentView(self.root, self.GlobalFileManager)
+            endOfExperimentFrame = endOfExperimentView.createEndOfExperimentView()
+            self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
+            self.Buttons.guidedSetupButton.grid(row=2, column=1, sticky='se', padx=10, pady=10)
+            self.SummaryFigureCanvas.frequencyCanvas = None
+            self.endOfExperimentFrame = endOfExperimentFrame
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
             self.Buttons.guidedSetupButton.invoke()
@@ -361,47 +364,6 @@ class MainShared:
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{analysisSubdir}/{newFileLocation}')
-
-    def createEndOfExperimentView(self):
-        endOfExperimentFrame = tk.Frame(self.root, bg=self.secondaryColor)
-        endOfExperimentFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
-        endOfExperimentFrame.grid_rowconfigure(0, weight=1)
-        endOfExperimentFrame.grid_rowconfigure(1, weight=10)
-        endOfExperimentFrame.grid_rowconfigure(2, weight=1)
-        endOfExperimentFrame.grid_columnconfigure(0, weight=2)
-        endOfExperimentFrame.grid_columnconfigure(1, weight=3)
-
-        fileExplorerFrame = tk.Frame(endOfExperimentFrame, bg=self.secondaryColor)
-        fileExplorerFrame.grid(row=0, column=0, columnspan=3)
-        fileExplorerLabel = tk.Label(fileExplorerFrame, text='Experiment File Location: ', bg='white')
-        fileExplorerLabel.pack(side=tk.LEFT)
-        fileExplorerButton = Linkbutton(fileExplorerFrame, text=self.savePath,
-                                        command=lambda: helper_functions.openFileExplorer(self.savePath))
-        fileExplorerButton.pack(side=tk.LEFT)
-        downloadButton = tk.Button(fileExplorerFrame, bg=self.secondaryColor, highlightthickness=0, borderwidth=0,
-                                   image=self.downloadIcon, command=lambda: self.downloadExperimentAsZip())
-        downloadButton.pack(side=tk.LEFT, padx=10)
-
-        self.guidedSetupImage = ImageTk.PhotoImage(file=self.GlobalFileManager.getSetupForm())
-        image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.secondaryColor)
-        image_label.grid(row=1, column=0, sticky='nesw')
-
-        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.ANTIALIAS)
-        self.summaryPlotImage = ImageTk.PhotoImage(image)
-        image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.secondaryColor)
-        image_label.grid(row=1, column=1, sticky='nesw')
-
-        self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
-        self.Buttons.guidedSetupButton.grid(row=2, column=1, sticky='se', padx=10, pady=10)
-
-        self.SummaryFigureCanvas.frequencyCanvas = None
-        self.endOfExperimentFrame = endOfExperimentFrame
-
-    def downloadExperimentAsZip(self):
-        downloadThread = threading.Thread(target=helper_functions.downloadAsZip,
-                                          args=(f"{self.savePath}/Analysis", f"{os.path.basename(self.savePath)}.zip",),
-                                          daemon=True)
-        downloadThread.start()
 
     def showFrame(self, frame):
         self.currentFrame = frame
