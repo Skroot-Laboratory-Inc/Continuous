@@ -8,12 +8,13 @@ from src.app.algorithm.algorithm_interface import AlgorithmInterface
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.widget.indicator import Indicator
-from src.app.widget.notes import ExperimentNotes
 
 
-class HarvestAlgorithm(AlgorithmInterface, Indicator, ExperimentNotes):
-    def __init__(self, outerFrame, fileManager: ReaderFileManager):
-        Indicator.__init__(self)
+class HarvestAlgorithm(AlgorithmInterface):
+    def __init__(self, fileManager: ReaderFileManager, experimentNotes, readerNumber, indicator: Indicator):
+        self.experimentNotes = experimentNotes
+        self.readerNumber = readerNumber
+        self.Indicator = indicator
         harvestProperties = HarvestProperties()
         self.hoursAfterInoculation = harvestProperties.hoursAfterInoculation
         self.closeToHarvestThreshold = harvestProperties.closeToHarvestThreshold
@@ -29,7 +30,6 @@ class HarvestAlgorithm(AlgorithmInterface, Indicator, ExperimentNotes):
         self.inoculatedTime = 0
         self.continuousHarvest = 0
         self.continuousHarvestReady = 0
-        self.createIndicator(outerFrame)
 
     def check(self, resultSet):
         if self.inoculated:
@@ -69,17 +69,17 @@ class HarvestAlgorithm(AlgorithmInterface, Indicator, ExperimentNotes):
                 if lastFiveIncreasing and previousFiveDecreasing:
                     logging.info(
                         f'Flask {self.readerNumber} is close to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}')
-                    self.changeIndicatorYellow()
+                    self.Indicator.changeIndicatorYellow()
                     self.closeToHarvest = True
             else:
                 if lastFiveDecreasing and previousFiveIncreasing:
                     logging.info(
                         f'Flask {self.readerNumber} is ready to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}')
-                    self.changeIndicatorRed()
+                    self.Indicator.changeIndicatorRed()
                     self.readyToHarvest = True
 
     def updateInoculation(self, analyzer):
         self.inoculated = True
         self.inoculatedTime = analyzer.getTime()[-1]
-        self.updateExperimentNotes('Inoculated')
+        self.experimentNotes.updateExperimentNotes('Inoculated')
         logging.info(f'Flask {self.readerNumber} is inoculated at time {self.inoculatedTime}')

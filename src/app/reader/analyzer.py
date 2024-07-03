@@ -36,10 +36,16 @@ class Analyzer:
             resultSet.setMaxVoltsSmooth(maxMag)
             resultSet.setMaxFrequencySmooth(maxFreq)
             if shouldDenoise:
-                time, frequency = self.denoise(resultSet.time, resultSet.maxFrequency)
+                time, frequency = self.denoise(
+                    self.ResultSet.getTime() + [resultSet.time],
+                    self.ResultSet.getMaxFrequency() + [resultSet.maxFrequency],
+                )
                 resultSet.setDenoiseTime(time)
                 resultSet.setDenoiseFrequency(frequency)
-                time, frequency = self.denoise(resultSet.time, resultSet.maxFrequencySmooth)
+                time, frequency = self.denoise(
+                    self.ResultSet.getTime() + [resultSet.time],
+                    self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth],
+                )
                 resultSet.setDenoiseTimeSmooth(time)
                 resultSet.setDenoiseFrequencySmooth(frequency)
         except:
@@ -123,7 +129,7 @@ class Analyzer:
         else:
             xAroundPeak = x[np.argmax(y):np.argmax(y) + pointsOnEachSide]
             yAroundPeak = y[np.argmax(y):np.argmax(y) + pointsOnEachSide]
-        popt = curve_fit(
+        popt, _ = curve_fit(
             gaussian,
             xAroundPeak,
             yAroundPeak,

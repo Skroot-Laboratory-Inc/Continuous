@@ -3,18 +3,17 @@ import logging
 import numpy as np
 
 from src.app.algorithm.algorithm_interface import AlgorithmInterface
-from src.app.widget.indicator import Indicator
+from src.app.theme.colors import Colors
 
 
-class ContaminationAlgorithm(AlgorithmInterface, Indicator):
-    def __init__(self, outerFrame, readerNumber):
-        Indicator.__init__(self)
+class ContaminationAlgorithm(AlgorithmInterface):
+    def __init__(self, readerNumber):
+        self.Colors = Colors()
         self.readerNumber = readerNumber
         self.continuousContaminated = 0
         self.backgroundColor = None
         self.contaminated = False
-        self.createIndicator(outerFrame)
-        self.updateContaminationJson(self.secondaryColor)
+        self.updateContaminationJson(self.Colors.secondaryColor)
 
     def check(self, resultSet):
         if len(resultSet.getTime()) > 201:
@@ -26,7 +25,7 @@ class ContaminationAlgorithm(AlgorithmInterface, Indicator):
                 )
                 if self.contaminated:
                     logging.info(f'Flask {self.readerNumber} is contaminated at time {resultSet.getTime()[-1]} hours')
-                    self.updateContaminationJson(self.lightRed)
+                    self.updateContaminationJson(self.Colors.lightRed)
 
     def getStatus(self):
         return self.contaminated

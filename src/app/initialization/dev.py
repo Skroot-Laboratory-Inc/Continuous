@@ -6,32 +6,19 @@ from datetime import datetime
 import pandas
 from scipy.signal import savgol_filter
 
-from src.app.reader.plotting import Plotting
+from src.app.reader.plotter import Plotter
 
 
-class DevMode:
-    def __init__(self):
-        self.devBaseFolder = r'C:\\Users\\CameronGreenwalt\\Desktop\\Calibration\\dev'
-        self.tryDevMode = False
-        if os.path.exists(self.devBaseFolder) and self.tryDevMode:
-            self.isDevMode = True
-        else:
-            self.isDevMode = False
-        self.startTime = 0
-        self.scanRate = 0.2
-        # self.mode = "GUI"
-        self.mode = "Analysis"
-
-
-class ReaderDevMode(Plotting):
+# TODO Update this reader dev mode to be an interface of Analysis, ReaderInterface etc.
+class ReaderDevMode(Plotter):
     def __init__(self, AppModule, readerNumber):
-        self.DevMode = AppModule.DevMode
-        if self.DevMode.isDevMode:
-            AppModule.scanRate = self.DevMode.scanRate
-            self.FileManager.scanNumber = self.DevMode.startTime + 100000
-            self.scanRate = self.DevMode.scanRate
-            self.devFiles = glob.glob(f'{self.DevMode.devBaseFolder}/{readerNumber}/*')
-            readings = pandas.read_csv(rf'{self.DevMode.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
+        self.DevProperties = AppModule.DevProperties
+        if self.DevProperties.isDevMode:
+            AppModule.scanRate = self.DevProperties.scanRate
+            self.FileManager.scanNumber = self.DevProperties.startTime + 100000
+            self.scanRate = self.DevProperties.scanRate
+            self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/{readerNumber}/*')
+            readings = pandas.read_csv(rf'{self.DevProperties.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
             self.devTime = readings['Time (hours)'].values.tolist()
             try:
                 self.devFrequency = readings['Frequency (MHz)'].values.tolist()
@@ -49,16 +36,16 @@ class ReaderDevMode(Plotting):
             self.loadDevMode()
 
     def loadDevMode(self):
-        self.time = self.devTime[0:self.DevMode.startTime]
-        self.filenames = self.devFiles[0:self.DevMode.startTime]
+        self.time = self.devTime[0:self.DevProperties.startTime]
+        self.filenames = self.devFiles[0:self.DevProperties.startTime]
 
-        self.maxFrequency = self.devFrequency[0:self.DevMode.startTime]
+        self.maxFrequency = self.devFrequency[0:self.DevProperties.startTime]
 
-        self.maxVoltsSmooth = self.devDb[0:self.DevMode.startTime]
-        self.maxFrequencySmooth = self.devFrequency[0:self.DevMode.startTime]
+        self.maxVoltsSmooth = self.devDb[0:self.DevProperties.startTime]
+        self.maxFrequencySmooth = self.devFrequency[0:self.DevProperties.startTime]
 
     def addDevPoint(self):
-        if self.DevMode.mode == "Analysis":
+        if self.DevProperties.mode == "Analysis":
             try:
                 nextPointIndex = len(self.time)
                 self.addDevScan(self.devFiles[nextPointIndex])
