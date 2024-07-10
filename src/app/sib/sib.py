@@ -44,13 +44,14 @@ class Sib(ReaderInterface):
         selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
         logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
 
-    def takeScan(self, outputFilename) -> SweepData:
+    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts = self.calibrationComparison(frequency, volts)
-            createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
+            if not disableSaveFiles:
+                createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return SweepData(frequency, calibratedVolts)
         except SIBConnectionError:
             self.resetSibConnection()

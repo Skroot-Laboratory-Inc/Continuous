@@ -18,6 +18,7 @@ from sibcontrol import SIBException, SIBConnectionError
 from src.app.exception.analysis_exception import AnalysisException, ZeroPointException
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
 from src.app.initialization.buttons import ButtonFunctions
 from src.app.initialization.settings import Settings
@@ -120,13 +121,13 @@ class MainShared:
                     try:
                         if not self.isDevMode:
                             Reader.Indicator.changeIndicatorYellow()
-                            sweepData = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan())
+                            sweepData = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan(),
+                                                                        self.disableSaveFullFiles)
                             Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
                         else:
                             Reader.addDevPoint()
                         try:
-                            if Reader.getResultSet().getTime()[
-                                -1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
+                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
                                 if self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[
                                     -1] != np.nan:
                                     zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
@@ -145,10 +146,8 @@ class MainShared:
                                 f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
                         Reader.Analyzer.createAnalyzedFiles()
-                        if self.disableSaveFullFiles:
-                            deleteScanFile(Reader.FileManager.getCurrentScan())
                         # Reader.ContaminationAlgorithm.check(Reader.getResultSet())
-                        # Reader.check(Reader.getResultSet())
+                        # Reader.HarvestAlgorithm.check(Reader.getResultSet())
                         Reader.Indicator.changeIndicatorGreen()
                     except SIBConnectionError:
                         errorOccurredWhileTakingScans = True
@@ -176,10 +175,8 @@ class MainShared:
                     except AnalysisException:
                         errorOccurredWhileTakingScans = True
                         Reader.Indicator.changeIndicatorRed()
-                        logging.exception(
-                            f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
-                        text_notification.setText(
-                            f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
+                        logging.exception(f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
+                        text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
                     finally:
                         self.Timer.updateTime()
                         Reader.FileManager.incrementScanNumber(Reader.scanRate)
@@ -221,7 +218,8 @@ class MainShared:
                                     self.CommonFileManager.getRemoteDesktopFile())
                     text_notification.setText(
                         "Installing new dependencies... please wait. This may take up to a minute.")
-                    runShScript(self.CommonFileManager.getInstallScript(), self.CommonFileManager.getExperimentLog())
+                    helper_functions.runShScript(self.CommonFileManager.getInstallScript(),
+                                                 self.CommonFileManager.getExperimentLog())
                 text_notification.setText(
                     f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
             else:
@@ -373,17 +371,3 @@ class MainShared:
         except:
             logging.exception('Failed to change the frame visible')
         self.summaryFrame.tkraise()
-
-
-def deleteScanFile(filename):
-    os.remove(filename)
-
-
-def runShScript(shScriptFilename, experimentLog):
-    st = os.stat(shScriptFilename)
-    os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
-    logFile = open(experimentLog, 'w+')
-    process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile,
-                               stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
-    process.communicate("skroot".encode())
-    process.wait()

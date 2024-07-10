@@ -27,7 +27,7 @@ class ReaderInterfaceMetaClass(type):
 
 class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
-    def takeScan(self, outputFilename) -> SweepData:
+    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
 
     def calibrateIfRequired(self):

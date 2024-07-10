@@ -1,4 +1,6 @@
 import os
+import stat
+import subprocess
 import sys
 import tkinter as tk
 import zipfile
@@ -77,4 +79,16 @@ def getCwd():
         return sys._MEIPASS
     except AttributeError:
         return os.getcwd()
+
+
+def runShScript(shScriptFilename, experimentLog):
+    """ This runs an sh script as the sudo user, and overwrites the log file with the results. """
+    st = os.stat(shScriptFilename)
+    os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
+    logFile = open(experimentLog, 'w+')
+    process = subprocess.Popen(["sudo", "-SH", "sh", shScriptFilename], stdout=logFile, stderr=logFile,
+                               stdin=subprocess.PIPE, cwd=os.path.dirname(shScriptFilename))
+    process.communicate("skroot".encode())
+    process.wait()
+
 
