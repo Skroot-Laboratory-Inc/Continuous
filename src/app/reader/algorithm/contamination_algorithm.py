@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from src.app.algorithm.algorithm_interface import AlgorithmInterface
+from src.app.reader.algorithm.algorithm_interface import AlgorithmInterface
 from src.app.theme.colors import Colors
 
 

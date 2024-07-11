@@ -14,11 +14,11 @@ from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
 from src.app.model.sweep_data import SweepData
 from src.app.properties.sib_properties import SibProperties
-from src.app.sib.reader_interface import ReaderInterface
+from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
 
 
-class Sib(ReaderInterface):
+class Sib(SibInterface):
     def __init__(self, port, calibrationFileName, readerNumber, PortAllocator, calibrationRequired=False):
         self.calibrationFailed = False
         self.readerNumber = readerNumber
@@ -44,13 +44,14 @@ class Sib(ReaderInterface):
         selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
         logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
 
-    def takeScan(self, outputFilename) -> SweepData:
+    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts = self.calibrationComparison(frequency, volts)
-            createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
+            if not disableSaveFiles:
+                createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return SweepData(frequency, calibratedVolts)
         except SIBConnectionError:
             self.resetSibConnection()
@@ -107,6 +108,8 @@ class Sib(ReaderInterface):
             text_notification.setText("Failed to set stop frequency.")
             return False
 
+    """ End of required implementations, SIB specific below"""
+
     def setNumberOfPoints(self) -> bool:
         try:
             self.sib.num_pts = getNumPointsSweep(self.startFreqMHz, self.stopFreqMHz)
@@ -128,8 +131,6 @@ class Sib(ReaderInterface):
             return True
         except:
             return False
-
-    """ End of required implementations, SIB specific below"""
 
     def initialize(self, port):
         self.port = port

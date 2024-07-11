@@ -3,36 +3,33 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
-from src.app.algorithm.contamination_algorithm import ContaminationAlgorithm
-from src.app.algorithm.harvest_algorithm import HarvestAlgorithm
+from src.app.properties.dev_properties import DevProperties
+from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set import ResultSet
-from src.app.reader.analyzer import Analyzer
-from src.app.reader.experiment_notes import ExperimentNotes
-from src.app.reader.plotter import Plotter
-from src.app.sib.reader_interface import ReaderInterface
+from src.app.reader.analyzer.analyzer import Analyzer
+from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
+from src.app.reader.helpers.experiment_notes import ExperimentNotes
+from src.app.reader.helpers.plotter import Plotter
+from src.app.reader.reader_interface import ReaderInterface
+from src.app.reader.sib.dev_sib import DevSib
+from src.app.reader.sib.sib_interface import SibInterface
 from src.app.theme.colors import Colors
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
 
 
-class Reader:
-    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq,
-                 scanRate, savePath, readerColor, readerInterface: ReaderInterface):
+class Reader(ReaderInterface):
+    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath, readerColor, sibInterface: SibInterface):
         self.FileManager = ReaderFileManager(savePath, readerNumber)
         self.colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(savePath)
-        if not AppModule.DevProperties.isDevMode:
-            readerInterface.setStartFrequency(startFreq)
-            readerInterface.setStopFrequency(stopFreq)
-        self.ReaderInterface = readerInterface
-        self.yAxisLabel = readerInterface.getYAxisLabel()
         self.Aws = AwsBoto3()
-        self.scanRate = scanRate
         self.ExperimentNotes = ExperimentNotes(readerNumber, self.FileManager)
         self.Plotter = Plotter(
             readerColor,
@@ -42,7 +39,16 @@ class Reader:
             self.ExperimentNotes,
             AppModule.secondAxisTitle,
         )
-        self.Analyzer = Analyzer(self.FileManager)
+        isDevMode = DevProperties().isDevMode
+        if isDevMode:
+            self.Analyzer = DevAnalyzer(self.FileManager, readerNumber)
+            self.SibInterface = DevSib(readerNumber)
+        else:
+            self.Analyzer = Analyzer(self.FileManager)
+            self.SibInterface = sibInterface
+        self.SibInterface.setStartFrequency(startFreq)
+        self.SibInterface.setStopFrequency(stopFreq)
+        self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.ContaminationAlgorithm = ContaminationAlgorithm(readerNumber)
         self.Indicator = Indicator(totalNumberOfReaders, readerNumber)
         self.Indicator.createIndicator(outerFrame)
@@ -68,23 +74,6 @@ class Reader:
         else:
             pdf.drawCircle(currentX, currentY, 0.02, 'red')
         return currentX, currentY
-
-    def initialize(self, savePath):
-        if not os.path.exists(savePath):
-            os.mkdir(savePath)
-        self.createFolders()
-
-    def createFolders(self):
-        if not os.path.exists(self.FileManager.getReaderSavePath()):
-            os.mkdir(self.FileManager.getReaderSavePath())
-        if not os.path.exists(self.FileManager.getCalibrationLocalLocation()):
-            if os.path.exists(self.FileManager.getCalibrationGlobalLocation()):
-                shutil.copy(self.FileManager.getCalibrationGlobalLocation(),
-                            self.FileManager.getCalibrationLocalLocation())
-            else:
-                text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
-                                          ('Courier', 12, 'bold'), self.colors.primaryColor, 'red')
-                logging.info(f"No calibration found for Reader {self.readerNumber}")
 
     def addInoculationMenuBar(self, menu):
         menu.add_command(
@@ -118,11 +107,6 @@ class Reader:
                 self.Plotter.readerColor,
             )
 
-    def setViewToggle(self, toggle):
-        self.freqToggleSet = toggle
-        # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
-        self.plotFrequencyButton.invoke()
-
     def getAnalyzer(self) -> Analyzer:
         return self.Analyzer
 
@@ -134,3 +118,27 @@ class Reader:
 
     def resetReaderRun(self):
         self.Analyzer.resetRun()
+
+    """ End of required publicly facing functions. """
+
+    def setViewToggle(self, toggle):
+        self.freqToggleSet = toggle
+        # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
+        self.plotFrequencyButton.invoke()
+
+    def initialize(self, savePath):
+        if not os.path.exists(savePath):
+            os.mkdir(savePath)
+        self.createFolders()
+
+    def createFolders(self):
+        if not os.path.exists(self.FileManager.getReaderSavePath()):
+            os.mkdir(self.FileManager.getReaderSavePath())
+        if not os.path.exists(self.FileManager.getCalibrationLocalLocation()):
+            if os.path.exists(self.FileManager.getCalibrationGlobalLocation()):
+                shutil.copy(self.FileManager.getCalibrationGlobalLocation(),
+                            self.FileManager.getCalibrationLocalLocation())
+            else:
+                text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
+                                          ('Courier', 12, 'bold'), self.colors.primaryColor, 'red')
+                logging.info(f"No calibration found for Reader {self.readerNumber}")

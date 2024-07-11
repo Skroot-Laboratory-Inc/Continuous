@@ -19,12 +19,12 @@ class Settings:
                                             parent=self.AppModule.root, minvalue=50, maxvalue=170)
         if startFreq is not None:
             for Reader in self.AppModule.Readers:
-                Reader.ReaderInterface.setStartFrequency(startFreq)
+                Reader.SibInterface.setStartFrequency(startFreq)
             self.AppModule.startFreq = startFreq
             logging.info(f'startFreq changed to {startFreq}')
         if stopFreq is not None:
             for Reader in self.AppModule.Readers:
-                Reader.ReaderInterface.setStopFrequency(stopFreq)
+                Reader.SibInterface.setStopFrequency(stopFreq)
             self.AppModule.stopFreq = stopFreq
             logging.info(f'stopFreq changed to {stopFreq}')
 
@@ -40,8 +40,6 @@ class Settings:
         scanRate = tk.simpledialog.askfloat("Input", "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
                                             parent=self.AppModule.root, minvalue=0.1, maxvalue=240)
         if scanRate is not None:
-            for Reader in self.AppModule.Readers:
-                Reader.scanRate = scanRate
             self.AppModule.scanRate = scanRate
             logging.info(f'scanRate changed to {scanRate}')
 
@@ -60,7 +58,7 @@ class Settings:
                                                                     'the weak signal warning?')
         logging.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
-    def createReaders(self, numReaders, ReaderInterfaces):
+    def createReaders(self, numReaders, SibInterfaces):
         maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
@@ -83,8 +81,7 @@ class Settings:
                 else:
                     readersOnScreen = maxReadersPerScreen
                 self.AppModule.Readers.append(Reader(
-                    self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq,
-                    self.AppModule.scanRate, self.AppModule.savePath, readerColor, ReaderInterfaces[readerNumber - 1]))
+                    self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.savePath, readerColor, SibInterfaces[readerNumber - 1]))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()

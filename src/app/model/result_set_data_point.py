@@ -1,10 +1,8 @@
 import numpy as np
 
-from src.app.model.result_set import ResultSet
-
 
 class ResultSetDataPoint:
-    def __init__(self, previousResultSet: ResultSet):
+    def __init__(self, previousResultSet):
         self.time = np.nan
         self.maxFrequency = np.nan
         self.maxVoltsSmooth = np.nan

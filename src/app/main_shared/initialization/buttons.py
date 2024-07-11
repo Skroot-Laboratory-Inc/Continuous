@@ -1,5 +1,4 @@
 import logging
-import os
 import threading
 import time
 import tkinter as tk
@@ -8,10 +7,10 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 from src.app.exception.common_exceptions import UserExitedException
-from src.app.helper.helper_functions import getDesktopLocation, getOperatingSystem
+from src.app.helper.helper_functions import getDesktopLocation
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.sib.reader_interface import ReaderInterface
-from src.app.sib.sib import Sib
+from src.app.reader.sib.sib_interface import SibInterface
+from src.app.reader.sib.sib import Sib
 from src.app.widget import text_notification
 from src.app.widget.information_panel import InformationPanel
 
@@ -24,7 +23,7 @@ class ButtonFunctions:
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.AppModule = AppModule
-        self.ReaderInterfaces = []
+        self.SibInterfaces = []
         self.PortAllocator = PortAllocator
         self.createButtonsOnNewFrame()
 
@@ -47,7 +46,7 @@ class ButtonFunctions:
                                           relheight=0.45 * spaceForPlots)
         self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
-        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.ReaderInterfaces)
+        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         self.AppModule.Settings.addInoculation()
@@ -79,7 +78,7 @@ class ButtonFunctions:
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True))
+                self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -109,13 +108,13 @@ class ButtonFunctions:
             t.join()
         calibrationFailed = False
         readersCalibrationFailed = ""
-        for ReaderInterface in self.ReaderInterfaces:
-            if ReaderInterface.calibrationFailed:
+        for SibInterface in self.SibInterfaces:
+            if SibInterface.calibrationFailed:
                 calibrationFailed = True
-                text_notification.setText(f"Calibration failed for reader {ReaderInterface.readerNumber}",
+                text_notification.setText(f"Calibration failed for reader {SibInterface.readerNumber}",
                                           ('Courier', 9, 'bold'), self.AppModule.primaryColor,
                                           self.AppModule.secondaryColor)
-                readersCalibrationFailed = readersCalibrationFailed.join(f" {ReaderInterface.readerNumber}")
+                readersCalibrationFailed = readersCalibrationFailed.join(f" {SibInterface.readerNumber}")
         if calibrationFailed:
             text_notification.setText(f"Calibration failed for readers:{readersCalibrationFailed}",
                                       ('Courier', 9, 'bold'),
@@ -129,11 +128,11 @@ class ButtonFunctions:
     def calFunc2(self, readerIndex):
         try:
             logging.info(f"Calibrating reader {readerIndex + 1}")
-            self.ReaderInterfaces[readerIndex].calibrateIfRequired()
+            self.SibInterfaces[readerIndex].calibrateIfRequired()
             logging.info(f"Calibration complete for reader {readerIndex + 1}")
-            self.ReaderInterfaces[readerIndex].loadCalibrationFile()
+            self.SibInterfaces[readerIndex].loadCalibrationFile()
         except:
-            self.ReaderInterfaces[readerIndex].calibrationFailed = True
+            self.SibInterfaces[readerIndex].calibrationFailed = True
             logging.exception(f'Failed to calibrate reader {readerIndex + 1}')
 
     def connectReaders(self, numReaders):
@@ -141,7 +140,7 @@ class ButtonFunctions:
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.ReaderInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, False))
+                self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, False))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -217,7 +216,7 @@ def pauseUntilUserClicks(readerNumber):
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 
-def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) -> ReaderInterface:
+def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) -> SibInterface:
     try:
         sib = Sib(port, f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv', readerNumber,
                   PortAllocator, calibrationRequired)
