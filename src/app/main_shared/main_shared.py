@@ -123,7 +123,7 @@ class MainShared:
                                                                  self.disableSaveFullFiles)
                         Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
                         try:
-                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
+                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and not self.finishedEquilibrationPeriod:
                                 if (self.equilibrationTime == 0 and
                                         Reader.getResultSet().getMaxFrequencySmooth()[-1] != np.nan
                                 and Reader.getResultSet().getMaxFrequencySmooth()[-1] != 0):

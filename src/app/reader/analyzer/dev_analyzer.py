@@ -76,6 +76,13 @@ class DevAnalyzer(Analyzer):
     def analyzeActualScan(self, sweepData, shouldDenoise):
         super().analyzeScan(sweepData, shouldDenoise)
 
+    def setZeroPoint(self, zeroPoint):
+        # TODO When using mode "GUI" SGI calculations are taken on the already SGI values. Needs fixing
+        if self.DevProperties.mode == "Analysis":
+            super().setZeroPoint(zeroPoint)
+        else:
+            self.zeroPoint = 1
+
     @staticmethod
     def columnFromCsvOrZero(csv, columnHeader, vectorLen, secondaryColumnHeader=""):
         try:
