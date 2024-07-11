@@ -14,11 +14,11 @@ from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
 from src.app.model.sweep_data import SweepData
 from src.app.properties.sib_properties import SibProperties
-from src.app.sib.reader_interface import ReaderInterface
+from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
 
 
-class Sib(ReaderInterface):
+class Sib(SibInterface):
     def __init__(self, port, calibrationFileName, readerNumber, PortAllocator, calibrationRequired=False):
         self.calibrationFailed = False
         self.readerNumber = readerNumber
@@ -108,6 +108,8 @@ class Sib(ReaderInterface):
             text_notification.setText("Failed to set stop frequency.")
             return False
 
+    """ End of required implementations, SIB specific below"""
+
     def setNumberOfPoints(self) -> bool:
         try:
             self.sib.num_pts = getNumPointsSweep(self.startFreqMHz, self.stopFreqMHz)
@@ -129,8 +131,6 @@ class Sib(ReaderInterface):
             return True
         except:
             return False
-
-    """ End of required implementations, SIB specific below"""
 
     def initialize(self, port):
         self.port = port

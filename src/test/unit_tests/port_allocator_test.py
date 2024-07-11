@@ -3,7 +3,7 @@ import unittest
 from mock import patch
 from serial.tools.list_ports_common import ListPortInfo
 
-from src.app.sib import port_allocator
+from src.app.reader.sib import port_allocator
 
 
 class TestPortAllocatorMethods(unittest.TestCase):

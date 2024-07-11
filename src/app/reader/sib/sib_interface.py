@@ -1,8 +1,8 @@
 from src.app.model.sweep_data import SweepData
 
 
-class ReaderInterfaceMetaClass(type):
-    """This checks that classes that implement ReaderInterface implement all members of the class"""
+class SibInterfaceMetaClass(type):
+    """This checks that classes that implement SibInterface implement all members of the class"""
     def __instancecheck__(cls, instance):
         return cls.__subclasscheck__(type(instance))
 
@@ -25,7 +25,7 @@ class ReaderInterfaceMetaClass(type):
                 callable(subclass.close))
 
 
-class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
+class SibInterface(metaclass=SibInterfaceMetaClass):
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         """The reader takes a scan and returns magnitude values."""

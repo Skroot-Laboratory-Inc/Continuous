@@ -3,8 +3,6 @@ import logging
 import math
 import os
 import shutil
-import stat
-import subprocess
 import threading
 import time
 import tkinter as tk
@@ -20,14 +18,14 @@ from src.app.exception.sib_exception import SIBReconnectException
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper import helper_functions
 from src.app.helper.helper_functions import frequencyToIndex, getOperatingSystem
-from src.app.initialization.buttons import ButtonFunctions
-from src.app.initialization.settings import Settings
-from src.app.initialization.setup import Setup
-from src.app.initialization.software_update import SoftwareUpdate
+from src.app.main_shared.initialization.buttons import ButtonFunctions
+from src.app.main_shared.initialization.settings import Settings
+from src.app.main_shared.initialization.setup import Setup
 from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
+from src.app.main_shared.initialization.software_update import SoftwareUpdate
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.properties import CommonProperties
-from src.app.sib.port_allocator import PortAllocator
+from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
 from src.app.widget import logger, text_notification
@@ -84,9 +82,8 @@ class MainShared:
         self.Settings = Settings(self)
         self.Setup = Setup(self.root, self.Settings, self)
         self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
-        self.DevProperties = DevProperties()
         self.SoftwareUpdate = SoftwareUpdate(self.root, major_version, minor_version)
-        self.isDevMode = self.DevProperties.isDevMode
+        self.isDevMode = DevProperties().isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
             'k',
             'Skroot Growth Index (SGI)',
@@ -112,6 +109,8 @@ class MainShared:
         tk.Canvas.create_circle = _create_circle
 
     def mainLoop(self):
+        if self.isDevMode:
+            self.scanRate = DevProperties().scanRate
         self.thread.shutdown_flag = threading.Event()
         while not self.thread.shutdown_flag.is_set():
             errorOccurredWhileTakingScans = False
@@ -119,20 +118,18 @@ class MainShared:
             try:
                 for Reader in self.Readers:
                     try:
-                        if not self.isDevMode:
-                            Reader.Indicator.changeIndicatorYellow()
-                            sweepData = Reader.ReaderInterface.takeScan(Reader.FileManager.getCurrentScan(),
-                                                                        self.disableSaveFullFiles)
-                            Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
-                        else:
-                            Reader.addDevPoint()
+                        Reader.Indicator.changeIndicatorYellow()
+                        sweepData = Reader.SibInterface.takeScan(Reader.FileManager.getCurrentScan(),
+                                                                 self.disableSaveFullFiles)
+                        Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
                         try:
                             if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and Reader.getZeroPoint() == 1:
-                                if self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[
-                                    -1] != np.nan:
+                                if (self.equilibrationTime == 0 and
+                                        Reader.getResultSet().getMaxFrequencySmooth()[-1] != np.nan
+                                and Reader.getResultSet().getMaxFrequencySmooth()[-1] != 0):
                                     zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
-                                elif self.equilibrationTime == 0 and Reader.getResultSet().getMaxFrequencySmooth()[
-                                    -1] == np.nan:
+                                elif (self.equilibrationTime == 0 and
+                                      (Reader.getResultSet().getMaxFrequencySmooth()[-1] == np.nan or Reader.getResultSet().getMaxFrequencySmooth()[-1] == 0)):
                                     raise Exception()
                                 else:
                                     zeroPoint = np.nanmean(Reader.getResultSet().getMaxFrequencySmooth()[-5:])
@@ -179,7 +176,7 @@ class MainShared:
                         text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
                     finally:
                         self.Timer.updateTime()
-                        Reader.FileManager.incrementScanNumber(Reader.scanRate)
+                        Reader.FileManager.incrementScanNumber(self.scanRate)
                 if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
@@ -201,7 +198,7 @@ class MainShared:
         logging.info('Experiment Ended')
 
     def awsCheckSoftwareUpdates(self):
-        if not self.DevProperties.isDevMode:
+        if not self.isDevMode:
             newestVersion, updateRequired = self.SoftwareUpdate.checkForSoftwareUpdates()
             if updateRequired:
                 text_notification.setText(
@@ -228,7 +225,7 @@ class MainShared:
             logging.exception("failed to update software")
 
     def awsUploadPdfFile(self):
-        if not self.DevProperties.isDevMode and not self.SoftwareUpdate.disabled:
+        if not self.isDevMode and not self.SoftwareUpdate.disabled:
             if self.SoftwareUpdate.dstPdfName is None:
                 self.SoftwareUpdate.findFolderAndUploadFile(self.GlobalFileManager.getSummaryPdf(), "application/pdf")
             else:
@@ -240,7 +237,7 @@ class MainShared:
                     self.awsLastUploadTime = self.Readers[0].FileManager.getCurrentScanNumber()
 
     def awsUploadLogFile(self):
-        if not self.DevProperties.isDevMode and not self.SoftwareUpdate.disabled:
+        if not self.isDevMode and not self.SoftwareUpdate.disabled:
             self.SoftwareUpdate.uploadFile(self.CommonFileManager.getExperimentLog(), self.SoftwareUpdate.dstLogName,
                                            'text/plain')
             return True
@@ -248,12 +245,10 @@ class MainShared:
 
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:
-            for Reader in self.Readers:
-                Reader.scanRate = math.ceil(timeTaken / 60)
             self.scanRate = math.ceil(timeTaken / 60)
-            text_notification.setText(f"Took too long to take scans \nScan rate now {self.Readers[0].scanRate}.")
+            text_notification.setText(f"Took too long to take scans \nScan rate now {self.scanRate}.")
             logging.info(f'{timeTaken} seconds to take ALL scans')
-            logging.info(f"Took too long to take scans \nScan rate now {self.Readers[0].scanRate}.")
+            logging.info(f"Took too long to take scans \nScan rate now {self.scanRate}.")
 
     def waitUntilNextScan(self, currentTime, startTime):
         while currentTime - startTime < self.scanRate * 60:
@@ -309,7 +304,7 @@ class MainShared:
             widgets.destroy()
         for Reader in self.Readers:
             try:
-                Reader.ReaderInterface.close()
+                Reader.SibInterface.close()
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
@@ -320,7 +315,7 @@ class MainShared:
         self.freqToggleSet = BehaviorSubject("Signal Check")
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.foundPorts = False
-        self.Buttons.ReaderInterfaces = []
+        self.Buttons.SibInterfaces = []
         self.Readers = []
         if self.finishedEquilibrationPeriod:
             endOfExperimentView = EndOfExperimentView(self.root, self.GlobalFileManager)

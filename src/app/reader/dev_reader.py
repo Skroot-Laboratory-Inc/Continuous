@@ -3,7 +3,6 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
-from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.aws.aws import AwsBoto3
@@ -12,23 +11,26 @@ from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set import ResultSet
 from src.app.reader.analyzer.analyzer import Analyzer
-from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
 from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.helpers.plotter import Plotter
 from src.app.reader.reader_interface import ReaderInterface
-from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.theme.colors import Colors
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
 
 
-class Reader(ReaderInterface):
-    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath, readerColor, sibInterface: SibInterface):
+class DevReader(ReaderInterface):
+    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath, readerColor, readerInterface: SibInterface):
         self.FileManager = ReaderFileManager(savePath, readerNumber)
         self.colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(savePath)
+        if not AppModule.DevProperties.isDevMode:
+            readerInterface.setStartFrequency(startFreq)
+            readerInterface.setStopFrequency(stopFreq)
+        self.SibInterface = readerInterface
+        self.yAxisLabel = readerInterface.getYAxisLabel()
         self.Aws = AwsBoto3()
         self.ExperimentNotes = ExperimentNotes(readerNumber, self.FileManager)
         self.Plotter = Plotter(
@@ -39,16 +41,7 @@ class Reader(ReaderInterface):
             self.ExperimentNotes,
             AppModule.secondAxisTitle,
         )
-        isDevMode = DevProperties().isDevMode
-        if isDevMode:
-            self.Analyzer = DevAnalyzer(self.FileManager, readerNumber)
-            self.SibInterface = DevSib(readerNumber)
-        else:
-            self.Analyzer = Analyzer(self.FileManager)
-            self.SibInterface = sibInterface
-        self.SibInterface.setStartFrequency(startFreq)
-        self.SibInterface.setStopFrequency(stopFreq)
-        self.yAxisLabel = self.SibInterface.getYAxisLabel()
+        self.Analyzer = Analyzer(self.FileManager)
         self.ContaminationAlgorithm = ContaminationAlgorithm(readerNumber)
         self.Indicator = Indicator(totalNumberOfReaders, readerNumber)
         self.Indicator.createIndicator(outerFrame)

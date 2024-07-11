@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ResultSetDataPoint:
     def __init__(self, previousResultSet):
         self.time = np.nan

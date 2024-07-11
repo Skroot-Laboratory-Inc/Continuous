@@ -14,9 +14,10 @@ from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.model.result_set import ResultSet
 from src.app.model.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
+from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 
 
-class Analyzer:
+class Analyzer(AnalyzerInterface):
     def __init__(self, FileManager: ReaderFileManager):
         self.zeroPoint = 1
         self.ResultSet = ResultSet()

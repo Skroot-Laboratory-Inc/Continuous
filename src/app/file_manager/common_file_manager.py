@@ -17,6 +17,8 @@ class CommonFileManager:
         self.tempSoftwareUpdate = fr'{rootDir}/DesktopApp.zip'
         self.readMe = f'{resourcesDir}/README_Analysis.md'
         self.dataSavePath = f'{getDesktopLocation()}/data'
+        self.devBaseFolder = f'{getDesktopLocation()}/Calibration/dev'
+
 
     def getHelpIcon(self):
         return self.helpIconPng
@@ -47,4 +49,7 @@ class CommonFileManager:
 
     def getSquareLogo(self):
         return self.squareLogo
+
+    def getDevBaseFolder(self):
+        return self.devBaseFolder
 
