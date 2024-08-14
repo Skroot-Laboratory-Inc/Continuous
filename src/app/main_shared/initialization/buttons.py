@@ -9,6 +9,7 @@ from PIL import Image, ImageTk
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.helper.helper_functions import getDesktopLocation
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.main_shared.reader_threads.main_thread_manager import MainThreadManager
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.reader.sib.sib import Sib
 from src.app.widget import text_notification
@@ -16,8 +17,9 @@ from src.app.widget.information_panel import InformationPanel
 
 
 class ButtonFunctions:
-    def __init__(self, AppModule, root, PortAllocator):
+    def __init__(self, AppModule, root, PortAllocator, mainThreadManager: MainThreadManager):
         self.root = root
+        self.ReaderThreadManager = mainThreadManager
         fileManager = CommonFileManager()
         image = Image.open(fileManager.getHelpIcon())
         resizedImage = image.resize((15, 15), Image.LANCZOS)
@@ -30,10 +32,6 @@ class ButtonFunctions:
     def createButtonsOnNewFrame(self):
         self.startButton = ttk.Button(self.AppModule.readerPlotFrame, text="Start Experiment", style='W.TButton',
                                       command=lambda: self.startFunc())
-        self.AppModule.summaryFrame = tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.secondaryColor, bd=0)
-        self.AppModule.summaryPlotButton = ttk.Button(self.AppModule.readerPlotFrame, text="Summary Plot Update",
-                                                      command=lambda: self.AppModule.plotSummary(
-                                                          self.AppModule.summaryFrame))
         self.stopButton = ttk.Button(self.AppModule.readerPlotFrame, text="End Experiment", style='W.TButton',
                                      command=lambda: self.stopFunc())
         self.helpButton = ttk.Button(self.root, text="Need help?", image=self.helpIcon, compound=tk.LEFT,
@@ -42,29 +40,25 @@ class ButtonFunctions:
 
     def startFunc(self):
         spaceForPlots = 0.9
-        self.AppModule.summaryFrame.place(rely=0.5 * spaceForPlots, relx=0.67, relwidth=0.3,
+        self.AppModule.mainThreadManager.summaryFrame.place(rely=0.5 * spaceForPlots, relx=0.67, relwidth=0.3,
                                           relheight=0.45 * spaceForPlots)
-        self.AppModule.threadStatus = self.AppModule.thread.is_alive()
         self.startButton.destroy()
         self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         self.AppModule.Settings.addInoculation()
         self.placeStopButton()
-        self.AppModule.Timer.createWidget(self.AppModule.readerPlotFrame)
+        self.AppModule.mainThreadManager.Timer.createWidget(self.AppModule.readerPlotFrame)
         text_notification.setText("Scanning...")
         logging.info("started")
-        if self.AppModule.threadStatus:
-            tk.messagebox.showinfo("Error", "Test Still Running")
-        else:
-            self.AppModule.thread.start()
+        self.ReaderThreadManager.startReaderLoop(self.AppModule.Readers)
 
     def stopFunc(self):
         endExperiment = tk.messagebox.askquestion('End Experiment', 'Are you sure you wish to end the experiment?')
         if endExperiment == 'yes':
             logging.info('Experiment ended by user.')
             try:
-                self.AppModule.thread.shutdown_flag.set()
+                self.ReaderThreadManager.thread.shutdown_flag.set()
             except:
                 text_notification.setText("Experiment Ended.", ('Courier', 9, 'bold'), self.AppModule.primaryColor,
                                           self.AppModule.secondaryColor)

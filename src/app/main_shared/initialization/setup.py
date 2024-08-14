@@ -13,11 +13,11 @@ class Setup:
         self.createFrames()
 
     def createMenus(self):
-        self.AppModule.awsCheckSoftwareUpdates()
+        self.AppModule.mainThreadManager.AwsService.checkForSoftwareUpdate()
         menubar = tk.Menu(self.root)
-        if self.AppModule.SoftwareUpdate.newestZipVersion:
+        if self.AppModule.mainThreadManager.AwsService.SoftwareUpdate.newestZipVersion:
             settingsMenuSoftware = tk.Menu(menubar, tearoff=0)
-            settingsMenuSoftware.add_command(label="Update", command=lambda: self.AppModule.downloadSoftwareUpdate())
+            settingsMenuSoftware.add_command(label="Update", command=lambda: self.AppModule.mainThreadManager.AwsService.downloadSoftwareUpdate())
             menubar.add_cascade(label="Software", menu=settingsMenuSoftware)
 
         settingsMenuReaders = tk.Menu(menubar, tearoff=0)
