@@ -2,8 +2,9 @@ import logging
 import threading
 import time
 import tkinter as tk
-from tkinter import ttk
 
+from src.app.buttons.calibrate_readers import CalibrateReadersButton
+from src.app.buttons.connect_readers import ConnectReadersButton
 from src.app.buttons.guided_setup_button import GuidedSetupButton
 from src.app.buttons.help_button import HelpButton
 from src.app.buttons.start_button import StartButton
@@ -77,26 +78,15 @@ class ButtonFunctions:
             except:
                 logging.exception(f'Failed to instantiate reader {readerNumber}')
 
-    def calFunc(self, numReaders):
-        calThreads = []
-        for readerIndex in range(numReaders):
-            if self.calibrateSynchronously:
-                calThread = threading.Thread(target=self.calFunc2, args=(readerIndex,), daemon=True)
-                calThreads.append(calThread)
-                calThread.start()
-            else:
-                self.calFunc2(readerIndex)
-        return calThreads
-
     def calibrateReaders(self):
-        self.calibrateReadersButton.destroy()
-        calibrateReadersThread = threading.Thread(target=self.calibrateReaders1, daemon=True)
+        self.CalibrateReadersButton.destroySelf()
+        calibrateReadersThread = threading.Thread(target=self.calibrateAllReaders, daemon=True)
         calibrateReadersThread.start()
 
-    def calibrateReaders1(self):
+    def calibrateAllReaders(self):
         text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
                                   self.AppModule.primaryColor, self.AppModule.secondaryColor)
-        threads = self.calFunc(self.AppModule.numReaders)
+        threads = self.startSibCalibrationThread(self.AppModule.numReaders)
         for t in threads:
             t.join()
         calibrationFailed = False
@@ -118,7 +108,18 @@ class ButtonFunctions:
                                       self.AppModule.primaryColor, self.AppModule.secondaryColor)
             self.StartButton.place()
 
-    def calFunc2(self, readerIndex):
+    def startSibCalibrationThread(self, numReaders):
+        calThreads = []
+        for readerIndex in range(numReaders):
+            if self.calibrateSynchronously:
+                calThread = threading.Thread(target=self.performSibCalibration, args=(readerIndex,), daemon=True)
+                calThreads.append(calThread)
+                calThread.start()
+            else:
+                self.performSibCalibration(readerIndex)
+        return calThreads
+
+    def performSibCalibration(self, readerIndex):
         try:
             logging.info(f"Calibrating reader {readerIndex + 1}")
             self.SibInterfaces[readerIndex].calibrateIfRequired()
@@ -129,7 +130,7 @@ class ButtonFunctions:
             logging.exception(f'Failed to calibrate reader {readerIndex + 1}')
 
     def connectReaders(self, numReaders):
-        self.connectReadersButton.destroy()
+        self.ConnectReadersButton.destroySelf()
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
@@ -169,15 +170,12 @@ class ButtonFunctions:
             return '', ''
 
     def placeConnectReadersButton(self):
-        self.connectReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Connect Readers",
-                                               style='W.TButton',
-                                               command=lambda: self.connectReaders(self.AppModule.numReaders))
-        self.connectReadersButton.place(relx=0.46, rely=0.47)
+        self.ConnectReadersButton = ConnectReadersButton(self.AppModule.readerPlotFrame, self.connectReaders, self.AppModule.numReaders)
+        self.ConnectReadersButton.place()
 
     def placeCalibrateReadersButton(self):
-        self.calibrateReadersButton = ttk.Button(self.AppModule.readerPlotFrame, text="Calibrate", style='W.TButton',
-                                                 command=lambda: self.calibrateReaders())
-        self.calibrateReadersButton.place(relx=0.46, rely=0.47)
+        self.CalibrateReadersButton = CalibrateReadersButton(self.AppModule.readerPlotFrame, self.calibrateReaders)
+        self.CalibrateReadersButton.place()
 
 
 def pauseUntilUserClicks(readerNumber):

@@ -120,7 +120,7 @@ class MainShared:
         if calibrate:
             self.foundPorts = True
             if not self.isDevMode:
-                self.Buttons.connectReadersButton.destroy()
+                self.Buttons.ConnectReadersButton.destroySelf()
                 self.Buttons.findReaders(self.numReaders)
                 self.Buttons.placeCalibrateReadersButton()
 
