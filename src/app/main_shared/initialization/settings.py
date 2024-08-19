@@ -41,6 +41,7 @@ class Settings:
                                             parent=self.AppModule.root, minvalue=0.1, maxvalue=240)
         if scanRate is not None:
             self.AppModule.scanRate = scanRate
+            self.AppModule.MainThreadManager.scanRate = scanRate
             logging.info(f'scanRate changed to {scanRate}')
 
     def denoiseSetting(self):

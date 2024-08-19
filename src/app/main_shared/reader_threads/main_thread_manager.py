@@ -27,7 +27,9 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, root, major_version, minor_version, globalFileManager, readerPlotFrame, summaryFigureCanvas, resetRunFunc):
+    def __init__(self, denoiseSet, disableFullSaveFiles, root, major_version, minor_version, globalFileManager, readerPlotFrame, summaryFigureCanvas, resetRunFunc, scanRate):
+        self.scanRate = scanRate
+        self.Readers = []
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.Timer = RunningTimer()
         self.SummaryFigureCanvas = summaryFigureCanvas
@@ -183,8 +185,9 @@ class MainThreadManager:
             except AttributeError:
                 Reader.socket = None
                 logging.exception(f'Failed to close Reader {Reader.readerNumber} socket')
-        self.FileCopier.copyFilesToDebuggingFolder(self.Readers)
-        self.FileCopier.copyFilesToAnalysisFolder(self.Readers)
+        if self.Readers:
+            self.FileCopier.copyFilesToDebuggingFolder(self.Readers)
+            self.FileCopier.copyFilesToAnalysisFolder(self.Readers)
 
     def createSummaryAnalyzedFile(self):
         rowHeaders = ['Time (hours)']

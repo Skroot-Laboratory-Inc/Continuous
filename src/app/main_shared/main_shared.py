@@ -67,8 +67,9 @@ class MainShared:
             7,
             9
         )
+        self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
         self.createGuidedSetup()
-        self.mainThreadManager = MainThreadManager(
+        self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
             root,
@@ -78,10 +79,12 @@ class MainShared:
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
+            self.scanRate,
         )
-        self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator, self.mainThreadManager)
+        self.Buttons.MainThreadManager = self.MainThreadManager
+        self.Buttons.createButtonsOnNewFrame()
         self.menubar = self.createMenubarOptions()
-        self.mainThreadManager.setEquilibrationTime(self.equilibrationTime)
+        self.MainThreadManager.setEquilibrationTime(self.equilibrationTime)
 
     def createMenubarOptions(self):
         menubar = self.Setup.createMenus()
@@ -92,20 +95,26 @@ class MainShared:
         currentDate = datetime.now().date()
         self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
         self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
-        self.Buttons.placeHelpButton()
+        self.Buttons.HelpButton.place()
 
     def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell",
                     secondAxisTitle="", equilibrationTime="24"):
         try:
-            self.Buttons.guidedSetupButton.destroy()
+            self.Buttons.GuidedSetupButton.destroySelf()
             for widgets in self.endOfExperimentFrame.winfo_children():
                 widgets.destroy()
             self.endOfExperimentFrame.destroy()
         except:
+            # New experiment, nothing to destroy
             pass
         setupForm = SetupForm(self.root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
         (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate,
          calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime, self.GlobalFileManager) = setupForm.getConfiguration()
+        try:
+            self.MainThreadManager.GlobalFileManager = self.GlobalFileManager
+        except:
+            # New experiment, doesn't need reset
+            pass
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if calibrate:
@@ -134,12 +143,12 @@ class MainShared:
             frame.tkraise()
         except:
             logging.exception('Failed to change the frame visible')
-        self.mainThreadManager.summaryFrame.tkraise()
+        self.MainThreadManager.summaryFrame.tkraise()
 
     def resetRun(self):
         for widgets in self.readerPlotFrame.winfo_children():
             widgets.destroy()
-        self.mainThreadManager.finalizeRunResults()
+        self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
         self.freqToggleSet.on_completed()
         self.freqToggleSet = BehaviorSubject("Signal Check")
@@ -147,27 +156,29 @@ class MainShared:
         self.Buttons.SibInterfaces = []
         self.Readers = []
         self.PortAllocator.resetPorts()
-        self.mainThreadManager = MainThreadManager(
+        self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
             self.root,
             self.major_version,
             self.minor_version,
             self.GlobalFileManager,
-            self.equilibrationTime,
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
+            self.scanRate,
         )
+        self.Buttons.MainThreadManager = self.MainThreadManager
+        self.MainThreadManager.setEquilibrationTime(self.equilibrationTime)
 
     def displayReaderRunResults(self):
-        if self.mainThreadManager.finishedEquilibrationPeriod:
+        if self.MainThreadManager.finishedEquilibrationPeriod:
             endOfExperimentView = EndOfExperimentView(self.root, self.GlobalFileManager)
             endOfExperimentFrame = endOfExperimentView.createEndOfExperimentView()
             self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
-            self.Buttons.guidedSetupButton.grid(row=2, column=1, sticky='se', padx=10, pady=10)
+            self.Buttons.GuidedSetupButton.place()
             self.SummaryFigureCanvas.frequencyCanvas = None
             self.endOfExperimentFrame = endOfExperimentFrame
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
-            self.Buttons.guidedSetupButton.invoke()
+            self.Buttons.GuidedSetupButton.invoke()

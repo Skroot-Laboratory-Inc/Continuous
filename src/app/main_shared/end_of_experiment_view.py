@@ -46,7 +46,7 @@ class EndOfExperimentView:
         image_label = tk.Label(endOfExperimentFrame, image=self.guidedSetupImage, bg=self.Colors.secondaryColor)
         image_label.grid(row=1, column=0, sticky='nesw')
 
-        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.ANTIALIAS)
+        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.LANCZOS)
         self.summaryPlotImage = ImageTk.PhotoImage(image)
         image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.Colors.secondaryColor)
         image_label.grid(row=1, column=1, sticky='nesw')

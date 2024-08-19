@@ -67,7 +67,7 @@ try:
     print(f" > Zipping Files")
     if not check_before_overwrite(software_releases_bucket, zip_name):
         raise Exception("Did not perform update to avoid overwriting the current release files.")
-    zip_files('../..', zip_file_path)
+    zip_files('../../..', zip_file_path)
     # Upload the zip file to AWS in the skroot-data/software-releases bucket
     print(f" > Uploading Zip as '{zip_name}' from '{zip_file_path}'")
     s3_upload_file(

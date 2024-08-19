@@ -10,7 +10,8 @@ except KeyError:
         '/usr/lib/python3.10/lib-dynload',
         '/usr/local/lib/python3.10/dist-packages',
         '/usr/lib/python3/dist-packages',
-        '.'
+        '.',
+        '../..',
     ]
 import json
 

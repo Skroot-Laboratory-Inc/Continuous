@@ -3,9 +3,11 @@ This application is designed to be used in conjuction with a Skroot SIB to take 
 ## Technical Requirements
 - Running on a linux or windows machine
 - Currently runs on the Tkinter framework
+- Requires the `sibcontrol` package included in the project to be installed to pip
 - If running on linux, downloaded all of the modules in:
   - `src/resources/scripts/requirements.txt`
-- If running on Windows, modules required TBD
+- If running on Windows, downloaded all of the modules in:
+  - `src/resources/scripts/win-requirements.txt`
 ## Running the application
 Run the `src/app/main.py` file
 - The current working directory, no matter what file the code is in will be `src/app`
