@@ -121,7 +121,7 @@ class MainShared:
             self.foundPorts = True
             if not self.isDevMode:
                 self.Buttons.ConnectReadersButton.destroySelf()
-                self.Buttons.findReaders(self.numReaders)
+                self.Buttons.findReaders(self.numReaders, self.GlobalFileManager)
                 self.Buttons.placeCalibrateReadersButton()
 
     def createRoot(self):

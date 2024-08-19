@@ -4,12 +4,12 @@ from src.app.buttons.button_interface import ButtonInterface
 
 
 class ConnectReadersButton(ButtonInterface):
-    def __init__(self, master, invokeFn, numReaders):
+    def __init__(self, master, invokeFn, numReaders, globalFileManager):
         self.connectReadersButton = ttk.Button(
             master,
             text="Connect Readers",
             style='W.TButton',
-            command=lambda: invokeFn(numReaders),
+            command=lambda: invokeFn(numReaders, globalFileManager),
         )
 
     def place(self):

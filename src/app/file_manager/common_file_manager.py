@@ -11,13 +11,13 @@ class CommonFileManager:
         self.downloadPng = rf"{resourcesDir}/download.png"
         self.squareLogo = rf"{resourcesDir}/squareLogo.PNG"
         self.localDesktopFile = rf'{resourcesDir}/desktopApp.desktop'
-        self.experimentLog = f'{getDesktopLocation()}/Calibration/log.txt'
+        self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
         self.remoteDesktopFile = rf'{os.path.dirname(rootDir)}/share/applications/desktopApp.desktop'
         self.installScript = rf'{resourcesDir}/scripts/install-script.sh'
         self.tempSoftwareUpdate = fr'{rootDir}/DesktopApp.zip'
         self.readMe = f'{resourcesDir}/README_Analysis.md'
-        self.dataSavePath = f'{getDesktopLocation()}/data'
-        self.devBaseFolder = f'{getDesktopLocation()}/Calibration/dev'
+        self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
+        self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
 
 
     def getHelpIcon(self):

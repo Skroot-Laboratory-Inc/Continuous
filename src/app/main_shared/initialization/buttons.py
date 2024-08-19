@@ -10,7 +10,7 @@ from src.app.buttons.help_button import HelpButton
 from src.app.buttons.start_button import StartButton
 from src.app.buttons.stop_button import StopButton
 from src.app.exception.common_exceptions import UserExitedException
-from src.app.helper.helper_functions import getDesktopLocation
+from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
@@ -65,12 +65,12 @@ class ButtonFunctions:
             text_notification.setText("Ending experiment once current sweep is complete.", ('Courier', 9, 'bold'),
                                       self.AppModule.primaryColor, self.AppModule.secondaryColor)
 
-    def findReaders(self, numReaders):
+    def findReaders(self, numReaders, globalFileManager):
         logging.info(f'calibrate button pressed')
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True))
+                self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True, globalFileManager))
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -129,12 +129,14 @@ class ButtonFunctions:
             self.SibInterfaces[readerIndex].calibrationFailed = True
             logging.exception(f'Failed to calibrate reader {readerIndex + 1}')
 
-    def connectReaders(self, numReaders):
+    def connectReaders(self, numReaders, globalFileManager):
         self.ConnectReadersButton.destroySelf()
         for readerNumber in range(1, numReaders + 1):
             try:
                 port = self.findPort(readerNumber)
-                self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, False))
+                self.SibInterfaces.append(
+                    instantiateReader(port, self.PortAllocator, readerNumber, False, globalFileManager),
+                )
             except UserExitedException:
                 self.AppModule.root.destroy()
                 logging.exception("User exited during port finding.")
@@ -170,7 +172,12 @@ class ButtonFunctions:
             return '', ''
 
     def placeConnectReadersButton(self):
-        self.ConnectReadersButton = ConnectReadersButton(self.AppModule.readerPlotFrame, self.connectReaders, self.AppModule.numReaders)
+        self.ConnectReadersButton = ConnectReadersButton(
+            self.AppModule.readerPlotFrame,
+            self.connectReaders,
+            self.AppModule.numReaders,
+            self.AppModule.GlobalFileManager,
+        )
         self.ConnectReadersButton.place()
 
     def placeCalibrateReadersButton(self):
@@ -183,10 +190,15 @@ def pauseUntilUserClicks(readerNumber):
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 
-def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired) -> SibInterface:
+def instantiateReader(port, PortAllocator, readerNumber, calibrationRequired, globalFileManager) -> SibInterface:
     try:
-        sib = Sib(port, f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv', readerNumber,
-                  PortAllocator, calibrationRequired)
+        sib = Sib(
+            port,
+            ReaderFileManager(globalFileManager, readerNumber).getCalibrationGlobalLocation(),
+            readerNumber,
+            PortAllocator,
+            calibrationRequired,
+        )
         success = sib.performHandshake()
         if success:
             return sib
