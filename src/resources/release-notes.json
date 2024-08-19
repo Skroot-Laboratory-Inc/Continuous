@@ -1,4 +1,7 @@
 {
+  "v2.5.3": {
+    "other": "Major code refactor"
+  },
   "v2.4.6": {
     "features": {
       "1": "Updated signal check to use percentages instead of values.",
