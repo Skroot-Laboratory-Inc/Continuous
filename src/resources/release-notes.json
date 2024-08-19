@@ -1,0 +1,115 @@
+{
+  "v2.5.3": {
+    "other": "Major code refactor"
+  },
+  "v2.4.6": {
+    "features": {
+      "1": "Updated signal check to use percentages instead of values.",
+      "2": "Added an indicator to check the state of a reader (errored, working, scanning)."
+    }
+  },
+  "v2.4.5": {
+    "features": {
+      "1": "Updated default sweep frequency to 110-160 MHz",
+      "2": "Closing guided setup now asks to close the app, rather than submitting the data.",
+      "3": "Updated help dialog popup to only send the log to AWS, without placeholder text",
+      "4": "Calibration now removes the first 0.2 MHz from the scan."
+    }
+  },
+  "v2.4.4": {
+    "features": {
+      "1": "Added a button to download the analysis folder into a zip file."
+    },
+    "bugfixes": {
+      "1": "Fixed bug causing end of experiment view to not show up."
+    }
+  },
+  "v2.4.3": {
+    "features": {
+      "1": "Added a README.md file containing information about the files in the Analysis directory",
+      "2": "Copied over second axis files into the Analysis directory.",
+      "3": "Created instantaneous flip from SGI to signal check."
+    },
+    "bugfixes": {
+      "1": "Gave the user the option of cancelling the port finding process to restart the app."
+    }
+  },
+  "v2.4.2": {
+    "bugfixes": {
+      "1": "Ensured readers reconnect on the same port using their serial number."
+    }
+  },
+  "v2.4.1": {
+    "features": {
+      "1": "Added support for setting equilibration period to 0.",
+      "2": "Added back toggle to view signal check in ribbon.",
+      "3": "Added Skroot copyright as app footer.",
+      "4": "Added frequency and filename columns to smooth analyzed.",
+      "5": "Created more specific error messages to display to user.."
+    },
+    "bugfixes": {
+      "1": "Fixed sorting of the release notes dialog to accurately represent versioning."
+    }
+  },
+  "v2.2.7": {
+    "features": {
+      "1": "Updated foldering scheme to remove _Cell from folders and added Log and Analysis folders",
+      "2": "Added logging of self resonant frequency for debugging purposes",
+      "3": "Removed simultaneous calibrations"
+    }
+  },
+  "v2.2.4": {
+    "other": {
+      "1": "Recreation of v2.2.3 for updating purposes"
+    }
+  },
+  "v2.2.3": {
+    "bugfixes": {
+      "1": "Fixed app failing to startup"
+    },
+    "other": {
+      "1": "Updated sweep range to 115-165 MHz",
+      "2": "Added logging for sibcontrol version"
+    }
+  },
+  "v2.2.2": {
+    "bugfixes": {
+      "1": "Fixed install-script on software update"
+    }
+  },
+  "v2.2.1": {
+    "features": {
+      "1": "Added an end of experiment view that summarizes the results"
+    },
+    "bugfixes": {
+      "1": "Restarting a run now properly clears ports",
+      "2": "Ignored initial 0.2 MHz spike on signal check plot"
+    },
+    "other": {
+      "1": "Number of readers options increased to 12"
+    }
+  },
+  "v2.1.2": {
+    "features": {
+      "1": "Updates to guided setup form to use equilibration time and dropdowns",
+      "2": "Updates to plotting/analysis to use an equilibration period",
+      "3": "Updates to SGI to use percentage based shift",
+      "4": "Removed signal strength view mode",
+      "5": "Removed feature where inoculation set the SGI zero point",
+      "6": "Added a confirmation dialog to stop button and renamed it"
+    },
+    "bugfixes": {
+      "1": "Analyzed files now correlate 1:1 with on screen plots"
+    },
+    "other": {
+      "1": "Spline and signal strength have been removed from codebase.",
+      "2": "Logger max size reduced to 10 kb",
+      "3": "Reduced the number of analyzed files generated"
+    }
+  },
+  "v2.1.1": {
+    "features": {
+      "1": "SIB control v2.2.0 and related error handling implementation"
+    }
+  }
+}
