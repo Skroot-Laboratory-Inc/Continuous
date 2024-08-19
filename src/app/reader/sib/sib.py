@@ -277,6 +277,8 @@ def find_nearest(freq, freqList, dBlist):
 
 
 def createCalibrationDirectoryIfNotExists(filename):
+    if not os.path.exists(os.path.dirname(os.path.dirname(filename))):
+        os.mkdir(os.path.dirname(os.path.dirname(filename)))
     if not os.path.exists(os.path.dirname(filename)):
         os.mkdir(os.path.dirname(filename))
 

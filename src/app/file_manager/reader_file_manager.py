@@ -9,7 +9,7 @@ class ReaderFileManager:
         self.secondAxis = f'{self.readerSavePath}/secondAxis.csv'
         self.smoothAnalyzed = rf"{self.readerSavePath}/smoothAnalyzed.csv"
         self.calibrationLocalLocation = f'{self.readerSavePath}/Calibration.csv'
-        self.calibrationGlobalLocation = f'{getDesktopLocation()}/Calibration/{readerNumber}/Calibration.csv'
+        self.calibrationGlobalLocation = f'{getDesktopLocation()}/Backend/Calibration/{readerNumber}/Calibration.csv'
         self.summaryPdf = f'{self.globalSavePath}/Summary.pdf'
         self.readerPlotJpg = f'{self.globalSavePath}/Reader {readerNumber}.jpg'
         self.experimentNotesTxt = f'{self.readerSavePath}/notes.txt'
