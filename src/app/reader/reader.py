@@ -37,7 +37,7 @@ class Reader(ReaderInterface):
             AppModule.denoiseSet,
             self.FileManager,
             self.ExperimentNotes,
-            AppModule.secondAxisTitle,
+            AppModule.guidedSetupForm.getSecondAxisTitle(),
         )
         isDevMode = DevProperties().isDevMode
         if isDevMode:

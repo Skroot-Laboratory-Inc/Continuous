@@ -13,10 +13,17 @@ class Settings:
         self.AppModule = AppModule
 
     def freqRangeSetting(self):
-        startFreq = tk.simpledialog.askfloat("Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
-                                             parent=self.AppModule.root, minvalue=50, maxvalue=170)
-        stopFreq = tk.simpledialog.askfloat("Input", "Stop Frequency (MHz): \nRange: (50-170MHz)",
-                                            parent=self.AppModule.root, minvalue=50, maxvalue=170)
+        startFreq = tk.simpledialog.askfloat(
+            "Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
+            parent=self.AppModule.root,
+            minvalue=50,
+            maxvalue=170)
+        stopFreq = tk.simpledialog.askfloat(
+            "Input",
+            "Stop Frequency (MHz): \nRange: (50-170MHz)",
+            parent=self.AppModule.root,
+            minvalue=50,
+            maxvalue=170)
         if startFreq is not None:
             for Reader in self.AppModule.Readers:
                 Reader.SibInterface.setStartFrequency(startFreq)
@@ -29,24 +36,30 @@ class Settings:
             logging.info(f'stopFreq changed to {stopFreq}')
 
     def saveFilesSetting(self):
-        disableSaveFullFiles = tk.messagebox.askyesno("Disable Full File Save",
-                                                      "Are you sure you would like to disable entire file save? \n",
-                                                      parent=self.AppModule.root)
+        disableSaveFullFiles = tk.messagebox.askyesno(
+            "Disable Full File Save",
+            "Are you sure you would like to disable entire file save? \n",
+            parent=self.AppModule.root)
         if disableSaveFullFiles is not None:
             self.AppModule.disableSaveFullFiles = disableSaveFullFiles
             logging.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
 
     def rateSetting(self):
-        scanRate = tk.simpledialog.askfloat("Input", "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
-                                            parent=self.AppModule.root, minvalue=0.1, maxvalue=240)
+        scanRate = tk.simpledialog.askfloat(
+            "Input",
+            "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
+            parent=self.AppModule.root,
+            minvalue=0.1,
+            maxvalue=240)
         if scanRate is not None:
-            self.AppModule.scanRate = scanRate
+            self.AppModule.guidedSetupForm.scanRate = scanRate
             self.AppModule.MainThreadManager.scanRate = scanRate
             logging.info(f'scanRate changed to {scanRate}')
 
     def denoiseSetting(self):
-        self.AppModule.denoiseSet = tk.messagebox.askyesno('Denoise Setting',
-                                                           'Would you like to denoise and smooth the results before displaying them?')
+        self.AppModule.denoiseSet = tk.messagebox.askyesno(
+            'Denoise Setting',
+            'Would you like to denoise and smooth the results before displaying them?')
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
     def freqToggleSetting(self, toggle):
@@ -54,9 +67,9 @@ class Settings:
         logging.info(f'freqToggleSet changed to {toggle}')
 
     def weakSignalToggleSetting(self):
-        self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno('Ignore Weak Signal',
-                                                                    'Are you sure you would like to ignore '
-                                                                    'the weak signal warning?')
+        self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno(
+            'Ignore Weak Signal',
+            'Are you sure you would like to ignore the weak signal warning?')
         logging.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
     def createReaders(self, numReaders, SibInterfaces):
@@ -82,7 +95,16 @@ class Settings:
                 else:
                     readersOnScreen = maxReadersPerScreen
                 self.AppModule.Readers.append(Reader(
-                    self.AppModule, readerNumber, outerFrame, readersOnScreen, self.AppModule.startFreq, self.AppModule.stopFreq, self.AppModule.savePath, readerColor, SibInterfaces[readerNumber - 1]))
+                    self.AppModule,
+                    readerNumber,
+                    outerFrame,
+                    readersOnScreen,
+                    self.AppModule.startFreq,
+                    self.AppModule.stopFreq,
+                    self.AppModule.guidedSetupForm.getSavePath(),
+                    readerColor,
+                    SibInterfaces[readerNumber - 1],
+                ))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
             self.updateFontSize()

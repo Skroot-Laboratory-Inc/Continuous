@@ -1,12 +1,15 @@
+from datetime import datetime
+
 from src.app.properties.guided_setup_defaults import GuidedSetupDefaults
 
 
 class GuidedSetupInput:
     def __init__(self):
         guidedSetupDefaults = GuidedSetupDefaults()
-        self.month = guidedSetupDefaults.month
-        self.day = guidedSetupDefaults.day
-        self.year = guidedSetupDefaults.year
+        currentDate = datetime.now().date()
+        self.month = currentDate.month
+        self.day = currentDate.day
+        self.year = currentDate.year
         self.numReaders = guidedSetupDefaults.numReaders
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
@@ -36,7 +39,7 @@ class GuidedSetupInput:
     def getCalibrate(self):
         return self.calibrate
 
-    def getSecondAxis(self):
+    def getSecondAxisTitle(self):
         return self.secondAxisTitle
 
     def getExperimentId(self):
@@ -47,7 +50,4 @@ class GuidedSetupInput:
 
     def getSavePath(self):
         return self.savePath
-
-    def setSavePath(self, savePath):
-        self.savePath = savePath
 
