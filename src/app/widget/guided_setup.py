@@ -9,9 +9,9 @@ from src.app.file_manager.global_file_manager import GlobalFileManager
 
 
 class SetupForm:
-    def __init__(self, root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime):
+    def __init__(self, root, month, day, year, numReaders, scanRate, experimentId, secondAxisTitle, equilibrationTime):
         self.secondAxisTitle = ""
-        self.cellType = None
+        self.experimentId = None
         self.GlobalFileManager = None
         self.year = None
         self.month = None
@@ -27,7 +27,7 @@ class SetupForm:
         self.calibrateRequired = tk.IntVar(value=1)
         self.equilibrationTimeEntry = tk.StringVar(value=equilibrationTime)
         self.secondAxisEntry = tk.StringVar(value=secondAxisTitle)
-        self.cellTypeEntry = tk.StringVar(value=cellType)
+        self.experimentIdEntry = tk.StringVar(value=experimentId)
         self.monthEntry = tk.IntVar(value=month)
         self.dayEntry = tk.IntVar(value=day)
         self.yearEntry = tk.IntVar(value=year)
@@ -63,7 +63,7 @@ class SetupForm:
 
         entriesMap['Date'] = dateFrame
 
-        entriesMap['Cell Type'] = tk.Entry(self.window, textvariable=self.cellTypeEntry, borderwidth=0, highlightthickness=0, justify="center")
+        entriesMap['Experiment ID'] = tk.Entry(self.window, textvariable=self.experimentIdEntry, borderwidth=0, highlightthickness=0, justify="center")
 
         options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
         entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
@@ -101,7 +101,7 @@ class SetupForm:
         root.wait_window(self.window)
 
     def getConfiguration(self):
-        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime, self.GlobalFileManager
+        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.experimentId, self.equilibrationTime, self.GlobalFileManager
 
     def setCalibrate(self):
         if self.calibrateRequired.get() == 1:
@@ -110,14 +110,14 @@ class SetupForm:
             self.calibrate = False
 
     def onSubmit(self):
-        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.cellTypeEntry.get() != ""):
+        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != ""):
             date = f"{self.monthEntry.get()}-{self.dayEntry.get()}-{self.yearEntry.get()}"
             self.numReaders = int(self.numReadersEntry.get())
             self.equilibrationTime = int(self.equilibrationTimeEntry.get())
             self.scanRate = float(self.scanRateEntry.get())
             self.savePath = self.getSavePath(date)
             self.GlobalFileManager = GlobalFileManager(self.savePath)
-            self.month, self.day, self.year, self.cellType, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.cellTypeEntry.get(), self.secondAxisEntry.get()
+            self.month, self.day, self.year, self.experimentId, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.experimentIdEntry.get(), self.secondAxisEntry.get()
             self.takeScreenshot()
             self.window.destroy()
         else:
@@ -131,14 +131,14 @@ class SetupForm:
         if not os.path.exists(baseSavePath):
             os.mkdir(baseSavePath)
         if not os.path.exists(
-                f"{baseSavePath}/{date}_{self.cellTypeEntry.get()}"):
-            return f"{baseSavePath}/{date}_{self.cellTypeEntry.get()}"
+                f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"):
+            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"
         else:
             incrementalNumber = 0
             while os.path.exists(
-                    f"{baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"):
+                    f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"):
                 incrementalNumber += 1
-            return f"{baseSavePath}/{date}_{self.cellTypeEntry.get()} ({incrementalNumber})"
+            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"
 
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):

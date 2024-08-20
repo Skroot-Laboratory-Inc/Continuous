@@ -19,7 +19,7 @@ class GuidedSetupButton(ButtonInterface):
             self.AppModule.year,
             self.AppModule.numReaders,
             self.AppModule.scanRate,
-            self.AppModule.cellType,
+            self.AppModule.experimentId,
             self.AppModule.secondAxisTitle,
             self.AppModule.equilibrationTime)
 
