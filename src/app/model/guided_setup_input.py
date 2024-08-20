@@ -11,7 +11,7 @@ class GuidedSetupInput:
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
         self.secondAxisTitle = guidedSetupDefaults.secondAxisTitle
-        self.cellType = guidedSetupDefaults.cellType
+        self.experimentId = guidedSetupDefaults.experimentId
         self.equilibrationTime = guidedSetupDefaults.equilibrationTime
         self.savePath = ""
 
@@ -39,8 +39,8 @@ class GuidedSetupInput:
     def getSecondAxis(self):
         return self.secondAxisTitle
 
-    def getCellType(self):
-        return self.cellType
+    def getExperimentId(self):
+        return self.experimentId
 
     def getEquilibrationTime(self):
         return float(self.equilibrationTime)

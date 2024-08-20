@@ -97,7 +97,7 @@ class MainShared:
         self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
         self.Buttons.HelpButton.place()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell",
+    def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell Growth Exp 1",
                     secondAxisTitle="", equilibrationTime="24"):
         try:
             self.Buttons.GuidedSetupButton.destroySelf()

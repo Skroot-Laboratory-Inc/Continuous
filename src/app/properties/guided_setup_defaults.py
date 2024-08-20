@@ -7,7 +7,7 @@ class GuidedSetupDefaults:
         self.scanRate = "5"
         self.calibrate = True
         self.secondAxisTitle = ""
-        self.cellType = "Cell"
+        self.experimentId = "Cell Growth Exp 1"
         self.equilibrationTime = "24"
 
 

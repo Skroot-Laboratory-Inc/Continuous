@@ -1,4 +1,9 @@
 {
+  "v2.5.5": {
+    "features": {
+      "1": "Replaced `Cell Type` with `Experiment Id` on setup form"
+    }
+  },
   "v2.5.4": {
     "features": {
       "1": "Reorganized file structure for data and backend files."
