@@ -3,6 +3,9 @@
     "features": {
       "1": "Replaced `Cell Type` with `Experiment Id` on setup form"
     },
+    "bugfixes": {
+      "1": "Fixed software updated bug introduces in v2.5.3"
+    },
     "other": {
       "1": "Updated guided setup to use an object rather than variables."
     }
