@@ -26,7 +26,7 @@ class ButtonFunctions:
         self.calibrateSynchronously = False
 
     def createGuidedSetupButton(self, master):
-        self.GuidedSetupButton = GuidedSetupButton(master, self.AppModule)
+        self.GuidedSetupButton = GuidedSetupButton(master, self.AppModule.guidedSetup)
 
     def createButtonsOnNewFrame(self):
         self.StartButton = StartButton(self.AppModule.readerPlotFrame, self.startFunc)
@@ -41,7 +41,7 @@ class ButtonFunctions:
             relwidth=0.3,
             relheight=0.45 * spaceForPlots)
         self.StartButton.destroySelf()
-        self.AppModule.Settings.createReaders(self.AppModule.numReaders, self.SibInterfaces)
+        self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         self.AppModule.Settings.addInoculation()
@@ -86,7 +86,7 @@ class ButtonFunctions:
     def calibrateAllReaders(self):
         text_notification.setText("Calibrating readers... do not move them", ('Courier', 9, 'bold'),
                                   self.AppModule.primaryColor, self.AppModule.secondaryColor)
-        threads = self.startSibCalibrationThread(self.AppModule.numReaders)
+        threads = self.startSibCalibrationThread(self.AppModule.guidedSetupForm.getNumReaders())
         for t in threads:
             t.join()
         calibrationFailed = False
@@ -175,7 +175,7 @@ class ButtonFunctions:
         self.ConnectReadersButton = ConnectReadersButton(
             self.AppModule.readerPlotFrame,
             self.connectReaders,
-            self.AppModule.numReaders,
+            self.AppModule.guidedSetupForm.getNumReaders(),
             self.AppModule.GlobalFileManager,
         )
         self.ConnectReadersButton.place()

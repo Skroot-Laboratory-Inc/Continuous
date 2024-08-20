@@ -6,34 +6,25 @@ import pyautogui
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.model.guided_setup_input import GuidedSetupInput
 
 
 class SetupForm:
-    def __init__(self, root, month, day, year, numReaders, scanRate, experimentId, secondAxisTitle, equilibrationTime):
-        self.secondAxisTitle = ""
-        self.experimentId = None
-        self.GlobalFileManager = None
-        self.year = None
-        self.month = None
-        self.day = None
-        self.scanRate = None
-        self.savePath = None
-        self.numReaders = 0
-        self.equilibrationTime = None
-        self.calibrate = True
-        self.secondAxis = False
+    def __init__(self, root, guidedSetupInputs: GuidedSetupInput):
+        self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
         self.entrySize = 10
         self.root = root
+        self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
-        self.equilibrationTimeEntry = tk.StringVar(value=equilibrationTime)
-        self.secondAxisEntry = tk.StringVar(value=secondAxisTitle)
-        self.experimentIdEntry = tk.StringVar(value=experimentId)
-        self.monthEntry = tk.IntVar(value=month)
-        self.dayEntry = tk.IntVar(value=day)
-        self.yearEntry = tk.IntVar(value=year)
-        self.numReadersEntry = tk.StringVar(value=numReaders)
-        self.scanRateEntry = tk.StringVar(value=scanRate)
-        self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
+        self.setCalibrate()
+        self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
+        self.secondAxisEntry = tk.StringVar(value=guidedSetupInputs.getSecondAxisTitle())
+        self.experimentIdEntry = tk.StringVar(value=guidedSetupInputs.getExperimentId())
+        self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
+        self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
+        self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
+        self.numReadersEntry = tk.StringVar(value=guidedSetupInputs.getNumReaders())
+        self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
         self.window.minsize(200, 200)
         self.window.protocol("WM_DELETE_WINDOW", self.onClosing)
@@ -48,14 +39,34 @@ class SetupForm:
 
         ''' MM DD YYYY Date entry '''
         dateFrame = tk.Frame(self.window, bg='white')
-        tk.Spinbox(dateFrame, textvariable=self.monthEntry, width=round(self.entrySize / 4), from_=1, to=12,
-                   borderwidth=0, highlightthickness=0).grid(row=0, column=1)
-        tk.Label(dateFrame, text="/", bg='white', width=round(self.entrySize / 10)).grid(row=0, column=2)
-        tk.Spinbox(dateFrame, textvariable=self.dayEntry, width=round(self.entrySize / 4), from_=1, to=31,
-                   borderwidth=0, highlightthickness=0).grid(row=0, column=3)
-        tk.Label(dateFrame, text="/", bg='white', width=round(self.entrySize / 10)).grid(row=0, column=4)
-        tk.Spinbox(dateFrame, textvariable=self.yearEntry, width=round(self.entrySize / 2), from_=2023, to=2050,
-                   borderwidth=0, highlightthickness=0).grid(row=0, column=5)
+        tk.Spinbox(dateFrame,
+                   textvariable=self.monthEntry,
+                   width=round(self.entrySize / 4),
+                   from_=1,
+                   to=12,
+                   borderwidth=0,
+                   highlightthickness=0).grid(row=0, column=1)
+        tk.Label(dateFrame,
+                 text="/",
+                 bg='white',
+                 width=round(self.entrySize / 10)).grid(row=0, column=2)
+        tk.Spinbox(dateFrame,
+                   textvariable=self.dayEntry,
+                   width=round(self.entrySize / 4),
+                   from_=1,
+                   to=31,
+                   borderwidth=0,
+                   highlightthickness=0).grid(row=0, column=3)
+        tk.Label(dateFrame,
+                 text="/", bg='white',
+                 width=round(self.entrySize / 10)).grid(row=0, column=4)
+        tk.Spinbox(dateFrame,
+                   textvariable=self.yearEntry,
+                   width=round(self.entrySize / 2),
+                   from_=2023,
+                   to=2050,
+                   borderwidth=0,
+                   highlightthickness=0).grid(row=0, column=5)
 
         ''' Normal entries '''
         entriesMap = {}
@@ -63,7 +74,12 @@ class SetupForm:
 
         entriesMap['Date'] = dateFrame
 
-        entriesMap['Experiment ID'] = tk.Entry(self.window, textvariable=self.experimentIdEntry, borderwidth=0, highlightthickness=0, justify="center")
+        entriesMap['Experiment ID'] = tk.Entry(
+            self.window,
+            textvariable=self.experimentIdEntry,
+            borderwidth=0,
+            highlightthickness=0,
+            justify="center")
 
         options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
         entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
@@ -91,8 +107,13 @@ class SetupForm:
         spacer.grid(row=row, column=1, sticky="ew")
         spacer['state'] = "disabled"
 
-        var = tk.Checkbutton(self.window, text="Calibration Required", variable=self.calibrateRequired, onvalue=1, offvalue=0,
-                       command=self.setCalibrate, bg='white', borderwidth=0, highlightthickness=0)
+        var = tk.Checkbutton(self.window,
+                             text="Calibration Required",
+                             variable=self.calibrateRequired,
+                             onvalue=1,
+                             offvalue=0,
+                             command=self.setCalibrate,
+                             bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
 
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='W.TButton')
@@ -100,29 +121,33 @@ class SetupForm:
         self.submitButton.grid(row=row, column=0, sticky="sw")
         root.wait_window(self.window)
 
-    def getConfiguration(self):
-        return self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate, self.calibrate, self.secondAxisTitle, self.experimentId, self.equilibrationTime, self.GlobalFileManager
+    def getConfiguration(self) -> (GuidedSetupInput, GlobalFileManager):
+        return self.guidedSetupResults, self.GlobalFileManager
 
     def setCalibrate(self):
         if self.calibrateRequired.get() == 1:
-            self.calibrate = True
+            self.guidedSetupResults.calibrate = True
         if self.calibrateRequired.get() == 0:
-            self.calibrate = False
+            self.guidedSetupResults.calibrate = False
 
     def onSubmit(self):
-        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != ""):
-            date = f"{self.monthEntry.get()}-{self.dayEntry.get()}-{self.yearEntry.get()}"
-            self.numReaders = int(self.numReadersEntry.get())
-            self.equilibrationTime = int(self.equilibrationTimeEntry.get())
-            self.scanRate = float(self.scanRateEntry.get())
-            self.savePath = self.getSavePath(date)
-            self.GlobalFileManager = GlobalFileManager(self.savePath)
-            self.month, self.day, self.year, self.experimentId, self.secondAxisTitle = self.monthEntry.get(), self.dayEntry.get(), self.yearEntry.get(), self.experimentIdEntry.get(), self.secondAxisEntry.get()
+        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != "":
+            self.guidedSetupResults.numReaders = int(self.numReadersEntry.get())
+            self.guidedSetupResults.equilibrationTime = int(self.equilibrationTimeEntry.get())
+            self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
+            self.guidedSetupResults.month = self.monthEntry.get()
+            self.guidedSetupResults.day = self.dayEntry.get()
+            self.guidedSetupResults.year = self.yearEntry.get()
+            self.guidedSetupResults.experimentId = self.experimentIdEntry.get()
+            self.guidedSetupResults.secondAxisTitle = self.secondAxisEntry.get()
+            self.guidedSetupResults.savePath = self.getSavePath(self.guidedSetupResults.getDate())
+            self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.takeScreenshot()
             self.window.destroy()
         else:
-            tk.messagebox.showerror("Incorrect Formatting", "One (or more) of the values entered is not formatted "
-                                                            "properly")
+            tk.messagebox.showerror(
+                "Incorrect Formatting",
+                "One (or more) of the values entered is not formatted properly")
             self.window.tkraise()
 
     def getSavePath(self, date):
@@ -150,10 +175,10 @@ class SetupForm:
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
         w, h = self.window.winfo_width(), self.window.winfo_height()
-        if not os.path.exists(os.path.dirname(self.savePath)):
-            os.mkdir(os.path.dirname(self.savePath))
-        if not os.path.exists(self.savePath):
-            os.mkdir(self.savePath)
+        if not os.path.exists(os.path.dirname(self.guidedSetupResults.savePath)):
+            os.mkdir(os.path.dirname(self.guidedSetupResults.savePath))
+        if not os.path.exists(self.guidedSetupResults.savePath):
+            os.mkdir(self.guidedSetupResults.savePath)
         im = pyautogui.screenshot(region=(x, y, w, round(h * 0.77)))
         im.save(self.GlobalFileManager.getSetupForm())
 

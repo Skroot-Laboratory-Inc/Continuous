@@ -1,6 +1,5 @@
 import logging
 import tkinter as tk
-from datetime import datetime
 from importlib.metadata import version as version_api
 
 from reactivex.subject import BehaviorSubject
@@ -12,6 +11,7 @@ from src.app.main_shared.initialization.buttons import ButtonFunctions
 from src.app.main_shared.initialization.settings import Settings
 from src.app.main_shared.initialization.setup import Setup
 from src.app.main_shared.reader_threads.main_thread_manager import MainThreadManager
+from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.properties import CommonProperties
 from src.app.reader.sib.port_allocator import PortAllocator
@@ -30,10 +30,7 @@ class MainShared:
         self.readerPlotFrame = None
         self.foundPorts = False
         self.currentFrame = None
-        self.cellType = None
-        self.year = None
-        self.day = None
-        self.month = None
+        self.guidedSetupForm = GuidedSetupInput()
         self.Properties = CommonProperties()
         self.CommonFileManager = CommonFileManager()
         self.Colors = Colors()
@@ -42,12 +39,9 @@ class MainShared:
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
         self.version = f'{major_version}.{minor_version}'
-        self.numReaders = 0
-        self.savePath = ''
         self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
-        self.scanRate = 0
         self.primaryColor = self.Colors.primaryColor
         self.secondaryColor = self.Colors.secondaryColor
         self.PortAllocator = PortAllocator()
@@ -79,12 +73,12 @@ class MainShared:
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
-            self.scanRate,
+            self.guidedSetupForm.scanRate,
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
         self.Buttons.createButtonsOnNewFrame()
         self.menubar = self.createMenubarOptions()
-        self.MainThreadManager.setEquilibrationTime(self.equilibrationTime)
+        self.MainThreadManager.setEquilibrationTime(self.guidedSetupForm.getEquilibrationTime())
 
     def createMenubarOptions(self):
         menubar = self.Setup.createMenus()
@@ -92,13 +86,11 @@ class MainShared:
         return menubar
 
     def createGuidedSetup(self):
-        currentDate = datetime.now().date()
-        self.guidedSetup(currentDate.month, currentDate.day, currentDate.year)
+        self.guidedSetup()
         self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
         self.Buttons.HelpButton.place()
 
-    def guidedSetup(self, month=12, day=31, year=2023, numReaders="4", scanRate="5", cellType="Cell Growth Exp 1",
-                    secondAxisTitle="", equilibrationTime="24"):
+    def guidedSetup(self):
         try:
             self.Buttons.GuidedSetupButton.destroySelf()
             for widgets in self.endOfExperimentFrame.winfo_children():
@@ -107,9 +99,8 @@ class MainShared:
         except:
             # New experiment, nothing to destroy
             pass
-        setupForm = SetupForm(self.root, month, day, year, numReaders, scanRate, cellType, secondAxisTitle, equilibrationTime)
-        (self.month, self.day, self.year, self.savePath, self.numReaders, self.scanRate,
-         calibrate, self.secondAxisTitle, self.cellType, self.equilibrationTime, self.GlobalFileManager) = setupForm.getConfiguration()
+        setupForm = SetupForm(self.root, self.guidedSetupForm)
+        self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         try:
             self.MainThreadManager.GlobalFileManager = self.GlobalFileManager
         except:
@@ -117,11 +108,11 @@ class MainShared:
             pass
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
-        if calibrate:
+        if self.guidedSetupForm.getCalibrate():
             self.foundPorts = True
             if not self.isDevMode:
                 self.Buttons.ConnectReadersButton.destroySelf()
-                self.Buttons.findReaders(self.numReaders, self.GlobalFileManager)
+                self.Buttons.findReaders(self.guidedSetupForm.getNumReaders(), self.GlobalFileManager)
                 self.Buttons.placeCalibrateReadersButton()
 
     def createRoot(self):
@@ -166,10 +157,10 @@ class MainShared:
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
-            self.scanRate,
+            self.guidedSetupForm.getScanRate(),
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
-        self.MainThreadManager.setEquilibrationTime(self.equilibrationTime)
+        self.MainThreadManager.setEquilibrationTime(self.guidedSetupForm.getEquilibrationTime())
 
     def displayReaderRunResults(self):
         if self.MainThreadManager.finishedEquilibrationPeriod:
