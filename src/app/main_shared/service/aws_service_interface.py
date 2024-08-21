@@ -1,9 +1,3 @@
-from typing import List
-
-from src.app.model.sweep_data import SweepData
-from src.app.reader.reader import Reader
-
-
 class AwsServiceInterfaceMetaClass(type):
     """This checks that classes that implement AwsServiceInterface implement all members of the class"""
 
@@ -16,8 +10,8 @@ class AwsServiceInterfaceMetaClass(type):
                 callable(subclass.checkForSoftwareUpdate) and
                 hasattr(subclass, 'downloadSoftwareUpdate') and
                 callable(subclass.downloadSoftwareUpdate) and
-                hasattr(subclass, 'uploadSummaryPdf') and
-                callable(subclass.uploadSummaryPdf) and
+                hasattr(subclass, 'uploadExperimentCsv') and
+                callable(subclass.uploadExperimentFilesOnInterval) and
                 hasattr(subclass, 'uploadExperimentLog') and
                 callable(subclass.uploadExperimentLog))
 
@@ -30,8 +24,8 @@ class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
     def downloadSoftwareUpdate(self):
         """ Downloads the software update identified in `checkForSoftwareUpdate`. """
 
-    def uploadSummaryPdf(self, scanNumber):
-        """ Uploads the summary pdf for the experiment. """
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm):
+        """ Uploads the summary csv for the experiment. """
 
     def uploadExperimentLog(self):
         """ Uploads the log file for the experiment. """

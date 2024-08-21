@@ -13,7 +13,7 @@ from src.app.main_shared.initialization.setup import Setup
 from src.app.main_shared.reader_threads.main_thread_manager import MainThreadManager
 from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.dev_properties import DevProperties
-from src.app.properties.properties import CommonProperties
+from src.app.properties.common_properties import CommonProperties
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
@@ -73,12 +73,11 @@ class MainShared:
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
-            self.guidedSetupForm.scanRate,
+            self.guidedSetupForm,
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
         self.Buttons.createButtonsOnNewFrame()
         self.menubar = self.createMenubarOptions()
-        self.MainThreadManager.setEquilibrationTime(self.guidedSetupForm.getEquilibrationTime())
 
     def createMenubarOptions(self):
         menubar = self.Setup.createMenus()
@@ -91,21 +90,10 @@ class MainShared:
         self.Buttons.HelpButton.place()
 
     def guidedSetup(self):
-        try:
-            self.Buttons.GuidedSetupButton.destroySelf()
-            for widgets in self.endOfExperimentFrame.winfo_children():
-                widgets.destroy()
-            self.endOfExperimentFrame.destroy()
-        except:
-            # New experiment, nothing to destroy
-            pass
+        self.destroyExistingWidgets()
         setupForm = SetupForm(self.root, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
-        try:
-            self.MainThreadManager.GlobalFileManager = self.GlobalFileManager
-        except:
-            # New experiment, doesn't need reset
-            pass
+        self.resetMainThreadManager()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if self.guidedSetupForm.getCalibrate():
@@ -114,6 +102,26 @@ class MainShared:
                 self.Buttons.ConnectReadersButton.destroySelf()
                 self.Buttons.findReaders(self.guidedSetupForm.getNumReaders(), self.GlobalFileManager)
                 self.Buttons.placeCalibrateReadersButton()
+
+    def resetMainThreadManager(self):
+        try:
+            self.MainThreadManager.GlobalFileManager = self.GlobalFileManager
+            self.MainThreadManager.guidedSetupForm = self.guidedSetupForm
+            self.MainThreadManager.scanRate = self.guidedSetupForm.getScanRate()
+            self.MainThreadManager.equilibrationTime = self.guidedSetupForm.getEquilibrationTime()
+        except:
+            # New experiment, doesn't need reset
+            pass
+
+    def destroyExistingWidgets(self):
+        try:
+            self.Buttons.GuidedSetupButton.destroySelf()
+            for widgets in self.endOfExperimentFrame.winfo_children():
+                widgets.destroy()
+            self.endOfExperimentFrame.destroy()
+        except:
+            # New experiment, nothing to destroy
+            pass
 
     def createRoot(self):
         operatingSystem = getOperatingSystem()
@@ -157,10 +165,9 @@ class MainShared:
             self.readerPlotFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
-            self.guidedSetupForm.getScanRate(),
+            self.guidedSetupForm,
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
-        self.MainThreadManager.setEquilibrationTime(self.guidedSetupForm.getEquilibrationTime())
 
     def displayReaderRunResults(self):
         if self.MainThreadManager.finishedEquilibrationPeriod:
@@ -172,4 +179,4 @@ class MainShared:
             self.endOfExperimentFrame = endOfExperimentFrame
         else:
             self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
-            self.Buttons.GuidedSetupButton.invoke()
+            self.Buttons.GuidedSetupButton.invokeButton()

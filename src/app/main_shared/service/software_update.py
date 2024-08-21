@@ -46,7 +46,6 @@ class SoftwareUpdate(AwsBoto3):
         return ReleaseNotes.download
 
     def checkForSoftwareUpdates(self):
-        # if our current newest version is less than that, then we'll update it and return True
         out_of_date = False
         if not self.disabled:
             allReleases = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
@@ -57,16 +56,19 @@ class SoftwareUpdate(AwsBoto3):
                 if filename == 'software-releases/':
                     continue  # Don't try to get tags of the folder itself
                 try:
-                    tags = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
-                    if tags["TagSet"] != []:
-                        majorVersion = float(tags["TagSet"][0]['Value'])
-                        minorVersion = int(tags["TagSet"][1]['Value'])
+                    tagsDict = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
+                    if tagsDict["TagSet"]:
+                        for tags in tagsDict["TagSet"]:
+                            if tags['Key'] == 'major_version':
+                                majorVersion = float(tags['Value'])
+                            elif tags['Key'] == 'minor_version':
+                                minorVersion = int(tags['Value'])
                     else:
                         # We are looking at an untagged item, likely a folder.
                         majorVersion = 0.0
                         minorVersion = 0
                 except botocore.exceptions.ClientError:
-                    continue  # This means it's an R&D update and we are not using an R&D profile
+                    continue  # This means it's an R&D update, and we are not using an R&D profile
                 except:
                     logging.exception("failed to get tags of software update file")
                 # find the greatest version in the s3 bucket
