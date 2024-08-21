@@ -1,23 +1,27 @@
 import logging
 import shutil
+from datetime import datetime
 from zipfile import ZipFile
 
+from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper import helper_functions
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.main_shared.service.software_update import SoftwareUpdate
-from src.app.properties.properties import CommonProperties
+from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.properties.aws_properties import AwsProperties
 from src.app.widget import text_notification
 
 
 class AwsService(AwsServiceInterface):
     def __init__(self, root, major_version, minor_version, globalFileManager: GlobalFileManager):
         self.SoftwareUpdate = SoftwareUpdate(root, major_version, minor_version)
+        self.AwsBoto3Service = AwsBoto3()
         self.CommonFileManager = CommonFileManager()
-        self.Properties = CommonProperties()
-        self.awsTimeBetweenUploads = self.Properties.awsTimeBetweenUploads
+        self.Properties = AwsProperties()
+        self.csvUploadRate = self.Properties.csvUploadRate
         self.GlobalFileManager = globalFileManager
         self.awsLastUploadTime = 0
 
@@ -47,23 +51,39 @@ class AwsService(AwsServiceInterface):
         except:
             logging.exception("failed to update software")
 
-    def uploadSummaryPdf(self, scanNumber):
-        if not self.SoftwareUpdate.disabled:
-            if self.SoftwareUpdate.dstPdfName is None:
-                self.SoftwareUpdate.findFolderAndUploadFile(self.GlobalFileManager.getSummaryPdf(), "application/pdf")
-            else:
-                if (scanNumber - self.awsLastUploadTime) > self.awsTimeBetweenUploads:
-                    self.SoftwareUpdate.uploadFile(self.GlobalFileManager.getSummaryPdf(),
-                                                   self.SoftwareUpdate.dstPdfName,
-                                                   'application/pdf')
-                    self.awsLastUploadTime = scanNumber
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
+        if (scanNumber - self.awsLastUploadTime) > self.csvUploadRate:
+            self.AwsBoto3Service.uploadFile(
+                self.GlobalFileManager.getSummaryAnalyzed(),
+                "text/csv",
+                tags={
+                    "end_date": None,
+                    "start_date": guidedSetupForm.getDate(),
+                    "experiment_id": guidedSetupForm.getExperimentId(),
+                    "scan_rate": guidedSetupForm.getScanRate(),
+                    "num_readers": guidedSetupForm.getNumReaders(),
+                }
+            )
+            self.awsLastUploadTime = scanNumber
+
+    def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
+        currentDate = datetime.now().date()
+        self.AwsBoto3Service.uploadFile(
+            self.GlobalFileManager.getSummaryAnalyzed(),
+            "text/csv",
+            tags={
+                "end_date": f'{currentDate.month}-{currentDate.day}-{currentDate.year}',
+                "start_date": guidedSetupForm.getDate(),
+                "experiment_id": guidedSetupForm.getExperimentId(),
+                "scan_rate": guidedSetupForm.getScanRate(),
+                "num_readers": guidedSetupForm.getNumReaders(),
+            }
+        )
+
 
     def uploadExperimentLog(self):
-        if not self.SoftwareUpdate.disabled:
-            self.SoftwareUpdate.uploadFile(
-                self.CommonFileManager.getExperimentLog(),
-                self.SoftwareUpdate.dstLogName,
-                'text/plain',
-            )
-            return True
-        return False
+        return self.AwsBoto3Service.uploadFile(
+            self.CommonFileManager.getExperimentLog(),
+            'text/plain',
+            tags={"response_email": "greenwalt@skrootlab.com"}
+        )

@@ -16,7 +16,7 @@ class InformationPanel:
         self.uploadLogButton.grid(row=2, column=0, sticky='w')
 
     def uploadLogAndDisable(self):
-        success = self.AppModule.AwsService.uploadExperimentLog()
+        success = self.AppModule.MainThreadManager.AwsService.uploadExperimentLog()
         self.uploadLogButton['state'] = 'disabled'
         if success:
             tk.Label(self.window, text="Experiment log has been sent to Skroot. \nPlease contact a Skroot representative with more context.", bg='white').grid(row=3, column=0, sticky='w')

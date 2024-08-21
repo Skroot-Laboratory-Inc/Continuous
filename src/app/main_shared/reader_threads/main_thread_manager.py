@@ -4,6 +4,7 @@ import math
 import threading
 import time
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk
 from typing import List
 
@@ -17,6 +18,7 @@ from src.app.helper.helper_functions import frequencyToIndex
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
 from src.app.main_shared.service.aws_service import AwsService
 from src.app.main_shared.service.dev_aws_service import DevAwsService
+from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.reader import Reader
 from src.app.theme.color_cycler import ColorCycler
@@ -27,8 +29,10 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, root, major_version, minor_version, globalFileManager, readerPlotFrame, summaryFigureCanvas, resetRunFunc, scanRate):
-        self.scanRate = scanRate
+    def __init__(self, denoiseSet, disableFullSaveFiles, root, major_version, minor_version, globalFileManager, readerPlotFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
+        self.guidedSetupForm = guidedSetupForm
+        self.scanRate = guidedSetupForm.getScanRate()
+        self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.Readers = []
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.Timer = RunningTimer()
@@ -56,9 +60,6 @@ class MainThreadManager:
         self.Colors = Colors()
         self.resetRunFunc = resetRunFunc
 
-    def setEquilibrationTime(self, equilibrationTime):
-        self.equilibrationTime = equilibrationTime
-
     def startReaderLoop(self, Readers: List[Reader]):
         self.Readers = Readers
         self.thread.start()
@@ -66,7 +67,7 @@ class MainThreadManager:
     def mainLoop(self):
         self.FileCopier = EndExperimentFileCopier(self.GlobalFileManager)
         if self.isDevMode:
-            self.scanRate = DevProperties().scanRate
+            self.guidedSetupForm.scanRate = DevProperties().scanRate
         self.thread.shutdown_flag = threading.Event()
 
         while not self.thread.shutdown_flag.is_set():
@@ -141,7 +142,10 @@ class MainThreadManager:
                                 self.GlobalFileManager.getSetupForm(),
                                 self.GlobalFileManager.getSummaryFigure(),
                                 self.GlobalFileManager.getSummaryPdf())
-                    self.AwsService.uploadSummaryPdf(self.Readers[0].FileManager.getCurrentScanNumber())
+                    self.AwsService.uploadExperimentFilesOnInterval(
+                        self.Readers[0].FileManager.getCurrentScanNumber(),
+                        self.guidedSetupForm,
+                    )
                 if not errorOccurredWhileTakingScans:
                     text_notification.setText("All readers successfully recorded data.")
             except:
@@ -179,6 +183,8 @@ class MainThreadManager:
             self.root.destroy()
 
     def finalizeRunResults(self):
+        if self.finishedEquilibrationPeriod:
+            self.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
         for Reader in self.Readers:
             try:
                 Reader.SibInterface.close()

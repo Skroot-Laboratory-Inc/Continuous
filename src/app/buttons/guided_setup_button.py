@@ -13,3 +13,6 @@ class GuidedSetupButton(ButtonInterface):
 
     def destroySelf(self):
         self.guidedSetupButton.destroy()
+
+    def invokeButton(self):
+        self.guidedSetupButton.invoke()
