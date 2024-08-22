@@ -3,7 +3,8 @@
     "features": {
       "1": "Now uploading summary csv instead of pdf",
       "2": "Experiment log is now uploaded in the experiment folder for the company.",
-      "3": "Summary PDF now has experiment notes shown on the front page, rather than by the reader plots."
+      "3": "Summary PDF now has experiment notes shown on the front page, rather than by the reader plots.",
+      "4": "Summary PDF now places each readers plot on their own page."
     },
     "bugfixes": {
       "1": "App properly resets using new setup values. Introduced in v2.5.3",
@@ -11,7 +12,8 @@
       "3": "App properly handles the toggling between SGI and signal check."
     },
     "other": {
-      "1": "Now properly parsing software update tags instead of relying on their order."
+      "1": "Now properly parsing software update tags instead of relying on their order.",
+      "2": "Inoculation was also updated to work with new experiment notes."
     }
   },
   "v2.5.5": {

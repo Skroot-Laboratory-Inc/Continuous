@@ -67,19 +67,22 @@ class Reader(ReaderInterface):
         )
         freqToggleSet.subscribe(lambda toggle: self.setViewToggle(toggle))
 
-    def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
-        pdf.placeImage(self.FileManager.getReaderPlotJpg(), currentX, currentY, plotWidth, plotHeight)
-        currentX += plotWidth
+    def addToPdf(self, pdf, x, y, indicatorRadius, totalWidth, totalHeight):
+        pdf.placeImage(
+            self.FileManager.getReaderPlotJpg(),
+            x,
+            y,
+            totalWidth-indicatorRadius*3,
+            totalHeight)
         if not self.HarvestAlgorithm.getStatus():
-            pdf.drawCircle(currentX, currentY, 0.02, 'green')
+            pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'green')
         else:
-            pdf.drawCircle(currentX, currentY, 0.02, 'red')
-        return currentX, currentY
+            pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'red')
 
     def addInoculationMenuBar(self, menu):
         menu.add_command(
             label=f"Reader {self.readerNumber} Inoculated",
-            command=lambda: self.HarvestAlgorithm.updateInoculation(self.Analyzer)
+            command=lambda: self.HarvestAlgorithm.updateInoculationForReader(self.Analyzer.ResultSet)
         )
 
     def addSecondAxisMenubar(self, menu):

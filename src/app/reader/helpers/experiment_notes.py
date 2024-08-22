@@ -8,7 +8,7 @@ from src.app.model.result_set import ResultSet
 class ExperimentNotes:
     def __init__(self, FileManager: GlobalFileManager):
         self.notes = {"All Vessels": []}
-        self.notesTimestamps = []
+        self.notesTimestamps = {}
         self.FileManager = FileManager
 
     def typeExperimentNotes(self, readerNumber, resultSet: ResultSet):
@@ -23,23 +23,38 @@ class ExperimentNotes:
             timestamp = 0
             if resultSet.getTime():
                 timestamp = round(resultSet.getTime()[-1], 4)
-            self.notesTimestamps.append(timestamp)
 
-            notesKey = "All Vessels"
+            key = "All Vessels"
             if readerNumber != 0:
-                notesKey = f"Vessel {readerNumber}"
+                key = f"Vessel {readerNumber}"
 
             try:
-                existingNotes = self.notes[notesKey]
+                existingNotes = self.notes[key]
+                existingTimestamps = self.notesTimestamps[key]
             except:
                 existingNotes = []
+                existingTimestamps = []
+
+            existingTimestamps.append(timestamp)
+            self.notesTimestamps[key] = existingTimestamps
             existingNotes.append({"timestamp": round(timestamp, 2), "entry": newNotes})
-            self.notes[notesKey] = existingNotes
+            self.notes[key] = existingNotes
 
             with open(self.FileManager.getExperimentNotesTxt(), 'w') as f:
                 f.write(self.toString())
             with open(self.FileManager.getExperimentMetadata(), 'w') as f:
                 json.dump(self.toJson(), f, indent=None)
+
+    def getTimestamps(self, readerNumber):
+        try:
+            readerTimestamps = self.notesTimestamps[f"Vessel {readerNumber}"]
+        except:
+            readerTimestamps = []
+        try:
+            allTimestamps = self.notesTimestamps["All Vessels"]
+        except:
+            allTimestamps = []
+        return readerTimestamps + allTimestamps
 
     def toJson(self):
         return {"Notes": self.notes}

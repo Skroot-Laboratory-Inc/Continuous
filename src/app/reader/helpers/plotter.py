@@ -49,7 +49,7 @@ class Plotter:
         else:
             yPlot = frequencyToIndex(zeroPoint, resultSet.getMaxFrequencySmooth())
             self.ReaderFigureCanvas.scatter(resultSet.getTime(), yPlot, 20, self.readerColor)
-        for xvalue in self.ExperimentNotes.notesTimestamps:
+        for xvalue in self.ExperimentNotes.getTimestamps(self.readerNumber):
             self.ReaderFigureCanvas.addVerticalLine(xvalue)
         self.ReaderFigureCanvas.addSecondAxis(self.SecondAxis.getTime(), self.SecondAxis.getValues())
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)

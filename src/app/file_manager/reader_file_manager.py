@@ -43,7 +43,7 @@ class ReaderFileManager:
         return self.readerPlotJpg
 
     def getAccelerationCsv(self):
-        return self.experimentNotesTxt
+        return self.accelerationCsv
 
     def getCurrentScanNumber(self):
         return self.scanNumber

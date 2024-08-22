@@ -76,7 +76,8 @@ class Settings:
         maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
-        self.addReaderSecondAxis()
+        if self.AppModule.guidedSetupForm.getSecondAxisTitle() != "":
+            self.addReaderSecondAxis()
         self.addInoculation()
         if numReaders is not None:
             self.AppModule.outerFrames = []
@@ -180,8 +181,11 @@ class Settings:
         self.AppModule.menubar.add_cascade(label="Inoculation", menu=settingsMenuNotes)
 
     def inoculateAllReaders(self):
+        genericReader = self.AppModule.Readers[0]
+        genericReader.HarvestAlgorithm.updateInoculationExperimentNotes(0, genericReader.getAnalyzer().ResultSet)
         for Reader in self.AppModule.Readers:
-            Reader.HarvestAlgorithm.updateInoculation(Reader.getAnalyzer())
+            Reader.HarvestAlgorithm.updateInoculationValues(Reader.getAnalyzer().ResultSet)
+        self.AppModule.menubar.delete("Inoculation")
 
     def addNotesAllReaders(self):
         newNotes = tk.simpledialog.askstring(f'All Reader Notes',
