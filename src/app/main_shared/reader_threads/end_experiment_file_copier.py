@@ -31,12 +31,12 @@ class EndExperimentFileCopier:
         filesToCopy = {
             self.GlobalFileManager.getSummaryAnalyzed(): 'Experiment Summary.csv',
             self.GlobalFileManager.getSummaryPdf(): 'Experiment Summary.pdf',
+            self.GlobalFileManager.getExperimentNotesTxt(): 'Experiment Notes.txt',
             self.GlobalFileManager.getSetupForm(): 'Setup Form.png',
             self.CommonFileManager.getReadme(): 'README.md',
         }
         for Reader in Readers:
             filesToCopy[Reader.FileManager.getSecondAxis()] = f'Reader {Reader.readerNumber} Second Axis.csv'
-            filesToCopy[Reader.FileManager.getExperimentNotes()] = f'Reader {Reader.readerNumber} Experiment Notes.txt'
         for currentFileLocation, newFileLocation in filesToCopy.items():
             if os.path.exists(currentFileLocation):
                 shutil.copy(currentFileLocation, f'{analysisSubdir}/{newFileLocation}')

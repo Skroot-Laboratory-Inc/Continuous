@@ -4,7 +4,6 @@ import math
 import threading
 import time
 import tkinter as tk
-from datetime import datetime
 from tkinter import ttk
 from typing import List
 
@@ -77,25 +76,27 @@ class MainThreadManager:
                 for Reader in self.Readers:
                     try:
                         Reader.Indicator.changeIndicatorYellow()
-                        sweepData = Reader.SibInterface.takeScan(Reader.FileManager.getCurrentScan(),
-                                                                 self.disableFullSaveFiles)
+                        sweepData = Reader.SibInterface.takeScan(
+                            Reader.FileManager.getCurrentScan(),
+                            self.disableFullSaveFiles,
+                        )
                         Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
                         try:
-                            if Reader.getResultSet().getTime()[-1] >= self.equilibrationTime and not self.finishedEquilibrationPeriod:
-                                if (self.equilibrationTime == 0 and
-                                        Reader.getResultSet().getMaxFrequencySmooth()[-1] != np.nan
-                                and Reader.getResultSet().getMaxFrequencySmooth()[-1] != 0):
+                            lastTimePoint = Reader.getResultSet().getTime()[-1]
+                            if lastTimePoint >= self.equilibrationTime and not Reader.finishedEquilibrationPeriod:
+                                lastFrequencyPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
+                                if self.equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
                                     zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
-                                elif (self.equilibrationTime == 0 and
-                                      (Reader.getResultSet().getMaxFrequencySmooth()[-1] == np.nan or Reader.getResultSet().getMaxFrequencySmooth()[-1] == 0)):
+                                elif self.equilibrationTime == 0 and (lastFrequencyPoint == np.nan or lastFrequencyPoint == 0):
                                     raise Exception()
                                 else:
                                     zeroPoint = np.nanmean(Reader.getResultSet().getMaxFrequencySmooth()[-5:])
                                 Reader.getAnalyzer().setZeroPoint(zeroPoint)
                                 self.freqToggleSet.on_next("SGI")
-                                self.finishedEquilibrationPeriod = True
+                                Reader.finishedEquilibrationPeriod = True
                                 logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
                                 Reader.resetReaderRun()
+                                self.finishedEquilibrationPeriod = True
                         except:
                             raise ZeroPointException(
                                 f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
@@ -138,14 +139,15 @@ class MainThreadManager:
                 if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
-                    generatePdf(self.Readers,
-                                self.GlobalFileManager.getSetupForm(),
-                                self.GlobalFileManager.getSummaryFigure(),
-                                self.GlobalFileManager.getSummaryPdf())
                     self.AwsService.uploadExperimentFilesOnInterval(
                         self.Readers[0].FileManager.getCurrentScanNumber(),
                         self.guidedSetupForm,
                     )
+                    generatePdf(self.Readers,
+                                self.GlobalFileManager.getSetupForm(),
+                                self.GlobalFileManager.getSummaryFigure(),
+                                self.GlobalFileManager.getSummaryPdf(),
+                                self.GlobalFileManager.getExperimentNotesTxt())
                 if not errorOccurredWhileTakingScans:
                     text_notification.setText("All readers successfully recorded data.")
             except:

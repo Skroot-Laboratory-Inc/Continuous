@@ -5,4 +5,5 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 
 class AwsProperties:
     def __init__(self):
-        self.csvUploadRate = 10  # Minutes
+        self.csvUploadRate = 60  # Minutes
+        self.notesUploadRate = 60  # Minutes

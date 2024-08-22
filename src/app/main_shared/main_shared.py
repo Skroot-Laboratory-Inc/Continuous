@@ -14,6 +14,7 @@ from src.app.main_shared.reader_threads.main_thread_manager import MainThreadMan
 from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.common_properties import CommonProperties
+from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
@@ -39,7 +40,6 @@ class MainShared:
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
         self.version = f'{major_version}.{minor_version}'
-        self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = True
         self.disableSaveFullFiles = False
         self.primaryColor = self.Colors.primaryColor
@@ -75,6 +75,7 @@ class MainShared:
             self.resetRun,
             self.guidedSetupForm,
         )
+        self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
         self.Buttons.MainThreadManager = self.MainThreadManager
         self.Buttons.createButtonsOnNewFrame()
         self.menubar = self.createMenubarOptions()
@@ -149,8 +150,7 @@ class MainShared:
             widgets.destroy()
         self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
-        self.freqToggleSet.on_completed()
-        self.freqToggleSet = BehaviorSubject("Signal Check")
+        self.MainThreadManager.freqToggleSet.on_completed()
         self.foundPorts = False
         self.Buttons.SibInterfaces = []
         self.Readers = []

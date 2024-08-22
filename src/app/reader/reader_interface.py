@@ -34,7 +34,7 @@ class ReaderInterfaceMetaClass(type):
 
 class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
-    def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY) -> SweepData:
+    def addToPdf(self, pdf, x, y, indicatorRadius, totalWidth, totalHeight):
         """The reader takes a scan and returns magnitude values."""
 
     def addInoculationMenuBar(self, menu):

@@ -63,7 +63,7 @@ class Settings:
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
 
     def freqToggleSetting(self, toggle):
-        self.AppModule.freqToggleSet.on_next(toggle)
+        self.AppModule.MainThreadManager.freqToggleSet.on_next(toggle)
         logging.info(f'freqToggleSet changed to {toggle}')
 
     def weakSignalToggleSetting(self):
@@ -76,7 +76,8 @@ class Settings:
         maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
-        self.addReaderSecondAxis()
+        if self.AppModule.guidedSetupForm.getSecondAxisTitle() != "":
+            self.addReaderSecondAxis()
         self.addInoculation()
         if numReaders is not None:
             self.AppModule.outerFrames = []
@@ -104,6 +105,8 @@ class Settings:
                     self.AppModule.guidedSetupForm.getSavePath(),
                     readerColor,
                     SibInterfaces[readerNumber - 1],
+                    self.AppModule.ExperimentNotes,
+                    self.AppModule.MainThreadManager.freqToggleSet
                 ))
             self.createNextAndPreviousFrameButtons()
             self.AppModule.showFrame(self.AppModule.outerFrames[0])
@@ -178,16 +181,19 @@ class Settings:
         self.AppModule.menubar.add_cascade(label="Inoculation", menu=settingsMenuNotes)
 
     def inoculateAllReaders(self):
+        genericReader = self.AppModule.Readers[0]
+        genericReader.HarvestAlgorithm.updateInoculationExperimentNotes(0, genericReader.getAnalyzer().ResultSet)
         for Reader in self.AppModule.Readers:
-            Reader.updateInoculation(Reader.getAnalyzer())
+            Reader.HarvestAlgorithm.updateInoculationValues(Reader.getAnalyzer().ResultSet)
+        self.AppModule.menubar.delete("Inoculation")
 
     def addNotesAllReaders(self):
         newNotes = tk.simpledialog.askstring(f'All Reader Notes',
                                              f'Add any experiment notes here. \n'
                                              f'They will be applied to all readers. \n'
                                              f'They can be viewed in the pdf generated.')
-        for Reader in self.AppModule.Readers:
-            Reader.updateExperimentNotes(newNotes)
+        genericReader = self.AppModule.Readers[0]
+        genericReader.ExperimentNotes.updateExperimentNotes(0, newNotes, genericReader.getResultSet())
 
     def updateFontSize(self):
         numberReaders = len(self.AppModule.Readers)

@@ -48,63 +48,44 @@ class PDF(FPDF):
         self.set_author('Skroot Laboratory')
 
 
-def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation):
-    pdf = PDF(orientation='L', unit='mm',
-              format='A4')  # default = (orientation='P', unit='mm', format='A4')
+def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation, experimentNotesTxt):
+    pdf = PDF(orientation='L', unit='mm', format='A4')
     pdf.setFooterHeight(30)
     pdf.setPageWidthHeight(210, 297)
-    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation)
-    generateReaderPages(pdf, summaryPdfLocation, Readers, pdf.footerHeight)
+    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt)
+    generateReaderPages(pdf, Readers)
+    pdf.setAuthor()  # uses Skroot Laboratory
+    pdf.output(summaryPdfLocation, 'F')  # saves the plot, F refers to file
 
 
-def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation):
+def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt):
     pdf.add_page()
-    pdf.placeImage(setupFormLocation, 0.03, 0.2, 0.3, 0.3)
-    pdf.placeImage(summaryFigureLocation, 0.35, 0.05, 0.6, 0.7)
-
-
-def generateReaderPages(pdf, summaryPdfLocation, Readers, headerHeight):
+    pdf.placeImage(setupFormLocation, 0.03, 0.02, 0.3, 0.3)
     try:
-        labelWidth = 0.5
-        plotWidth = 0.41
-        paddingX = 0.02
-        notesWidth = labelWidth - plotWidth
+        with open(experimentNotesTxt) as f:
+            experimentNotes = f.read()
+            pdf.placeText("Experiment Notes", 0.03, 0.33, 0.3, 0.03, 12, True)
+            pdf.placeText(experimentNotes, 0.03, 0.33, 0.3, 0.03, 10, False)
+    except:
+        pass  # No notes exist yet.
+    pdf.placeImage(summaryFigureLocation, 0.35, 0.02, 0.6, 0.7)
 
-        totalHeight = 0.45
-        paddingY = 0.05
-        plotHeight = totalHeight - paddingY
-        notesLineHeight = 0.02
 
-        pdf.add_page()
-        currentY = paddingX
-        currentX = paddingX
+def generateReaderPages(pdf, Readers):
+    try:
         for Reader in Readers:
             try:
-                oldX = currentX
-                currentX, currentY = Reader.addToPdf(
-                    pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY
+                padding = 0.02
+                pdf.add_page()
+                Reader.addToPdf(
+                    pdf,
+                    padding,
+                    padding,
+                    0.05,
+                    1-padding,
+                    1-(pdf.footerHeight/pdf.pdf_h)
                 )
-                currentX, currentY = Reader.ExperimentNotes.addNotesToPdf(
-                    pdf, currentX, currentY, notesWidth, notesLineHeight, plotHeight, paddingY
-                )
-                if Reader != Readers[-1]:
-                    currentX, currentY = checkIfNewPage(
-                        pdf, currentX, currentY, plotHeight, paddingX, oldX, labelWidth, headerHeight
-                    )
             except:
                 logging.exception(f'Failed to update pdf')
-        pdf.setAuthor()  # uses Skroot Laboratory
-        pdf.output(summaryPdfLocation, 'F')  # saves the plot, F refers to file
     except:
         logging.exception("Failed to generate summary PDF")
-
-
-def checkIfNewPage(pdf, currentX, currentY, plotHeight, paddingX, oldX, labelWidth, headerHeight):
-    if currentY >= 1 - plotHeight:
-        currentY = paddingX
-    else:
-        currentX = oldX
-    if currentX >= 1.06 - labelWidth:
-        currentX = paddingX
-        pdf.add_page()
-    return currentX, currentY

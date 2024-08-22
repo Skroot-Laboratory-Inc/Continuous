@@ -20,10 +20,12 @@ class AwsService(AwsServiceInterface):
         self.SoftwareUpdate = SoftwareUpdate(root, major_version, minor_version)
         self.AwsBoto3Service = AwsBoto3()
         self.CommonFileManager = CommonFileManager()
-        self.Properties = AwsProperties()
-        self.csvUploadRate = self.Properties.csvUploadRate
+        self.AwsProperties = AwsProperties()
+        self.csvUploadRate = self.AwsProperties.csvUploadRate
+        self.notesUploadRate = self.AwsProperties.notesUploadRate
         self.GlobalFileManager = globalFileManager
-        self.awsLastUploadTime = 0
+        self.awsLastCsvUploadTime = 100001
+        self.awsLastNotesUploadTime = 100001
 
     def checkForSoftwareUpdate(self):
         newestVersion, updateRequired = self.SoftwareUpdate.checkForSoftwareUpdates()
@@ -52,7 +54,11 @@ class AwsService(AwsServiceInterface):
             logging.exception("failed to update software")
 
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
-        if (scanNumber - self.awsLastUploadTime) > self.csvUploadRate:
+        self.uploadSummaryCsvOnInterval(scanNumber, guidedSetupForm)
+        self.uploadExperimentNotesOnInterval(scanNumber, guidedSetupForm)
+
+    def uploadSummaryCsvOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
+        if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.GlobalFileManager.getSummaryAnalyzed(),
                 "text/csv",
@@ -64,7 +70,18 @@ class AwsService(AwsServiceInterface):
                     "num_readers": guidedSetupForm.getNumReaders(),
                 }
             )
-            self.awsLastUploadTime = scanNumber
+            self.awsLastCsvUploadTime = scanNumber
+
+    def uploadExperimentNotesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
+        if (scanNumber - self.awsLastNotesUploadTime) >= self.notesUploadRate:
+            self.AwsBoto3Service.uploadFile(
+                self.GlobalFileManager.getExperimentMetadata(),
+                "application/json",
+                tags={
+                    "experiment_id": guidedSetupForm.getExperimentId(),
+                }
+            )
+            self.awsLastNotesUploadTime = scanNumber
 
     def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
         currentDate = datetime.now().date()

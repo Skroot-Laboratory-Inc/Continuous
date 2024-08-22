@@ -4,9 +4,11 @@ import logging
 import numpy as np
 from scipy.signal import savgol_filter
 
+from src.app.model.result_set import ResultSet
 from src.app.reader.algorithm.algorithm_interface import AlgorithmInterface
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.properties.harvest_properties import HarvestProperties
+from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.widget.indicator import Indicator
 
 
@@ -78,8 +80,18 @@ class HarvestAlgorithm(AlgorithmInterface):
                     self.Indicator.changeIndicatorRed()
                     self.readyToHarvest = True
 
-    def updateInoculation(self, analyzer):
+    def updateInoculationForReader(self, resultSet: ResultSet):
+        self.updateInoculationValues(resultSet)
+        self.updateInoculationExperimentNotes(self.readerNumber, resultSet)
+
+    def updateInoculationValues(self, resultSet: ResultSet):
         self.inoculated = True
-        self.inoculatedTime = analyzer.getTime()[-1]
-        self.experimentNotes.updateExperimentNotes('Inoculated')
-        logging.info(f'Flask {self.readerNumber} is inoculated at time {self.inoculatedTime}')
+        self.inoculatedTime = resultSet.getTime()[-1]
+
+    def updateInoculationExperimentNotes(self, readerNumber, resultSet: ResultSet):
+        self.experimentNotes.updateExperimentNotes(
+            readerNumber,
+            f'Inoculated',
+            resultSet,
+        )
+        logging.info(f'Vessel {readerNumber} is inoculated at time {self.inoculatedTime}')
