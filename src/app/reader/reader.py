@@ -3,17 +3,16 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
-from src.app.properties.dev_properties import DevProperties
-from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
-from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set import ResultSet
+from src.app.properties.dev_properties import DevProperties
+from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
-from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.helpers.plotter import Plotter
 from src.app.reader.reader_interface import ReaderInterface
 from src.app.reader.sib.dev_sib import DevSib
@@ -24,13 +23,15 @@ from src.app.widget.indicator import Indicator
 
 
 class Reader(ReaderInterface):
-    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath, readerColor, sibInterface: SibInterface):
+    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath,
+                 readerColor, sibInterface: SibInterface, experimentNotes, freqToggleSet):
         self.FileManager = ReaderFileManager(savePath, readerNumber)
+        self.finishedEquilibrationPeriod = False
         self.colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(savePath)
         self.Aws = AwsBoto3()
-        self.ExperimentNotes = ExperimentNotes(readerNumber, self.FileManager)
+        self.ExperimentNotes = experimentNotes
         self.Plotter = Plotter(
             readerColor,
             readerNumber,
@@ -64,7 +65,7 @@ class Reader(ReaderInterface):
                 self.freqToggleSet
             )
         )
-        AppModule.freqToggleSet.subscribe(lambda toggle: self.setViewToggle(toggle))
+        freqToggleSet.subscribe(lambda toggle: self.setViewToggle(toggle))
 
     def addToPdf(self, pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY):
         pdf.placeImage(self.FileManager.getReaderPlotJpg(), currentX, currentY, plotWidth, plotHeight)
@@ -90,7 +91,11 @@ class Reader(ReaderInterface):
     def addExperimentNotesMenubar(self, menu):
         menu.add_command(
             label=f"Reader {self.readerNumber}",
-            command=lambda: self.Plotter.ExperimentNotes.typeExperimentNotes(self.getAnalyzer().ResultSet)
+            command=lambda:
+            self.Plotter.ExperimentNotes.typeExperimentNotes(
+                self.readerNumber,
+                self.getAnalyzer().ResultSet,
+            )
         )
 
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
@@ -119,7 +124,7 @@ class Reader(ReaderInterface):
     def resetReaderRun(self):
         self.Analyzer.resetRun()
 
-    """ End of required publicly facing functions. """
+    """ End of required public facing functions. """
 
     def setViewToggle(self, toggle):
         self.freqToggleSet = toggle

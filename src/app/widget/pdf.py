@@ -48,19 +48,25 @@ class PDF(FPDF):
         self.set_author('Skroot Laboratory')
 
 
-def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation):
-    pdf = PDF(orientation='L', unit='mm',
-              format='A4')  # default = (orientation='P', unit='mm', format='A4')
+def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation, experimentNotesTxt):
+    pdf = PDF(orientation='L', unit='mm', format='A4')
     pdf.setFooterHeight(30)
     pdf.setPageWidthHeight(210, 297)
-    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation)
+    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt)
     generateReaderPages(pdf, summaryPdfLocation, Readers, pdf.footerHeight)
 
 
-def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation):
+def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt):
     pdf.add_page()
-    pdf.placeImage(setupFormLocation, 0.03, 0.2, 0.3, 0.3)
-    pdf.placeImage(summaryFigureLocation, 0.35, 0.05, 0.6, 0.7)
+    pdf.placeImage(setupFormLocation, 0.03, 0.02, 0.3, 0.3)
+    try:
+        with open(experimentNotesTxt) as f:
+            experimentNotes = f.read()
+            pdf.placeText("Experiment Notes", 0.03, 0.33, 0.3, 0.03, 12, True)
+            pdf.placeText(experimentNotes, 0.03, 0.33, 0.3, 0.03, 10, False)
+    except:
+        pass  # No notes exist yet.
+    pdf.placeImage(summaryFigureLocation, 0.35, 0.02, 0.6, 0.7)
 
 
 def generateReaderPages(pdf, summaryPdfLocation, Readers, headerHeight):
@@ -83,9 +89,6 @@ def generateReaderPages(pdf, summaryPdfLocation, Readers, headerHeight):
                 oldX = currentX
                 currentX, currentY = Reader.addToPdf(
                     pdf, currentX, currentY, labelWidth, plotWidth, plotHeight, notesWidth, paddingY
-                )
-                currentX, currentY = Reader.ExperimentNotes.addNotesToPdf(
-                    pdf, currentX, currentY, notesWidth, notesLineHeight, plotHeight, paddingY
                 )
                 if Reader != Readers[-1]:
                     currentX, currentY = checkIfNewPage(
