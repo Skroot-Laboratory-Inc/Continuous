@@ -64,5 +64,5 @@ class ExperimentNotes:
         for vesselLabel, allVesselNotes in self.notes.items():
             notesString = f"{notesString}\n\n{vesselLabel}"
             for noteEntry in allVesselNotes:
-                notesString = f"{notesString}\n{noteEntry["timestamp"]}: {noteEntry["entry"]}"
+                notesString = f"{notesString}\n{noteEntry['timestamp']}: {noteEntry['entry']}"
         return notesString
