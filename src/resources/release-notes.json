@@ -13,7 +13,8 @@
     },
     "other": {
       "1": "Now properly parsing software update tags instead of relying on their order.",
-      "2": "Inoculation was also updated to work with new experiment notes."
+      "2": "Inoculation was also updated to work with new experiment notes.",
+      "3": "App properly handles software updates using new file structure."
     }
   },
   "v2.5.5": {
