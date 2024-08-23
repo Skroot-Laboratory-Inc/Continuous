@@ -13,7 +13,7 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
-from src.app.helper.helper_functions import frequencyToIndex
+from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
 from src.app.main_shared.service.aws_service import AwsService
 from src.app.main_shared.service.dev_aws_service import DevAwsService
@@ -84,13 +84,9 @@ class MainThreadManager:
                         try:
                             lastTimePoint = Reader.getResultSet().getTime()[-1]
                             if lastTimePoint >= self.equilibrationTime and not Reader.finishedEquilibrationPeriod:
-                                lastFrequencyPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
-                                if self.equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
-                                    zeroPoint = Reader.getResultSet().getMaxFrequencySmooth()[-1]
-                                elif self.equilibrationTime == 0 and (lastFrequencyPoint == np.nan or lastFrequencyPoint == 0):
-                                    raise Exception()
-                                else:
-                                    zeroPoint = np.nanmean(Reader.getResultSet().getMaxFrequencySmooth()[-5:])
+                                zeroPoint = getZeroPoint(
+                                    self.equilibrationTime,
+                                    Reader.getResultSet().getMaxFrequencySmooth())
                                 Reader.getAnalyzer().setZeroPoint(zeroPoint)
                                 self.freqToggleSet.on_next("SGI")
                                 Reader.finishedEquilibrationPeriod = True

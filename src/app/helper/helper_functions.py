@@ -5,6 +5,7 @@ import sys
 import tkinter as tk
 import zipfile
 
+import numpy as np
 import startfile
 
 from src.app.widget import text_notification
@@ -12,7 +13,7 @@ from src.app.widget import text_notification
 
 def frequencyToIndex(zeroPoint, frequencyVector):
     """ This converts a frequency vector into SGI """
-    return [100*(1 - val/zeroPoint) for val in frequencyVector]
+    return [100 * (1 - val / zeroPoint) for val in frequencyVector]
 
 
 def openFileExplorer(path):
@@ -36,6 +37,7 @@ def downloadAsZip(path, zipName):
     else:
         text_notification.setText("No directory selected, download canceled.")
 
+
 def truncateByX(minX, maxX, x, y):
     """ This truncates all values from two vectors based on a min and max value for x. """
     truncatedX, truncatedY = [], []
@@ -53,7 +55,7 @@ def convertListToPercent(list):
 
 def convertToPercent(item):
     """ This converts a single value into a percent i.e. 1.08 into 8%"""
-    return (item-1)*100
+    return (item - 1) * 100
 
 
 def getDesktopLocation():
@@ -89,3 +91,11 @@ def runShScript(shScriptFilename, experimentLog):
     process.wait()
 
 
+def getZeroPoint(equilibrationTime, frequencies):
+    lastFrequencyPoint = frequencies[-1]
+    if equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
+        return frequencies[-1]
+    elif equilibrationTime == 0 and (lastFrequencyPoint == np.nan or lastFrequencyPoint == 0):
+        raise Exception()
+    else:
+        return np.nanmean(frequencies[-5:])
