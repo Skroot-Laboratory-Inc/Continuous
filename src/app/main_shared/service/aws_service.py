@@ -38,7 +38,7 @@ class AwsService(AwsServiceInterface):
             downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(self.CommonFileManager.getTempUpdateFile())
             if downloadUpdate:
                 with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
-                    file.extractall()
+                    file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
                 if getOperatingSystem() == "linux":
                     shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(),
                                     self.CommonFileManager.getRemoteDesktopFile())

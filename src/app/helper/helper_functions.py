@@ -74,11 +74,8 @@ def getOperatingSystem():
 
 
 def getCwd():
-    """ This gets the current working directory of the application. """
-    try:
-        return sys._MEIPASS
-    except AttributeError:
-        return os.getcwd()
+    """ This gets the directory the app is being run from i.e. the path to main.py. """
+    return os.getcwd()
 
 
 def runShScript(shScriptFilename, experimentLog):

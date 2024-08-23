@@ -5,20 +5,20 @@ from src.app.helper.helper_functions import getCwd, getDesktopLocation
 
 class CommonFileManager:
     def __init__(self):
-        rootDir = f"{os.path.dirname(getCwd())}"
-        resourcesDir = f"{rootDir}/resources"
+        srcDir = f"{os.path.dirname(os.path.dirname(getCwd()))}"
+        resourcesDir = f"{srcDir}/src/resources"
         self.helpIconPng = rf"{resourcesDir}/help.png"
         self.downloadPng = rf"{resourcesDir}/download.png"
         self.squareLogo = rf"{resourcesDir}/squareLogo.PNG"
         self.localDesktopFile = rf'{resourcesDir}/desktopApp.desktop'
         self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
-        self.remoteDesktopFile = rf'{os.path.dirname(rootDir)}/share/applications/desktopApp.desktop'
+        self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
         self.installScript = rf'{resourcesDir}/scripts/install-script.sh'
-        self.tempSoftwareUpdate = fr'{rootDir}/DesktopApp.zip'
+        self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
+        self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
         self.readMe = f'{resourcesDir}/README_Analysis.md'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
         self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
-
 
     def getHelpIcon(self):
         return self.helpIconPng
@@ -37,6 +37,9 @@ class CommonFileManager:
 
     def getTempUpdateFile(self):
         return self.tempSoftwareUpdate
+
+    def getSoftwareUpdatePath(self):
+        return self.softwareUpdatePath
 
     def getReadme(self):
         return self.readMe
