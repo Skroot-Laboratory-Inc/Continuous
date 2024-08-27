@@ -18,14 +18,14 @@ class PostProcessingAnalyzer:
         self.equilibrationTime = equilibrationTime
         self.experimentFolderDirectory = experimentFolderDirectory
         self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}/Post Processing'
-        self.readerDirectories = glob.glob(f'{self.experimentFolderDirectory}/**/')
+        self.readerDirectories = sorted(glob.glob(f'{self.experimentFolderDirectory}/**/'))
         self.rawDataScansMap = {}
         self.resultSetMap = {}
         self.zeroPointMap = {}
 
     def getScansForReaders(self):
         for directory in self.readerDirectories:
-            allFiles = glob.glob(f'{directory}/*.csv')
+            allFiles = sorted(glob.glob(f'{directory}/*.csv'))
             rawDataScans = self.getAllNumberedFiles(allFiles)
             self.rawDataScansMap[os.path.basename(os.path.dirname(directory))] = rawDataScans
 
