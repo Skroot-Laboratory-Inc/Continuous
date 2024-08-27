@@ -2,8 +2,6 @@ import os
 import sys
 import tkinter.filedialog
 
-from src.resources.scripts.post_processing.analyzer import PostProcessingAnalyzer
-
 try:
     desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 except KeyError:
@@ -16,6 +14,8 @@ except KeyError:
         '.',
         '../../..',
     ]
+
+from src.resources.scripts.post_processing.analyzer import PostProcessingAnalyzer
 
 print("Please select the experiment directory you would like to analyze.")
 experimentFolderDirectory = tkinter.filedialog.askdirectory()
