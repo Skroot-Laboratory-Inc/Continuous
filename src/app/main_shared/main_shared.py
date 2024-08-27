@@ -2,18 +2,17 @@ import logging
 import tkinter as tk
 from importlib.metadata import version as version_api
 
-from reactivex.subject import BehaviorSubject
-
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
 from src.app.main_shared.initialization.buttons import ButtonFunctions
 from src.app.main_shared.initialization.settings import Settings
-from src.app.main_shared.initialization.setup import Setup
+from src.app.main_shared.initialization.setup_gui import SetupGui
 from src.app.main_shared.reader_threads.main_thread_manager import MainThreadManager
 from src.app.model.guided_setup_input import GuidedSetupInput
-from src.app.properties.dev_properties import DevProperties
 from src.app.properties.common_properties import CommonProperties
+from src.app.properties.dev_properties import DevProperties
 from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
@@ -24,11 +23,10 @@ from src.app.widget.guided_setup import SetupForm
 
 
 class MainShared:
-    def __init__(self, root, version, major_version, minor_version):
-        self.root = root
+    def __init__(self, rootManager: RootManager, version, major_version, minor_version):
+        self.RootManager = rootManager
         self.major_version = major_version
         self.minor_version = minor_version
-        self.readerPlotFrame = None
         self.foundPorts = False
         self.currentFrame = None
         self.guidedSetupForm = GuidedSetupInput()
@@ -48,8 +46,9 @@ class MainShared:
         self.createRoot()
         self.ColorCycler = ColorCycler()
         self.Readers = []
-        self.Settings = Settings(self)
-        self.Setup = Setup(self.root, self.Settings, self)
+        self.Settings = Settings(self, self.RootManager)
+        self.Setup = SetupGui(self.RootManager, self.Settings, self)
+        self.bodyFrame = self.Setup.createFrames()
         self.isDevMode = DevProperties().isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
             'k',
@@ -61,16 +60,16 @@ class MainShared:
             7,
             9
         )
-        self.Buttons = ButtonFunctions(self, self.root, self.PortAllocator)
+        self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.createGuidedSetup()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
-            root,
+            self.RootManager,
             major_version,
             minor_version,
             self.GlobalFileManager,
-            self.readerPlotFrame,
+            self.bodyFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
@@ -82,17 +81,17 @@ class MainShared:
 
     def createMenubarOptions(self):
         menubar = self.Setup.createMenus()
-        self.root.config(menu=menubar)
+        self.RootManager.addMenubar(menubar)
         return menubar
 
     def createGuidedSetup(self):
         self.guidedSetup()
-        self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
+        self.Buttons.createGuidedSetupButton(self.bodyFrame)
         self.Buttons.HelpButton.place()
 
     def guidedSetup(self):
         self.destroyExistingWidgets()
-        setupForm = SetupForm(self.root, self.guidedSetupForm)
+        setupForm = SetupForm(self.RootManager, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         self.resetMainThreadManager()
         self.Buttons.createButtonsOnNewFrame()
@@ -127,26 +126,25 @@ class MainShared:
     def createRoot(self):
         operatingSystem = getOperatingSystem()
         if operatingSystem == 'windows':
-            self.root.state('zoomed')
+            self.RootManager.setState('zoomed')
         elif operatingSystem == 'linux':
-            self.root.attributes('-zoomed', True)
+            self.RootManager.setAttribute('-zoomed', True)
 
         def _create_circle(this, x, y, r, **kwargs):
             return this.create_oval(x - r, y - r, x + r, y + r, **kwargs)
 
         tk.Canvas.create_circle = _create_circle
 
-    def showFrame(self, frame):
+    def showFrame(self, frame, relY, relHeight):
         self.currentFrame = frame
         try:
-            frame.place(relx=0, rely=0.05, relwidth=1, relheight=0.9)
+            frame.place(relx=0, rely=relY, relwidth=0.67, relheight=relHeight)
             frame.tkraise()
         except:
             logging.exception('Failed to change the frame visible')
-        self.MainThreadManager.summaryFrame.tkraise()
 
     def resetRun(self):
-        for widgets in self.readerPlotFrame.winfo_children():
+        for widgets in self.bodyFrame.winfo_children():
             widgets.destroy()
         self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
@@ -154,15 +152,16 @@ class MainShared:
         self.foundPorts = False
         self.Buttons.SibInterfaces = []
         self.Readers = []
+        self.Settings.ReaderPageManager.resetPages()
         self.PortAllocator.resetPorts()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
-            self.root,
+            self.RootManager,
             self.major_version,
             self.minor_version,
             self.GlobalFileManager,
-            self.readerPlotFrame,
+            self.bodyFrame,
             self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
@@ -171,12 +170,12 @@ class MainShared:
 
     def displayReaderRunResults(self):
         if self.MainThreadManager.finishedEquilibrationPeriod:
-            endOfExperimentView = EndOfExperimentView(self.root, self.GlobalFileManager)
+            endOfExperimentView = EndOfExperimentView(self.RootManager, self.GlobalFileManager)
             endOfExperimentFrame = endOfExperimentView.createEndOfExperimentView()
             self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
             self.Buttons.GuidedSetupButton.place()
             self.SummaryFigureCanvas.frequencyCanvas = None
             self.endOfExperimentFrame = endOfExperimentFrame
         else:
-            self.Buttons.createGuidedSetupButton(self.readerPlotFrame)
+            self.Buttons.createGuidedSetupButton(self.bodyFrame)
             self.Buttons.GuidedSetupButton.invokeButton()

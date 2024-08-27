@@ -4,5 +4,5 @@ class Colors:
         self.yellow = '#FFFE71'  # pastel yellow
         self.green = '#5CA904'  # leaf green
         self.lightRed = '#FF474C'  # light red
-        self.secondaryColor = '#FFFFFF'
+        self.secondaryColor = '#FFFFFF'  # white
         self.primaryColor = 'RoyalBlue4'

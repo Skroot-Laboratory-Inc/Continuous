@@ -5,16 +5,17 @@ import os
 import botocore
 
 from src.app.aws.aws import AwsBoto3
+from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getCwd
 from src.app.widget import release_notes
 
 
 class SoftwareUpdate(AwsBoto3):
-    def __init__(self, root, major_version, minor_version):
+    def __init__(self, rootManager: RootManager, major_version, minor_version):
         super().__init__()
         self.newestMajorVersion = major_version
         self.newestMinorVersion = minor_version
-        self.root = root
+        self.RootManager = rootManager
         self.newestZipVersion = ''
         self.releaseNotesPrefix = 'release-notes'
         with open('../resources/release-notes.json') as f:
@@ -40,7 +41,7 @@ class SoftwareUpdate(AwsBoto3):
 
     def downloadSoftwareUpdate(self, local_filename):
         self.mergeReleaseNotesIfNeededAndSave()
-        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.root)
+        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
         if ReleaseNotes.download:
             self.downloadFile(self.newestZipVersion, local_filename)
         return ReleaseNotes.download

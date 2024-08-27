@@ -18,14 +18,16 @@ from src.app.reader.reader_interface import ReaderInterface
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.theme.colors import Colors
+from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
 
 
 class Reader(ReaderInterface):
-    def __init__(self, AppModule, readerNumber, outerFrame, totalNumberOfReaders, startFreq, stopFreq, savePath,
+    def __init__(self, AppModule, readerNumber, readerPageAllocator: ReaderPageAllocator, startFreq, stopFreq, savePath,
                  readerColor, sibInterface: SibInterface, experimentNotes, freqToggleSet):
         self.FileManager = ReaderFileManager(savePath, readerNumber)
+        self.ReaderPageAllocator = readerPageAllocator
         self.finishedEquilibrationPeriod = False
         self.colors = Colors()
         self.readerNumber = readerNumber
@@ -51,12 +53,11 @@ class Reader(ReaderInterface):
         self.SibInterface.setStopFrequency(stopFreq)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.ContaminationAlgorithm = ContaminationAlgorithm(readerNumber)
-        self.Indicator = Indicator(totalNumberOfReaders, readerNumber)
-        self.Indicator.createIndicator(outerFrame)
+        self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, self.ExperimentNotes, readerNumber, self.Indicator)
-        self.Plotter.createFrequencyFrame(outerFrame, totalNumberOfReaders)
+        self.Plotter.frequencyFrame = self.ReaderPageAllocator.createPlotFrame(self.readerNumber)
         self.plotFrequencyButton = ttk.Button(
-            outerFrame,
+            readerPageAllocator.readerPage,
             text="Real Time Plot",
             command=lambda: self.Plotter.plotFrequencies(
                 self.getAnalyzer().ResultSet,

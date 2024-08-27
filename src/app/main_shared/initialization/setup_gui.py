@@ -1,23 +1,31 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
+from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.frame_manager import FrameManager
+from src.app.ui_manager.root_manager import RootManager
+from src.app.theme.colors import Colors
 from src.app.widget import text_notification
 
 
-class Setup:
-    def __init__(self, root, Settings, AppModule):
-        self.root = root
+class SetupGui:
+    def __init__(self, rootManager: RootManager, Settings, AppModule):
+        self.Colors = Colors()
+        self.RootManager = rootManager
+        self.FrameManager = FrameManager(self.RootManager)
         self.Settings = Settings
         self.AppModule = AppModule
         self.createTheme()
-        self.createFrames()
+        self.GuiProperties = GuiProperties()
 
     def createMenus(self):
         self.AppModule.MainThreadManager.AwsService.checkForSoftwareUpdate()
-        menubar = tk.Menu(self.root)
+        menubar = self.RootManager.instantiateMenubar()
         if self.AppModule.MainThreadManager.AwsService.SoftwareUpdate.newestZipVersion:
             settingsMenuSoftware = tk.Menu(menubar, tearoff=0)
-            settingsMenuSoftware.add_command(label="Update", command=lambda: self.AppModule.MainThreadManager.AwsService.downloadSoftwareUpdate())
+            settingsMenuSoftware.add_command(
+                label="Update",
+                command=lambda: self.AppModule.MainThreadManager.AwsService.downloadSoftwareUpdate())
             menubar.add_cascade(label="Software", menu=settingsMenuSoftware)
 
         settingsMenuReaders = tk.Menu(menubar, tearoff=0)
@@ -41,26 +49,38 @@ class Setup:
         return menubar
 
     def createTheme(self):
-        self.root.title("Skroot Reader GUI")
+        self.RootManager.setTitle("Skroot Reader GUI")
         style = ttk.Style()
         style.theme_use('clam')
-        self.root.configure(background='white')
-        style.configure('W.TButton', font=('Courier', 9, 'bold'), foreground=self.AppModule.secondaryColor,
-                        background=self.AppModule.primaryColor)
-        style.map('W.TButton', background=[("disabled", "gray23"), ("active", self.AppModule.primaryColor)])
+        self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
+        style.configure(
+            'W.TButton',
+            font=('Courier', 9, 'bold'),
+            foreground=self.Colors.secondaryColor,
+            background=self.Colors.primaryColor)
+        style.map(
+            'W.TButton',
+            background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
 
     def createFrames(self):
-        self.AppModule.readerPlotFrame = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
-        self.AppModule.readerPlotFrame.place(relx=0, rely=0.05, relwidth=1, relheight=0.92)
-        footer = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
-        footer.place(relx=0, rely=0.97, relwidth=1, relheight=0.03)
+        footer = self.FrameManager.createFooterFrame()
         versionLabel = tk.Label(footer, text=f'Version: v{self.AppModule.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
-        copyrightLabel = tk.Label(footer, text='\u00A9 Skroot Laboratory, Inc 2018-2024. All rights reserved.', bg='white')
+        copyrightLabel = tk.Label(
+            footer,
+            text='\u00A9 Skroot Laboratory, Inc 2018-2024. All rights reserved.',
+            bg='white')
         copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
 
-        textFrame = tk.Frame(self.root, bg=self.AppModule.secondaryColor)
+        bodyFrame = self.FrameManager.createBodyFrame()
+        bodyFrame.place(
+            relx=0,
+            rely=self.GuiProperties.bannerHeight,
+            relwidth=1,
+            relheight=self.GuiProperties.mainHeight)
+
+        textFrame = self.FrameManager.createBannerFrame()
         text_notification.createWidget(textFrame)
         text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
-        textFrame.place(relx=0, rely=0, relwidth=1, relheight=0.05)
         text_notification.packWidget()
+        return bodyFrame

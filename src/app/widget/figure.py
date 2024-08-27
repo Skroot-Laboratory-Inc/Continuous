@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 
 class FigureCanvas:
     def __init__(self, readerColor, yAxisLabel, xAxisLabel, backgroundColor, title, secondAxisTitle, tickSize=9, labelSize=11):
-        self.frequencyFigure = Figure(figsize=(3, 3))
+        self.frequencyFigure = Figure()
         self.frequencyFigure.set_layout_engine("tight")
         self.currentPlot = None
         self.tickSize = tickSize

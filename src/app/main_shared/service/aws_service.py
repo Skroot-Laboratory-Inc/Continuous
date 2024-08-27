@@ -7,6 +7,7 @@ from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper import helper_functions
+from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.main_shared.service.software_update import SoftwareUpdate
@@ -16,8 +17,8 @@ from src.app.widget import text_notification
 
 
 class AwsService(AwsServiceInterface):
-    def __init__(self, root, major_version, minor_version, globalFileManager: GlobalFileManager):
-        self.SoftwareUpdate = SoftwareUpdate(root, major_version, minor_version)
+    def __init__(self, rootManager: RootManager, major_version, minor_version, globalFileManager: GlobalFileManager):
+        self.SoftwareUpdate = SoftwareUpdate(rootManager, major_version, minor_version)
         self.AwsBoto3Service = AwsBoto3()
         self.CommonFileManager = CommonFileManager()
         self.AwsProperties = AwsProperties()
