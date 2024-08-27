@@ -1,4 +1,9 @@
 {
+  "v2.5.10": {
+    "other": {
+      "1": "Fixed post processing script"
+    }
+  },
   "v2.5.7": {
     "features": {
       "1": "Added a post-processing script to re-analyze data."

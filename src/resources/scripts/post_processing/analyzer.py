@@ -17,8 +17,8 @@ class PostProcessingAnalyzer:
     def __init__(self, experimentFolderDirectory, equilibrationTime):
         self.equilibrationTime = equilibrationTime
         self.experimentFolderDirectory = experimentFolderDirectory
-        self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}\\Post Processing'
-        self.readerDirectories = glob.glob(f'{self.experimentFolderDirectory}\\**\\')
+        self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}/Post Processing'
+        self.readerDirectories = glob.glob(f'{self.experimentFolderDirectory}/**/')
         self.rawDataScansMap = {}
         self.resultSetMap = {}
         self.zeroPointMap = {}
