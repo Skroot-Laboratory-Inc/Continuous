@@ -22,7 +22,7 @@ class FrameManager:
         bodyFrame.place(relx=0,
                         rely=self.GuiProperties.bodyRelY,
                         relwidth=1,
-                        relheight=self.GuiProperties.mainHeight)
+                        relheight=self.GuiProperties.bodyHeight)
         return bodyFrame
 
     def createEndOfExperimentFrame(self):

@@ -36,7 +36,11 @@ class ReaderPageAllocator:
             self.readerFrames[readerNumber] = readerFrame
 
     def getReaderFrame(self, readerNumber):
-        return self.readerFrames[readerNumber]
+        position = (readerNumber - 1) % self.maxReadersPerScreen + 1
+        if readerNumber % self.maxReadersPerScreen != 0:
+            return self.readerFrames[position]
+        else:
+            return self.readerFrames[position]
 
     def createIndicator(self, readerNumber, defaultIndicatorColor):
         if self.readersOnScreen > 1:

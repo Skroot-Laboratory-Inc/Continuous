@@ -77,7 +77,7 @@ class SetupGui:
             relx=0,
             rely=self.GuiProperties.bodyRelY,
             relwidth=1,
-            relheight=self.GuiProperties.mainHeight)
+            relheight=self.GuiProperties.bodyHeight)
 
         textFrame = self.FrameManager.createBannerFrame()
         text_notification.createWidget(textFrame)

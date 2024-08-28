@@ -1,8 +1,6 @@
 import os
 import sys
 
-from src.app.ui_manager.root_manager import RootManager
-
 try:
     desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 except KeyError:
@@ -19,6 +17,7 @@ import json
 
 import matplotlib as mpl
 
+from src.app.ui_manager.root_manager import RootManager
 from src.app.main_shared.main_shared import MainShared
 
 

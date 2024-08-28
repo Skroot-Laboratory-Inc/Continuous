@@ -39,9 +39,9 @@ class ButtonFunctions:
         guiProperties = GuiProperties()
         self.MainThreadManager.summaryFrame.place(
             relx=0.67,
-            rely=guiProperties.bodyRelY + guiProperties.mainHeight / 2,
+            rely=guiProperties.bodyRelY + guiProperties.bodyHeight / 2,
             relwidth=0.33,
-            relheight=guiProperties.mainHeight/2)
+            relheight=guiProperties.bodyHeight / 2)
         self.StartButton.destroySelf()
         self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()

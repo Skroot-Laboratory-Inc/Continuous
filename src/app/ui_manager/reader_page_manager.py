@@ -46,19 +46,20 @@ class ReaderPageManager:
         self.readerPages = []
 
     def createNextAndPreviousFrameButtons(self):
-        for screenNumber in range(len(self.readerPages)):
-            if (screenNumber + 1) != len(self.readerPages):
-                self.createReaderPageToggle(
-                    self.readerPages[screenNumber - 1],
-                    self.readerPages[screenNumber],
-                    self.readerPages[screenNumber + 1]
-                )
-            else:
-                self.createReaderPageToggle(
-                    self.readerPages[screenNumber - 1],
-                    self.readerPages[screenNumber],
-                    self.readerPages[0]
-                )
+        if len(self.readerPages) > 1:
+            for screenNumber in range(len(self.readerPages)):
+                if (screenNumber + 1) != len(self.readerPages):
+                    self.createReaderPageToggle(
+                        self.readerPages[screenNumber - 1],
+                        self.readerPages[screenNumber],
+                        self.readerPages[screenNumber + 1]
+                    )
+                else:
+                    self.createReaderPageToggle(
+                        self.readerPages[screenNumber - 1],
+                        self.readerPages[screenNumber],
+                        self.readerPages[0]
+                    )
 
     def createReaderPageToggle(self, previous, current, next):
         previousReaders = tk.Canvas(

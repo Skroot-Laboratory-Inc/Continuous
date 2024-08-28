@@ -6,14 +6,19 @@ class GuiProperties:
         self.bannerRelY = 0
         self.bannerHeight = 0.025
 
-        self.bodyRelY = 0.025
-        self.extraWidgetsHeight = 0.1
-        self.mainHeight = 0.945
-        self.readerPlotRelY = 0.125
-        self.readerPlotHeight = 0.82
-
-        self.footerRelY = 0.97
         self.footerHeight = 0.03
+
+        self.bodyRelY = self.bannerHeight
+        self.bodyHeight = 1 - self.bannerHeight - self.footerHeight
+
+        self.extraWidgetsHeight = 0.05
+        self.readerPlotRelY = self.bannerHeight+self.extraWidgetsHeight
+        readerPlotFrameHeight = self.bodyHeight - self.extraWidgetsHeight
+        self.nextPrevButtonHeight = readerPlotFrameHeight*0.05
+        self.readerPlotHeight = readerPlotFrameHeight*0.95
+
+        self.footerRelY = 1-self.footerHeight
+
 
         """
         Reader Page GUI configuration
