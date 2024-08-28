@@ -1,27 +1,37 @@
 import logging
 import math
 import tkinter as tk
-import tkinter.ttk as ttk
 
 import matplotlib as mpl
 
+from src.app.properties.gui_properties import GuiProperties
 from src.app.reader.reader import Reader
+from src.app.theme.colors import Colors
+from src.app.ui_manager.frame_manager import FrameManager
+from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
+from src.app.ui_manager.reader_page_manager import ReaderPageManager
+from src.app.ui_manager.root_manager import RootManager
 
 
 class Settings:
-    def __init__(self, AppModule):
+    def __init__(self, AppModule, rootManager: RootManager):
         self.AppModule = AppModule
+        self.RootManager = rootManager
+        self.FrameManager = FrameManager(self.RootManager)
+        self.Colors = Colors()
+        self.ReaderPageManager = ReaderPageManager(self.RootManager)
+        self.maxReadersPerScreen = GuiProperties().maxReadersPerScreen
 
     def freqRangeSetting(self):
         startFreq = tk.simpledialog.askfloat(
             "Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
-            parent=self.AppModule.root,
+            parent=self.RootManager.getRoot(),
             minvalue=50,
             maxvalue=170)
         stopFreq = tk.simpledialog.askfloat(
             "Input",
             "Stop Frequency (MHz): \nRange: (50-170MHz)",
-            parent=self.AppModule.root,
+            parent=self.RootManager.getRoot(),
             minvalue=50,
             maxvalue=170)
         if startFreq is not None:
@@ -39,7 +49,7 @@ class Settings:
         disableSaveFullFiles = tk.messagebox.askyesno(
             "Disable Full File Save",
             "Are you sure you would like to disable entire file save? \n",
-            parent=self.AppModule.root)
+            parent=self.RootManager.getRoot())
         if disableSaveFullFiles is not None:
             self.AppModule.disableSaveFullFiles = disableSaveFullFiles
             logging.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
@@ -48,7 +58,7 @@ class Settings:
         scanRate = tk.simpledialog.askfloat(
             "Input",
             "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
-            parent=self.AppModule.root,
+            parent=self.RootManager.getRoot(),
             minvalue=0.1,
             maxvalue=240)
         if scanRate is not None:
@@ -73,78 +83,41 @@ class Settings:
         logging.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
 
     def createReaders(self, numReaders, SibInterfaces):
-        maxReadersPerScreen = 5
         self.AppModule.ColorCycler.reset()
         self.addReaderNotes()
         if self.AppModule.guidedSetupForm.getSecondAxisTitle() != "":
             self.addReaderSecondAxis()
         self.addInoculation()
         if numReaders is not None:
-            self.AppModule.outerFrames = []
-            numScreens = math.ceil(numReaders / maxReadersPerScreen)
-            readersOnLastScreen = numReaders % maxReadersPerScreen
-            if readersOnLastScreen == 0:
-                readersOnLastScreen = maxReadersPerScreen
-            for i in range(numScreens):
-                self.AppModule.outerFrames.append(tk.Frame(self.AppModule.readerPlotFrame, bg=self.AppModule.secondaryColor))
-            for readerNumber in range(1, numReaders + 1):
-                readerColor = self.AppModule.ColorCycler.getNext()
-                screenNumber = math.ceil(readerNumber / maxReadersPerScreen) - 1
-                outerFrame = self.AppModule.outerFrames[screenNumber]
-                if screenNumber == numScreens - 1:
-                    readersOnScreen = readersOnLastScreen
+            numScreens = math.ceil(numReaders / self.maxReadersPerScreen)
+            self.ReaderPageManager.createPages(numScreens)
+            for screenNumber in range(0, numScreens):
+                readerPage = self.ReaderPageManager.getPage(screenNumber)
+                isLastScreen = screenNumber == numScreens-1
+                if isLastScreen and numReaders % self.maxReadersPerScreen != 0:
+                    onScreenReaders = numReaders % self.maxReadersPerScreen
                 else:
-                    readersOnScreen = maxReadersPerScreen
-                self.AppModule.Readers.append(Reader(
-                    self.AppModule,
-                    readerNumber,
-                    outerFrame,
-                    readersOnScreen,
-                    self.AppModule.startFreq,
-                    self.AppModule.stopFreq,
-                    self.AppModule.guidedSetupForm.getSavePath(),
-                    readerColor,
-                    SibInterfaces[readerNumber - 1],
-                    self.AppModule.ExperimentNotes,
-                    self.AppModule.MainThreadManager.freqToggleSet
-                ))
-            self.createNextAndPreviousFrameButtons()
-            self.AppModule.showFrame(self.AppModule.outerFrames[0])
+                    onScreenReaders = self.maxReadersPerScreen
+                readerAllocator = ReaderPageAllocator(readerPage, onScreenReaders)
+                startingReaderNumber = 1 + screenNumber*self.maxReadersPerScreen
+                finalReaderNumber = startingReaderNumber + onScreenReaders
+                for readerNumber in range(startingReaderNumber, finalReaderNumber):
+                    readerColor = self.AppModule.ColorCycler.getNext()
+                    self.AppModule.Readers.append(Reader(
+                        self.AppModule,
+                        readerNumber,
+                        readerAllocator,
+                        self.AppModule.startFreq,
+                        self.AppModule.stopFreq,
+                        self.AppModule.guidedSetupForm.getSavePath(),
+                        readerColor,
+                        SibInterfaces[readerNumber - 1],
+                        self.AppModule.ExperimentNotes,
+                        self.AppModule.MainThreadManager.freqToggleSet
+                    ))
+            self.ReaderPageManager.createNextAndPreviousFrameButtons()
+            self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))
             self.updateFontSize()
-
-    def createNextAndPreviousFrameButtons(self):
-        for screenNumber in range(len(self.AppModule.outerFrames)):
-            if (screenNumber + 1) != len(self.AppModule.outerFrames):
-                nextReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
-                                        highlightbackground='black')
-                nextReaders.place(relx=0.85, rely=0.96, relwidth=0.15, relheight=0.04)
-                nextReaders.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
-                    screenNumber + 1]: self.AppModule.showFrame(frame))
-                nextText = ttk.Label(nextReaders, text="Next", font=("Arial", 12), background='gray93', borderwidth=0)
-                nextText.place(anchor='center', relx=.5, rely=0.5)
-                nextText.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
-                    screenNumber + 1]: self.AppModule.showFrame(frame))
-            else:
-                nextReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
-                                        highlightbackground='black')
-                nextReaders.place(relx=0.85, rely=0.96, relwidth=0.15, relheight=0.04)
-                nextReaders.bind("<Button>",
-                                 lambda event, frame=self.AppModule.outerFrames[0]: self.AppModule.showFrame(frame))
-                nextText = ttk.Label(nextReaders, text="Next", font=("Arial", 12), background='gray93', borderwidth=0)
-                nextText.place(anchor='center', relx=.5, rely=0.5)
-                nextText.bind("<Button>",
-                              lambda event, frame=self.AppModule.outerFrames[0]: self.AppModule.showFrame(frame))
-
-            previousReaders = tk.Canvas(self.AppModule.outerFrames[screenNumber], bg='gray93', highlightthickness=1,
-                                        highlightbackground='black')
-            previousReaders.place(relx=0, rely=0.96, relwidth=0.15, relheight=0.04)
-            previousReaders.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
-                screenNumber - 1]: self.AppModule.showFrame(frame))
-            previousText = ttk.Label(previousReaders, text="Previous", font=("Arial", 12), background='gray93',
-                                     borderwidth=0)
-            previousText.place(anchor='center', relx=0.5, rely=0.5)
-            previousText.bind("<Button>", lambda event, frame=self.AppModule.outerFrames[
-                screenNumber - 1]: self.AppModule.showFrame(frame))
 
     def addReaderNotes(self):
         try:

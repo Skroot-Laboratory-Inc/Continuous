@@ -1,5 +1,3 @@
-import tkinter as tk
-
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.model.result_set import ResultSet
@@ -37,7 +35,8 @@ class Plotter:
                 self.plotGrowthIndex(resultSet, zeroPoint)
             elif freqToggleSet == "Signal Check":
                 self.plotSignal(resultSet, sweepData)
-
+            self.frequencyFrame.update()
+            self.frequencyFrame.update_idletasks()
     def plotGrowthIndex(self, resultSet: ResultSet, zeroPoint):
         self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
         self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')
@@ -69,25 +68,3 @@ class Plotter:
         )
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
-
-    def createFrequencyFrame(self, outerFrame, totalNumberOfReaders):
-        spaceForPlots = 0.9
-        self.frequencyFrame = tk.Frame(outerFrame, bg=self.secondaryColor, bd=5)
-        relx, rely = 0, 0
-        if totalNumberOfReaders > 1:
-            if (self.readerNumber % 5) == 1:
-                relx, rely = 0, 0
-            elif (self.readerNumber % 5) == 2:
-                relx, rely = 0.33, 0
-            elif (self.readerNumber % 5) == 3:
-                relx, rely = 0.67, 0
-            elif (self.readerNumber % 5) == 4:
-                relx, rely = 0, 0.5 * spaceForPlots
-            elif (self.readerNumber % 5) == 0:
-                relx, rely = 0.33, 0.5 * spaceForPlots
-            else:
-                pass
-            self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.25, relheight=0.45 * spaceForPlots)
-        else:
-            relx, rely = 0, 0
-            self.frequencyFrame.place(relx=relx, rely=rely, relwidth=0.57, relheight=0.9 * spaceForPlots)

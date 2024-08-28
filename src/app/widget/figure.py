@@ -1,12 +1,10 @@
-import tkinter as tk
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 
 class FigureCanvas:
-    def __init__(self, readerColor, yAxisLabel, xAxisLabel, backgroundColor, title, secondAxisTitle, tickSize=9, labelSize=11):
-        self.frequencyFigure = Figure(figsize=(3, 3))
+    def __init__(self, readerColor, yAxisLabel, xAxisLabel, backgroundColor, title, secondAxisTitle, tickSize=7, labelSize=9):
+        self.frequencyFigure = Figure()
         self.frequencyFigure.set_layout_engine("tight")
         self.currentPlot = None
         self.tickSize = tickSize
@@ -34,7 +32,9 @@ class FigureCanvas:
         if self.frequencyCanvas is None:
             self.frequencyCanvas = FigureCanvasTkAgg(self.frequencyFigure, master=frame)
         self.frequencyCanvas.draw()
-        self.frequencyCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.frequencyCanvas.get_tk_widget().pack()
+        self.frequencyCanvas.get_tk_widget().update()
+        self.frequencyCanvas.get_tk_widget().update_idletasks()
 
     def scatter(self, x, y, size, color):
         self.currentPlot.scatter(x, y, size, color=color)

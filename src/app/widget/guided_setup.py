@@ -6,14 +6,15 @@ import pyautogui
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.ui_manager.root_manager import RootManager
 from src.app.model.guided_setup_input import GuidedSetupInput
 
 
 class SetupForm:
-    def __init__(self, root, guidedSetupInputs: GuidedSetupInput):
-        self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
+    def __init__(self, rootManager: RootManager, guidedSetupInputs: GuidedSetupInput):
+        self.RootManager = rootManager
+        self.window = self.RootManager.createTopLevel()
         self.entrySize = 10
-        self.root = root
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
@@ -35,7 +36,7 @@ class SetupForm:
         x = (ws / 2) - (w / 2)
         y = (hs / 2) - (h / 2)
         self.window.geometry('+%d+%d' % (x, y))
-        self.window.tkraise(root)
+        self.RootManager.raiseAboveRoot(self.window)
 
         ''' MM DD YYYY Date entry '''
         dateFrame = tk.Frame(self.window, bg='white')
@@ -119,7 +120,7 @@ class SetupForm:
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='W.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
-        root.wait_window(self.window)
+        self.RootManager.waitForWindow(self.window)
 
     def getConfiguration(self) -> (GuidedSetupInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
@@ -168,9 +169,9 @@ class SetupForm:
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
             self.window.destroy()
-            self.root.destroy()
+            self.RootManager.destroyRoot()
         else:
-            self.window.tkraise(self.root)
+            self.RootManager.raiseAboveRoot(self.window)
 
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()

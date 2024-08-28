@@ -5,19 +5,20 @@ from PIL import Image, ImageTk
 
 from src.app.buttons.button_interface import ButtonInterface
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.information_panel import InformationPanel
 
 
 class HelpButton(ButtonInterface):
-    def __init__(self, root, AppModule):
+    def __init__(self, rootManager: RootManager, AppModule):
         fileManager = CommonFileManager()
         image = Image.open(fileManager.getHelpIcon())
         resizedImage = image.resize((15, 15), Image.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
-        self.root = root
+        self.RootManager = rootManager
         self.AppModule = AppModule
         self.helpButton = ttk.Button(
-            root,
+            self.RootManager.getRoot(),
             text="Need help?",
             image=self.helpIcon,
             compound=tk.LEFT,
@@ -28,7 +29,7 @@ class HelpButton(ButtonInterface):
         self.helpButton.pack(side='bottom', anchor='se')
 
     def invoke(self):
-        InformationPanel(self.AppModule, self.helpIcon, self.root)
+        InformationPanel(self.AppModule, self.helpIcon, self.RootManager)
 
     def destroySelf(self):
         self.helpButton.destroy()

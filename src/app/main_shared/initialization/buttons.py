@@ -11,14 +11,16 @@ from src.app.buttons.start_button import StartButton
 from src.app.buttons.stop_button import StopButton
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.root_manager import RootManager
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
 
 
 class ButtonFunctions:
-    def __init__(self, AppModule, root, PortAllocator):
-        self.root = root
+    def __init__(self, AppModule, rootManager: RootManager, PortAllocator):
+        self.RootManager = rootManager
         self.MainThreadManager = None  # To be filled in later.
         self.AppModule = AppModule
         self.SibInterfaces = []
@@ -29,24 +31,24 @@ class ButtonFunctions:
         self.GuidedSetupButton = GuidedSetupButton(master, self.AppModule.guidedSetup)
 
     def createButtonsOnNewFrame(self):
-        self.StartButton = StartButton(self.AppModule.readerPlotFrame, self.startFunc)
-        self.StopButton = StopButton(self.AppModule.readerPlotFrame, self.stopFunc)
-        self.HelpButton = HelpButton(self.root, self.AppModule)
+        self.StartButton = StartButton(self.AppModule.bodyFrame, self.startFunc)
+        self.StopButton = StopButton(self.AppModule.bodyFrame, self.stopFunc)
+        self.HelpButton = HelpButton(self.RootManager, self.AppModule)
 
     def startFunc(self):
-        spaceForPlots = 0.9
+        guiProperties = GuiProperties()
         self.MainThreadManager.summaryFrame.place(
-            rely=0.5 * spaceForPlots,
             relx=0.67,
-            relwidth=0.3,
-            relheight=0.45 * spaceForPlots)
+            rely=guiProperties.bodyRelY + guiProperties.bodyHeight / 2,
+            relwidth=0.33,
+            relheight=guiProperties.bodyHeight / 2)
         self.StartButton.destroySelf()
         self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
         self.AppModule.Settings.addInoculation()
         self.StopButton.place()
-        self.MainThreadManager.Timer.createWidget(self.AppModule.readerPlotFrame)
+        self.MainThreadManager.Timer.createWidget(self.AppModule.bodyFrame)
         text_notification.setText("Scanning...")
         logging.info("started")
         self.MainThreadManager.startReaderLoop(self.AppModule.Readers)
@@ -72,7 +74,7 @@ class ButtonFunctions:
                 port = self.findPort(readerNumber)
                 self.SibInterfaces.append(instantiateReader(port, self.PortAllocator, readerNumber, True, globalFileManager))
             except UserExitedException:
-                self.AppModule.root.destroy()
+                self.RootManager.destroyRoot()
                 logging.exception("User exited during port finding.")
                 raise
             except:
@@ -138,7 +140,7 @@ class ButtonFunctions:
                     instantiateReader(port, self.PortAllocator, readerNumber, False, globalFileManager),
                 )
             except UserExitedException:
-                self.AppModule.root.destroy()
+                self.RootManager.destroyRoot()
                 logging.exception("User exited during port finding.")
                 raise
         self.AppModule.foundPorts = True
@@ -173,7 +175,7 @@ class ButtonFunctions:
 
     def placeConnectReadersButton(self):
         self.ConnectReadersButton = ConnectReadersButton(
-            self.AppModule.readerPlotFrame,
+            self.AppModule.bodyFrame,
             self.connectReaders,
             self.AppModule.guidedSetupForm.getNumReaders(),
             self.AppModule.GlobalFileManager,
@@ -181,7 +183,7 @@ class ButtonFunctions:
         self.ConnectReadersButton.place()
 
     def placeCalibrateReadersButton(self):
-        self.CalibrateReadersButton = CalibrateReadersButton(self.AppModule.readerPlotFrame, self.calibrateReaders)
+        self.CalibrateReadersButton = CalibrateReadersButton(self.AppModule.bodyFrame, self.calibrateReaders)
         self.CalibrateReadersButton.place()
 
 

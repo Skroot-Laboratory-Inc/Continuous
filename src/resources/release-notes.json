@@ -1,4 +1,21 @@
 {
+  "v2.5.15": {
+    "features": {
+      "1": "Rearranged previous/next buttons, and removed them if only one page is available.",
+      "2": "Adjusted sizing of plots and labels to work with new layout."
+    },
+    "other": {
+      "1": "Added a Development AWS track."
+    }
+  },
+  "v2.5.13": {
+    "features": {
+      "1": "Updated reader plots to be a 2x2 grid with 4 reader maximum"
+    },
+    "other": {
+      "1": "Refactored GUI to be more modular"
+    }
+  },
   "v2.5.10": {
     "other": {
       "1": "Fixed post processing script"

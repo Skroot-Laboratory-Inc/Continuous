@@ -1,13 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 
+from src.app.ui_manager.root_manager import RootManager
+from src.app.theme.colors import Colors
+
 
 class InformationPanel:
-    def __init__(self, AppModule, helpIcon, root):
+    def __init__(self, AppModule, helpIcon, rootManager: RootManager):
         self.uploadLogButton = None
         self.AppModule = AppModule
         self.helpIcon = helpIcon
-        self.window = tk.Toplevel(root, bg='white', padx=25, pady=25)
+        self.Colors = Colors()
+        self.window = rootManager.createTopLevel()
         self.createUploadLogButton()
 
     def createUploadLogButton(self):

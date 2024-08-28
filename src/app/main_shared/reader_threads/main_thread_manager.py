@@ -13,6 +13,7 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
+from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
 from src.app.main_shared.service.aws_service import AwsService
@@ -28,34 +29,34 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, root, major_version, minor_version, globalFileManager, readerPlotFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
+    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, major_version, minor_version, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
         self.guidedSetupForm = guidedSetupForm
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.Readers = []
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.Timer = RunningTimer()
-        self.SummaryFigureCanvas = summaryFigureCanvas
-        self.readerPlotFrame = readerPlotFrame
+        self.bodyFrame = bodyFrame
         self.isDevMode = DevProperties().isDevMode
         self.freqToggleSet = BehaviorSubject("Signal Check")
         self.denoiseSet = denoiseSet
         self.GlobalFileManager = globalFileManager
-        self.root = root
+        self.RootManager = rootManager
         self.finishedEquilibrationPeriod = False
         self.disableFullSaveFiles = disableFullSaveFiles
-        self.root.protocol("WM_DELETE_WINDOW", self.onClosing)
+        self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
         self.Colors = Colors()
-        self.summaryFrame = tk.Frame(self.readerPlotFrame, bg=self.Colors.secondaryColor, bd=0)
-        self.summaryPlotButton = ttk.Button(self.readerPlotFrame,
+        self.SummaryFigureCanvas = summaryFigureCanvas
+        self.summaryFrame = tk.Frame(self.bodyFrame, bg=self.Colors.secondaryColor, bd=0)
+        self.summaryPlotButton = ttk.Button(self.bodyFrame,
                                             text="Summary Plot Update",
                                             command=lambda: self.plotSummary(self.summaryFrame))
         self.ColorCycler = ColorCycler()
 
         if self.isDevMode:
-            self.AwsService = DevAwsService(root, major_version, minor_version, globalFileManager)
+            self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, globalFileManager)
         else:
-            self.AwsService = AwsService(root, major_version, minor_version, globalFileManager)
+            self.AwsService = AwsService(self.RootManager, major_version, minor_version, globalFileManager)
         self.Colors = Colors()
         self.resetRunFunc = resetRunFunc
 
@@ -178,7 +179,7 @@ class MainThreadManager:
     def onClosing(self):
         if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
             self.finalizeRunResults()
-            self.root.destroy()
+            self.RootManager.destroyRoot()
 
     def finalizeRunResults(self):
         if self.finishedEquilibrationPeriod:

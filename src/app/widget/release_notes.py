@@ -2,11 +2,13 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from distutils.version import StrictVersion
 
+from src.app.ui_manager.root_manager import RootManager
+
 
 class ReleaseNotes:
-    def __init__(self, releaseNotes, root):
+    def __init__(self, releaseNotes, rootManager: RootManager):
         self.releaseNotes = sortNotes(releaseNotes)
-        self.windowRoot = tk.Toplevel(root, bg='white', borderwidth=0, pady=25, padx=25)
+        self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.minsize(width=650, height=550)
         self.windowRoot.maxsize(width=800, height=550)
         self.windowCanvas = tk.Canvas(
@@ -28,7 +30,7 @@ class ReleaseNotes:
         bounds = self.window.grid_bbox()
         self.windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
         self.download = False
-        root.wait_window(self.windowCanvas)
+        rootManager.waitForWindow(self.windowCanvas)
 
     def fillInVersions(self):
         row = 0

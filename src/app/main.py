@@ -16,16 +16,16 @@ except KeyError:
 import json
 
 import matplotlib as mpl
-import tkinter as tk
 
+from src.app.ui_manager.root_manager import RootManager
 from src.app.main_shared.main_shared import MainShared
 
 
 class Main(MainShared):
     def __init__(self, version, major_version, minor_version):
-        root = tk.Tk()  # everything in the application comes after this
-        super().__init__(root, version, major_version, minor_version)
-        root.mainloop()  # everything comes before this
+        self.GuiManager = RootManager()
+        super().__init__(self.GuiManager, version, major_version, minor_version)
+        self.GuiManager.callMainLoop()
 
 
 with open('../resources/version.json') as versionFile:

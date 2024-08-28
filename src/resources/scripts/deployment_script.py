@@ -51,7 +51,7 @@ with open('../version.json') as j_file:
 major_version = version['major_version']
 minor_version = version['minor_version']
 release_bucket = version['release_bucket']
-valid_release_bucket_values = ["R&D", "Production"]
+valid_release_bucket_values = ["Dev", "R&D", "Production"]
 if release_bucket not in valid_release_bucket_values:
     raise Exception(f"release_bucket is not a valid value, '{release_bucket}' not in {valid_release_bucket_values}")
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
