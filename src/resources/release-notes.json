@@ -1,4 +1,12 @@
 {
+  "v2.5.13": {
+    "features": {
+      "1": "Updated reader plots to be a 2x2 grid with 4 reader maximum"
+    },
+    "other": {
+      "1": "Refactored GUI to be more modular"
+    }
+  },
   "v2.5.10": {
     "other": {
       "1": "Fixed post processing script"

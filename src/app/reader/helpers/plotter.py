@@ -35,7 +35,8 @@ class Plotter:
                 self.plotGrowthIndex(resultSet, zeroPoint)
             elif freqToggleSet == "Signal Check":
                 self.plotSignal(resultSet, sweepData)
-
+            self.frequencyFrame.get_tk_widget().update()
+            self.frequencyFrame.get_tk_widget().update_idletasks()
     def plotGrowthIndex(self, resultSet: ResultSet, zeroPoint):
         self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
         self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')

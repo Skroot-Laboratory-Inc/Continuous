@@ -36,7 +36,6 @@ class MainThreadManager:
         self.Readers = []
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
         self.Timer = RunningTimer()
-        self.SummaryFigureCanvas = summaryFigureCanvas
         self.bodyFrame = bodyFrame
         self.isDevMode = DevProperties().isDevMode
         self.freqToggleSet = BehaviorSubject("Signal Check")
@@ -47,6 +46,7 @@ class MainThreadManager:
         self.disableFullSaveFiles = disableFullSaveFiles
         self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
         self.Colors = Colors()
+        self.SummaryFigureCanvas = summaryFigureCanvas
         self.summaryFrame = tk.Frame(self.bodyFrame, bg=self.Colors.secondaryColor, bd=0)
         self.summaryPlotButton = ttk.Button(self.bodyFrame,
                                             text="Summary Plot Update",

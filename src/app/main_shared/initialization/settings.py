@@ -19,7 +19,7 @@ class Settings:
         self.RootManager = rootManager
         self.FrameManager = FrameManager(self.RootManager)
         self.Colors = Colors()
-        self.ReaderPageManager = ReaderPageManager(self.RootManager, self.AppModule.showFrame)
+        self.ReaderPageManager = ReaderPageManager(self.RootManager)
         self.maxReadersPerScreen = GuiProperties().maxReadersPerScreen
 
     def freqRangeSetting(self):
@@ -116,7 +116,7 @@ class Settings:
                         self.AppModule.MainThreadManager.freqToggleSet
                     ))
             self.ReaderPageManager.createNextAndPreviousFrameButtons()
-            self.ReaderPageManager.showPage(0)
+            self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))
             self.updateFontSize()
 
     def addReaderNotes(self):

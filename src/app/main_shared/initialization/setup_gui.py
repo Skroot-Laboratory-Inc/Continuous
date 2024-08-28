@@ -75,7 +75,7 @@ class SetupGui:
         bodyFrame = self.FrameManager.createBodyFrame()
         bodyFrame.place(
             relx=0,
-            rely=self.GuiProperties.bannerHeight,
+            rely=self.GuiProperties.bodyRelY,
             relwidth=1,
             relheight=self.GuiProperties.mainHeight)
 

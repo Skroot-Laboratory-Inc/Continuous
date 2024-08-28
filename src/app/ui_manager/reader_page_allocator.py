@@ -1,4 +1,3 @@
-import math
 import tkinter as tk
 
 from src.app.properties.gui_properties import GuiProperties
@@ -11,10 +10,6 @@ class ReaderPageAllocator:
         self.maxReadersPerScreen = GuiProperties().maxReadersPerScreen
         self.readersOnScreen = readersOnScreen
         self.Colors = Colors()
-        self.readerPage.grid_rowconfigure(0, weight=1)
-        self.readerPage.grid_rowconfigure(1, weight=1)
-        self.readerPage.grid_columnconfigure(0, weight=1)
-        self.readerPage.grid_columnconfigure(1, weight=1)
         self.readerFrames = {}
         self.positions = {
             0: {"row": 0, "column": 0},
@@ -25,22 +20,19 @@ class ReaderPageAllocator:
         self.createReaderFrames()
 
     def createReaderFrames(self):
-        readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, bd=5)
-        readerFrame.grid(row=0, column=0, sticky='nsew')
-        readerFrame.grid_columnconfigure(0, weight=9)
-        readerFrame.grid_columnconfigure(1, weight=1)
         for readerNumber in range(1, self.readersOnScreen+1):
+            readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, bd=5)
+            readerFrame.grid_columnconfigure(0, weight=2, minsize=35)
+            readerFrame.grid_columnconfigure(1, weight=1, minsize=35)
+            readerFrame.grid_rowconfigure(0, weight=1, minsize=400)
             if self.readersOnScreen != 1:
                 position = (readerNumber-1) % self.maxReadersPerScreen
                 readerFrame.grid(
                     row=self.positions[position]["row"],
                     column=self.positions[position]["column"],
-                    sticky='nesw')
+                    sticky='ew')
             else:
-                self.readerPage.grid_forget()
-                self.readerPage.grid_rowconfigure(0, weight=1)
-                self.readerPage.grid_columnconfigure(0, weight=1)
-                readerFrame.grid(row=0, column=0, sticky='nesw')
+                readerFrame.grid(row=0, column=0, columnspan=2, rowspan=2, sticky='ew')
             self.readerFrames[readerNumber] = readerFrame
 
     def getReaderFrame(self, readerNumber):
@@ -50,8 +42,8 @@ class ReaderPageAllocator:
         if self.readersOnScreen > 1:
             indicatorCanvas = tk.Canvas(
                 self.getReaderFrame(readerNumber),
-                height=90,
-                width=90,
+                height=34,
+                width=34,
                 bg="white",
                 highlightbackground="white",
                 bd=0)
@@ -60,14 +52,14 @@ class ReaderPageAllocator:
         else:
             indicatorCanvas = tk.Canvas(
                 self.getReaderFrame(readerNumber),
-                height=120,
-                width=120,
+                height=54,
+                width=54,
                 bg="white",
                 highlightbackground="white",
                 bd=0)
             indicator = indicatorCanvas.create_circle(
                 x=27, y=27, r=25, fill=defaultIndicatorColor, outline="black", width=2)
-        indicatorCanvas.grid(row=0, column=1, sticky='n')
+        indicatorCanvas.grid(row=0, column=1)
         return indicatorCanvas, indicator
 
     def createPlotFrame(self, readerNumber):

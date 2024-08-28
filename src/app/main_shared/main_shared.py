@@ -28,7 +28,6 @@ class MainShared:
         self.major_version = major_version
         self.minor_version = minor_version
         self.foundPorts = False
-        self.currentFrame = None
         self.guidedSetupForm = GuidedSetupInput()
         self.Properties = CommonProperties()
         self.CommonFileManager = CommonFileManager()
@@ -56,9 +55,7 @@ class MainShared:
             'Time (hrs)',
             self.secondaryColor,
             'Summary',
-            '',
-            7,
-            9
+            ''
         )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.createGuidedSetup()
@@ -94,6 +91,7 @@ class MainShared:
         setupForm = SetupForm(self.RootManager, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         self.resetMainThreadManager()
+        self.bodyFrame.tkraise()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if self.guidedSetupForm.getCalibrate():
@@ -135,15 +133,8 @@ class MainShared:
 
         tk.Canvas.create_circle = _create_circle
 
-    def showFrame(self, frame, relY, relHeight):
-        self.currentFrame = frame
-        try:
-            frame.place(relx=0, rely=relY, relwidth=0.67, relheight=relHeight)
-            frame.tkraise()
-        except:
-            logging.exception('Failed to change the frame visible')
-
     def resetRun(self):
+        self.Settings.ReaderPageManager.resetPages()
         for widgets in self.bodyFrame.winfo_children():
             widgets.destroy()
         self.MainThreadManager.finalizeRunResults()
@@ -152,7 +143,6 @@ class MainShared:
         self.foundPorts = False
         self.Buttons.SibInterfaces = []
         self.Readers = []
-        self.Settings.ReaderPageManager.resetPages()
         self.PortAllocator.resetPorts()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,

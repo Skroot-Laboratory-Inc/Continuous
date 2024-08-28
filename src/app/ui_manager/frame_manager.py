@@ -20,7 +20,7 @@ class FrameManager:
     def createBodyFrame(self):
         bodyFrame = self.RootManager.createFrame(self.Colors.secondaryColor)
         bodyFrame.place(relx=0,
-                        rely=self.GuiProperties.bannerHeight,
+                        rely=self.GuiProperties.bodyRelY,
                         relwidth=1,
                         relheight=self.GuiProperties.mainHeight)
         return bodyFrame

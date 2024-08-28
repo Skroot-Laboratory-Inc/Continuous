@@ -1,3 +1,4 @@
+import logging
 from tkinter import ttk
 import tkinter as tk
 
@@ -8,23 +9,32 @@ from src.app.ui_manager.root_manager import RootManager
 
 
 class ReaderPageManager:
-    def __init__(self, rootManager: RootManager, showFrameFunc):
+    def __init__(self, rootManager: RootManager):
         self.readerPages = []
         self.RootManager = rootManager
         self.FrameManager = FrameManager(self.RootManager)
-        self.showFrameFunc = showFrameFunc
         self.Colors = Colors()
         self.GuiProperties = GuiProperties()
 
     def createPages(self, numScreens):
         for i in range(numScreens):
-            self.readerPages.append(self.RootManager.createFrame(self.Colors.secondaryColor))
+            readerPage = self.RootManager.createFrame(self.Colors.secondaryColor)
+            readerPage.grid_rowconfigure(0, weight=9, uniform="plot")
+            readerPage.grid_rowconfigure(1, weight=9, uniform="plot")
+            readerPage.grid_rowconfigure(2, weight=1)
+            readerPage.grid_columnconfigure(0, weight=1, uniform="plot")
+            readerPage.grid_columnconfigure(1, weight=1, uniform="plot")
+            self.readerPages.append(readerPage)
 
-    def showPage(self, screenNumber):
-        self.showFrameFunc(
-            self.readerPages[screenNumber],
-            self.GuiProperties.readerPlotRelY,
-            self.GuiProperties.readerPlotHeight)
+    def showPage(self, frame):
+        try:
+            frame.place(relx=0,
+                        rely=self.GuiProperties.readerPlotRelY,
+                        relwidth=0.67,
+                        relheight=self.GuiProperties.readerPlotHeight)
+            frame.tkraise()
+        except:
+            logging.exception(f'Failed to update reader screen.')
 
     def getPage(self, screenNumber):
         return self.readerPages[screenNumber]
@@ -51,22 +61,11 @@ class ReaderPageManager:
                 )
 
     def createReaderPageToggle(self, previous, current, next):
-        nextReaders = tk.Canvas(
-            current,
-            bg='gray93', highlightthickness=1, highlightbackground='black')
-        nextReaders.place(relx=0.85, rely=0.96, relwidth=0.15, relheight=0.04)
-        nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))
-        nextText = ttk.Label(
-            nextReaders,
-            text="Next", font=("Arial", 12),
-            background='gray93', borderwidth=0)
-        nextText.place(anchor='center', relx=.5, rely=0.5)
-        nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))
-
         previousReaders = tk.Canvas(
             current,
+            height=60, width=200,
             bg='gray93', highlightthickness=1, highlightbackground='black')
-        previousReaders.place(relx=0, rely=0.96, relwidth=0.15, relheight=0.04)
+        previousReaders.grid(row=2, column=0, sticky='w')
         previousReaders.bind("<Button>", lambda event, frame=previous: self.showPage(frame))
         previousText = ttk.Label(
             previousReaders,
@@ -74,3 +73,16 @@ class ReaderPageManager:
             background='gray93', borderwidth=0)
         previousText.place(anchor='center', relx=0.5, rely=0.5)
         previousReaders.bind("<Button>", lambda event, frame=previous: self.showPage(frame))
+
+        nextReaders = tk.Canvas(
+            current,
+            height=60, width=200,
+            bg='gray93', highlightthickness=1, highlightbackground='black')
+        nextReaders.grid(row=2, column=1, sticky='e')
+        nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))
+        nextText = ttk.Label(
+            nextReaders,
+            text="Next", font=("Arial", 12),
+            background='gray93', borderwidth=0)
+        nextText.place(anchor='center', relx=.5, rely=0.5)
+        nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))
