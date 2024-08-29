@@ -83,7 +83,7 @@ class MainShared:
 
     def createGuidedSetup(self):
         self.guidedSetup()
-        self.Buttons.createGuidedSetupButton(self.bodyFrame)
+        self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
         self.Buttons.HelpButton.place()
 
     def guidedSetup(self):
@@ -91,7 +91,7 @@ class MainShared:
         setupForm = SetupForm(self.RootManager, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         self.resetMainThreadManager()
-        self.bodyFrame.tkraise()
+        self.RootManager.raiseRoot()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if self.guidedSetupForm.getCalibrate():
@@ -137,6 +137,7 @@ class MainShared:
         self.Settings.ReaderPageManager.resetPages()
         for widgets in self.bodyFrame.winfo_children():
             widgets.destroy()
+        self.Buttons.IssueLog.clear()
         self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
         self.MainThreadManager.freqToggleSet.on_completed()
@@ -144,6 +145,7 @@ class MainShared:
         self.Buttons.SibInterfaces = []
         self.Readers = []
         self.PortAllocator.resetPorts()
+        self.RootManager.raiseRoot()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
@@ -167,5 +169,5 @@ class MainShared:
             self.SummaryFigureCanvas.frequencyCanvas = None
             self.endOfExperimentFrame = endOfExperimentFrame
         else:
-            self.Buttons.createGuidedSetupButton(self.bodyFrame)
+            self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
             self.Buttons.GuidedSetupButton.invokeButton()

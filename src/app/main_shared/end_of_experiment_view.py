@@ -6,6 +6,7 @@ from PIL import ImageTk, Image
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper import helper_functions
+from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.frame_manager import FrameManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.theme.colors import Colors
@@ -32,6 +33,7 @@ class EndOfExperimentView:
         fileExplorerLabel.pack(side=tk.LEFT)
         fileExplorerButton = Linkbutton(
             fileExplorerFrame,
+            font=FontTheme().primary,
             text=self.GlobalFileManager.getSavePath(),
             command=lambda: helper_functions.openFileExplorer(self.GlobalFileManager.getSavePath()))
         fileExplorerButton.pack(side=tk.LEFT)

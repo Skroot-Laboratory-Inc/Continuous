@@ -2,7 +2,7 @@ import json
 import tkinter as tk
 
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.result_set import ResultSet
+from src.app.model.result_set.result_set import ResultSet
 
 
 class ExperimentNotes:

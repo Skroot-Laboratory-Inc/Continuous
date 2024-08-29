@@ -1,14 +1,11 @@
+import tkinter.font
 from tkinter import ttk
-from tkinter.font import Font, nametofont
 
 
 class Linkbutton(ttk.Button):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, font: tkinter.font.Font, **kwargs):
         super().__init__(*args, **kwargs)
-        # Use the default font.
-        label_font = nametofont("TkDefaultFont").cget("family")
-        self.font = Font(family=label_font, size=9)
-        # Label-like styling.
+        self.font = font
         style = ttk.Style()
         style.configure("Link.TLabel", foreground="#357fde", font=self.font, background='white', highlightthickness=0,
                                         borderwidth=0)

@@ -11,8 +11,8 @@ from sklearn.preprocessing import StandardScaler
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.model.result_set import ResultSet
-from src.app.model.result_set_data_point import ResultSetDataPoint
+from src.app.model.result_set.result_set import ResultSet
+from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
 from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 

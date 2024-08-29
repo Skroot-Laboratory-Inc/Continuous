@@ -4,6 +4,7 @@ import tkinter as tk
 
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
+from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.frame_manager import FrameManager
 from src.app.ui_manager.root_manager import RootManager
 
@@ -70,7 +71,7 @@ class ReaderPageManager:
         previousReaders.bind("<Button>", lambda event, frame=previous: self.showPage(frame))
         previousText = ttk.Label(
             previousReaders,
-            text="Previous", font=("Arial", 12),
+            text="Previous", font=FontTheme().header3,
             background='gray93', borderwidth=0)
         previousText.place(anchor='center', relx=0.5, rely=0.5)
         previousReaders.bind("<Button>", lambda event, frame=previous: self.showPage(frame))
@@ -83,7 +84,7 @@ class ReaderPageManager:
         nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))
         nextText = ttk.Label(
             nextReaders,
-            text="Next", font=("Arial", 12),
+            text="Next", font=FontTheme().header3,
             background='gray93', borderwidth=0)
         nextText.place(anchor='center', relx=.5, rely=0.5)
         nextReaders.bind("<Button>", lambda event, frame=next: self.showPage(frame))

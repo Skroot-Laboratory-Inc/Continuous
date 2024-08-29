@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 from src.app.properties.gui_properties import GuiProperties
+from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.frame_manager import FrameManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.theme.colors import Colors
@@ -55,7 +56,7 @@ class SetupGui:
         self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
         style.configure(
             'W.TButton',
-            font=('Courier', 9, 'bold'),
+            font=FontTheme().buttons,
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)
         style.map(

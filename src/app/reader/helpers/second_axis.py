@@ -3,8 +3,8 @@ import logging
 import tkinter as tk
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.model.second_axis_data_point import SecondAxisDataPoint
-from src.app.model.second_axis_result import SecondAxisResult
+from src.app.model.second_axis.second_axis_data_point import SecondAxisDataPoint
+from src.app.model.second_axis.second_axis_result import SecondAxisResult
 
 
 class SecondAxis:

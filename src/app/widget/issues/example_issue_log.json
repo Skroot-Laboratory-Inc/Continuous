@@ -1,0 +1,30 @@
+{
+  "issueLog": [
+    {
+      "issueId": "1",
+      "messages": [
+        {
+          "8/22/2024  8:31:08 AM": "Encountered issue with Reader"
+        },
+        {
+          "8/22/2024  8:38:08 AM": "Resolved issue with Reader"
+        }
+      ],
+      "resolved": true,
+      "title": "Reader Issue During Growth"
+    },
+    {
+      "issueId": "2",
+      "messages": [
+        {
+          "8/23/2024  8:31:08 AM": "Noticed cells growing faster than expected"
+        },
+        {
+          "8/23/2024  8:38:08 AM": "Reduced incubator temperature to induce slower growth, will continue monitoring."
+        }
+      ],
+      "resolved": false,
+      "title": "Cells need slowed down"
+    }
+  ]
+}

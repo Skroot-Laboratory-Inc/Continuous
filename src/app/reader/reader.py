@@ -7,7 +7,7 @@ from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.plottable import Plottable
-from src.app.model.result_set import ResultSet
+from src.app.model.result_set.result_set import ResultSet
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
