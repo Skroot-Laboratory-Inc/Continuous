@@ -169,13 +169,13 @@ class IssueLog:
             self.openIssues = []
             self.resolvedIssues = []
             self.nextIssueId = 1
+        self.populateUi()
 
     def syncToS3(self):
         self.populateUi()
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
         self.AwsService.uploadIssueLog()
-        pass
 
     def placeIssueLog(self):
         guiProperties = GuiProperties()
