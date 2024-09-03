@@ -5,7 +5,6 @@ class IssueMessage:
 
     def asJson(self):
         return {
-            "timestamp": self.timestamp,
-            "entry": self.entry,
+            self.timestamp: self.entry
         }
 

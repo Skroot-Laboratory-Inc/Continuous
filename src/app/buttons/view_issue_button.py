@@ -9,7 +9,7 @@ class ViewIssueButton:
         self.Colors = Colors()
         self.viewIssueButton = Linkbutton(
             master,
-            font=FontTheme().header2,
+            font=FontTheme().header3,
             text=f"Issue {issue.issueId}: {issue.title}",
             command=lambda: invokeFn(issue),
         )

@@ -20,9 +20,9 @@ class SetupGui:
         self.GuiProperties = GuiProperties()
 
     def createMenus(self):
-        self.AppModule.MainThreadManager.AwsService.checkForSoftwareUpdate()
+        self.AppModule.AwsService.checkForSoftwareUpdate()
         menubar = self.RootManager.instantiateMenubar()
-        if self.AppModule.MainThreadManager.AwsService.SoftwareUpdate.newestZipVersion:
+        if self.AppModule.AwsService.SoftwareUpdate.newestZipVersion:
             settingsMenuSoftware = tk.Menu(menubar, tearoff=0)
             settingsMenuSoftware.add_command(
                 label="Update",

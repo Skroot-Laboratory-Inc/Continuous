@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 from datetime import datetime
 from zipfile import ZipFile
@@ -8,7 +9,7 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper import helper_functions
 from src.app.ui_manager.root_manager import RootManager
-from src.app.helper.helper_functions import getOperatingSystem
+from src.app.helper.helper_functions import getOperatingSystem, formatDate
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.main_shared.service.software_update import SoftwareUpdate
 from src.app.model.guided_setup_input import GuidedSetupInput
@@ -90,7 +91,7 @@ class AwsService(AwsServiceInterface):
             self.GlobalFileManager.getSummaryAnalyzed(),
             "text/csv",
             tags={
-                "end_date": f'{currentDate.month}-{currentDate.day}-{currentDate.year}',
+                "end_date": formatDate(currentDate),
                 "start_date": guidedSetupForm.getDate(),
                 "experiment_id": guidedSetupForm.getExperimentId(),
                 "scan_rate": guidedSetupForm.getScanRate(),
@@ -98,10 +99,21 @@ class AwsService(AwsServiceInterface):
             }
         )
 
-
     def uploadExperimentLog(self):
         return self.AwsBoto3Service.uploadFile(
             self.CommonFileManager.getExperimentLog(),
             'text/plain',
             tags={"response_email": "greenwalt@skrootlab.com"}
+        )
+
+    def uploadIssueLog(self):
+        return self.AwsBoto3Service.uploadFile(
+            self.GlobalFileManager.getIssueLog(),
+            'application/json'
+        )
+
+    def downloadIssueLog(self):
+        return self.AwsBoto3Service.downloadFile(
+            f'{self.AwsBoto3Service.runFolder}/{os.path.basename(self.GlobalFileManager.getIssueLog())}',
+            self.GlobalFileManager.getIssueLog(),
         )

@@ -1,15 +1,16 @@
 from datetime import datetime
 
+from src.app.helper.helper_functions import formatDate
 from src.app.properties.guided_setup_defaults import GuidedSetupDefaults
 
 
 class GuidedSetupInput:
     def __init__(self):
         guidedSetupDefaults = GuidedSetupDefaults()
-        currentDate = datetime.now().date()
-        self.month = currentDate.month
-        self.day = currentDate.day
-        self.year = currentDate.year
+        self.date = datetime.now().date()
+        self.month = self.date.month
+        self.day = self.date.day
+        self.year = self.date.year
         self.numReaders = guidedSetupDefaults.numReaders
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
@@ -28,7 +29,7 @@ class GuidedSetupInput:
         return self.year
 
     def getDate(self):
-        return f"{self.month}-{self.day}-{self.year}"
+        return formatDate(self.date)
 
     def getNumReaders(self):
         return int(self.numReaders)

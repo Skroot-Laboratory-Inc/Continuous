@@ -50,7 +50,7 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         self.AppModule.Settings.addInoculation()
         self.StopButton.place()
-        self.IssueLog = IssueLog(self.RootManager)
+        self.IssueLog = IssueLog(self.RootManager, self.AppModule.AwsService, self.AppModule.GlobalFileManager)
         self.IssueLog.placeIssueLog()
         self.MainThreadManager.Timer.createWidget(self.AppModule.bodyFrame)
         text_notification.setText("Scanning...")

@@ -13,6 +13,7 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
+from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
@@ -29,7 +30,7 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, major_version, minor_version, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
+    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
         self.guidedSetupForm = guidedSetupForm
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
@@ -52,11 +53,7 @@ class MainThreadManager:
                                             text="Summary Plot Update",
                                             command=lambda: self.plotSummary(self.summaryFrame))
         self.ColorCycler = ColorCycler()
-
-        if self.isDevMode:
-            self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, globalFileManager)
-        else:
-            self.AwsService = AwsService(self.RootManager, major_version, minor_version, globalFileManager)
+        self.AwsService = awsService
         self.Colors = Colors()
         self.resetRunFunc = resetRunFunc
 

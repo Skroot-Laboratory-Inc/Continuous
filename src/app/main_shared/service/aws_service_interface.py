@@ -30,3 +30,9 @@ class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
     def uploadExperimentLog(self):
         """ Uploads the log file for the experiment. """
 
+    def uploadIssueLog(self):
+        """ Uploads the issue log to AWS in the experiment folder. """
+
+    def downloadIssueLog(self):
+        """ Downloads the issue log for the experiment, if present. """
+

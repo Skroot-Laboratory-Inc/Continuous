@@ -5,6 +5,7 @@ class GlobalFileManager:
         self.summaryFigure = rf"{mainSavePath}/Summary Figure.jpg"
         self.setupForm = rf"{mainSavePath}/setupForm.png"
         self.summaryPdf = rf"{mainSavePath}/Summary.pdf"
+        self.issueLog = rf"{mainSavePath}/Issue Log.json"
         self.experimentNotesTxt = f'{mainSavePath}/notes.txt'
         self.experimentMetadata = f'{mainSavePath}/metadata.json'
 
@@ -22,6 +23,9 @@ class GlobalFileManager:
 
     def getSavePath(self):
         return self.mainSavePath
+
+    def getIssueLog(self):
+        return self.issueLog
 
     def getExperimentNotesTxt(self):
         return self.experimentNotesTxt

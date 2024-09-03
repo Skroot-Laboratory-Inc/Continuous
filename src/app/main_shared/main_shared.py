@@ -3,6 +3,8 @@ import tkinter as tk
 from importlib.metadata import version as version_api
 
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.main_shared.service.aws_service import AwsService
+from src.app.main_shared.service.dev_aws_service import DevAwsService
 from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
@@ -59,12 +61,15 @@ class MainShared:
         )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.createGuidedSetup()
+        if self.isDevMode:
+            self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
+        else:
+            self.AwsService = AwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
             self.RootManager,
-            major_version,
-            minor_version,
+            self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
             self.SummaryFigureCanvas,
@@ -150,8 +155,7 @@ class MainShared:
             self.denoiseSet,
             self.disableSaveFullFiles,
             self.RootManager,
-            self.major_version,
-            self.minor_version,
+            self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
             self.SummaryFigureCanvas,

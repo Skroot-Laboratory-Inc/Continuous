@@ -1,9 +1,13 @@
 import json
+from datetime import datetime
 from tkinter import ttk
 from typing import List
 
 from src.app.buttons.view_issue_button import ViewIssueButton
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper.helper_functions import formatDateTime
+from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.issue_message import IssueMessage
 from src.app.properties.gui_properties import GuiProperties
@@ -17,8 +21,14 @@ from PIL import Image, ImageTk
 
 
 class IssueLog:
-    def __init__(self, rootManager: RootManager):
+    def __init__(self, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
+        self.issues = []
+        self.openIssues = []
+        self.resolvedIssues = []
+        self.nextIssueId = 1
+        self.AwsService = awsService
         self.RootManager = rootManager
+        self.GlobalFileManager = globalFileManager
         self.Colors = Colors()
         self.issueLogFrame = self.RootManager.createPaddedFrame(self.Colors.secondaryColor)
         self.issueLogFrame.grid_columnconfigure(0, weight=9)
@@ -32,17 +42,20 @@ class IssueLog:
         image = Image.open(commonFileManager.getRefreshIcon())
         resizedImage = image.resize((35, 35), Image.LANCZOS)
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
-        # self.refresh() should populate issues instead
-        with open("C:/Users/green/PycharmProjects/DesktopApp/src/app/widget/issues/example_issue_log.json") as issueLog:
-            issuesJson = json.load(issueLog)
-            self.issues = [self.issueFromJson(issue) for issue in issuesJson["issueLog"]]
-        self.generateEntries()
+        self.syncFromS3()
+        self.populateUi()
 
-    def generateEntries(self):
+    def populateUi(self):
+        for widget in self.issueLogFrame.winfo_children():
+            widget.destroy()
         row = 0
+        row = self.showOpenIssues(row)
+        self.showResolvedIssues(row)
+
+    def showOpenIssues(self, row):
         headerLabel = tk.Label(
             self.issueLogFrame,
-            text=f'All Issues ({len(self.issues)}):',
+            text=f'Open Issues ({len(self.openIssues)}):',
             bg='white',
             font=self.fonts.header1)
         headerLabel.grid(row=row, column=0)
@@ -66,8 +79,7 @@ class IssueLog:
 
         row = self.createSeparatorLine(self.issueLogFrame, row)
 
-
-        for issue in self.issues:
+        for issue in sorted(self.openIssues, key=lambda i: i.issueId):
             button = ViewIssueButton(
                 self.issueLogFrame,
                 self.viewIssue,
@@ -75,26 +87,77 @@ class IssueLog:
             ).viewIssueButton
             button.grid(row=row, column=0, pady=15)
             row += 1
+        return row
+
+    def showResolvedIssues(self, row):
+        headerLabel = tk.Label(
+            self.issueLogFrame,
+            text=f'Resolved Issues ({len(self.resolvedIssues)}):',
+            bg='white',
+            font=self.fonts.header1)
+        headerLabel.grid(row=row, column=0)
+        row += 1
+
+        row = self.createSeparatorLine(self.issueLogFrame, row)
+
+        for issue in sorted(self.resolvedIssues, key=lambda i: i.issueId):
+            button = ViewIssueButton(
+                self.issueLogFrame,
+                self.viewIssue,
+                issue,
+            ).viewIssueButton
+            button.grid(row=row, column=0, pady=15)
+            row += 1
+        return row
 
     def viewIssue(self, issue: Issue):
         ViewIssuePopup(self.RootManager, issue, self.updateIssue)
 
     def createIssue(self):
         self.syncFromS3()
-        # some popup that creates an issue
-        self.syncToS3()
+        issueTitle = tk.simpledialog.askstring(
+            f'Report An Issue',
+            f'Enter a title for the issue here. The ID for this issue will be Issue {self.nextIssueId}',
+
+        )
+        if issueTitle is not None:
+            issue = Issue(
+                f"{self.nextIssueId}",
+                issueTitle,
+                False,
+                [IssueMessage(formatDateTime(datetime.now()), "Issue opened.")])
+            self.issues.append(issue)
+            self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
+            self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
+            self.syncToS3()
 
     def updateIssue(self, issue: Issue):
         self.syncFromS3()
         self.issues = self.findAndReplace(self.issues, issue)
+        self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
+        self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
         self.syncToS3()
 
     def syncFromS3(self):
-        # Get file from S3 and update issues
-        pass
+        try:
+            self.AwsService.downloadIssueLog()
+            with open(self.GlobalFileManager.getIssueLog()) as issueLog:
+                issuesJson = json.load(issueLog)
+                self.issues = [self.issueFromJson(issue) for issue in issuesJson["issueLog"]]
+            self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
+            self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
+            self.nextIssueId = max([int(issue.issueId) for issue in self.issues]) + 1
+        except:
+            self.openIssues = 1
+            self.openIssues = []
+            self.resolvedIssues = []
+            self.nextIssueId = 1
 
     def syncToS3(self):
-        # Convert to json and send file to S3
+        self.populateUi()
+        with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
+            issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
+        self.AwsService.uploadIssueLog()
         pass
 
     def placeIssueLog(self):
@@ -116,6 +179,13 @@ class IssueLog:
     def clear(self):
         for widgets in self.issueLogFrame.winfo_children():
             widgets.destroy()
+
+    @staticmethod
+    def jsonFromIssues(issues):
+        jsonIssues = [issue.asJson() for issue in issues]
+        return {
+            "issueLog": jsonIssues
+        }
 
     @staticmethod
     def issueMessageFromJson(jsonMessage):

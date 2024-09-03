@@ -29,7 +29,7 @@ class Analyzer(AnalyzerInterface):
         resultSet = ResultSetDataPoint(self.ResultSet)
         resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
-        resultSet.setTimestamp(datetime.now())
+        resultSet.setTimestamp(datetime.now().date())
         try:
             _, maxFreq = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
             resultSet.setMaxFrequency(maxFreq)
@@ -59,7 +59,7 @@ class Analyzer(AnalyzerInterface):
         resultSet = ResultSetDataPoint(self.ResultSet)
         resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
-        resultSet.setTimestamp(datetime.now())
+        resultSet.setTimestamp(datetime.now().date())
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):

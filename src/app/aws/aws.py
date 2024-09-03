@@ -44,7 +44,7 @@ class AwsBoto3:
                         logging.exception('Failed to find a bucket that the user is authorized for.')
                         raise
 
-    def uploadFile(self, fileLocation, fileType, tags) -> bool:
+    def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
         if not self.disabled:
             try:
                 if not self.runFolder:
