@@ -93,6 +93,7 @@ class MainShared:
 
     def guidedSetup(self):
         self.destroyExistingWidgets()
+        self.bodyFrame.tkraise()
         setupForm = SetupForm(self.RootManager, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         self.resetMainThreadManager()

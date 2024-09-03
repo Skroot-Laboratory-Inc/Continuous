@@ -22,6 +22,9 @@ class ViewIssuePopup(PopupInterface):
     def fillOutWindowFn(self, window: tk.Frame):
         for widget in window.winfo_children():
             widget.destroy()
+        window.grid_columnconfigure(0, minsize=50)
+        window.grid_columnconfigure(1, minsize=350)
+        window.grid_columnconfigure(2, minsize=50)
         window.grid_configure(sticky='NESW')
         row = 0
         issueId = tk.Label(

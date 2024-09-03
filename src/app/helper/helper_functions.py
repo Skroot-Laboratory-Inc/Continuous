@@ -117,7 +117,7 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
         windowRoot, bg='white', borderwidth=0,
         highlightthickness=0
     )
-    window = tk.Frame(windowRoot, bg='red', borderwidth=0)
+    window = tk.Frame(windowRoot, bg='white', borderwidth=0)
     windowCanvas.create_window(0, 0, anchor="nw", window=window)
     # Linux uses Button-5 for scroll down and Button-4 for scroll up
     window.bind_all('<Button-4>', lambda e: windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
@@ -126,7 +126,6 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     window.bind_all('<MouseWheel>',
                          lambda e: windowCanvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
     fillOutWindowFn(window)
-    windowCanvas.grid_columnconfigure(0, weight=1)
     windowCanvas.grid(row=0, column=0, sticky="nsew")
     windowCanvas.update()
     window.update()

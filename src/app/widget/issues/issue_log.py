@@ -22,6 +22,7 @@ from PIL import Image, ImageTk
 
 class IssueLog:
     def __init__(self, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
+        self.lastUpdatedTime = datetime.now()
         self.issues = []
         self.openIssues = []
         self.resolvedIssues = []
@@ -52,7 +53,22 @@ class IssueLog:
         row = self.showOpenIssues(row)
         self.showResolvedIssues(row)
 
+    def updateLastUpdated(self):
+        self.lastUpdatedTime = datetime.now()
+        try:
+            self.lastUpdatedLabel.configure(text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}')
+        except:
+            pass
+
     def showOpenIssues(self, row):
+        self.lastUpdatedLabel = tk.Label(
+            self.issueLogFrame,
+            text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}',
+            bg='white',
+            font=self.fonts.footnote)
+        self.lastUpdatedLabel.grid(row=row, column=0, columnspan=3, sticky='e', pady=(0, 5))
+        row += 1
+
         headerLabel = tk.Label(
             self.issueLogFrame,
             text=f'Open Issues ({len(self.openIssues)}):',
@@ -139,6 +155,7 @@ class IssueLog:
         self.syncToS3()
 
     def syncFromS3(self):
+        self.updateLastUpdated()
         try:
             self.AwsService.downloadIssueLog()
             with open(self.GlobalFileManager.getIssueLog()) as issueLog:
