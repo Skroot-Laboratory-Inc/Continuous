@@ -4,7 +4,7 @@ from src.app.model.issue.timestamped_message import TimestampedMessage
 
 
 class Issue:
-    def __init__(self, issueId: str, title: str, resolved: bool, messages: List[TimestampedMessage]):
+    def __init__(self, issueId: int, title: str, resolved: bool, messages: List[TimestampedMessage]):
         self.issueId = issueId
         self.title = title
         self.resolved = resolved

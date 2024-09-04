@@ -39,7 +39,7 @@ class ViewIssuePopup(PopupInterface):
         for message in self.issue.messages:
             timestampLabel = tk.Label(
                 window,
-                text=millisToDatetime(message.timestamp),
+                text=formatDateTime(millisToDatetime(message.timestamp)),
                 bg='white',
                 font=self.fonts.italicUnderline)
             timestampLabel.grid(row=row, columnspan=3, column=0, sticky='nw')

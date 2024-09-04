@@ -138,7 +138,7 @@ class IssueLog:
         )
         if issueTitle is not None:
             issue = Issue(
-                f"{self.nextIssueId}",
+                self.nextIssueId,
                 issueTitle,
                 False,
                 [TimestampedMessage(datetimeToMillis(datetime.now()), "Issue opened.")])
@@ -187,7 +187,7 @@ class IssueLog:
 
     def issueFromJson(self, jsonIssue):
         return Issue(
-            jsonIssue["issueId"],
+            int(jsonIssue["id"]),
             jsonIssue["title"],
             jsonIssue["resolved"],
             self.issueMessageFromJson(jsonIssue["messages"])
@@ -209,7 +209,7 @@ class IssueLog:
         messages = []
         for m in jsonMessage:
             for timestamp, message in m.items():
-                messages.append(TimestampedMessage(timestamp, message))
+                messages.append(TimestampedMessage(int(timestamp), message))
         return messages
 
     @staticmethod
