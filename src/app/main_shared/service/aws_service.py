@@ -62,7 +62,7 @@ class AwsService(AwsServiceInterface):
     def uploadSummaryCsvOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
         if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
             self.AwsBoto3Service.uploadFile(
-                self.GlobalFileManager.getSummaryAnalyzed(),
+                self.GlobalFileManager.getRemoteSummaryAnalyzed(),
                 "text/csv",
                 tags={
                     "end_date": None,
@@ -88,7 +88,7 @@ class AwsService(AwsServiceInterface):
     def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
         currentDate = datetime.now().date()
         self.AwsBoto3Service.uploadFile(
-            self.GlobalFileManager.getSummaryAnalyzed(),
+            self.GlobalFileManager.getRemoteSummaryAnalyzed(),
             "text/csv",
             tags={
                 "end_date": formatDate(currentDate),
@@ -97,6 +97,11 @@ class AwsService(AwsServiceInterface):
                 "scan_rate": guidedSetupForm.getScanRate(),
                 "num_readers": guidedSetupForm.getNumReaders(),
             }
+        )
+        self.AwsBoto3Service.uploadFile(
+            self.GlobalFileManager.getExperimentMetadata(),
+            "application/json",
+            tags={"experiment_id": guidedSetupForm.getExperimentId()}
         )
 
     def uploadExperimentLog(self):

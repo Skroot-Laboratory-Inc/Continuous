@@ -132,11 +132,9 @@ class MainThreadManager:
                         Reader.FileManager.incrementScanNumber(self.scanRate)
                 if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
+                    self.createRemoteSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
-                    self.AwsService.uploadExperimentFilesOnInterval(
-                        self.Readers[0].FileManager.getCurrentScanNumber(),
-                        self.guidedSetupForm,
-                    )
+                    self.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
                     generatePdf(self.Readers,
                                 self.GlobalFileManager.getSetupForm(),
                                 self.GlobalFileManager.getSummaryFigure(),
@@ -195,6 +193,22 @@ class MainThreadManager:
         rowHeaders = ['Time (hours)']
         rowData = [self.Readers[0].getResultSet().getTime()]
         with open(self.GlobalFileManager.getSummaryAnalyzed(), 'w', newline='') as f:
+            writer = csv.writer(f)
+            for Reader in self.Readers:
+                rowHeaders.append(f'Vessel {Reader.readerNumber}')
+                readerSGI = frequencyToIndex(
+                    Reader.getZeroPoint(),
+                    Reader.getResultSet().getMaxFrequencySmooth()
+                )
+                rowData.append(readerSGI)
+            writer.writerow(rowHeaders)
+            # array transpose converts it to write columns instead of rows
+            writer.writerows(np.array(rowData).transpose())
+
+    def createRemoteSummaryAnalyzedFile(self):
+        rowHeaders = ['Timestamp']
+        rowData = [self.Readers[0].getResultSet().getTimestamps()]
+        with open(self.GlobalFileManager.getRemoteSummaryAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:
                 rowHeaders.append(f'Reader {Reader.readerNumber} SGI')

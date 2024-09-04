@@ -27,6 +27,9 @@ class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm):
         """ Uploads the summary csv for the experiment. """
 
+    def uploadFinalExperimentFiles(self, guidedSetupForm):
+        """ Uploads the summary csv for the experiment. """
+
     def uploadExperimentLog(self):
         """ Uploads the log file for the experiment. """
 
