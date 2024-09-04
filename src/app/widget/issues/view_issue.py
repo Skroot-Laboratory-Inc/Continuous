@@ -3,9 +3,9 @@ from datetime import datetime
 from tkinter import ttk
 from typing import Callable
 
-from src.app.helper.helper_functions import makeToplevelScrollable, formatDateTime
+from src.app.helper.helper_functions import makeToplevelScrollable, formatDateTime, datetimeToMillis, millisToDatetime
 from src.app.model.issue.issue import Issue
-from src.app.model.issue.issue_message import IssueMessage
+from src.app.model.issue.timestamped_message import TimestampedMessage
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.popup_interface import PopupInterface
@@ -39,7 +39,7 @@ class ViewIssuePopup(PopupInterface):
         for message in self.issue.messages:
             timestampLabel = tk.Label(
                 window,
-                text=message.timestamp,
+                text=millisToDatetime(message.timestamp),
                 bg='white',
                 font=self.fonts.italicUnderline)
             timestampLabel.grid(row=row, columnspan=3, column=0, sticky='nw')
@@ -76,12 +76,12 @@ class ViewIssuePopup(PopupInterface):
 
     def resolve(self):
         self.issue.resolved = True
-        self.issue.messages.append(IssueMessage(formatDateTime(datetime.now()), "Marked as resolved."))
+        self.issue.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved."))
         self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
 
     def submit(self):
-        issueMessage = IssueMessage(formatDateTime(datetime.now()), self.messageEntry.get())
+        issueMessage = TimestampedMessage(datetimeToMillis(datetime.now()), self.messageEntry.get())
         self.messageEntry.delete(0, 'end')
         self.issue.messages.append(issueMessage)
         self.updateIssue(self.issue)

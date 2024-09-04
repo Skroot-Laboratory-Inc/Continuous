@@ -6,10 +6,10 @@ from typing import List
 from src.app.buttons.view_issue_button import ViewIssueButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper.helper_functions import formatDateTime
+from src.app.helper.helper_functions import formatDateTime, datetimeToMillis
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.issue.issue import Issue
-from src.app.model.issue.issue_message import IssueMessage
+from src.app.model.issue.timestamped_message import TimestampedMessage
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
@@ -141,7 +141,7 @@ class IssueLog:
                 f"{self.nextIssueId}",
                 issueTitle,
                 False,
-                [IssueMessage(formatDateTime(datetime.now()), "Issue opened.")])
+                [TimestampedMessage(datetimeToMillis(datetime.now()), "Issue opened.")])
             self.issues.append(issue)
             self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
             self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
@@ -209,7 +209,7 @@ class IssueLog:
         messages = []
         for m in jsonMessage:
             for timestamp, message in m.items():
-                messages.append(IssueMessage(timestamp, message))
+                messages.append(TimestampedMessage(timestamp, message))
         return messages
 
     @staticmethod
