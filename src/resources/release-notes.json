@@ -1,4 +1,9 @@
 {
+  "v2.5.16": {
+    "features": {
+      "1": "Added an issue log to view/manage issues and linked it to AWS."
+    }
+  },
   "v2.5.15": {
     "features": {
       "1": "Rearranged previous/next buttons, and removed them if only one page is available.",
