@@ -39,7 +39,7 @@ class SetupGui:
         settingsMenuAnalysis.add_command(label="Noise Reduction", command=lambda: self.Settings.denoiseSetting())
         settingsMenuAnalysis.add_command(label="Weak Signal Turn Off",
                                          command=lambda: self.Settings.weakSignalToggleSetting())
-        menubar.add_cascade(label="Analysis", menu=settingsMenuAnalysis)
+        # menubar.add_cascade(label="Analysis", menu=settingsMenuAnalysis)
 
         settingsMenuDisplay = tk.Menu(menubar, tearoff=0)
         settingsMenuDisplay.add_command(label="SGI", command=lambda: self.Settings.freqToggleSetting("SGI"))

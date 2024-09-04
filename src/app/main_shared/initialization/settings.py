@@ -151,7 +151,7 @@ class Settings:
         settingsMenuNotes.add_command(label=f"All readers inoculated", command=lambda: self.inoculateAllReaders())
         for Reader in self.AppModule.Readers:
             Reader.addInoculationMenuBar(settingsMenuNotes)
-        self.AppModule.menubar.add_cascade(label="Inoculation", menu=settingsMenuNotes)
+        # self.AppModule.menubar.add_cascade(label="Inoculation", menu=settingsMenuNotes)
 
     def inoculateAllReaders(self):
         genericReader = self.AppModule.Readers[0]

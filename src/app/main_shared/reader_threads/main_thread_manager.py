@@ -160,9 +160,9 @@ class MainThreadManager:
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:
             self.scanRate = math.ceil(timeTaken / 60)
-            text_notification.setText(f"Took too long to take scans \nScan rate now {self.scanRate}.")
+            text_notification.setText(f"Took too long to take scans. Scan rate now {self.scanRate}.")
             logging.info(f'{timeTaken} seconds to take ALL scans')
-            logging.info(f"Took too long to take scans \nScan rate now {self.scanRate}.")
+            logging.info(f"Took too long to take scans. Scan rate now {self.scanRate}.")
 
     def waitUntilNextScan(self, currentTime, startTime):
         while currentTime - startTime < self.scanRate * 60:

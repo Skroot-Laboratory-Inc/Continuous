@@ -1,4 +1,9 @@
 {
+  "v2.5.17": {
+    "features": {
+      "1": "Removed deprecated options in menubar."
+    }
+  },
   "v2.5.16": {
     "features": {
       "1": "Added an issue log to view/manage issues and linked it to AWS."

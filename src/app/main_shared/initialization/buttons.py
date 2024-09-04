@@ -48,7 +48,7 @@ class ButtonFunctions:
         self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
-        self.AppModule.Settings.addInoculation()
+        # self.AppModule.Settings.addInoculation()
         self.StopButton.place()
         self.IssueLog = IssueLog(self.RootManager, self.AppModule.AwsService, self.AppModule.GlobalFileManager)
         self.IssueLog.placeIssueLog()
