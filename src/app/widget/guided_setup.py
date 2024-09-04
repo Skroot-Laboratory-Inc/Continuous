@@ -141,7 +141,7 @@ class SetupForm:
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.experimentId = self.experimentIdEntry.get()
             self.guidedSetupResults.secondAxisTitle = self.secondAxisEntry.get()
-            self.guidedSetupResults.savePath = self.getSavePath(self.guidedSetupResults.getDate())
+            self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.takeScreenshot()
             self.window.destroy()
@@ -151,7 +151,7 @@ class SetupForm:
                 "One (or more) of the values entered is not formatted properly")
             self.window.tkraise()
 
-    def getSavePath(self, date):
+    def createSavePath(self, date):
         FileManager = CommonFileManager()
         baseSavePath = FileManager.getDataSavePath()
         if not os.path.exists(baseSavePath):

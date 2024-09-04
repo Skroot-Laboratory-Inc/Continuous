@@ -14,6 +14,10 @@ class ExperimentNotes:
         self.notesTimestamps = {}
         self.FileManager = FileManager
 
+    def reset(self):
+        self.notesTimes = {"All Vessels": []}
+        self.notesTimestamps = {}
+
     def typeExperimentNotes(self, readerNumber, resultSet: ResultSet):
         newNotes = tk.simpledialog.askstring(
             f'Reader {readerNumber} notes',

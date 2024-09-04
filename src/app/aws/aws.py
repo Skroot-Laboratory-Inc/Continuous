@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import uuid
@@ -6,6 +7,8 @@ from urllib import parse
 import boto3
 import botocore
 from botocore.client import Config
+
+from src.app.helper.helper_functions import datetimeToMillis
 
 
 class AwsBoto3:
@@ -24,7 +27,7 @@ class AwsBoto3:
             )['CommonPrefixes']
         except:
             self.disabled = True
-        self.runUuid = uuid.uuid4()
+        self.runUuid = datetimeToMillis(datetime.datetime.now())
 
     def findFolderAndUploadFile(self, fileLocation, fileType, tags):
         if not self.disabled:

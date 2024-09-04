@@ -54,11 +54,11 @@ def convertListToPercent(list):
 
 
 def millisToDatetime(millis: int):
-    return datetime.datetime.fromtimestamp(millis / 1000.0)
+    return datetime.datetime.utcfromtimestamp(millis / 1000.0)
 
 
 def datetimeToMillis(dt: datetime.datetime):
-    epoch = datetime.datetime.fromtimestamp(0)
+    epoch = datetime.datetime.utcfromtimestamp(0)
     return int((dt - epoch).total_seconds() * 1000.0)
 
 
