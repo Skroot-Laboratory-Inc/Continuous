@@ -1,6 +1,5 @@
 from src.app.model.plottable import Plottable
-from src.app.model.result_set import ResultSet
-from src.app.model.sweep_data import SweepData
+from src.app.model.result_set.result_set import ResultSet
 from src.app.reader.analyzer.analyzer import Analyzer
 
 

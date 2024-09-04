@@ -1,4 +1,4 @@
-from src.app.model.second_axis_data_point import SecondAxisDataPoint
+from src.app.model.second_axis.second_axis_data_point import SecondAxisDataPoint
 
 
 class SecondAxisResult:

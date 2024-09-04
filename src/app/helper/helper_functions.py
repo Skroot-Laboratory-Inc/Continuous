@@ -1,7 +1,7 @@
+import datetime
 import os
 import stat
 import subprocess
-import sys
 import tkinter as tk
 import zipfile
 
@@ -91,6 +91,15 @@ def runShScript(shScriptFilename, experimentLog):
     process.wait()
 
 
+def formatDate(date):
+    return date.isoformat()
+
+
+def formatDateTime(date: datetime.datetime):
+    return date.strftime('%m/%d/%Y %I:%M:%S %p')
+
+
+
 def getZeroPoint(equilibrationTime, frequencies):
     lastFrequencyPoint = frequencies[-1]
     if equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
@@ -99,3 +108,27 @@ def getZeroPoint(equilibrationTime, frequencies):
         raise Exception()
     else:
         return np.nanmean(frequencies[-5:])
+
+
+def makeToplevelScrollable(windowRoot, fillOutWindowFn):
+    windowRoot.minsize(width=650, height=550)
+    windowRoot.maxsize(width=800, height=550)
+    windowCanvas = tk.Canvas(
+        windowRoot, bg='white', borderwidth=0,
+        highlightthickness=0
+    )
+    window = tk.Frame(windowRoot, bg='white', borderwidth=0)
+    windowCanvas.create_window(0, 0, anchor="nw", window=window)
+    # Linux uses Button-5 for scroll down and Button-4 for scroll up
+    window.bind_all('<Button-4>', lambda e: windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
+    window.bind_all('<Button-5>', lambda e: windowCanvas.yview_scroll(int(e.num), 'units'))
+    # Windows uses MouseWheel for scrolling
+    window.bind_all('<MouseWheel>',
+                         lambda e: windowCanvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+    fillOutWindowFn(window)
+    windowCanvas.grid(row=0, column=0, sticky="nsew")
+    windowCanvas.update()
+    window.update()
+    bounds = window.grid_bbox()
+    windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
+    return windowRoot, window

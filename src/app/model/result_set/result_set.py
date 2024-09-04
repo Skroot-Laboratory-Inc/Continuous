@@ -1,4 +1,4 @@
-from src.app.model.result_set_data_point import ResultSetDataPoint
+from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 
 
 class ResultSet:

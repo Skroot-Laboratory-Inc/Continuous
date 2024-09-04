@@ -11,7 +11,7 @@ class GuiProperties:
         self.bodyRelY = self.bannerHeight
         self.bodyHeight = 1 - self.bannerHeight - self.footerHeight
 
-        self.extraWidgetsHeight = 0.05
+        self.extraWidgetsHeight = 0.08
         self.readerPlotRelY = self.bannerHeight+self.extraWidgetsHeight
         readerPlotFrameHeight = self.bodyHeight - self.extraWidgetsHeight
         self.nextPrevButtonHeight = readerPlotFrameHeight*0.05

@@ -1,7 +1,4 @@
-from typing import List
-
-from src.app.model.result_set import ResultSet
-from src.app.model.sweep_data import SweepData
+from src.app.model.result_set.result_set import ResultSet
 
 
 class AlgorithmInterfaceMetaClass(type):

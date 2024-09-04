@@ -4,7 +4,7 @@ import logging
 import numpy as np
 from scipy.signal import savgol_filter
 
-from src.app.model.result_set import ResultSet
+from src.app.model.result_set.result_set import ResultSet
 from src.app.reader.algorithm.algorithm_interface import AlgorithmInterface
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.properties.harvest_properties import HarvestProperties

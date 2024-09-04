@@ -17,11 +17,17 @@ class RootManager:
     def createFrame(self, backgroundColor) -> tk.Frame:
         return tk.Frame(self.root, bg=backgroundColor)
 
+    def createPaddedFrame(self, backgroundColor) -> tk.Frame:
+        return tk.Frame(self.root, bg=backgroundColor, padx=15, pady=15)
+
     def callMainLoop(self):
         self.root.mainloop()  # everything comes before this
 
     def raiseAboveRoot(self, window):
         window.tkraise(self.root)
+
+    def raiseRoot(self):
+        self.root.tkraise()
 
     def waitForWindow(self, window):
         self.root.wait_window(window)

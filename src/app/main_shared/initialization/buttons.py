@@ -16,6 +16,7 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
+from src.app.widget.issues.issue_log import IssueLog
 
 
 class ButtonFunctions:
@@ -31,7 +32,7 @@ class ButtonFunctions:
         self.GuidedSetupButton = GuidedSetupButton(master, self.AppModule.guidedSetup)
 
     def createButtonsOnNewFrame(self):
-        self.StartButton = StartButton(self.AppModule.bodyFrame, self.startFunc)
+        self.StartButton = StartButton(self.RootManager.getRoot(), self.startFunc)
         self.StopButton = StopButton(self.AppModule.bodyFrame, self.stopFunc)
         self.HelpButton = HelpButton(self.RootManager, self.AppModule)
 
@@ -43,11 +44,14 @@ class ButtonFunctions:
             relwidth=0.33,
             relheight=guiProperties.bodyHeight / 2)
         self.StartButton.destroySelf()
+        self.AppModule.bodyFrame.tkraise()
         self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
         self.AppModule.Settings.addReaderNotes()
         self.AppModule.Settings.addReaderSecondAxis()
-        self.AppModule.Settings.addInoculation()
+        # self.AppModule.Settings.addInoculation()
         self.StopButton.place()
+        self.IssueLog = IssueLog(self.RootManager, self.AppModule.AwsService, self.AppModule.GlobalFileManager)
+        self.IssueLog.placeIssueLog()
         self.MainThreadManager.Timer.createWidget(self.AppModule.bodyFrame)
         text_notification.setText("Scanning...")
         logging.info("started")

@@ -3,6 +3,8 @@ import tkinter as tk
 from importlib.metadata import version as version_api
 
 from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.main_shared.service.aws_service import AwsService
+from src.app.main_shared.service.dev_aws_service import DevAwsService
 from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
@@ -59,12 +61,15 @@ class MainShared:
         )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.createGuidedSetup()
+        if self.isDevMode:
+            self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
+        else:
+            self.AwsService = AwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
             self.RootManager,
-            major_version,
-            minor_version,
+            self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
             self.SummaryFigureCanvas,
@@ -83,15 +88,16 @@ class MainShared:
 
     def createGuidedSetup(self):
         self.guidedSetup()
-        self.Buttons.createGuidedSetupButton(self.bodyFrame)
+        self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
         self.Buttons.HelpButton.place()
 
     def guidedSetup(self):
         self.destroyExistingWidgets()
+        self.bodyFrame.tkraise()
         setupForm = SetupForm(self.RootManager, self.guidedSetupForm)
         self.guidedSetupForm, self.GlobalFileManager = setupForm.getConfiguration()
         self.resetMainThreadManager()
-        self.bodyFrame.tkraise()
+        self.RootManager.raiseRoot()
         self.Buttons.createButtonsOnNewFrame()
         self.Buttons.placeConnectReadersButton()
         if self.guidedSetupForm.getCalibrate():
@@ -137,6 +143,7 @@ class MainShared:
         self.Settings.ReaderPageManager.resetPages()
         for widgets in self.bodyFrame.winfo_children():
             widgets.destroy()
+        self.Buttons.IssueLog.clear()
         self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
         self.MainThreadManager.freqToggleSet.on_completed()
@@ -144,12 +151,12 @@ class MainShared:
         self.Buttons.SibInterfaces = []
         self.Readers = []
         self.PortAllocator.resetPorts()
+        self.RootManager.raiseRoot()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
             self.RootManager,
-            self.major_version,
-            self.minor_version,
+            self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
             self.SummaryFigureCanvas,
@@ -167,5 +174,5 @@ class MainShared:
             self.SummaryFigureCanvas.frequencyCanvas = None
             self.endOfExperimentFrame = endOfExperimentFrame
         else:
-            self.Buttons.createGuidedSetupButton(self.bodyFrame)
+            self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
             self.Buttons.GuidedSetupButton.invokeButton()

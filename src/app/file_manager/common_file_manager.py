@@ -8,6 +8,8 @@ class CommonFileManager:
         srcDir = f"{os.path.dirname(os.path.dirname(getCwd()))}"
         resourcesDir = f"{srcDir}/src/resources"
         self.helpIconPng = rf"{resourcesDir}/help.png"
+        self.addIcon = rf"{resourcesDir}/plus.png"
+        self.refreshIcon = rf"{resourcesDir}/refresh.jpg"
         self.downloadPng = rf"{resourcesDir}/download.png"
         self.squareLogo = rf"{resourcesDir}/squareLogo.PNG"
         self.localDesktopFile = rf'{resourcesDir}/desktopApp.desktop'
@@ -25,6 +27,12 @@ class CommonFileManager:
 
     def getDownloadIcon(self):
         return self.downloadPng
+
+    def getAddIcon(self):
+        return self.addIcon
+
+    def getRefreshIcon(self):
+        return self.refreshIcon
 
     def getLocalDesktopFile(self):
         return self.localDesktopFile
