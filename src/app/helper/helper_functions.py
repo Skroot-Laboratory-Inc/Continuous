@@ -99,7 +99,6 @@ def formatDateTime(date: datetime.datetime):
     return date.strftime('%m/%d/%Y %I:%M:%S %p')
 
 
-
 def getZeroPoint(equilibrationTime, frequencies):
     lastFrequencyPoint = frequencies[-1]
     if equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
