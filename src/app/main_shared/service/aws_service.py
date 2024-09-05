@@ -9,7 +9,7 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper import helper_functions
 from src.app.ui_manager.root_manager import RootManager
-from src.app.helper.helper_functions import getOperatingSystem, formatDate
+from src.app.helper.helper_functions import getOperatingSystem, formatDate, datetimeToMillis
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.main_shared.service.software_update import SoftwareUpdate
 from src.app.model.guided_setup_input import GuidedSetupInput
@@ -66,7 +66,7 @@ class AwsService(AwsServiceInterface):
                 "text/csv",
                 tags={
                     "end_date": None,
-                    "start_date": guidedSetupForm.getDate(),
+                    "start_date": guidedSetupForm.getDateMillis(),
                     "experiment_id": guidedSetupForm.getExperimentId(),
                     "scan_rate": guidedSetupForm.getScanRate(),
                     "num_readers": guidedSetupForm.getNumReaders(),
@@ -86,13 +86,12 @@ class AwsService(AwsServiceInterface):
             self.awsLastNotesUploadTime = scanNumber
 
     def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
-        currentDate = datetime.now().date()
         self.AwsBoto3Service.uploadFile(
             self.GlobalFileManager.getRemoteSummaryAnalyzed(),
             "text/csv",
             tags={
-                "end_date": formatDate(currentDate),
-                "start_date": guidedSetupForm.getDate(),
+                "end_date": datetimeToMillis(datetime.now()),
+                "start_date": guidedSetupForm.getDateMillis(),
                 "experiment_id": guidedSetupForm.getExperimentId(),
                 "scan_rate": guidedSetupForm.getScanRate(),
                 "num_readers": guidedSetupForm.getNumReaders(),

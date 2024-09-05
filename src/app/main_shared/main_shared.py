@@ -152,6 +152,7 @@ class MainShared:
         self.Readers = []
         self.PortAllocator.resetPorts()
         self.RootManager.raiseRoot()
+        self.ExperimentNotes.reset()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,

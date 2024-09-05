@@ -1,5 +1,5 @@
-class IssueMessage:
-    def __init__(self, timestamp: str, entry: str):
+class TimestampedMessage:
+    def __init__(self, timestamp: int, entry: str):
         self.timestamp = timestamp
         self.entry = entry
 

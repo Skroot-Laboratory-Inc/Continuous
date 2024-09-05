@@ -53,6 +53,15 @@ def convertListToPercent(list):
     return [convertToPercent(item) for item in list]
 
 
+def millisToDatetime(millis: int):
+    return datetime.datetime.utcfromtimestamp(millis / 1000.0)
+
+
+def datetimeToMillis(dt: datetime.datetime):
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    return int((dt - epoch).total_seconds() * 1000.0)
+
+
 def convertToPercent(item):
     """ This converts a single value into a percent i.e. 1.08 into 8%"""
     return (item - 1) * 100

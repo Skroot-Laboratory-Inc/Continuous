@@ -6,7 +6,7 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 class DevProperties:
     def __init__(self):
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
-        self.tryDevMode = False
+        self.tryDevMode = True
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:
