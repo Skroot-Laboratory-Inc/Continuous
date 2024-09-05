@@ -47,7 +47,7 @@ class IssueLog:
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
         self.syncFromS3()
         self.populateUi()
-        self.lastDownloaded = 0
+        self.lastDownloaded = datetime.datetime.now(datetime.timezone.utc)
         self.CheckIssuesInterval = RunOnInterval(
             self.syncFromS3,
             AwsProperties().issueLogDownloadRate*60,
@@ -183,7 +183,7 @@ class IssueLog:
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
         self.AwsService.uploadIssueLog()
-        self.lastDownloaded = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=10)
+        self.lastDownloaded = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=10)
 
     def downloadIssueLogIfModified(self):
         self.lastDownloaded = self.AwsService.downloadIssueLogIfModified(self.lastDownloaded)
