@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+import datetime
 from tkinter import ttk
 from typing import List
 
@@ -7,9 +7,11 @@ from src.app.buttons.view_issue_button import ViewIssueButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper.helper_functions import formatDateTime, datetimeToMillis
+from src.app.helper.run_on_interval import RunOnInterval
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.timestamped_message import TimestampedMessage
+from src.app.properties.aws_properties import AwsProperties
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
@@ -22,7 +24,7 @@ from PIL import Image, ImageTk
 
 class IssueLog:
     def __init__(self, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
-        self.lastUpdatedTime = datetime.now()
+        self.lastUpdatedTime = datetime.datetime.now()
         self.issues = []
         self.openIssues = []
         self.resolvedIssues = []
@@ -45,6 +47,12 @@ class IssueLog:
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
         self.syncFromS3()
         self.populateUi()
+        self.lastDownloaded = 0
+        self.CheckIssuesInterval = RunOnInterval(
+            self.syncFromS3,
+            AwsProperties().issueLogDownloadRate*60,
+        )
+        self.CheckIssuesInterval.startFn()
 
     def populateUi(self):
         for widget in self.issueLogFrame.winfo_children():
@@ -54,7 +62,7 @@ class IssueLog:
         self.showResolvedIssues(row)
 
     def updateLastUpdated(self):
-        self.lastUpdatedTime = datetime.now()
+        self.lastUpdatedTime = datetime.datetime.now()
         try:
             self.lastUpdatedLabel.configure(text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}')
         except:
@@ -134,14 +142,13 @@ class IssueLog:
         issueTitle = tk.simpledialog.askstring(
             f'Report An Issue',
             f'Enter a title for the issue here. The ID for this issue will be Issue {self.nextIssueId}',
-
         )
         if issueTitle is not None:
             issue = Issue(
                 self.nextIssueId,
                 issueTitle,
                 False,
-                [TimestampedMessage(datetimeToMillis(datetime.now()), "Issue opened.")])
+                [TimestampedMessage(datetimeToMillis(datetime.datetime.now()), "Issue opened.")])
             self.issues.append(issue)
             self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
             self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
@@ -157,7 +164,7 @@ class IssueLog:
     def syncFromS3(self):
         self.updateLastUpdated()
         try:
-            self.AwsService.downloadIssueLog()
+            self.downloadIssueLogIfModified()
             with open(self.GlobalFileManager.getIssueLog()) as issueLog:
                 issuesJson = json.load(issueLog)
                 self.issues = [self.issueFromJson(issue) for issue in issuesJson["issueLog"]]
@@ -176,6 +183,10 @@ class IssueLog:
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
         self.AwsService.uploadIssueLog()
+        self.lastDownloaded = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=10)
+
+    def downloadIssueLogIfModified(self):
+        self.lastDownloaded = self.AwsService.downloadIssueLogIfModified(self.lastDownloaded)
 
     def placeIssueLog(self):
         guiProperties = GuiProperties()
@@ -196,6 +207,7 @@ class IssueLog:
     def clear(self):
         for widgets in self.issueLogFrame.winfo_children():
             widgets.destroy()
+        self.CheckIssuesInterval.stopFn()
 
     @staticmethod
     def jsonFromIssues(issues):

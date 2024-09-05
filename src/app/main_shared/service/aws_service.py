@@ -116,8 +116,18 @@ class AwsService(AwsServiceInterface):
             'application/json'
         )
 
+    def downloadIssueLogIfModified(self, lastDownloaded):
+        lastModified = self.AwsBoto3Service.getLastModified(
+            f'{self.AwsBoto3Service.runFolder}/{os.path.basename(self.GlobalFileManager.getIssueLog())}',
+        )
+        if lastModified > lastDownloaded:
+            self.downloadIssueLog()
+            return lastModified
+        return lastDownloaded
+
     def downloadIssueLog(self):
         return self.AwsBoto3Service.downloadFile(
             f'{self.AwsBoto3Service.runFolder}/{os.path.basename(self.GlobalFileManager.getIssueLog())}',
             self.GlobalFileManager.getIssueLog(),
         )
+

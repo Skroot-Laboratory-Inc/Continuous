@@ -87,4 +87,12 @@ class AwsBoto3:
                 logging.info('no internet')
                 self.disabled = True
             except:
-                logging.exception('Failed to download file')
+                pass
+
+    def getLastModified(self, aws_filename):
+        if not self.disabled:
+            try:
+                response = self.s3.head_object(Bucket=self.bucket, Key=aws_filename)
+                return response['LastModified']
+            except:
+                pass
