@@ -36,6 +36,6 @@ class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
     def uploadIssueLog(self):
         """ Uploads the issue log to AWS in the experiment folder. """
 
-    def downloadIssueLog(self):
-        """ Downloads the issue log for the experiment, if present. """
+    def downloadIssueLogIfModified(self, lastDownloaded):
+        """ Downloads the issue log for the experiment, if modified since `lastDownloaded`. """
 

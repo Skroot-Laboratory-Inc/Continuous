@@ -1,4 +1,9 @@
 {
+  "v2.5.20": {
+    "features": {
+      "1": "Updated issue log to pull from AWS on an interval."
+    }
+  },
   "v2.5.19": {
     "features": {
       "1": "Updated summary analyzed and experiment notes to work with dashboard."

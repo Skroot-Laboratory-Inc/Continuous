@@ -1,4 +1,5 @@
 class AwsProperties:
     def __init__(self):
-        self.csvUploadRate = 2  # Minutes
-        self.notesUploadRate = 2  # Minutes
+        self.csvUploadRate = 60  # Minutes
+        self.notesUploadRate = 60  # Minutes
+        self.issueLogDownloadRate = 15  # Minutes
