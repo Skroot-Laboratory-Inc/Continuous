@@ -1,6 +1,7 @@
 import logging
 import math
 import tkinter as tk
+from tkinter import messagebox, simpledialog
 
 import matplotlib as mpl
 
@@ -23,12 +24,12 @@ class Settings:
         self.maxReadersPerScreen = GuiProperties().maxReadersPerScreen
 
     def freqRangeSetting(self):
-        startFreq = tk.simpledialog.askfloat(
+        startFreq = simpledialog.askfloat(
             "Input", "Start Frequency (MHz): \nRange: (50-170MHz)",
             parent=self.RootManager.getRoot(),
             minvalue=50,
             maxvalue=170)
-        stopFreq = tk.simpledialog.askfloat(
+        stopFreq = simpledialog.askfloat(
             "Input",
             "Stop Frequency (MHz): \nRange: (50-170MHz)",
             parent=self.RootManager.getRoot(),
@@ -46,7 +47,7 @@ class Settings:
             logging.info(f'stopFreq changed to {stopFreq}')
 
     def saveFilesSetting(self):
-        disableSaveFullFiles = tk.messagebox.askyesno(
+        disableSaveFullFiles = messagebox.askyesno(
             "Disable Full File Save",
             "Are you sure you would like to disable entire file save? \n",
             parent=self.RootManager.getRoot())
@@ -55,7 +56,7 @@ class Settings:
             logging.info(f'disableSaveFullFiles changed to {disableSaveFullFiles}')
 
     def rateSetting(self):
-        scanRate = tk.simpledialog.askfloat(
+        scanRate = simpledialog.askfloat(
             "Input",
             "Scan Rate (minutes between scans): \nRange: (0.1 - 240)",
             parent=self.RootManager.getRoot(),
@@ -67,7 +68,7 @@ class Settings:
             logging.info(f'scanRate changed to {scanRate}')
 
     def denoiseSetting(self):
-        self.AppModule.denoiseSet = tk.messagebox.askyesno(
+        self.AppModule.denoiseSet = messagebox.askyesno(
             'Denoise Setting',
             'Would you like to denoise and smooth the results before displaying them?')
         logging.info(f'denoiseSet changed to {self.AppModule.denoiseSet}')
@@ -77,7 +78,7 @@ class Settings:
         logging.info(f'freqToggleSet changed to {toggle}')
 
     def weakSignalToggleSetting(self):
-        self.AppModule.weakSignalToggleSet = tk.messagebox.askyesno(
+        self.AppModule.weakSignalToggleSet = messagebox.askyesno(
             'Ignore Weak Signal',
             'Are you sure you would like to ignore the weak signal warning?')
         logging.info(f'weakSignalToggleSet changed to {self.AppModule.denoiseSet}')
@@ -161,7 +162,7 @@ class Settings:
         self.AppModule.menubar.delete("Inoculation")
 
     def addNotesAllReaders(self):
-        newNotes = tk.simpledialog.askstring(f'All Reader Notes',
+        newNotes = simpledialog.askstring(f'All Reader Notes',
                                              f'Add any experiment notes here. \n'
                                              f'They will be applied to all readers. \n'
                                              f'They can be viewed in the pdf generated.')

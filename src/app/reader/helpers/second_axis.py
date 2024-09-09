@@ -1,6 +1,6 @@
 import csv
 import logging
-import tkinter as tk
+from tkinter import simpledialog
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.model.second_axis.second_axis_data_point import SecondAxisDataPoint
@@ -14,7 +14,7 @@ class SecondAxis:
         self.FileManager = FileManager
 
     def typeSecondAxisValues(self, timeVector):
-        value = tk.simpledialog.askfloat(
+        value = simpledialog.askfloat(
             f'Reader {self.readerNumber} {self.SecondAxisResult.getTitle()}',
             f'Enter the value for {self.SecondAxisResult.getTitle()} and reader {self.readerNumber} here. \n Numbers only')
         if value is not None:

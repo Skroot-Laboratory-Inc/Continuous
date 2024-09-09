@@ -2,6 +2,7 @@ import logging
 import threading
 import time
 import tkinter as tk
+from tkinter import messagebox
 
 from src.app.buttons.calibrate_readers import CalibrateReadersButton
 from src.app.buttons.connect_readers import ConnectReadersButton
@@ -162,12 +163,12 @@ class ButtonFunctions:
                 except:
                     attempts += 1
                     if attempts > 3:
-                        tk.messagebox.showerror(
+                        messagebox.showerror(
                             f'Reader {readerNumber}',
                             f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
                         break
                     else:
-                        shouldContinue = tk.messagebox.askokcancel(
+                        shouldContinue = messagebox.askokcancel(
                             f'Reader {readerNumber}',
                             f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
                             f'Press cancel to shutdown the app.')
@@ -192,7 +193,7 @@ class ButtonFunctions:
 
 
 def pauseUntilUserClicks(readerNumber):
-    tk.messagebox.showinfo(f'Reader {readerNumber}',
+    messagebox.showinfo(f'Reader {readerNumber}',
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 
