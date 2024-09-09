@@ -75,8 +75,7 @@ class ViewIssuePopup(PopupInterface):
             submitMessage.grid(row=row, column=2, sticky='ne')
 
     def resolve(self):
-        self.issue.resolved = True
-        self.issue.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved."))
+        self.issue.resolveIssue()
         self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
 

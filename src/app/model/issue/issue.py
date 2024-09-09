@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import List
 
+from src.app.helper.helper_functions import datetimeToMillis
 from src.app.model.issue.timestamped_message import TimestampedMessage
 
 
@@ -9,6 +11,11 @@ class Issue:
         self.title = title
         self.resolved = resolved
         self.messages = messages
+
+    def resolveIssue(self):
+        self.resolved = True
+        self.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved."))
+        return self
 
     def asJson(self):
         return {

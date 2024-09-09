@@ -15,6 +15,7 @@ from src.app.properties.aws_properties import AwsProperties
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.root_event_manager import UPDATE_ISSUES, UPDATE_LAST_UPDATED
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.issues.view_issue import ViewIssuePopup
 
@@ -24,13 +25,15 @@ from PIL import Image, ImageTk
 
 class IssueLog:
     def __init__(self, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
+        self.RootManager = rootManager
+        self.RootManager.registerEvent(UPDATE_ISSUES, self.updateLastUpdatedFn)
+        self.RootManager.registerEvent(UPDATE_ISSUES, self.populateUiFn)
         self.lastUpdatedTime = datetime.datetime.now()
         self.issues = []
         self.openIssues = []
         self.resolvedIssues = []
         self.nextIssueId = 1
         self.AwsService = awsService
-        self.RootManager = rootManager
         self.GlobalFileManager = globalFileManager
         self.Colors = Colors()
         self.issueLogFrame = self.RootManager.createPaddedFrame(self.Colors.secondaryColor)
@@ -46,7 +49,7 @@ class IssueLog:
         resizedImage = image.resize((35, 35), Image.LANCZOS)
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
         self.syncFromS3()
-        self.populateUi()
+        self.RootManager.generateEvent(UPDATE_ISSUES)
         self.lastDownloaded = datetime.datetime.now(datetime.timezone.utc)
         self.CheckIssuesInterval = RunOnInterval(
             self.syncFromS3,
@@ -54,14 +57,14 @@ class IssueLog:
         )
         self.CheckIssuesInterval.startFn()
 
-    def populateUi(self):
+    def populateUiFn(self, *args):
         for widget in self.issueLogFrame.winfo_children():
             widget.destroy()
         row = 0
         row = self.showOpenIssues(row)
         self.showResolvedIssues(row)
 
-    def updateLastUpdated(self):
+    def updateLastUpdatedFn(self, *args):
         self.lastUpdatedTime = datetime.datetime.now()
         try:
             self.lastUpdatedLabel.configure(text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}')
@@ -137,12 +140,13 @@ class IssueLog:
     def viewIssue(self, issue: Issue):
         ViewIssuePopup(self.RootManager, issue, self.updateIssue)
 
-    def createIssue(self):
+    def createIssue(self, issueTitle=None):
         self.syncFromS3()
-        issueTitle = tk.simpledialog.askstring(
-            f'Report An Issue',
-            f'Enter a title for the issue here. The ID for this issue will be Issue {self.nextIssueId}',
-        )
+        if issueTitle is None:
+            issueTitle = tk.simpledialog.askstring(
+                f'Report An Issue',
+                f'Enter a title for the issue here. The ID for this issue will be Issue {self.nextIssueId}',
+            )
         if issueTitle is not None:
             issue = Issue(
                 self.nextIssueId,
@@ -153,6 +157,8 @@ class IssueLog:
             self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
             self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
             self.syncToS3()
+            return Issue
+        return None
 
     def updateIssue(self, issue: Issue):
         self.syncFromS3()
@@ -162,7 +168,7 @@ class IssueLog:
         self.syncToS3()
 
     def syncFromS3(self):
-        self.updateLastUpdated()
+        self.RootManager.generateEvent(UPDATE_LAST_UPDATED)
         try:
             self.downloadIssueLogIfModified()
             with open(self.GlobalFileManager.getIssueLog()) as issueLog:
@@ -176,10 +182,10 @@ class IssueLog:
             self.openIssues = []
             self.resolvedIssues = []
             self.nextIssueId = 1
-        self.populateUi()
+        self.RootManager.generateEvent(UPDATE_ISSUES)
 
     def syncToS3(self):
-        self.populateUi()
+        self.RootManager.generateEvent(UPDATE_ISSUES)
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
         self.AwsService.uploadIssueLog()

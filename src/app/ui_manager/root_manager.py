@@ -52,3 +52,9 @@ class RootManager:
 
     def setBackgroundColor(self, backgroundColor):
         self.root.configure(background=backgroundColor)
+
+    def generateEvent(self, event):
+        self.root.event_generate(event)
+
+    def registerEvent(self, event, eventFn):
+        self.root.bind(event, eventFn)
