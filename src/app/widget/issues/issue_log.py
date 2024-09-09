@@ -1,5 +1,6 @@
 import json
 import datetime
+import threading
 from tkinter import ttk
 from typing import List
 
@@ -26,7 +27,7 @@ from PIL import Image, ImageTk
 class IssueLog:
     def __init__(self, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
         self.RootManager = rootManager
-        self.RootManager.registerEvent(UPDATE_ISSUES, self.updateLastUpdatedFn)
+        self.RootManager.registerEvent(UPDATE_LAST_UPDATED, self.updateLastUpdatedFn)
         self.RootManager.registerEvent(UPDATE_ISSUES, self.populateUiFn)
         self.lastUpdatedTime = datetime.datetime.now()
         self.issues = []
@@ -49,11 +50,11 @@ class IssueLog:
         resizedImage = image.resize((35, 35), Image.LANCZOS)
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
         self.syncFromS3()
-        self.RootManager.generateEvent(UPDATE_ISSUES)
         self.lastDownloaded = datetime.datetime.now(datetime.timezone.utc)
         self.CheckIssuesInterval = RunOnInterval(
             self.syncFromS3,
             AwsProperties().issueLogDownloadRate*60,
+            120
         )
         self.CheckIssuesInterval.startFn()
 
@@ -157,7 +158,7 @@ class IssueLog:
             self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
             self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]
             self.syncToS3()
-            return Issue
+            return issue
         return None
 
     def updateIssue(self, issue: Issue):
@@ -183,7 +184,6 @@ class IssueLog:
             self.resolvedIssues = []
             self.nextIssueId = 1
         self.RootManager.generateEvent(UPDATE_ISSUES)
-
     def syncToS3(self):
         self.RootManager.generateEvent(UPDATE_ISSUES)
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
@@ -201,6 +201,7 @@ class IssueLog:
             rely=guiProperties.readerPlotRelY,
             relwidth=0.33,
             relheight=guiProperties.readerPlotHeight / 2)
+        self.issueLogFrame.tkraise()
 
     def issueFromJson(self, jsonIssue):
         return Issue(
@@ -211,6 +212,10 @@ class IssueLog:
         )
 
     def clear(self):
+        self.openIssues = 1
+        self.openIssues = []
+        self.resolvedIssues = []
+        self.nextIssueId = 1
         for widgets in self.issueLogFrame.winfo_children():
             widgets.destroy()
         self.CheckIssuesInterval.stopFn()

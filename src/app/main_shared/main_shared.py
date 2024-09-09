@@ -119,6 +119,7 @@ class MainShared:
             self.MainThreadManager.scanRate = self.guidedSetupForm.getScanRate()
             self.MainThreadManager.equilibrationTime = self.guidedSetupForm.getEquilibrationTime()
             self.IssueLog.AwsService = self.AwsService
+            self.IssueLog.GlobalFileManager = self.GlobalFileManager
             self.MainThreadManager.IssueLog = self.IssueLog
             self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
             self.MainThreadManager.ExperimentNotes = self.ExperimentNotes

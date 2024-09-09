@@ -15,6 +15,7 @@ from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.properties.gui_properties import GuiProperties
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
+from src.app.ui_manager.root_event_manager import UPDATE_ISSUES
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
 from src.app.widget.issues.issue_log import IssueLog
@@ -51,8 +52,8 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         # self.AppModule.Settings.addInoculation()
         self.StopButton.place()
-        self.AppModule.IssueLog = IssueLog(self.RootManager, self.AppModule.AwsService, self.AppModule.GlobalFileManager)
         self.AppModule.IssueLog.placeIssueLog()
+        self.RootManager.generateEvent(UPDATE_ISSUES)
         self.MainThreadManager.Timer.createWidget(self.AppModule.bodyFrame)
         text_notification.setText("Scanning...")
         logging.info("started")
