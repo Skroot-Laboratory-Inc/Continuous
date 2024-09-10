@@ -13,7 +13,7 @@ class HelpButton(ButtonInterface):
     def __init__(self, rootManager: RootManager, AppModule):
         fileManager = CommonFileManager()
         image = Image.open(fileManager.getHelpIcon())
-        resizedImage = image.resize((15, 15), Image.LANCZOS)
+        resizedImage = image.resize((15, 15), Image.Resampling.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.RootManager = rootManager
         self.AppModule = AppModule

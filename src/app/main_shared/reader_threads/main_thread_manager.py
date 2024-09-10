@@ -4,7 +4,7 @@ import math
 import threading
 import time
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from typing import List
 
 import numpy as np
@@ -13,24 +13,26 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
-from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
-from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
-from src.app.main_shared.service.aws_service import AwsService
-from src.app.main_shared.service.dev_aws_service import DevAwsService
+from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.model.issue.issue import Issue
+from src.app.model.issue.potential_issue import PotentialIssue
 from src.app.properties.dev_properties import DevProperties
+from src.app.properties.issue_properties import IssueProperties
 from src.app.reader.reader import Reader
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
+from src.app.widget.issues.issue_log import IssueLog
 from src.app.widget.pdf import generatePdf
 from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput):
+    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput, issueLog: IssueLog):
         self.guidedSetupForm = guidedSetupForm
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
@@ -43,6 +45,8 @@ class MainThreadManager:
         self.denoiseSet = denoiseSet
         self.GlobalFileManager = globalFileManager
         self.RootManager = rootManager
+        self.IssueLog = issueLog
+        self.currentIssues = {}
         self.finishedEquilibrationPeriod = False
         self.disableFullSaveFiles = disableFullSaveFiles
         self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
@@ -99,15 +103,22 @@ class MainThreadManager:
                         # Reader.ContaminationAlgorithm.check(Reader.getResultSet())
                         # Reader.HarvestAlgorithm.check(Reader.getResultSet())
                         Reader.Indicator.changeIndicatorGreen()
+                        if Reader.readerNumber in self.currentIssues and not self.currentIssues[Reader.readerNumber].resolved:
+                            self.currentIssues[Reader.readerNumber].resolveIssue()
+                            if type(self.currentIssues[Reader.readerNumber]) is Issue:
+                                self.IssueLog.updateIssue(self.currentIssues[Reader.readerNumber])
+                            del self.currentIssues[Reader.readerNumber]
                     except SIBConnectionError:
-                        errorOccurredWhileTakingScans = True
+                        if Reader.readerNumber not in self.currentIssues:
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Reader Connection Error On Reader {Reader.readerNumber}.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
                             f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
-                        errorOccurredWhileTakingScans = True
+                        if Reader.readerNumber not in self.currentIssues:
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Firmware Reconnection Forced On Reader {Reader.readerNumber}.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
@@ -115,7 +126,8 @@ class MainThreadManager:
                         text_notification.setText(
                             f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
-                        errorOccurredWhileTakingScans = True
+                        if Reader.readerNumber not in self.currentIssues:
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Hardware Issue Identified On Reader {Reader.readerNumber}.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
@@ -123,7 +135,15 @@ class MainThreadManager:
                         text_notification.setText(
                             f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
-                        errorOccurredWhileTakingScans = True
+                        if Reader.readerNumber in self.currentIssues:
+                            if type(self.currentIssues[Reader.readerNumber]) is PotentialIssue:
+                                self.currentIssues[Reader.readerNumber] = self.currentIssues[Reader.readerNumber].persistIssue()
+                        else:
+                            self.currentIssues[Reader.readerNumber] = PotentialIssue(
+                                IssueProperties().consecutiveAnalysisIssue,
+                                f"Automated - Analysis Failed On Reader {Reader.readerNumber}.",
+                                self.IssueLog.createIssue,
+                            )
                         Reader.Indicator.changeIndicatorRed()
                         logging.exception(f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")
@@ -140,7 +160,7 @@ class MainThreadManager:
                                 self.GlobalFileManager.getSummaryFigure(),
                                 self.GlobalFileManager.getSummaryPdf(),
                                 self.GlobalFileManager.getExperimentNotesTxt())
-                if not errorOccurredWhileTakingScans:
+                if self.currentIssues == {}:
                     text_notification.setText("All readers successfully recorded data.")
             except:
                 logging.exception('Unknown error has occurred')
@@ -172,7 +192,7 @@ class MainThreadManager:
             currentTime = time.time()
 
     def onClosing(self):
-        if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
+        if messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
             self.finalizeRunResults()
             self.RootManager.destroyRoot()
 

@@ -2,6 +2,7 @@ import logging
 import threading
 import time
 import tkinter as tk
+from tkinter import messagebox
 
 from src.app.buttons.calibrate_readers import CalibrateReadersButton
 from src.app.buttons.connect_readers import ConnectReadersButton
@@ -12,9 +13,10 @@ from src.app.buttons.stop_button import StopButton
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.properties.gui_properties import GuiProperties
-from src.app.ui_manager.root_manager import RootManager
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
+from src.app.ui_manager.root_event_manager import UPDATE_ISSUES
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
 from src.app.widget.issues.issue_log import IssueLog
 
@@ -50,8 +52,8 @@ class ButtonFunctions:
         self.AppModule.Settings.addReaderSecondAxis()
         # self.AppModule.Settings.addInoculation()
         self.StopButton.place()
-        self.IssueLog = IssueLog(self.RootManager, self.AppModule.AwsService, self.AppModule.GlobalFileManager)
-        self.IssueLog.placeIssueLog()
+        self.AppModule.IssueLog.placeIssueLog()
+        self.RootManager.generateEvent(UPDATE_ISSUES)
         self.MainThreadManager.Timer.createWidget(self.AppModule.bodyFrame)
         text_notification.setText("Scanning...")
         logging.info("started")
@@ -162,12 +164,12 @@ class ButtonFunctions:
                 except:
                     attempts += 1
                     if attempts > 3:
-                        tk.messagebox.showerror(
+                        messagebox.showerror(
                             f'Reader {readerNumber}',
                             f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
                         break
                     else:
-                        shouldContinue = tk.messagebox.askokcancel(
+                        shouldContinue = messagebox.askokcancel(
                             f'Reader {readerNumber}',
                             f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
                             f'Press cancel to shutdown the app.')
@@ -192,7 +194,7 @@ class ButtonFunctions:
 
 
 def pauseUntilUserClicks(readerNumber):
-    tk.messagebox.showinfo(f'Reader {readerNumber}',
+    messagebox.showinfo(f'Reader {readerNumber}',
                            f'Reader {readerNumber}\nPress OK when reader {readerNumber} is plugged in')
 
 

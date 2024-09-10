@@ -3,8 +3,9 @@ import time
 
 
 class RunOnInterval:
-    def __init__(self, runFn, delaySeconds):
+    def __init__(self, runFn, delaySeconds, initialDelay=0):
         self.timer_runs = threading.Event()
+        self.initialDelay = initialDelay
         self.timer_runs.set()
         self.runFn = runFn
         self.delaySeconds = delaySeconds
@@ -12,6 +13,7 @@ class RunOnInterval:
         self.t = threading.Thread(target=self.timer)
 
     def timer(self):
+        time.sleep(self.initialDelay)
         while self.timer_runs.is_set():
             self.runFn()
             time.sleep(self.delaySeconds)

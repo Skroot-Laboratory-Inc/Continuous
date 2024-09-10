@@ -1,13 +1,14 @@
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 
 import pyautogui
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.ui_manager.root_manager import RootManager
 from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.ui_manager.root_manager import RootManager
 
 
 class SetupForm:
@@ -146,7 +147,7 @@ class SetupForm:
             self.takeScreenshot()
             self.window.destroy()
         else:
-            tk.messagebox.showerror(
+            messagebox.showerror(
                 "Incorrect Formatting",
                 "One (or more) of the values entered is not formatted properly")
             self.window.tkraise()
@@ -167,7 +168,7 @@ class SetupForm:
             return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"
 
     def onClosing(self):
-        if tk.messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
+        if messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
             self.window.destroy()
             self.RootManager.destroyRoot()
         else:

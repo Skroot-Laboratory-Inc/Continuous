@@ -3,15 +3,14 @@ import tkinter as tk
 from importlib.metadata import version as version_api
 
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.main_shared.service.aws_service import AwsService
-from src.app.main_shared.service.dev_aws_service import DevAwsService
-from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
 from src.app.main_shared.initialization.buttons import ButtonFunctions
 from src.app.main_shared.initialization.settings import Settings
 from src.app.main_shared.initialization.setup_gui import SetupGui
 from src.app.main_shared.reader_threads.main_thread_manager import MainThreadManager
+from src.app.main_shared.service.aws_service import AwsService
+from src.app.main_shared.service.dev_aws_service import DevAwsService
 from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
@@ -19,9 +18,11 @@ from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import logger
 from src.app.widget.figure import FigureCanvas
 from src.app.widget.guided_setup import SetupForm
+from src.app.widget.issues.issue_log import IssueLog
 
 
 class MainShared:
@@ -60,11 +61,12 @@ class MainShared:
             ''
         )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
-        self.createGuidedSetup()
+        self.guidedSetupForm, self.GlobalFileManager = self.createGuidedSetup()
         if self.isDevMode:
             self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
         else:
             self.AwsService = AwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
+        self.IssueLog = IssueLog(self.RootManager, self.AwsService, self.GlobalFileManager)
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
@@ -75,6 +77,7 @@ class MainShared:
             self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
+            self.IssueLog,
         )
         self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
         self.Buttons.MainThreadManager = self.MainThreadManager
@@ -87,9 +90,10 @@ class MainShared:
         return menubar
 
     def createGuidedSetup(self):
-        self.guidedSetup()
+        guidedSetupForm, globalFileManager = self.guidedSetup()
         self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
         self.Buttons.HelpButton.place()
+        return guidedSetupForm, globalFileManager
 
     def guidedSetup(self):
         self.destroyExistingWidgets()
@@ -106,6 +110,7 @@ class MainShared:
                 self.Buttons.ConnectReadersButton.destroySelf()
                 self.Buttons.findReaders(self.guidedSetupForm.getNumReaders(), self.GlobalFileManager)
                 self.Buttons.placeCalibrateReadersButton()
+        return self.guidedSetupForm, self.GlobalFileManager
 
     def resetMainThreadManager(self):
         try:
@@ -113,6 +118,11 @@ class MainShared:
             self.MainThreadManager.guidedSetupForm = self.guidedSetupForm
             self.MainThreadManager.scanRate = self.guidedSetupForm.getScanRate()
             self.MainThreadManager.equilibrationTime = self.guidedSetupForm.getEquilibrationTime()
+            self.IssueLog.AwsService = self.AwsService
+            self.IssueLog.GlobalFileManager = self.GlobalFileManager
+            self.MainThreadManager.IssueLog = self.IssueLog
+            self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
+            self.MainThreadManager.ExperimentNotes = self.ExperimentNotes
         except:
             # New experiment, doesn't need reset
             pass
@@ -143,7 +153,7 @@ class MainShared:
         self.Settings.ReaderPageManager.resetPages()
         for widgets in self.bodyFrame.winfo_children():
             widgets.destroy()
-        self.Buttons.IssueLog.clear()
+        self.IssueLog.clear()
         self.MainThreadManager.finalizeRunResults()
         self.displayReaderRunResults()
         self.MainThreadManager.freqToggleSet.on_completed()
@@ -163,6 +173,7 @@ class MainShared:
             self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
+            self.IssueLog,
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
 

@@ -54,6 +54,14 @@ class ViewIssuePopup(PopupInterface):
             row += 1
 
         if not self.issue.resolved:
+            row = self.createSeparatorLine(window, row)
+            entryLabel = tk.Label(
+                window,
+                text="Leave a comment:",
+                bg='white',
+                font=self.fonts.footnote)
+            entryLabel.grid(row=row, columnspan=3, column=0, sticky='nw')
+            row += 1
             self.messageEntry = tk.Entry(window, bg='white', font=self.fonts.primary)
             self.messageEntry.grid(row=row, columnspan=3, column=0, sticky='nesw', pady=(0, 15))
             row += 1
@@ -75,8 +83,7 @@ class ViewIssuePopup(PopupInterface):
             submitMessage.grid(row=row, column=2, sticky='ne')
 
     def resolve(self):
-        self.issue.resolved = True
-        self.issue.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved."))
+        self.issue.resolveIssue()
         self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
 
