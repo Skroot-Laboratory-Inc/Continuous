@@ -145,7 +145,7 @@ class IssueLog:
         if issueTitle is None:
             issueTitle = tk.simpledialog.askstring(
                 f'Report An Issue',
-                f'Enter a title for the issue here. The ID for this issue will be Issue {self.nextIssueId}',
+                f'Enter title for issue #{self.nextIssueId}',
             )
         if issueTitle is not None:
             issue = Issue(

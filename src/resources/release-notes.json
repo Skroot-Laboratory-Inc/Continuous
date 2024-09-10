@@ -1,4 +1,10 @@
 {
+  "v2.5.24": {
+    "features": {
+      "1": "Added automated error reporting for hardware/analysis errors.",
+      "2": "Updated formatting/prompts on issue screens."
+    }
+  },
   "v2.5.20": {
     "features": {
       "1": "Updated issue log to pull from AWS on an interval."
