@@ -89,7 +89,7 @@ class SetupForm:
         options = ["2", "5", "10"]
         entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, True)
 
-        options = ["0", "0.1", "2", "12", "24"]
+        options = ["0", "0.2", "2", "12", "24"]
         entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, True)
 
         options = ["", "Glucose", "Lactate", "Optical Density", "Cell Count"]
