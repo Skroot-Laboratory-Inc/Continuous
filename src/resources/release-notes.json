@@ -3,6 +3,9 @@
     "features": {
       "1": "Enlarged text box for adding messages to issues."
     },
+    "bugfixes": {
+      "1": "Fixed issue causing summary figure to be covered up by issue log."
+    },
     "other": {
       "1": "Fixed dev mode to not upload to AWS anymore."
     }
@@ -102,54 +105,5 @@
   },
   "v2.5.3": {
     "other": "Major code refactor"
-  },
-  "v2.4.6": {
-    "features": {
-      "1": "Updated signal check to use percentages instead of values.",
-      "2": "Added an indicator to check the state of a reader (errored, working, scanning)."
-    }
-  },
-  "v2.4.5": {
-    "features": {
-      "1": "Updated default sweep frequency to 110-160 MHz",
-      "2": "Closing guided setup now asks to close the app, rather than submitting the data.",
-      "3": "Updated help dialog popup to only send the log to AWS, without placeholder text",
-      "4": "Calibration now removes the first 0.2 MHz from the scan."
-    }
-  },
-  "v2.4.4": {
-    "features": {
-      "1": "Added a button to download the analysis folder into a zip file."
-    },
-    "bugfixes": {
-      "1": "Fixed bug causing end of experiment view to not show up."
-    }
-  },
-  "v2.4.3": {
-    "features": {
-      "1": "Added a README.md file containing information about the files in the Analysis directory",
-      "2": "Copied over second axis files into the Analysis directory.",
-      "3": "Created instantaneous flip from SGI to signal check."
-    },
-    "bugfixes": {
-      "1": "Gave the user the option of cancelling the port finding process to restart the app."
-    }
-  },
-  "v2.4.2": {
-    "bugfixes": {
-      "1": "Ensured readers reconnect on the same port using their serial number."
-    }
-  },
-  "v2.4.1": {
-    "features": {
-      "1": "Added support for setting equilibration period to 0.",
-      "2": "Added back toggle to view signal check in ribbon.",
-      "3": "Added Skroot copyright as app footer.",
-      "4": "Added frequency and filename columns to smooth analyzed.",
-      "5": "Created more specific error messages to display to user.."
-    },
-    "bugfixes": {
-      "1": "Fixed sorting of the release notes dialog to accurately represent versioning."
-    }
   }
 }

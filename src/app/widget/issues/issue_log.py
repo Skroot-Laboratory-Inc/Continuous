@@ -198,7 +198,7 @@ class IssueLog:
         guiProperties = GuiProperties()
         self.issueLogFrame.place(
             relx=0.67,
-            rely=guiProperties.readerPlotRelY,
+            rely=guiProperties.readerPlotRelY - 0.01,
             relwidth=0.33,
             relheight=guiProperties.readerPlotHeight / 2)
         self.issueLogFrame.tkraise()
