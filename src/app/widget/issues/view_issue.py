@@ -62,7 +62,7 @@ class ViewIssuePopup(PopupInterface):
                 font=self.fonts.footnote)
             entryLabel.grid(row=row, columnspan=3, column=0, sticky='nw')
             row += 1
-            self.messageEntry = tk.Entry(window, bg='white', font=self.fonts.primary)
+            self.messageEntry = tk.Text(window, bg='white', height=3, width=30, font=self.fonts.primary)
             self.messageEntry.grid(row=row, columnspan=3, column=0, sticky='nesw', pady=(0, 15))
             row += 1
 
@@ -88,8 +88,8 @@ class ViewIssuePopup(PopupInterface):
         self.fillOutWindowFn(self.window)
 
     def submit(self):
-        issueMessage = TimestampedMessage(datetimeToMillis(datetime.now()), self.messageEntry.get())
-        self.messageEntry.delete(0, 'end')
+        issueMessage = TimestampedMessage(datetimeToMillis(datetime.now()), self.messageEntry.get("1.0", "end-1c"))
+        self.messageEntry.delete("1.0", "end-1c")
         self.issue.messages.append(issueMessage)
         self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
