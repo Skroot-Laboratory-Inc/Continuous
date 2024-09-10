@@ -1,4 +1,10 @@
 {
+  "v2.5.26": {
+    "features": {
+      "1": "Added equilibration time of 6 minutes for testing purposes.",
+      "2": "Removed automated issue reporting for reconnect issues."
+    }
+  },
   "v2.5.24": {
     "features": {
       "1": "Added automated error reporting for hardware/analysis errors.",

@@ -117,8 +117,6 @@ class MainThreadManager:
                             f'Connection Error: Reader {Reader.readerNumber} failed to take scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
-                        if Reader.readerNumber not in self.currentIssues:
-                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Firmware Reconnection Forced On Reader {Reader.readerNumber}.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
