@@ -1,8 +1,10 @@
-import json
 import datetime
-import threading
+import json
+import tkinter as tk
 from tkinter import ttk
 from typing import List
+
+from PIL import Image, ImageTk
 
 from src.app.buttons.view_issue_button import ViewIssueButton
 from src.app.file_manager.common_file_manager import CommonFileManager
@@ -19,9 +21,6 @@ from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_event_manager import UPDATE_ISSUES, UPDATE_LAST_UPDATED
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.issues.view_issue import ViewIssuePopup
-
-import tkinter as tk
-from PIL import Image, ImageTk
 
 
 class IssueLog:
@@ -44,10 +43,10 @@ class IssueLog:
         self.fonts = FontTheme()
         commonFileManager = CommonFileManager()
         image = Image.open(commonFileManager.getAddIcon())
-        resizedImage = image.resize((35, 35), Image.LANCZOS)
+        resizedImage = image.resize((35, 35), Image.Resampling.LANCZOS)
         self.createIcon = ImageTk.PhotoImage(resizedImage)
         image = Image.open(commonFileManager.getRefreshIcon())
-        resizedImage = image.resize((35, 35), Image.LANCZOS)
+        resizedImage = image.resize((35, 35), Image.Resampling.LANCZOS)
         self.refreshIcon = ImageTk.PhotoImage(resizedImage)
         self.syncFromS3()
         self.lastDownloaded = datetime.datetime.now(datetime.timezone.utc)
@@ -184,6 +183,7 @@ class IssueLog:
             self.resolvedIssues = []
             self.nextIssueId = 1
         self.RootManager.generateEvent(UPDATE_ISSUES)
+
     def syncToS3(self):
         self.RootManager.generateEvent(UPDATE_ISSUES)
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
@@ -212,13 +212,14 @@ class IssueLog:
         )
 
     def clear(self):
+        self.CheckIssuesInterval.stopFn()
+        self.issues = []
         self.openIssues = 1
         self.openIssues = []
         self.resolvedIssues = []
         self.nextIssueId = 1
         for widgets in self.issueLogFrame.winfo_children():
             widgets.destroy()
-        self.CheckIssuesInterval.stopFn()
 
     @staticmethod
     def jsonFromIssues(issues):

@@ -106,7 +106,7 @@ class MainThreadManager:
                             del self.currentIssues[Reader.readerNumber]
                     except SIBConnectionError:
                         if Reader.readerNumber not in self.currentIssues:
-                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Reader Connection Error occurred.")
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Automated: Reader Connection Error.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
@@ -114,7 +114,7 @@ class MainThreadManager:
                         text_notification.setText(f"Sweep Failed, check reader {Reader.readerNumber} connection.")
                     except SIBReconnectException:
                         if Reader.readerNumber not in self.currentIssues:
-                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Firmware reconnection forced.")
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Automated: Firmware Reconnection Forced.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
@@ -123,7 +123,7 @@ class MainThreadManager:
                             f"Sweep failed for reader {Reader.readerNumber}, SIB reconnection was successful.")
                     except SIBException:
                         if Reader.readerNumber not in self.currentIssues:
-                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Hardware Issue Identified")
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Automated: Hardware Issue Identified.")
                         Reader.Indicator.changeIndicatorRed()
                         Reader.getAnalyzer().recordFailedScan()
                         logging.exception(
@@ -132,7 +132,7 @@ class MainThreadManager:
                             f"Sweep Failed With Hardware Cause for reader {Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                     except AnalysisException:
                         if Reader.readerNumber not in self.currentIssues:
-                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Failed to analyze scan")
+                            self.currentIssues[Reader.readerNumber] = self.IssueLog.createIssue("Automated: Analysis Failed.")
                         Reader.Indicator.changeIndicatorRed()
                         logging.exception(f'Error Analyzing Data, Reader {Reader.readerNumber} failed to analyze scan {Reader.FileManager.getCurrentScanNumber()}')
                         text_notification.setText(f"Sweep Analysis Failed, check sensor placement on reader {Reader.readerNumber}.")

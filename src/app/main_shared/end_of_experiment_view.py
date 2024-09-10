@@ -20,7 +20,7 @@ class EndOfExperimentView:
         self.Colors = Colors()
         self.CommonFileManager = CommonFileManager()
         image = Image.open(self.CommonFileManager.getDownloadIcon())
-        resizedImage = image.resize((15, 15), Image.LANCZOS)
+        resizedImage = image.resize((15, 15), Image.Resampling.LANCZOS)
         self.downloadIcon = ImageTk.PhotoImage(resizedImage)
         self.FrameManager = FrameManager(self.RootManager)
 
@@ -53,7 +53,7 @@ class EndOfExperimentView:
             bg=self.Colors.secondaryColor)
         image_label.grid(row=1, column=0, sticky='nsew')
 
-        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.LANCZOS)
+        image = Image.open(self.GlobalFileManager.getSummaryFigure()).resize((600, 400), Image.Resampling.LANCZOS)
         self.summaryPlotImage = ImageTk.PhotoImage(image)
         image_label = tk.Label(endOfExperimentFrame, image=self.summaryPlotImage, bg=self.Colors.secondaryColor)
         image_label.grid(row=1, column=1, sticky='nsew')
