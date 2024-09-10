@@ -1,4 +1,12 @@
 {
+  "v2.5.28": {
+    "features": {
+      "1": "Enlarged text box for adding messages to issues."
+    },
+    "other": {
+      "1": "Fixed dev mode to not upload to AWS anymore."
+    }
+  },
   "v2.5.26": {
     "features": {
       "1": "Added equilibration time of 6 minutes for testing purposes.",
