@@ -4,7 +4,8 @@
       "1": "Enlarged text box for adding messages to issues."
     },
     "bugfixes": {
-      "1": "Fixed issue causing summary figure to be covered up by issue log."
+      "1": "Fixed issue causing summary figure to be covered up by issue log.",
+      "2": "Fixed issue causing summary csv to be uploaded to AWS every scan."
     },
     "other": {
       "1": "Fixed dev mode to not upload to AWS anymore."
