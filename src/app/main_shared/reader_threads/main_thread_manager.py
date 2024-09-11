@@ -152,7 +152,10 @@ class MainThreadManager:
                     self.createSummaryAnalyzedFile()
                     self.createRemoteSummaryAnalyzedFile()
                     self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
-                    self.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
+                    self.AwsService.uploadExperimentFilesOnInterval(
+                        self.Readers[0].FileManager.getCurrentScanNumber(),
+                        self.guidedSetupForm,
+                    )
                     generatePdf(self.Readers,
                                 self.GlobalFileManager.getSetupForm(),
                                 self.GlobalFileManager.getSummaryFigure(),
