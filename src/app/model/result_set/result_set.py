@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import List
+
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 
 
@@ -15,34 +18,34 @@ class ResultSet:
         self.denoiseFrequencySmooth = []
         self.denoiseFrequency = []
 
-    def getTime(self):
+    def getTime(self) -> List[float]:
         return self.time
 
-    def getMaxFrequency(self):
+    def getMaxFrequency(self) -> List[float]:
         return self.maxFrequency
 
-    def getMaxVoltsSmooth(self):
+    def getMaxVoltsSmooth(self) -> List[float]:
         return self.maxVoltsSmooth
 
-    def getMaxFrequencySmooth(self):
+    def getMaxFrequencySmooth(self) -> List[float]:
         return self.maxFrequencySmooth
 
-    def getFilenames(self):
+    def getFilenames(self) -> List[str]:
         return self.filenames
 
-    def getTimestamps(self):
+    def getTimestamps(self) -> List[datetime]:
         return self.timestamps
 
-    def getDenoiseTime(self):
+    def getDenoiseTime(self) -> List[float]:
         return self.denoiseTime
 
-    def getDenoiseTimeSmooth(self):
+    def getDenoiseTimeSmooth(self) -> List[float]:
         return self.denoiseTimeSmooth
 
-    def getDenoiseFrequency(self):
+    def getDenoiseFrequency(self) -> List[float]:
         return self.denoiseFrequency
 
-    def getDenoiseFrequencySmooth(self):
+    def getDenoiseFrequencySmooth(self) -> List[float]:
         return self.denoiseFrequencySmooth
 
     def resetRun(self):
@@ -69,5 +72,5 @@ class ResultSet:
         # Denoise values change with time, so the entire array gets set at once.
         self.denoiseTime = values.denoiseTime
         self.denoiseTimeSmooth = values.denoiseTimeSmooth
-        self.denoiseFrequency =values.denoiseFrequency
-        self.denoiseFrequencySmooth =values.denoiseFrequencySmooth
+        self.denoiseFrequency = values.denoiseFrequency
+        self.denoiseFrequencySmooth = values.denoiseFrequencySmooth

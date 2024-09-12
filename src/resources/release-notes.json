@@ -1,4 +1,10 @@
 {
+  "v2.5.29": {
+    "bugfixes": {
+      "1": "Fixed summary/remote summary timestamps.",
+      "2": "Fixed asus plot sizes."
+    }
+  },
   "v2.5.28": {
     "features": {
       "1": "Enlarged text box for adding messages to issues."

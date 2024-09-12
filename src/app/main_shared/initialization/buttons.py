@@ -18,7 +18,6 @@ from src.app.reader.sib.sib_interface import SibInterface
 from src.app.ui_manager.root_event_manager import UPDATE_ISSUES
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
-from src.app.widget.issues.issue_log import IssueLog
 
 
 class ButtonFunctions:
@@ -42,9 +41,9 @@ class ButtonFunctions:
         guiProperties = GuiProperties()
         self.MainThreadManager.summaryFrame.place(
             relx=0.67,
-            rely=guiProperties.bodyRelY + guiProperties.bodyHeight / 2,
+            rely=guiProperties.readerPlotRelY + guiProperties.readerPlotHeight / 2,
             relwidth=0.33,
-            relheight=guiProperties.bodyHeight / 2)
+            relheight=guiProperties.readerPlotHeight / 2)
         self.StartButton.destroySelf()
         self.AppModule.bodyFrame.tkraise()
         self.AppModule.Settings.createReaders(self.AppModule.guidedSetupForm.getNumReaders(), self.SibInterfaces)
