@@ -9,7 +9,7 @@ from PIL import Image, ImageTk
 from src.app.buttons.view_issue_button import ViewIssueButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper.helper_functions import formatDateTime, datetimeToMillis
+from src.app.helper.helper_functions import formatDatetime, datetimeToMillis
 from src.app.helper.run_on_interval import RunOnInterval
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.issue.issue import Issue
@@ -67,14 +67,14 @@ class IssueLog:
     def updateLastUpdatedFn(self, *args):
         self.lastUpdatedTime = datetime.datetime.now()
         try:
-            self.lastUpdatedLabel.configure(text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}')
+            self.lastUpdatedLabel.configure(text=f'Last Updated: {formatDatetime(self.lastUpdatedTime)}')
         except:
             pass
 
     def showOpenIssues(self, row):
         self.lastUpdatedLabel = tk.Label(
             self.issueLogFrame,
-            text=f'Last Updated: {formatDateTime(self.lastUpdatedTime)}',
+            text=f'Last Updated: {formatDatetime(self.lastUpdatedTime)}',
             bg='white',
             font=self.fonts.footnote)
         self.lastUpdatedLabel.grid(row=row, column=0, columnspan=3, sticky='e', pady=(0, 5))
@@ -198,7 +198,7 @@ class IssueLog:
         guiProperties = GuiProperties()
         self.issueLogFrame.place(
             relx=0.67,
-            rely=guiProperties.readerPlotRelY - 0.01,
+            rely=guiProperties.readerPlotRelY,
             relwidth=0.33,
             relheight=guiProperties.readerPlotHeight / 2)
         self.issueLogFrame.tkraise()

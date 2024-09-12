@@ -13,7 +13,7 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
-from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
+from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint, millisToDatetime, datetimeToMillis
 from src.app.main_shared.reader_threads.end_experiment_file_copier import EndExperimentFileCopier
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
 from src.app.model.guided_setup_input import GuidedSetupInput
@@ -225,7 +225,7 @@ class MainThreadManager:
 
     def createRemoteSummaryAnalyzedFile(self):
         rowHeaders = ['Timestamp']
-        rowData = [self.Readers[0].getResultSet().getTimestamps()]
+        rowData = [[datetimeToMillis(timestamp) for timestamp in self.Readers[0].getResultSet().getTimestamps()]]
         with open(self.GlobalFileManager.getRemoteSummaryAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:

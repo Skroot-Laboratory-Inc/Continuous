@@ -3,7 +3,7 @@ from datetime import datetime
 from tkinter import ttk
 from typing import Callable
 
-from src.app.helper.helper_functions import makeToplevelScrollable, formatDateTime, datetimeToMillis, millisToDatetime
+from src.app.helper.helper_functions import makeToplevelScrollable, formatDatetime, datetimeToMillis, millisToDatetime
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.timestamped_message import TimestampedMessage
 from src.app.theme.font_theme import FontTheme
@@ -39,7 +39,7 @@ class ViewIssuePopup(PopupInterface):
         for message in self.issue.messages:
             timestampLabel = tk.Label(
                 window,
-                text=formatDateTime(millisToDatetime(message.timestamp)),
+                text=formatDatetime(millisToDatetime(message.timestamp)),
                 bg='white',
                 font=self.fonts.italicUnderline)
             timestampLabel.grid(row=row, columnspan=3, column=0, sticky='nw')

@@ -104,7 +104,7 @@ def formatDate(date):
     return date.isoformat()
 
 
-def formatDateTime(date: datetime.datetime):
+def formatDatetime(date: datetime.datetime):
     return date.strftime('%m/%d/%Y %I:%M:%S %p')
 
 
