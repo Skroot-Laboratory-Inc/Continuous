@@ -152,7 +152,7 @@ class IssueLog:
                 self.nextIssueId,
                 issueTitle,
                 False,
-                [TimestampedMessage(datetimeToMillis(datetime.datetime.now()), "Issue opened.")])
+                [TimestampedMessage(datetimeToMillis(datetime.datetime.now()), "Issue opened by operator.")])
             self.issues.append(issue)
             self.openIssues = [issue for issue in self.issues if issue.resolved is not True]
             self.resolvedIssues = [issue for issue in self.issues if issue.resolved is True]

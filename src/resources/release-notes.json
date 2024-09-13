@@ -1,4 +1,9 @@
 {
+  "v2.5.30": {
+    "features": {
+      "1": "Added `..by operator` tags on issue creation/resolution messages."
+    }
+  },
   "v2.5.29": {
     "bugfixes": {
       "1": "Fixed summary/remote summary timestamps.",
