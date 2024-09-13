@@ -14,7 +14,7 @@ class Issue:
 
     def resolveIssue(self):
         self.resolved = True
-        self.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved."))
+        self.messages.append(TimestampedMessage(datetimeToMillis(datetime.now()), "Marked as resolved by operator."))
         return self
 
     def asJson(self):
