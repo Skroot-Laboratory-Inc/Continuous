@@ -1,7 +1,7 @@
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
-from typing import Callable
+from typing import Callable, List
 
 from src.app.helper.helper_functions import makeToplevelScrollable, formatDatetime, datetimeToMillis, millisToDatetime
 from src.app.model.issue.issue import Issue
@@ -12,9 +12,10 @@ from src.app.widget.popup_interface import PopupInterface
 
 
 class ViewIssuePopup(PopupInterface):
-    def __init__(self, rootManager: RootManager, issue: Issue, updateIssueFn: Callable[[Issue], None]):
+    def __init__(self, rootManager: RootManager, issue: Issue, updateIssueFn: Callable[[Issue], None], syncFromS3Fn: Callable[[], List[Issue]]):
         windowRoot = rootManager.createTopLevel()
         self.issue = issue
+        self.syncFromS3Fn = syncFromS3Fn
         self.fonts = FontTheme()
         self.updateIssue = updateIssueFn
         windowRoot, self.window = makeToplevelScrollable(windowRoot, self.fillOutWindowFn)
@@ -83,16 +84,25 @@ class ViewIssuePopup(PopupInterface):
             submitMessage.grid(row=row, column=2, sticky='ne')
 
     def resolve(self):
-        self.issue.resolveIssue()
-        self.updateIssue(self.issue)
+        self.syncFromS3()
+        if not self.issue.resolved:
+            self.issue.resolveIssue()
+            self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
 
     def submit(self):
+        self.syncFromS3()
         issueMessage = TimestampedMessage(datetimeToMillis(datetime.now()), self.messageEntry.get("1.0", "end-1c"))
         self.messageEntry.delete("1.0", "end-1c")
         self.issue.messages.append(issueMessage)
         self.updateIssue(self.issue)
         self.fillOutWindowFn(self.window)
+
+    def syncFromS3(self):
+        allIssues = self.syncFromS3Fn()
+        for updatedIssue in allIssues:
+            if updatedIssue.issueId == self.issue.issueId:
+                self.issue = updatedIssue
 
     @staticmethod
     def createSeparatorLine(window, row):
