@@ -4,7 +4,8 @@
       "1": "Added `..by operator` tags on issue creation/resolution messages."
     },
     "bugfixes": {
-      "1": "Updated timestamps to properly use local time."
+      "1": "Updated timestamps to properly use local time.",
+      "2": "Fixed race condition for messages sent in dashboard/app at similar times."
     }
   },
   "v2.5.29": {

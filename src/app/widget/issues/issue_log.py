@@ -138,7 +138,10 @@ class IssueLog:
         return row
 
     def viewIssue(self, issue: Issue):
-        ViewIssuePopup(self.RootManager, issue, self.updateIssue)
+        self.syncFromS3()
+        for updatedIssue in self.issues:
+            if updatedIssue.issueId == issue.issueId:
+                ViewIssuePopup(self.RootManager, updatedIssue, self.updateIssue, self.syncFromS3)
 
     def createIssue(self, issueTitle=None):
         self.syncFromS3()
@@ -183,6 +186,7 @@ class IssueLog:
             self.resolvedIssues = []
             self.nextIssueId = 1
         self.RootManager.generateEvent(UPDATE_ISSUES)
+        return self.issues
 
     def syncToS3(self):
         self.RootManager.generateEvent(UPDATE_ISSUES)
