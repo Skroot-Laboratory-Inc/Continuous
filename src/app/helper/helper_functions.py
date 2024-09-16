@@ -68,6 +68,23 @@ def convertToPercent(item):
     return (item - 1) * 100
 
 
+def isMenuOptionPresent(menu_bar, menu_label):
+    """
+    Function to check if a menu is already present in the menubar.
+
+    Parameters:
+    - menu_bar (tk.Menu): The menubar to check.
+    - menu_label (str): The label of the menu to check for.
+
+    Returns:
+    - bool: True if the menu is present, False otherwise.
+    """
+    for index in range(menu_bar.index("end") + 1):
+        if menu_bar.type(index) == "cascade" and menu_bar.entrycget(index, "label") == menu_label:
+            return True
+    return False
+
+
 def getDesktopLocation():
     """ This gets the path to the computer's desktop. """
     try:

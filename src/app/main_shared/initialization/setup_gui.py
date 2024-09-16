@@ -42,6 +42,7 @@ class SetupGui:
         settingsMenuReaders.add_command(label="File Save", command=lambda: self.Settings.saveFilesSetting())
         self.RootManager.addMenubarCascade("Readers", settingsMenuReaders)
 
+    def createDisplayMenus(self):
         settingsMenuDisplay = self.RootManager.instantiateNewMenubarRibbon()
         settingsMenuDisplay.add_command(label="SGI", command=lambda: self.Settings.freqToggleSetting("SGI"))
         settingsMenuDisplay.add_command(label="Signal Check",

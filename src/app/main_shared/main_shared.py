@@ -79,6 +79,7 @@ class MainShared:
             self.resetRun,
             self.guidedSetupForm,
             self.IssueLog,
+            self.Setup.createDisplayMenus,
         )
         self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
         self.Buttons.MainThreadManager = self.MainThreadManager
@@ -169,6 +170,7 @@ class MainShared:
             self.resetRun,
             self.guidedSetupForm,
             self.IssueLog,
+            self.Setup.createDisplayMenus,
         )
         self.Buttons.MainThreadManager = self.MainThreadManager
 

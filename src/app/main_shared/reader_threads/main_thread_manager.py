@@ -5,7 +5,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import ttk, messagebox
-from typing import List
+from typing import List, Callable
 
 import numpy as np
 from reactivex.subject import BehaviorSubject
@@ -32,8 +32,9 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput, issueLog: IssueLog):
+    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput, issueLog: IssueLog, createDisplayMenusFn: Callable):
         self.guidedSetupForm = guidedSetupForm
+        self.createDisplayMenusFn = createDisplayMenusFn
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.Readers = []
@@ -72,7 +73,6 @@ class MainThreadManager:
         self.thread.shutdown_flag = threading.Event()
 
         while not self.thread.shutdown_flag.is_set():
-            errorOccurredWhileTakingScans = False
             startTime = time.time()
             try:
                 for Reader in self.Readers:
@@ -94,6 +94,7 @@ class MainThreadManager:
                                 Reader.finishedEquilibrationPeriod = True
                                 logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
                                 Reader.resetReaderRun()
+                                self.createDisplayMenusFn()
                                 self.finishedEquilibrationPeriod = True
                         except:
                             raise ZeroPointException(

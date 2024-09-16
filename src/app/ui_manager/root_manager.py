@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from src.app.helper.helper_functions import isMenuOptionPresent
+
 
 class RootManager:
     def __init__(self):
@@ -11,7 +13,8 @@ class RootManager:
         return tk.Menu(self.menubar, tearoff=0)
 
     def addMenubarCascade(self, label, menu):
-        return self.menubar.add_cascade(label=label, menu=menu)
+        if not isMenuOptionPresent(self.menubar, label):
+            self.menubar.add_cascade(label=label, menu=menu)
 
     def setMenubar(self):
         self.root.config(menu=self.menubar)
