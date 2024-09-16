@@ -49,8 +49,9 @@ class MainShared:
         self.ColorCycler = ColorCycler()
         self.Readers = []
         self.Settings = Settings(self, self.RootManager)
-        self.Setup = SetupGui(self.RootManager, self.Settings, self)
+        self.Setup = SetupGui(self.RootManager, self.Settings, major_version, minor_version)
         self.bodyFrame = self.Setup.createFrames()
+        self.Setup.createMenus()
         self.isDevMode = DevProperties().isDevMode
         self.SummaryFigureCanvas = FigureCanvas(
             'k',
@@ -63,9 +64,9 @@ class MainShared:
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.guidedSetupForm, self.GlobalFileManager = self.createGuidedSetup()
         if self.isDevMode:
-            self.AwsService = DevAwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
+            self.AwsService = DevAwsService(self.GlobalFileManager)
         else:
-            self.AwsService = AwsService(self.RootManager, major_version, minor_version, self.GlobalFileManager)
+            self.AwsService = AwsService(self.GlobalFileManager)
         self.IssueLog = IssueLog(self.RootManager, self.AwsService, self.GlobalFileManager)
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
@@ -82,12 +83,6 @@ class MainShared:
         self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
         self.Buttons.MainThreadManager = self.MainThreadManager
         self.Buttons.createButtonsOnNewFrame()
-        self.menubar = self.createMenubarOptions()
-
-    def createMenubarOptions(self):
-        menubar = self.Setup.createMenus()
-        self.RootManager.addMenubar(menubar)
-        return menubar
 
     def createGuidedSetup(self):
         guidedSetupForm, globalFileManager = self.guidedSetup()

@@ -1,16 +1,23 @@
-import threading
 import tkinter as tk
 
 
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
+        self.menubar = tk.Menu(self.root)
+        self.setMenubar()
 
-    def instantiateMenubar(self):
-        return tk.Menu(self.root)
+    def instantiateNewMenubarRibbon(self):
+        return tk.Menu(self.menubar, tearoff=0)
 
-    def addMenubar(self, menubar):
-        self.root.config(menu=menubar)
+    def addMenubarCascade(self, label, menu):
+        return self.menubar.add_cascade(label=label, menu=menu)
+
+    def setMenubar(self):
+        self.root.config(menu=self.menubar)
+
+    def deleteMenubar(self, menubarId):
+        self.menubar.delete(menubarId)
 
     def createTopLevel(self):
         return tk.Toplevel(self.root, bg='white', padx=25, pady=25)

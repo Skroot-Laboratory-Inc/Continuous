@@ -1,25 +1,17 @@
-import logging
 import os
-import shutil
 from datetime import datetime
-from zipfile import ZipFile
 
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper import helper_functions
-from src.app.ui_manager.root_manager import RootManager
-from src.app.helper.helper_functions import getOperatingSystem, formatDate, datetimeToMillis
+from src.app.helper.helper_functions import datetimeToMillis
 from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
-from src.app.main_shared.service.software_update import SoftwareUpdate
 from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.aws_properties import AwsProperties
-from src.app.widget import text_notification
 
 
 class AwsService(AwsServiceInterface):
-    def __init__(self, rootManager: RootManager, major_version, minor_version, globalFileManager: GlobalFileManager):
-        self.SoftwareUpdate = SoftwareUpdate(rootManager, major_version, minor_version)
+    def __init__(self, globalFileManager: GlobalFileManager):
         self.AwsBoto3Service = AwsBoto3()
         self.CommonFileManager = CommonFileManager()
         self.AwsProperties = AwsProperties()
@@ -28,32 +20,6 @@ class AwsService(AwsServiceInterface):
         self.GlobalFileManager = globalFileManager
         self.awsLastCsvUploadTime = 100001
         self.awsLastNotesUploadTime = 100001
-
-    def checkForSoftwareUpdate(self):
-        newestVersion, updateRequired = self.SoftwareUpdate.checkForSoftwareUpdates()
-        if updateRequired:
-            text_notification.setText(
-                f"Newer software available v{newestVersion} consider upgrading to use new features")
-
-    def downloadSoftwareUpdate(self):
-        try:
-            downloadUpdate = self.SoftwareUpdate.downloadSoftwareUpdate(self.CommonFileManager.getTempUpdateFile())
-            if downloadUpdate:
-                with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
-                    file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
-                if getOperatingSystem() == "linux":
-                    shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(),
-                                    self.CommonFileManager.getRemoteDesktopFile())
-                    text_notification.setText(
-                        "Installing new dependencies... please wait. This may take up to a minute.")
-                    helper_functions.runShScript(self.CommonFileManager.getInstallScript(),
-                                                 self.CommonFileManager.getExperimentLog())
-                text_notification.setText(
-                    f"New software version updated v{self.SoftwareUpdate.newestMajorVersion}.{self.SoftwareUpdate.newestMinorVersion}")
-            else:
-                text_notification.setText("Software update aborted.")
-        except:
-            logging.exception("failed to update software")
 
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
         self.uploadSummaryCsvOnInterval(scanNumber, guidedSetupForm)

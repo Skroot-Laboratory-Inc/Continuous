@@ -6,23 +6,19 @@ class AwsServiceInterfaceMetaClass(type):
 
     def __subclasscheck__(cls, subclass):
         return (
-                hasattr(subclass, 'checkForSoftwareUpdate') and
-                callable(subclass.checkForSoftwareUpdate) and
-                hasattr(subclass, 'downloadSoftwareUpdate') and
-                callable(subclass.downloadSoftwareUpdate) and
-                hasattr(subclass, 'uploadExperimentCsv') and
+                hasattr(subclass, 'uploadExperimentFilesOnInterval') and
                 callable(subclass.uploadExperimentFilesOnInterval) and
+                hasattr(subclass, 'uploadFinalExperimentFiles') and
+                callable(subclass.uploadFinalExperimentFiles) and
                 hasattr(subclass, 'uploadExperimentLog') and
-                callable(subclass.uploadExperimentLog))
+                callable(subclass.uploadExperimentLog) and
+                hasattr(subclass, 'uploadIssueLog') and
+                callable(subclass.uploadIssueLog) and
+                hasattr(subclass, 'downloadIssueLogIfModified') and
+                callable(subclass.downloadIssueLogIfModified))
 
 
 class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
-
-    def checkForSoftwareUpdate(self):
-        """ Checks if a software update is required. """
-
-    def downloadSoftwareUpdate(self):
-        """ Downloads the software update identified in `checkForSoftwareUpdate`. """
 
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm):
         """ Uploads the summary csv for the experiment. """
