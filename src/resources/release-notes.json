@@ -12,7 +12,8 @@
       "4": "Updated default frequency range to 100-160 MHz"
     },
     "bugfixes": {
-      "1": "Removed display option until equilibration period is met."
+      "1": "Removed display option until equilibration period is met.",
+      "2": "Fixed a bug causing summary plot to be hidden on occasion."
     }
   },
   "v2.5.30": {

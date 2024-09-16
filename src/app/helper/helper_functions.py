@@ -128,12 +128,20 @@ def formatDatetime(date: datetime.datetime):
 
 def getZeroPoint(equilibrationTime, frequencies):
     lastFrequencyPoint = frequencies[-1]
+    zeroPoint = np.nan
+    pointsUsed = 5
     if equilibrationTime == 0 and lastFrequencyPoint != np.nan and lastFrequencyPoint != 0:
         return frequencies[-1]
     elif equilibrationTime == 0 and (lastFrequencyPoint == np.nan or lastFrequencyPoint == 0):
         raise Exception()
     else:
-        return np.nanmean(frequencies[-5:])
+        while zeroPoint == np.nan:
+            zeroPoint = np.nanmean(frequencies[-pointsUsed:])
+            pointsUsed += 5
+            if pointsUsed > 100:
+                zeroPoint = np.nanmean(frequencies)
+                break
+        return zeroPoint
 
 
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):

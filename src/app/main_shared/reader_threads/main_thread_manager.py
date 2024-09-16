@@ -89,6 +89,10 @@ class MainThreadManager:
                                 zeroPoint = getZeroPoint(
                                     self.equilibrationTime,
                                     Reader.getResultSet().getMaxFrequencySmooth())
+                                if zeroPoint == np.nan:
+                                    text_notification.setText(f"Failed to set zero point for {Reader.readerNumber}. SGI values unreliable.")
+                                    logging.info(f"Failed to set zero point for {Reader.readerNumber}. SGI values unreliable.")
+                                    zeroPoint = 1
                                 Reader.getAnalyzer().setZeroPoint(zeroPoint)
                                 self.freqToggleSet.on_next("SGI")
                                 Reader.finishedEquilibrationPeriod = True
