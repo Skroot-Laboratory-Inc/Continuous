@@ -122,44 +122,44 @@ class Settings:
 
     def addReaderNotes(self):
         try:
-            self.AppModule.menubar.delete("Experiment Notes")
+            self.RootManager.deleteMenubar("Experiment Notes")
         except:
             pass
         if self.AppModule.Readers:
-            settingsMenuNotes = tk.Menu(self.AppModule.menubar, tearoff=0)
+            settingsMenuNotes = self.RootManager.instantiateNewMenubarRibbon()
             settingsMenuNotes.add_command(label=f"All Readers", command=lambda: self.addNotesAllReaders())
             for Reader in self.AppModule.Readers:
                 Reader.addExperimentNotesMenubar(settingsMenuNotes)
-            self.AppModule.menubar.add_cascade(label="Experiment Notes", menu=settingsMenuNotes)
+            self.RootManager.addMenubarCascade("Experiment Notes", settingsMenuNotes)
 
     def addReaderSecondAxis(self):
         try:
-            self.AppModule.menubar.delete("Second Axis")
+            self.RootManager.deleteMenubar("Second Axis")
         except:
             pass
         if self.AppModule.Readers:
-            settingsMenuSecondAxis = tk.Menu(self.AppModule.menubar, tearoff=0)
+            settingsMenuSecondAxis = self.RootManager.instantiateNewMenubarRibbon()
             for Reader in self.AppModule.Readers:
                 Reader.addSecondAxisMenubar(settingsMenuSecondAxis)
-            self.AppModule.menubar.add_cascade(label="Second Axis", menu=settingsMenuSecondAxis)
+            self.RootManager.addMenubarCascade("Second Axis", settingsMenuSecondAxis)
 
     def addInoculation(self):
         try:
-            self.AppModule.menubar.delete("Inoculation")
+            self.RootManager.deleteMenubar("Inoculation")
         except:
             pass
-        settingsMenuNotes = tk.Menu(self.AppModule.menubar, tearoff=0)
+        settingsMenuNotes = self.RootManager.instantiateNewMenubarRibbon()
         settingsMenuNotes.add_command(label=f"All readers inoculated", command=lambda: self.inoculateAllReaders())
         for Reader in self.AppModule.Readers:
             Reader.addInoculationMenuBar(settingsMenuNotes)
-        # self.AppModule.menubar.add_cascade(label="Inoculation", menu=settingsMenuNotes)
+        # self.RootManager.addMenubarCascade("Inoculation", settingsMenuNotes)
 
     def inoculateAllReaders(self):
         genericReader = self.AppModule.Readers[0]
         genericReader.HarvestAlgorithm.updateInoculationExperimentNotes(0, genericReader.getAnalyzer().ResultSet)
         for Reader in self.AppModule.Readers:
             Reader.HarvestAlgorithm.updateInoculationValues(Reader.getAnalyzer().ResultSet)
-        self.AppModule.menubar.delete("Inoculation")
+        self.RootManager.deleteMenubar("Inoculation")
 
     def addNotesAllReaders(self):
         newNotes = simpledialog.askstring(f'All Reader Notes',
