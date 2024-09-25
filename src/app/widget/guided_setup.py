@@ -83,7 +83,7 @@ class SetupForm:
             highlightthickness=0,
             justify="center")
 
-        options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
+        options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
         entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
 
         options = ["2", "5", "10"]
