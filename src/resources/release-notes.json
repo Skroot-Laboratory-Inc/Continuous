@@ -1,7 +1,15 @@
 {
+  "v2.5.32": {
+    "features": {
+      "1": "Updated max readers to 20"
+    }
+  },
   "v2.5.31": {
     "features": {
-      "1": "Created menubar before guided setup to allow for easier software updates."
+      "1": "Created menubar before guided setup to allow for easier software updates.",
+      "2": "Updated max readers connected to be 16.",
+      "3": "Updated S3 files to have caching disabled.",
+      "4": "Updated default frequency range to 100-160 MHz"
     },
     "bugfixes": {
       "1": "Removed display option until equilibration period is met."

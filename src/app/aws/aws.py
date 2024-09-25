@@ -37,7 +37,7 @@ class AwsBoto3:
                         fileLocation,
                         self.bucket,
                         f'{folder["Prefix"]}{self.runUuid}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags)})
+                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags), "CacheControl": "no-cache"})
                     self.runFolder = f'{folder["Prefix"]}{self.runUuid}'
                     break
                 except Exception as e:
@@ -57,7 +57,7 @@ class AwsBoto3:
                         fileLocation,
                         self.bucket,
                         f'{self.runFolder}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags)})
+                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags), "CacheControl": "no-cache"})
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet')
                 self.disabled = True

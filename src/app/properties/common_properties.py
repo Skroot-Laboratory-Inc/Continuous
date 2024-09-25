@@ -1,4 +1,4 @@
 class CommonProperties:
     def __init__(self):
-        self.defaultStartFrequency = 110
+        self.defaultStartFrequency = 100
         self.defaultEndFrequency = 160

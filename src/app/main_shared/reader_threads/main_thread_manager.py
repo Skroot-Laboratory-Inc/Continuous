@@ -233,7 +233,7 @@ class MainThreadManager:
         with open(self.GlobalFileManager.getRemoteSummaryAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             for Reader in self.Readers:
-                rowHeaders.append(f'Reader {Reader.readerNumber} SGI')
+                rowHeaders.append(f'Vessel {Reader.readerNumber}')
                 readerSGI = frequencyToIndex(
                     Reader.getZeroPoint(),
                     Reader.getResultSet().getMaxFrequencySmooth()
