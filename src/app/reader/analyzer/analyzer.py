@@ -9,8 +9,8 @@ from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
-from src.app.helper.helper_functions import frequencyToIndex, datetimeToMillis, formatDatetime
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper.helper_functions import frequencyToIndex, formatDatetime
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
@@ -59,7 +59,7 @@ class Analyzer(AnalyzerInterface):
         resultSet = ResultSetDataPoint(self.ResultSet)
         resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
-        resultSet.setTimestamp(datetime.now().date())
+        resultSet.setTimestamp(datetime.now())
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
