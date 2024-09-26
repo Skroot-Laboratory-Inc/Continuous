@@ -78,27 +78,32 @@ class MainThreadManager:
                 for Reader in self.Readers:
                     try:
                         Reader.Indicator.changeIndicatorYellow()
+                        try:
+                            if len(Reader.getResultSet().getTime()) != 0:
+                                lastTimePoint = Reader.getResultSet().getTime()[-1]
+                                if lastTimePoint >= self.equilibrationTime and not Reader.finishedEquilibrationPeriod:
+                                    zeroPoint = getZeroPoint(
+                                        self.equilibrationTime,
+                                        Reader.getResultSet().getMaxFrequencySmooth())
+                                    if zeroPoint == np.nan:
+                                        text_notification.setText(f"Failed to set zero point for {Reader.readerNumber}. SGI values unreliable.")
+                                        logging.info(f"Failed to set zero point for {Reader.readerNumber}. SGI values unreliable.")
+                                        zeroPoint = 1
+                                    Reader.getAnalyzer().setZeroPoint(zeroPoint)
+                                    self.freqToggleSet.on_next("SGI")
+                                    Reader.finishedEquilibrationPeriod = True
+                                    logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
+                                    Reader.resetReaderRun()
+                                    self.createDisplayMenusFn()
+                                    self.finishedEquilibrationPeriod = True
+                        except:
+                            raise ZeroPointException(
+                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
                         sweepData = Reader.SibInterface.takeScan(
                             Reader.FileManager.getCurrentScan(),
                             self.disableFullSaveFiles,
                         )
                         Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
-                        try:
-                            lastTimePoint = Reader.getResultSet().getTime()[-1]
-                            if lastTimePoint >= self.equilibrationTime and not Reader.finishedEquilibrationPeriod:
-                                zeroPoint = getZeroPoint(
-                                    self.equilibrationTime,
-                                    Reader.getResultSet().getMaxFrequencySmooth())
-                                Reader.getAnalyzer().setZeroPoint(zeroPoint)
-                                self.freqToggleSet.on_next("SGI")
-                                Reader.finishedEquilibrationPeriod = True
-                                logging.info(f"Zero Point Set for reader {Reader.readerNumber}: {zeroPoint} MHz")
-                                Reader.resetReaderRun()
-                                self.createDisplayMenusFn()
-                                self.finishedEquilibrationPeriod = True
-                        except:
-                            raise ZeroPointException(
-                                f"Failed to find the zero point for reader {Reader.readerNumber}, last 5 points: {Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
                         Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
                         Reader.Analyzer.createAnalyzedFiles()
                         # Reader.ContaminationAlgorithm.check(Reader.getResultSet())

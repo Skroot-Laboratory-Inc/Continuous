@@ -1,4 +1,9 @@
 {
+  "v2.5.35": {
+    "bugfixes": {
+      "1": "Fixed a bug causing summary plot to be hidden on occasion."
+    }
+  },
   "v2.5.32": {
     "features": {
       "1": "Updated max readers to 20"
