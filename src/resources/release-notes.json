@@ -1,5 +1,5 @@
 {
-  "v2.5.33": {
+  "v2.5.35": {
     "bugfixes": {
       "1": "Fixed a bug causing summary plot to be hidden on occasion."
     }

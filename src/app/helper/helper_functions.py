@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import stat
 import subprocess
@@ -135,9 +136,10 @@ def getZeroPoint(equilibrationTime, frequencies):
     elif equilibrationTime == 0 and (lastFrequencyPoint == np.nan or lastFrequencyPoint == 0):
         raise Exception()
     else:
-        while zeroPoint == np.nan:
+        while np.isnan(zeroPoint):
             zeroPoint = np.nanmean(frequencies[-pointsUsed:])
             pointsUsed += 5
+            logging.info(zeroPoint, pointsUsed, frequencies)
             if pointsUsed > 100:
                 zeroPoint = np.nanmean(frequencies)
                 break
