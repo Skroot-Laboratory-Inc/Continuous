@@ -1,4 +1,9 @@
 {
+  "v2.5.33": {
+    "bugfixes": {
+      "1": "Fixed a bug causing summary plot to be hidden on occasion."
+    }
+  },
   "v2.5.32": {
     "features": {
       "1": "Updated max readers to 20"
@@ -12,8 +17,7 @@
       "4": "Updated default frequency range to 100-160 MHz"
     },
     "bugfixes": {
-      "1": "Removed display option until equilibration period is met.",
-      "2": "Fixed a bug causing summary plot to be hidden on occasion."
+      "1": "Removed display option until equilibration period is met."
     }
   },
   "v2.5.30": {
