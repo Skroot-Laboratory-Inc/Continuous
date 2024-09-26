@@ -167,7 +167,7 @@ class MainThreadManager:
                                 self.GlobalFileManager.getSetupForm(),
                                 self.GlobalFileManager.getSummaryFigure(),
                                 self.GlobalFileManager.getSummaryPdf(),
-                                self.GlobalFileManager.getExperimentNotesTxt())
+                    )
                 if self.currentIssues == {}:
                     text_notification.setText("All readers successfully recorded data.")
             except:

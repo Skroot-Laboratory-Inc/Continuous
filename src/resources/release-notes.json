@@ -1,4 +1,18 @@
 {
+    "v2.6.0": {
+    "features": {
+      "1": "Removed R&D functionality from production app."
+    },
+    "other": {
+      "1": "Removed all functionality related to inoculation. ",
+      "2": "Removed all functionality related to manual issue reporting. ",
+      "3": "Removed all functionality related to experiment notes. ",
+      "4": "Removed all functionality related to summary plotting. ",
+      "5": "Removed all functionality related to second axis. ",
+      "6": "Removed most advanced settings from the menubar. ",
+      "7": "Removed all functionality related to end of experiment view. "
+    }
+  },
   "v2.5.36": {
     "features": {
       "1": "Added a post processing script to begin testing harvest algorithm work."

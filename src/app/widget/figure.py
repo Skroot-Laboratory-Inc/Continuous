@@ -3,7 +3,7 @@ from matplotlib.figure import Figure
 
 
 class FigureCanvas:
-    def __init__(self, readerColor, yAxisLabel, xAxisLabel, backgroundColor, title, secondAxisTitle, tickSize=7, labelSize=9):
+    def __init__(self, readerColor, yAxisLabel, xAxisLabel, backgroundColor, title, tickSize=7, labelSize=9):
         self.frequencyFigure = Figure(figsize=(4.5, 3.5))
         self.frequencyFigure.set_layout_engine("tight")
         self.currentPlot = None
@@ -12,7 +12,6 @@ class FigureCanvas:
         self.readerColor = readerColor
         self.yAxisLabel = yAxisLabel
         self.xAxisLabel = xAxisLabel
-        self.secondAxisTitle = secondAxisTitle
         self.backgroundColor = backgroundColor
         self.title = title
         self.frequencyCanvas = None
@@ -38,12 +37,6 @@ class FigureCanvas:
 
     def scatter(self, x, y, size, color):
         self.currentPlot.scatter(x, y, size, color=color)
-
-    def addSecondAxis(self, x, values):
-        if values:
-            ax2 = self.currentPlot.twinx()
-            ax2.scatter(x, values, s=20, color='k')
-            ax2.set_ylabel(self.secondAxisTitle, color='k')
 
     def saveAs(self, filename):
         self.frequencyFigure.savefig(filename, dpi=500)

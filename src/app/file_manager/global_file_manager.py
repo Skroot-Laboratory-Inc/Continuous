@@ -7,8 +7,6 @@ class GlobalFileManager:
         self.setupForm = rf"{mainSavePath}/setupForm.png"
         self.summaryPdf = rf"{mainSavePath}/Summary.pdf"
         self.issueLog = rf"{mainSavePath}/Issue Log.json"
-        self.experimentNotesTxt = f'{mainSavePath}/notes.txt'
-        self.experimentMetadata = f'{mainSavePath}/metadata.json'
 
     def getSummaryAnalyzed(self):
         return self.summaryAnalyzed
@@ -30,10 +28,3 @@ class GlobalFileManager:
 
     def getIssueLog(self):
         return self.issueLog
-
-    def getExperimentNotesTxt(self):
-        return self.experimentNotesTxt
-
-    def getExperimentMetadata(self):
-        return self.experimentMetadata
-

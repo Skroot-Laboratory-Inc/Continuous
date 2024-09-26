@@ -7,7 +7,6 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 
 class PDF(FPDF):
     def header(self):
-        # padding = 10
         FileManager = CommonFileManager()
         self.image(FileManager.getSquareLogo(), self.pdf_w - 40, self.pdf_h, 30, self.footerHeight)
 
@@ -48,26 +47,19 @@ class PDF(FPDF):
         self.set_author('Skroot Laboratory')
 
 
-def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation, experimentNotesTxt):
+def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation):
     pdf = PDF(orientation='L', unit='mm', format='A4')
     pdf.setFooterHeight(30)
     pdf.setPageWidthHeight(210, 297)
-    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt)
+    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation)
     generateReaderPages(pdf, Readers)
     pdf.setAuthor()  # uses Skroot Laboratory
     pdf.output(summaryPdfLocation, 'F')  # saves the plot, F refers to file
 
 
-def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation, experimentNotesTxt):
+def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation):
     pdf.add_page()
     pdf.placeImage(setupFormLocation, 0.03, 0.02, 0.3, 0.3)
-    try:
-        with open(experimentNotesTxt) as f:
-            experimentNotes = f.read()
-            pdf.placeText("Experiment Notes", 0.03, 0.33, 0.3, 0.03, 12, True)
-            pdf.placeText(experimentNotes, 0.03, 0.33, 0.3, 0.03, 10, False)
-    except:
-        pass  # No notes exist yet.
     pdf.placeImage(summaryFigureLocation, 0.35, 0.02, 0.6, 0.7)
 
 

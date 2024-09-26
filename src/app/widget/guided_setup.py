@@ -20,7 +20,6 @@ class SetupForm:
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.secondAxisEntry = tk.StringVar(value=guidedSetupInputs.getSecondAxisTitle())
         self.experimentIdEntry = tk.StringVar(value=guidedSetupInputs.getExperimentId())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
@@ -92,9 +91,6 @@ class SetupForm:
         options = ["0", "0.2", "2", "12", "24"]
         entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, True)
 
-        options = ["", "Glucose", "Lactate", "Optical Density", "Cell Count"]
-        entriesMap["Additional User Input"] = createDropdown(self.window, self.secondAxisEntry, options, False)
-
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
             tk.Label(self.window, text=entryLabelText, bg='white').grid(row=row, column=0, sticky='w')
@@ -141,7 +137,6 @@ class SetupForm:
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.experimentId = self.experimentIdEntry.get()
-            self.guidedSetupResults.secondAxisTitle = self.secondAxisEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.takeScreenshot()

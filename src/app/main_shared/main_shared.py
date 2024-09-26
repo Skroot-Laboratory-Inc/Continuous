@@ -4,7 +4,6 @@ from importlib.metadata import version as version_api
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper.helper_functions import getOperatingSystem
-from src.app.main_shared.end_of_experiment_view import EndOfExperimentView
 from src.app.main_shared.initialization.buttons import ButtonFunctions
 from src.app.main_shared.initialization.settings import Settings
 from src.app.main_shared.initialization.setup_gui import SetupGui
@@ -14,7 +13,6 @@ from src.app.main_shared.service.dev_aws_service import DevAwsService
 from src.app.model.guided_setup_input import GuidedSetupInput
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
-from src.app.reader.helpers.experiment_notes import ExperimentNotes
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.theme.color_cycler import ColorCycler
 from src.app.theme.colors import Colors
@@ -58,8 +56,7 @@ class MainShared:
             'Skroot Growth Index (SGI)',
             'Time (hrs)',
             self.secondaryColor,
-            'Summary',
-            ''
+            'Summary'
         )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.guidedSetupForm, self.GlobalFileManager = self.createGuidedSetup()
@@ -81,7 +78,6 @@ class MainShared:
             self.IssueLog,
             self.Setup.createDisplayMenus,
         )
-        self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
         self.Buttons.MainThreadManager = self.MainThreadManager
         self.Buttons.createButtonsOnNewFrame()
 
@@ -117,8 +113,6 @@ class MainShared:
             self.IssueLog.AwsService = self.AwsService
             self.IssueLog.GlobalFileManager = self.GlobalFileManager
             self.MainThreadManager.IssueLog = self.IssueLog
-            self.ExperimentNotes = ExperimentNotes(self.GlobalFileManager)
-            self.MainThreadManager.ExperimentNotes = self.ExperimentNotes
         except:
             # New experiment, doesn't need reset
             pass
@@ -126,9 +120,6 @@ class MainShared:
     def destroyExistingWidgets(self):
         try:
             self.Buttons.GuidedSetupButton.destroySelf()
-            for widgets in self.endOfExperimentFrame.winfo_children():
-                widgets.destroy()
-            self.endOfExperimentFrame.destroy()
         except:
             # New experiment, nothing to destroy
             pass
@@ -158,7 +149,6 @@ class MainShared:
         self.Readers = []
         self.PortAllocator.resetPorts()
         self.RootManager.raiseRoot()
-        self.ExperimentNotes.reset()
         self.MainThreadManager = MainThreadManager(
             self.denoiseSet,
             self.disableSaveFullFiles,
@@ -175,13 +165,5 @@ class MainShared:
         self.Buttons.MainThreadManager = self.MainThreadManager
 
     def displayReaderRunResults(self):
-        if self.MainThreadManager.finishedEquilibrationPeriod:
-            endOfExperimentView = EndOfExperimentView(self.RootManager, self.GlobalFileManager)
-            endOfExperimentFrame = endOfExperimentView.createEndOfExperimentView()
-            self.Buttons.createGuidedSetupButton(endOfExperimentFrame)
-            self.Buttons.GuidedSetupButton.place()
-            self.SummaryFigureCanvas.frequencyCanvas = None
-            self.endOfExperimentFrame = endOfExperimentFrame
-        else:
-            self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
-            self.Buttons.GuidedSetupButton.invokeButton()
+        self.Buttons.createGuidedSetupButton(self.RootManager.getRoot())
+        self.Buttons.GuidedSetupButton.invokeButton()

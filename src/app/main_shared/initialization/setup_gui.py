@@ -36,12 +36,6 @@ class SetupGui:
                 command=lambda: self.SoftwareUpdate.downloadSoftwareUpdate())
             self.RootManager.addMenubarCascade("Software", settingsMenuSoftware)
 
-        settingsMenuReaders = self.RootManager.instantiateNewMenubarRibbon()
-        settingsMenuReaders.add_command(label="Frequency Range", command=lambda: self.Settings.freqRangeSetting())
-        settingsMenuReaders.add_command(label="Scan Rate", command=lambda: self.Settings.rateSetting())
-        settingsMenuReaders.add_command(label="File Save", command=lambda: self.Settings.saveFilesSetting())
-        self.RootManager.addMenubarCascade("Readers", settingsMenuReaders)
-
     def createDisplayMenus(self):
         settingsMenuDisplay = self.RootManager.instantiateNewMenubarRibbon()
         settingsMenuDisplay.add_command(label="SGI", command=lambda: self.Settings.freqToggleSetting("SGI"))

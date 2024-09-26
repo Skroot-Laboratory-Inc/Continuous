@@ -25,15 +25,6 @@ class FrameManager:
                         relheight=self.GuiProperties.bodyHeight)
         return bodyFrame
 
-    def createEndOfExperimentFrame(self):
-        endOfExperimentFrame = self.createBodyFrame()
-        endOfExperimentFrame.grid_rowconfigure(0, weight=1)
-        endOfExperimentFrame.grid_rowconfigure(1, weight=10)
-        endOfExperimentFrame.grid_rowconfigure(2, weight=1)
-        endOfExperimentFrame.grid_columnconfigure(0, weight=2)
-        endOfExperimentFrame.grid_columnconfigure(1, weight=3)
-        return endOfExperimentFrame
-
     def createFooterFrame(self):
         footerFrame = self.RootManager.createFrame(self.Colors.secondaryColor)
         footerFrame.place(
