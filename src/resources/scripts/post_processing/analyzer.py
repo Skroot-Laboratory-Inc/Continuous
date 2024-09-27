@@ -1,6 +1,7 @@
 import csv
 import glob
 import os
+from itertools import zip_longest
 from pathlib import Path
 
 import numpy as np
@@ -18,7 +19,7 @@ class PostProcessingAnalyzer:
         self.equilibrationTime = equilibrationTime
         self.experimentFolderDirectory = experimentFolderDirectory
         self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}/Post Processing'
-        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/**/')) if "Post Processing" not in folder]
+        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/**/')) if "Post Processing" not in folder and "Analysis" not in folder and "Log" not in folder]
         self.rawDataScansMap = {}
         self.resultSetMap = {}
         self.zeroPointMap = {}
@@ -77,8 +78,7 @@ class PostProcessingAnalyzer:
                 )
                 rowData.append(readerSGI)
             writer.writerow(rowHeaders)
-            # array transpose converts it to write columns instead of rows
-            writer.writerows(np.array(rowData).transpose())
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 
     @staticmethod
     def padEntriesWithNan(input_dict):
