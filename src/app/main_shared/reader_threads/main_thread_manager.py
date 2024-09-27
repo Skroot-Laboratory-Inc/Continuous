@@ -4,6 +4,7 @@ import math
 import threading
 import time
 import tkinter as tk
+from itertools import zip_longest
 from tkinter import ttk, messagebox
 from typing import List, Callable
 
@@ -229,8 +230,7 @@ class MainThreadManager:
                 )
                 rowData.append(readerSGI)
             writer.writerow(rowHeaders)
-            # array transpose converts it to write columns instead of rows
-            writer.writerows(np.array(rowData).transpose())
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 
     def createRemoteSummaryAnalyzedFile(self):
         rowHeaders = ['Timestamp']
@@ -245,8 +245,7 @@ class MainThreadManager:
                 )
                 rowData.append(readerSGI)
             writer.writerow(rowHeaders)
-            # array transpose converts it to write columns instead of rows
-            writer.writerows(np.array(rowData).transpose())
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
         return
 
     def plotSummary(self, frame):

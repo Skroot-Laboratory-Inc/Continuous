@@ -3,6 +3,7 @@ import os.path
 from datetime import datetime
 
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
@@ -141,6 +142,23 @@ class Analyzer(AnalyzerInterface):
         centroid = popt[1]
         peakWidth = popt[2]
         return amplitude, centroid
+
+    @staticmethod
+    def calculateDerivativeValues(time, sgi):
+        cubicValues = []
+        derivativeValues = []
+        chunk_size = 30
+        plt.scatter(time, sgi, color='tab:green', label="real data")
+        for i in range(0, len(time), chunk_size):
+            timeChunk = time[i:i + chunk_size]
+            sgiChunk = sgi[i:i + chunk_size]
+            cubicFit = np.polyfit(timeChunk, sgiChunk, 3)
+            cubicFunction = np.poly1d(cubicFit)
+            cubicValues = cubicValues + list(cubicFunction(timeChunk))
+            derivativeFunction = np.polyder(cubicFunction)
+            derivativeValues = derivativeValues + list(derivativeFunction(timeChunk))
+        derivativeSmooth = list(savgol_filter(derivativeValues, 101, 2))
+        return cubicValues, derivativeSmooth
 
 
 def gaussian(x, amplitude, centroid, peak_width):
