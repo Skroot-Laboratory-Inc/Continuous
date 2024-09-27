@@ -39,13 +39,17 @@ class DerivativeAnalyzer:
                     readerTimeCopy.remove(value)
                     readerSGICopy.remove(readerSGI[index])
             cubicValues, derivativeValues = analyzer.calculateDerivativeValues(readerTimeCopy, readerSGICopy)
-            plt.scatter(readerTimeCopy, cubicValues, color='tab:blue', label="fit data")
             potentialHarvestTime = readerTime[derivativeValues.index(max(derivativeValues))]
+
             if readerTimeCopy.index(potentialHarvestTime) < 0.99*len(readerTimeCopy):
                 plt.axvline(x=potentialHarvestTime)
-            plt.scatter(readerTimeCopy, derivativeValues, color='tab:orange', label="derivative data")
-            plt.legend(loc="upper left")
+            plt.scatter(readerTimeCopy, cubicValues, color='tab:blue')
+            plt.ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
+            plt.xlabel("Time (hours)", color='k')
             plt.title(readerId)
+            ax2 = plt.twinx()
+            ax2.scatter(readerTimeCopy, derivativeValues, color='tab:orange')
+            ax2.set_ylabel("Skroot Growth Rate  (SGR)", color='tab:orange')
             plt.savefig(f"{os.path.dirname(os.path.dirname(readerAnalyzed))}/Post Processing/{readerId}.jpg")
             plt.clf()
             self.resultMap[readerId] = {
