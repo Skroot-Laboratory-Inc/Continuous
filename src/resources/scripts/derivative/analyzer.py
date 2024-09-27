@@ -44,6 +44,7 @@ class DerivativeAnalyzer:
             if readerTimeCopy.index(potentialHarvestTime) < 0.99*len(readerTimeCopy):
                 plt.axvline(x=potentialHarvestTime)
             plt.scatter(readerTimeCopy, cubicValues, color='tab:blue')
+            plt.scatter(readerTimeCopy, readerSGICopy, color='k', s=4)
             plt.ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
             plt.xlabel("Time (hours)", color='k')
             plt.title(readerId)
