@@ -47,20 +47,19 @@ class PDF(FPDF):
         self.set_author('Skroot Laboratory')
 
 
-def generatePdf(Readers, setupFormLocation, summaryFigureLocation, summaryPdfLocation):
+def generatePdf(Readers, setupFormLocation, summaryPdfLocation):
     pdf = PDF(orientation='L', unit='mm', format='A4')
     pdf.setFooterHeight(30)
     pdf.setPageWidthHeight(210, 297)
-    generateIntroPage(pdf, setupFormLocation, summaryFigureLocation)
+    generateIntroPage(pdf, setupFormLocation)
     generateReaderPages(pdf, Readers)
     pdf.setAuthor()  # uses Skroot Laboratory
     pdf.output(summaryPdfLocation, 'F')  # saves the plot, F refers to file
 
 
-def generateIntroPage(pdf, setupFormLocation, summaryFigureLocation):
+def generateIntroPage(pdf, setupFormLocation):
     pdf.add_page()
     pdf.placeImage(setupFormLocation, 0.03, 0.02, 0.3, 0.3)
-    pdf.placeImage(summaryFigureLocation, 0.35, 0.02, 0.6, 0.7)
 
 
 def generateReaderPages(pdf, Readers):

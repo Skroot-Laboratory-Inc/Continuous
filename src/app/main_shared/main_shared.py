@@ -51,13 +51,6 @@ class MainShared:
         self.bodyFrame = self.Setup.createFrames()
         self.Setup.createMenus()
         self.isDevMode = DevProperties().isDevMode
-        self.SummaryFigureCanvas = FigureCanvas(
-            'k',
-            'Skroot Growth Index (SGI)',
-            'Time (hrs)',
-            self.secondaryColor,
-            'Summary'
-        )
         self.Buttons = ButtonFunctions(self, self.RootManager, self.PortAllocator)
         self.guidedSetupForm, self.GlobalFileManager = self.createGuidedSetup()
         if self.isDevMode:
@@ -72,7 +65,6 @@ class MainShared:
             self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
-            self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
             self.IssueLog,
@@ -156,7 +148,6 @@ class MainShared:
             self.AwsService,
             self.GlobalFileManager,
             self.bodyFrame,
-            self.SummaryFigureCanvas,
             self.resetRun,
             self.guidedSetupForm,
             self.IssueLog,
