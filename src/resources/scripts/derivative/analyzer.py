@@ -18,7 +18,7 @@ class DerivativeAnalyzer:
         self.postProcessingLocation = f'{self.experimentFolderDirectory}/Post Processing'
         if not os.path.exists(self.postProcessingLocation):
             os.mkdir(self.postProcessingLocation)
-        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/**/')) if "Post Processing" not in folder and "Analysis" not in folder and "Log" not in folder]
+        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/Reader **/'))]
         self.analyzedFileMap = {}
         self.resultMap = {}
 

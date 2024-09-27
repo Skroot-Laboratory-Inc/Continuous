@@ -19,7 +19,7 @@ class PostProcessingAnalyzer:
         self.equilibrationTime = equilibrationTime
         self.experimentFolderDirectory = experimentFolderDirectory
         self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}/Post Processing'
-        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/**/')) if "Post Processing" not in folder and "Analysis" not in folder and "Log" not in folder]
+        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/Reader **/'))]
         self.rawDataScansMap = {}
         self.resultSetMap = {}
         self.zeroPointMap = {}
