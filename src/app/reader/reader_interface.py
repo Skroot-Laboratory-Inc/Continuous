@@ -13,12 +13,6 @@ class ReaderInterfaceMetaClass(type):
         return (
                 hasattr(subclass, 'addToPdf') and
                 callable(subclass.addToPdf) and
-                hasattr(subclass, 'addInoculationMenuBar') and
-                callable(subclass.addInoculationMenuBar) and
-                hasattr(subclass, 'addSecondAxisMenubar') and
-                callable(subclass.addSecondAxisMenubar) and
-                hasattr(subclass, 'addExperimentNotesMenubar') and
-                callable(subclass.addExperimentNotesMenubar) and
                 hasattr(subclass, 'getCurrentPlottable') and
                 callable(subclass.getCurrentPlottable) and
                 hasattr(subclass, 'getAnalyzer') and
@@ -35,15 +29,6 @@ class ReaderInterface(metaclass=ReaderInterfaceMetaClass):
 
     def addToPdf(self, pdf, x, y, indicatorRadius, totalWidth, totalHeight):
         """The reader takes a scan and returns magnitude values."""
-
-    def addInoculationMenuBar(self, menu):
-        """ Creates the menubar option to inoculate the Reader."""
-
-    def addSecondAxisMenubar(self, menu):
-        """ Creates the menubar option to add second axis values to the Reader."""
-
-    def addExperimentNotesMenubar(self, menu):
-        """ Creates the menubar option to add experiment notes to the Reader."""
 
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
         """ Gets the current plottable data for the Reader. """

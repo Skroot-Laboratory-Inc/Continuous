@@ -13,8 +13,7 @@ from src.app.widget.indicator import Indicator
 
 
 class HarvestAlgorithm(AlgorithmInterface):
-    def __init__(self, fileManager: ReaderFileManager, experimentNotes, readerNumber, indicator: Indicator):
-        self.experimentNotes = experimentNotes
+    def __init__(self, fileManager: ReaderFileManager, readerNumber, indicator: Indicator):
         self.readerNumber = readerNumber
         self.Indicator = indicator
         harvestProperties = HarvestProperties()
@@ -79,19 +78,3 @@ class HarvestAlgorithm(AlgorithmInterface):
                         f'Flask {self.readerNumber} is ready to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}')
                     self.Indicator.changeIndicatorRed()
                     self.readyToHarvest = True
-
-    def updateInoculationForReader(self, resultSet: ResultSet):
-        self.updateInoculationValues(resultSet)
-        self.updateInoculationExperimentNotes(self.readerNumber, resultSet)
-
-    def updateInoculationValues(self, resultSet: ResultSet):
-        self.inoculated = True
-        self.inoculatedTime = resultSet.getTime()[-1]
-
-    def updateInoculationExperimentNotes(self, readerNumber, resultSet: ResultSet):
-        self.experimentNotes.updateExperimentNotes(
-            readerNumber,
-            f'Inoculated',
-            resultSet,
-        )
-        logging.info(f'Vessel {readerNumber} is inoculated at time {self.inoculatedTime}')

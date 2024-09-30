@@ -33,7 +33,7 @@ from src.app.widget.timer import RunningTimer
 
 
 class MainThreadManager:
-    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, summaryFigureCanvas, resetRunFunc, guidedSetupForm: GuidedSetupInput, issueLog: IssueLog, createDisplayMenusFn: Callable):
+    def __init__(self, denoiseSet, disableFullSaveFiles, rootManager: RootManager, awsService: AwsServiceInterface, globalFileManager, bodyFrame, resetRunFunc, guidedSetupForm: GuidedSetupInput, issueLog: IssueLog, createDisplayMenusFn: Callable):
         self.guidedSetupForm = guidedSetupForm
         self.createDisplayMenusFn = createDisplayMenusFn
         self.scanRate = guidedSetupForm.getScanRate()
@@ -53,11 +53,6 @@ class MainThreadManager:
         self.disableFullSaveFiles = disableFullSaveFiles
         self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
         self.Colors = Colors()
-        self.SummaryFigureCanvas = summaryFigureCanvas
-        self.summaryFrame = tk.Frame(self.bodyFrame, bg=self.Colors.secondaryColor, bd=0)
-        self.summaryPlotButton = ttk.Button(self.bodyFrame,
-                                            text="Summary Plot Update",
-                                            command=lambda: self.plotSummary(self.summaryFrame))
         self.ColorCycler = ColorCycler()
         self.AwsService = awsService
         self.Colors = Colors()
@@ -158,16 +153,14 @@ class MainThreadManager:
                 if self.finishedEquilibrationPeriod:
                     self.createSummaryAnalyzedFile()
                     self.createRemoteSummaryAnalyzedFile()
-                    self.summaryPlotButton.invoke()  # any changes to GUI must be in main_shared thread
                     self.AwsService.uploadExperimentFilesOnInterval(
                         self.Readers[0].FileManager.getCurrentScanNumber(),
                         self.guidedSetupForm,
                     )
                     generatePdf(self.Readers,
                                 self.GlobalFileManager.getSetupForm(),
-                                self.GlobalFileManager.getSummaryFigure(),
                                 self.GlobalFileManager.getSummaryPdf(),
-                                self.GlobalFileManager.getExperimentNotesTxt())
+                    )
                 if self.currentIssues == {}:
                     text_notification.setText("All readers successfully recorded data.")
             except:
@@ -247,20 +240,3 @@ class MainThreadManager:
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
         return
-
-    def plotSummary(self, frame):
-        try:
-            self.SummaryFigureCanvas.redrawPlot()
-            self.ColorCycler.reset()
-            for Reader in self.Readers:
-                readerPlottable = Reader.getCurrentPlottable(self.denoiseSet)
-                self.SummaryFigureCanvas.scatter(
-                    readerPlottable.getXValues(),
-                    readerPlottable.getYValues(),
-                    20,
-                    readerPlottable.getColor(),
-                )
-            self.SummaryFigureCanvas.saveAs(self.GlobalFileManager.getSummaryFigure())
-            self.SummaryFigureCanvas.drawCanvas(frame)
-        except:
-            logging.exception("Failed to generate summaryPlot")

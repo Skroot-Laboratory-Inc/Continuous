@@ -31,7 +31,7 @@ class ReaderPageManager:
         try:
             frame.place(relx=0,
                         rely=self.GuiProperties.readerPlotRelY,
-                        relwidth=0.67,
+                        relwidth=1,
                         relheight=self.GuiProperties.readerPlotHeight)
             frame.tkraise()
         except:

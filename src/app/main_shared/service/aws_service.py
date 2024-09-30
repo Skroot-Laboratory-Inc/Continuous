@@ -23,7 +23,6 @@ class AwsService(AwsServiceInterface):
 
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
         self.uploadSummaryCsvOnInterval(scanNumber, guidedSetupForm)
-        self.uploadExperimentNotesOnInterval(scanNumber, guidedSetupForm)
 
     def uploadSummaryCsvOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
         if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
@@ -40,17 +39,6 @@ class AwsService(AwsServiceInterface):
             )
             self.awsLastCsvUploadTime = scanNumber
 
-    def uploadExperimentNotesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
-        if (scanNumber - self.awsLastNotesUploadTime) >= self.notesUploadRate:
-            self.AwsBoto3Service.uploadFile(
-                self.GlobalFileManager.getExperimentMetadata(),
-                "application/json",
-                tags={
-                    "experiment_id": guidedSetupForm.getExperimentId(),
-                }
-            )
-            self.awsLastNotesUploadTime = scanNumber
-
     def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
         self.AwsBoto3Service.uploadFile(
             self.GlobalFileManager.getRemoteSummaryAnalyzed(),
@@ -62,11 +50,6 @@ class AwsService(AwsServiceInterface):
                 "scan_rate": guidedSetupForm.getScanRate(),
                 "num_readers": guidedSetupForm.getNumReaders(),
             }
-        )
-        self.AwsBoto3Service.uploadFile(
-            self.GlobalFileManager.getExperimentMetadata(),
-            "application/json",
-            tags={"experiment_id": guidedSetupForm.getExperimentId()}
         )
 
     def uploadExperimentLog(self):

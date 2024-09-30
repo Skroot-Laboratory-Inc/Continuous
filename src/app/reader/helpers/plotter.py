@@ -2,15 +2,12 @@ from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.sweep_data import SweepData
-from src.app.reader.helpers.second_axis import SecondAxis
 from src.app.theme.colors import Colors
 from src.app.widget.figure import FigureCanvas
 
 
 class Plotter:
-    def __init__(self, readerColor, readerNumber, denoiseSet, FileManager: ReaderFileManager, experimentNotes, secondAxisTitle=""):
-        self.SecondAxis = SecondAxis(readerNumber, secondAxisTitle, FileManager)
-        self.ExperimentNotes = experimentNotes
+    def __init__(self, readerColor, readerNumber, denoiseSet, FileManager: ReaderFileManager):
         colors = Colors()
         self.FileManager = FileManager
         self.readerNumber = readerNumber
@@ -25,8 +22,7 @@ class Plotter:
             f'Signal Check Reader {self.readerNumber}',
             'Frequency (MHz)',
             None,
-            f'Signal Check Reader {self.readerNumber}',
-            self.SecondAxis.getTitle()
+            f'Signal Check Reader {self.readerNumber}'
         )
 
     def plotFrequencies(self, resultSet: ResultSet, zeroPoint, sweepData: SweepData, freqToggleSet):
@@ -37,6 +33,7 @@ class Plotter:
                 self.plotSignal(resultSet, sweepData)
             self.frequencyFrame.update()
             self.frequencyFrame.update_idletasks()
+
     def plotGrowthIndex(self, resultSet: ResultSet, zeroPoint):
         self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
         self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')
@@ -48,9 +45,6 @@ class Plotter:
         else:
             yPlot = frequencyToIndex(zeroPoint, resultSet.getMaxFrequencySmooth())
             self.ReaderFigureCanvas.scatter(resultSet.getTime(), yPlot, 20, self.readerColor)
-        for xvalue in self.ExperimentNotes.getTimes(self.readerNumber):
-            self.ReaderFigureCanvas.addVerticalLine(xvalue)
-        self.ReaderFigureCanvas.addSecondAxis(self.SecondAxis.getTime(), self.SecondAxis.getValues())
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 

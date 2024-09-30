@@ -6,7 +6,6 @@ class ReaderFileManager:
         self.globalSavePath = globalSavePath
         self.readerSavePath = rf'{globalSavePath}/Reader {readerNumber}'
         self.analyzed = rf"{self.readerSavePath}/Analyzed.csv"
-        self.secondAxis = f'{self.readerSavePath}/secondAxis.csv'
         self.smoothAnalyzed = rf"{self.readerSavePath}/smoothAnalyzed.csv"
         self.calibrationLocalLocation = f'{self.readerSavePath}/Calibration.csv'
         self.calibrationGlobalLocation = f'{getDesktopLocation()}/Backend/Calibration/{readerNumber}/Calibration.csv'
@@ -32,9 +31,6 @@ class ReaderFileManager:
 
     def getCalibrationGlobalLocation(self):
         return self.calibrationGlobalLocation
-
-    def getSecondAxis(self):
-        return self.secondAxis
 
     def getSummaryPdf(self):
         return self.summaryPdf

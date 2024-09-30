@@ -25,7 +25,7 @@ from src.app.widget.indicator import Indicator
 
 class Reader(ReaderInterface):
     def __init__(self, AppModule, readerNumber, readerPageAllocator: ReaderPageAllocator, startFreq, stopFreq, savePath,
-                 readerColor, sibInterface: SibInterface, experimentNotes, freqToggleSet):
+                 readerColor, sibInterface: SibInterface, freqToggleSet):
         self.FileManager = ReaderFileManager(savePath, readerNumber)
         self.ReaderPageAllocator = readerPageAllocator
         self.finishedEquilibrationPeriod = False
@@ -33,14 +33,11 @@ class Reader(ReaderInterface):
         self.readerNumber = readerNumber
         self.initialize(savePath)
         self.Aws = AwsBoto3()
-        self.ExperimentNotes = experimentNotes
         self.Plotter = Plotter(
             readerColor,
             readerNumber,
             AppModule.denoiseSet,
             self.FileManager,
-            self.ExperimentNotes,
-            AppModule.guidedSetupForm.getSecondAxisTitle(),
         )
         isDevMode = DevProperties().isDevMode
         if isDevMode:
@@ -54,7 +51,7 @@ class Reader(ReaderInterface):
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.ContaminationAlgorithm = ContaminationAlgorithm(readerNumber)
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
-        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, self.ExperimentNotes, readerNumber, self.Indicator)
+        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, readerNumber, self.Indicator)
         self.Plotter.frequencyFrame = self.ReaderPageAllocator.createPlotFrame(self.readerNumber)
         self.plotFrequencyButton = ttk.Button(
             readerPageAllocator.readerPage,
@@ -79,28 +76,6 @@ class Reader(ReaderInterface):
             pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'green')
         else:
             pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'red')
-
-    def addInoculationMenuBar(self, menu):
-        menu.add_command(
-            label=f"Reader {self.readerNumber} Inoculated",
-            command=lambda: self.HarvestAlgorithm.updateInoculationForReader(self.Analyzer.ResultSet)
-        )
-
-    def addSecondAxisMenubar(self, menu):
-        menu.add_command(
-            label=f"Reader {self.readerNumber}",
-            command=lambda: self.Plotter.SecondAxis.typeSecondAxisValues(self.Analyzer.ResultSet.getTime())
-        )
-
-    def addExperimentNotesMenubar(self, menu):
-        menu.add_command(
-            label=f"Reader {self.readerNumber}",
-            command=lambda:
-            self.Plotter.ExperimentNotes.typeExperimentNotes(
-                self.readerNumber,
-                self.getAnalyzer().ResultSet,
-            )
-        )
 
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
         if denoiseSet:

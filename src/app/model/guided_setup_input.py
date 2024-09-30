@@ -15,7 +15,6 @@ class GuidedSetupInput:
         self.numReaders = guidedSetupDefaults.numReaders
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
-        self.secondAxisTitle = guidedSetupDefaults.secondAxisTitle
         self.experimentId = guidedSetupDefaults.experimentId
         self.equilibrationTime = guidedSetupDefaults.equilibrationTime
         self.savePath = ""
@@ -43,9 +42,6 @@ class GuidedSetupInput:
 
     def getCalibrate(self):
         return self.calibrate
-
-    def getSecondAxisTitle(self):
-        return self.secondAxisTitle
 
     def getExperimentId(self):
         return self.experimentId
