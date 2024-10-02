@@ -5,7 +5,7 @@ from src.app.buttons.button_interface import ButtonInterface
 
 class GuidedSetupButton(ButtonInterface):
     def __init__(self, master, invokeFn):
-        self.guidedSetupButton = ttk.Button(master, text="Start new experiment", style='W.TButton',
+        self.guidedSetupButton = ttk.Button(master, text="Start new experiment", style='Default.TButton',
                                             command=lambda: invokeFn())
 
     def place(self):

@@ -8,7 +8,7 @@ class CalibrateReadersButton(ButtonInterface):
         self.calibrateReadersButton = ttk.Button(
             master,
             text="Calibrate",
-            style='W.TButton',
+            style='Default.TButton',
             command=lambda: invokeFn(),
         )
 

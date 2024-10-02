@@ -114,7 +114,7 @@ class SetupForm:
                              bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
 
-        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='W.TButton')
+        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='Default.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.RootManager.waitForWindow(self.window)

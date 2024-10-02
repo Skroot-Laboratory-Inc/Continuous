@@ -24,8 +24,6 @@ class FigureCanvas:
         self.currentPlot.set_xlabel(self.xAxisLabel, fontsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='minor', labelsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='major', labelsize=self.labelSize)
-        # TODO Update this to work with contamination algorithm
-        # self.currentPlot.set_facecolor(self.backgroundColor)
 
     def drawCanvas(self, frame):
         if self.frequencyCanvas is None:

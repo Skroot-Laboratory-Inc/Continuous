@@ -16,10 +16,9 @@ class RunningTimer:
             font = self.defaultFont
         self.startTime = time.time()
         self.timer = tk.Label(frame, text="0h 0m 0s", font=font, background=backgroundColor, foreground=foregroundColor)
-        self.packWidget()
 
-    def packWidget(self):
-        self.timer.pack(side='top', anchor='ne')
+    def resetTimer(self):
+        self.timer.configure(text="0h 0m 0s", font=self.defaultFont, background='white', foreground='black')
 
     def updateTime(self, font=None, backgroundColor='white', foregroundColor='black'):
         if font is None:

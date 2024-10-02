@@ -1,5 +1,3 @@
-import tkinter as tk
-
 from src.app.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 

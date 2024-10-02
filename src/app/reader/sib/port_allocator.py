@@ -14,15 +14,17 @@ class PortAllocator:
         self.ports.append(port.device)
         return port
 
-    def getMatchingPort(self, serialNumber) -> ListPortInfo:
-        port = getMatchingPort(serialNumber)
-        return port
-
     def removePort(self, port):
         self.ports.remove(port)
 
     def resetPorts(self):
         self.ports = []
+
+    @staticmethod
+    def getMatchingPort(serialNumber) -> ListPortInfo:
+        ports = list_ports.comports()
+        port = [port.device for port in ports if port.serial_number == serialNumber][0]
+        return port
 
 
 def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
@@ -36,9 +38,3 @@ def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
     if filteredPorts:
         return filteredPorts[0]
     raise Exception("No ports found")
-
-
-def getMatchingPort(serialNumber) -> ListPortInfo:
-    ports = list_ports.comports()
-    port = [port.device for port in ports if port.serial_number == serialNumber][0]
-    return port

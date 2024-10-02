@@ -10,10 +10,7 @@ class ReaderInterfaceMetaClass(type):
         return cls.__subclasscheck__(type(instance))
 
     def __subclasscheck__(cls, subclass):
-        return (
-                hasattr(subclass, 'addToPdf') and
-                callable(subclass.addToPdf) and
-                hasattr(subclass, 'getCurrentPlottable') and
+        return (hasattr(subclass, 'getCurrentPlottable') and
                 callable(subclass.getCurrentPlottable) and
                 hasattr(subclass, 'getAnalyzer') and
                 callable(subclass.getAnalyzer) and

@@ -3,18 +3,19 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
-from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set.result_set import ResultSet
+from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
-from src.app.reader.algorithm.contamination_algorithm import ContaminationAlgorithm
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
 from src.app.reader.helpers.plotter import Plotter
 from src.app.reader.reader_interface import ReaderInterface
+from src.app.reader.service.aws_service import AwsService
+from src.app.reader.service.dev_aws_service import DevAwsService
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.theme.colors import Colors
@@ -24,32 +25,30 @@ from src.app.widget.indicator import Indicator
 
 
 class Reader(ReaderInterface):
-    def __init__(self, AppModule, readerNumber, readerPageAllocator: ReaderPageAllocator, startFreq, stopFreq, savePath,
+    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator,
                  readerColor, sibInterface: SibInterface, freqToggleSet):
-        self.FileManager = ReaderFileManager(savePath, readerNumber)
-        self.ReaderPageAllocator = readerPageAllocator
-        self.finishedEquilibrationPeriod = False
-        self.colors = Colors()
-        self.readerNumber = readerNumber
-        self.initialize(savePath)
-        self.Aws = AwsBoto3()
-        self.Plotter = Plotter(
-            readerColor,
-            readerNumber,
-            AppModule.denoiseSet,
-            self.FileManager,
-        )
-        isDevMode = DevProperties().isDevMode
-        if isDevMode:
+        self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
+        if DevProperties().isDevMode:
+            self.AwsService = DevAwsService(self.FileManager, globalFileManager)
             self.Analyzer = DevAnalyzer(self.FileManager, readerNumber)
             self.SibInterface = DevSib(readerNumber)
         else:
+            self.AwsService = AwsService(self.FileManager, globalFileManager)
             self.Analyzer = Analyzer(self.FileManager)
             self.SibInterface = sibInterface
-        self.SibInterface.setStartFrequency(startFreq)
-        self.SibInterface.setStopFrequency(stopFreq)
+        self.ReaderPageAllocator = readerPageAllocator
+        self.finishedEquilibrationPeriod = False
+        self.Colors = Colors()
+        self.readerNumber = readerNumber
+        self.initialize(globalFileManager.getSavePath())
+        self.Plotter = Plotter(
+            readerColor,
+            readerNumber,
+            self.FileManager,
+        )
+        self.SibInterface.setStartFrequency(CommonProperties().defaultStartFrequency)
+        self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
-        self.ContaminationAlgorithm = ContaminationAlgorithm(readerNumber)
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, readerNumber, self.Indicator)
         self.Plotter.frequencyFrame = self.ReaderPageAllocator.createPlotFrame(self.readerNumber)
@@ -65,31 +64,12 @@ class Reader(ReaderInterface):
         )
         freqToggleSet.subscribe(lambda toggle: self.setViewToggle(toggle))
 
-    def addToPdf(self, pdf, x, y, indicatorRadius, totalWidth, totalHeight):
-        pdf.placeImage(
-            self.FileManager.getReaderPlotJpg(),
-            x,
-            y,
-            totalWidth-indicatorRadius*3,
-            totalHeight)
-        if not self.HarvestAlgorithm.getStatus():
-            pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'green')
-        else:
-            pdf.drawCircle(totalWidth-indicatorRadius*2, indicatorRadius*2, indicatorRadius, 'red')
-
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
-        if denoiseSet:
-            return Plottable(
-                self.Analyzer.ResultSet.getDenoiseTimeSmooth(),
-                frequencyToIndex(self.Analyzer.zeroPoint, self.Analyzer.ResultSet.getDenoiseFrequencySmooth()),
-                self.Plotter.readerColor,
-            )
-        else:
-            return Plottable(
-                self.Analyzer.ResultSet.getTime(),
-                frequencyToIndex(self.Analyzer.zeroPoint, self.Analyzer.ResultSet.getDenoiseFrequency()),
-                self.Plotter.readerColor,
-            )
+        return Plottable(
+            self.Analyzer.ResultSet.getDenoiseTimeSmooth(),
+            frequencyToIndex(self.Analyzer.zeroPoint, self.Analyzer.ResultSet.getDenoiseFrequencySmooth()),
+            self.Plotter.readerColor,
+        )
 
     def getAnalyzer(self) -> Analyzer:
         return self.Analyzer
@@ -124,5 +104,5 @@ class Reader(ReaderInterface):
                             self.FileManager.getCalibrationLocalLocation())
             else:
                 text_notification.setText(f"No calibration found for \n Reader {self.readerNumber}",
-                                          ('Courier', 12, 'bold'), self.colors.primaryColor, 'red')
+                                          ('Courier', 12, 'bold'), self.Colors.primaryColor, 'red')
                 logging.info(f"No calibration found for Reader {self.readerNumber}")

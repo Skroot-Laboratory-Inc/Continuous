@@ -7,11 +7,10 @@ from src.app.widget.figure import FigureCanvas
 
 
 class Plotter:
-    def __init__(self, readerColor, readerNumber, denoiseSet, FileManager: ReaderFileManager):
+    def __init__(self, readerColor, readerNumber, FileManager: ReaderFileManager):
         colors = Colors()
         self.FileManager = FileManager
         self.readerNumber = readerNumber
-        self.denoiseSet = denoiseSet
         self.secondaryColor = colors.secondaryColor
         self.frequencyPlot = None
         self.frequencyCanvas = None
@@ -39,12 +38,8 @@ class Plotter:
         self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')
         self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
-        if self.denoiseSet:
-            yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
-            self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, self.readerColor)
-        else:
-            yPlot = frequencyToIndex(zeroPoint, resultSet.getMaxFrequencySmooth())
-            self.ReaderFigureCanvas.scatter(resultSet.getTime(), yPlot, 20, self.readerColor)
+        yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
+        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, self.readerColor)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 

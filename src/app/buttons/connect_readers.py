@@ -8,7 +8,7 @@ class ConnectReadersButton(ButtonInterface):
         self.connectReadersButton = ttk.Button(
             master,
             text="Connect Readers",
-            style='W.TButton',
+            style='Default.TButton',
             command=lambda: invokeFn(numReaders, globalFileManager),
         )
 

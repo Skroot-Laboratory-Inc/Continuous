@@ -5,7 +5,7 @@ from typing import List
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper.helper_functions import datetimeToMillis
 from src.app.helper.run_on_interval import RunOnInterval
-from src.app.main_shared.service.aws_service_interface import AwsServiceInterface
+from src.app.reader.service.aws_service_interface import AwsServiceInterface
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.timestamped_message import TimestampedMessage
 from src.app.properties.aws_properties import AwsProperties
@@ -60,6 +60,7 @@ class IssueLog:
             self.downloadIssueLogIfModified()
             with open(self.GlobalFileManager.getIssueLog()) as issueLog:
                 issuesJson = json.load(issueLog)
+                self.issues = [self.issueFromJson(issue) for issue in issuesJson["issueLog"]]
             self.nextIssueId = max([int(issue.issueId) for issue in self.issues]) + 1
         except:
             self.nextIssueId = 1
@@ -74,6 +75,14 @@ class IssueLog:
     def downloadIssueLogIfModified(self):
         self.lastDownloaded = self.AwsService.downloadIssueLogIfModified(self.lastDownloaded)
 
+    def issueFromJson(self, jsonIssue):
+        return Issue(
+            int(jsonIssue["id"]),
+            jsonIssue["title"],
+            jsonIssue["resolved"],
+            self.issueMessageFromJson(jsonIssue["messages"])
+        )
+
     def clear(self):
         self.CheckIssuesInterval.stopFn()
         self.issues = []
@@ -85,6 +94,14 @@ class IssueLog:
         return {
             "issueLog": jsonIssues
         }
+
+    @staticmethod
+    def issueMessageFromJson(jsonMessage):
+        messages = []
+        for m in jsonMessage:
+            for timestamp, message in m.items():
+                messages.append(TimestampedMessage(int(timestamp), message))
+        return messages
 
     @staticmethod
     def findAndReplace(items: List[Issue], newItem: Issue) -> List[Issue]:
