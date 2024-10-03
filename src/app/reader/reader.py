@@ -22,11 +22,11 @@ from src.app.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
+from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 
 
 class Reader(ReaderInterface):
-    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator,
-                 readerColor, sibInterface: SibInterface, freqToggleSet):
+    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface, freqToggleSet):
         self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
         if DevProperties().isDevMode:
             self.AwsService = DevAwsService(self.FileManager, globalFileManager)
@@ -36,22 +36,22 @@ class Reader(ReaderInterface):
             self.AwsService = AwsService(self.FileManager, globalFileManager)
             self.Analyzer = Analyzer(self.FileManager)
             self.SibInterface = sibInterface
+        self.AutomatedIssueManager = AutomatedIssueManager(self.AwsService, globalFileManager)
         self.ReaderPageAllocator = readerPageAllocator
         self.finishedEquilibrationPeriod = False
         self.Colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
         self.Plotter = Plotter(
-            readerColor,
             readerNumber,
             self.FileManager,
+            readerPageAllocator.getPlottingFrame(readerNumber),
         )
         self.SibInterface.setStartFrequency(CommonProperties().defaultStartFrequency)
         self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, readerNumber, self.Indicator)
-        self.Plotter.frequencyFrame = self.ReaderPageAllocator.createPlotFrame(self.readerNumber)
         self.plotFrequencyButton = ttk.Button(
             readerPageAllocator.readerPage,
             text="Real Time Plot",
@@ -68,7 +68,6 @@ class Reader(ReaderInterface):
         return Plottable(
             self.Analyzer.ResultSet.getDenoiseTimeSmooth(),
             frequencyToIndex(self.Analyzer.zeroPoint, self.Analyzer.ResultSet.getDenoiseFrequencySmooth()),
-            self.Plotter.readerColor,
         )
 
     def getAnalyzer(self) -> Analyzer:

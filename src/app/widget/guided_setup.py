@@ -24,11 +24,9 @@ class SetupForm:
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
-        self.numReadersEntry = tk.StringVar(value=guidedSetupInputs.getNumReaders())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
         self.window.minsize(200, 200)
-        self.window.protocol("WM_DELETE_WINDOW", self.onClosing)
         w = self.window.winfo_reqwidth()
         h = self.window.winfo_reqheight()
         ws = self.window.winfo_screenwidth()
@@ -82,9 +80,6 @@ class SetupForm:
             highlightthickness=0,
             justify="center")
 
-        options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-        entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
-
         options = ["2", "5", "10"]
         entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, True)
 
@@ -130,7 +125,6 @@ class SetupForm:
 
     def onSubmit(self):
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != "":
-            self.guidedSetupResults.numReaders = int(self.numReadersEntry.get())
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
@@ -161,13 +155,6 @@ class SetupForm:
                     f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"):
                 incrementalNumber += 1
             return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"
-
-    def onClosing(self):
-        if messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
-            self.window.destroy()
-            self.RootManager.destroyRoot()
-        else:
-            self.RootManager.raiseAboveRoot(self.window)
 
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()

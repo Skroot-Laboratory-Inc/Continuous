@@ -3,17 +3,20 @@ from tkinter import ttk
 from src.app.buttons.button_interface import ButtonInterface
 
 
-class CalibrateReadersButton(ButtonInterface):
+class CalibrateReaderButton(ButtonInterface):
     def __init__(self, master, invokeFn):
-        self.calibrateReadersButton = ttk.Button(
+        self.button = ttk.Button(
             master,
             text="Calibrate",
             style='Default.TButton',
             command=lambda: invokeFn(),
         )
 
-    def place(self):
-        self.calibrateReadersButton.place(relx=0.46, rely=0.47)
+    def hide(self):
+        self.button["state"] = "disabled"
+        self.button.grid_remove()
 
-    def destroySelf(self):
-        self.calibrateReadersButton.destroy()
+    def show(self):
+        self.button["state"] = "normal"
+        self.button.grid()
+

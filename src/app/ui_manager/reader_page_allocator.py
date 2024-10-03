@@ -1,5 +1,8 @@
+import threading
 import tkinter as tk
 
+from src.app.buttons.calibrate_readers import CalibrateReaderButton
+from src.app.buttons.connect_reader import ConnectReaderButton
 from src.app.buttons.plus_icon_button import PlusIconButton
 from src.app.buttons.start_button import StartButton
 from src.app.buttons.stop_button import StopButton
@@ -7,11 +10,16 @@ from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
+from src.app.widget import text_notification
 from src.app.widget.timer import RunningTimer
 
 
 class ReaderPageAllocator:
-    def __init__(self, readerPage: tk.Frame, startingReaderNumber, finalReaderNumber):
+    def __init__(self, readerPage: tk.Frame, startingReaderNumber, finalReaderNumber, connectFn, calibrateFn, startFn, stopFn):
+        self.connectFn = connectFn
+        self.calibrateFn = calibrateFn
+        self.startFn = startFn
+        self.stopFn = stopFn
         self.readerPage = readerPage
         self.maxReadersPerScreen = GuiProperties().readersPerScreen
         self.startingReaderNumber = startingReaderNumber
@@ -35,40 +43,91 @@ class ReaderPageAllocator:
             readerFrame.grid_columnconfigure(0, weight=1, minsize=35)
             readerFrame.grid_columnconfigure(1, weight=9, minsize=300)
             readerFrame.grid_columnconfigure(2, weight=1, minsize=35)
-            readerFrame.grid_rowconfigure(0, weight=1, minsize=20)
-            readerFrame.grid_rowconfigure(1, weight=9, minsize=200)
-            readerFrame.grid_rowconfigure(2, weight=1, minsize=20)
+            readerFrame.grid_rowconfigure(0, weight=1, minsize=35)
+            readerFrame.grid_rowconfigure(1, weight=9, minsize=300)
+            readerFrame.grid_rowconfigure(2, weight=1, minsize=40)
             readerFrame.grid(
                 row=self.positions[position]["row"],
                 column=self.positions[position]["column"],
                 sticky='nesw')
             self.createHeader(readerFrame, readerNumber)
+            indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
             self.readerFrames[readerNumber] = ReaderFrame(
                 readerFrame,
-                self.createAddReaderButton(readerFrame, self.mockFn),
                 self.createPlotFrame(readerFrame),
                 self.createTimer(readerFrame),
-                self.createIndicator(readerFrame, 'green'),
-                self.createStartButton(readerFrame, self.mockFn),
-                self.createStopButton(readerFrame, self.mockFn),
+                indicator,
+                indicatorCanvas,
+                self.createStartButton(readerFrame, lambda num=readerNumber: self.startReader(num)),
+                self.createStopButton(readerFrame, lambda num=readerNumber: self.stopReader(num)),
+                # self.createConnectButton(readerFrame, lambda num=readerNumber: self.connectFn(num)),
+                self.createCalibrateButton(readerFrame, lambda num=readerNumber: self.calibrateReader(  num)),
+                self.createAddReaderButton(readerFrame, lambda num=readerNumber: self.connectNewReader(num)),
             )
 
-    def mockFn(self):
-        pass
+    def connectNewReader(self, readerNumber):
+        shouldCalibrate = self.connectFn(readerNumber)
+        readerFrame = self.getReaderFrame(readerNumber)
+        if shouldCalibrate is None:
+            pass  # This means that it failed to find the reader.
+        elif shouldCalibrate:
+            readerFrame.createButton.hide()
+            readerFrame.calibrateButton.show()
+            readerFrame.calibrateButton.button.tkraise()
+        else:
+            readerFrame.createButton.hide()
+            readerFrame.startButton.enable()
+            readerFrame.showPlotFrame()
+
+    def startReader(self, readerNumber):
+        self.startFn(readerNumber)
+        readerFrame = self.getReaderFrame(readerNumber)
+        readerFrame.startButton.disable()
+        readerFrame.stopButton.enable()
+        readerFrame.timer.resetTimer()
+
+    def stopReader(self, readerNumber):
+        shouldStop = self.stopFn(readerNumber)
+        if shouldStop:
+            readerFrame = self.getReaderFrame(readerNumber)
+            readerFrame.stopButton.disable()
+            readerFrame.hidePlotFrame()
+            readerFrame.createButton.show()
+            readerFrame.timer.resetTimer()
+
+    def calibrateReader(self, readerNumber):
+        calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
+        calibrateReaderThread.start()
+        text_notification.setText(f"Calibration started for Vessel {readerNumber}")
+        readerFrame = self.getReaderFrame(readerNumber)
+        readerFrame.calibrateButton.hide()
+        readerFrame.startButton.enable()
+        readerFrame.showPlotFrame()
+
+    def getIndicator(self, readerNumber):
+        return self.getReaderFrame(readerNumber).indicatorCanvas, self.getReaderFrame(readerNumber).indicator
+
+    def getPlottingFrame(self, readerNumber):
+        return self.getReaderFrame(readerNumber).plotFrame
 
     def getReaderFrame(self, readerNumber) -> ReaderFrame:
         return self.readerFrames[readerNumber]
 
+    def getTimer(self, readerNumber) -> RunningTimer:
+        return self.getReaderFrame(readerNumber).timer
+
     def createPlotFrame(self, readerFrame):
         plottingFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        plottingFrame.grid(row=2, column=0, columnspan=3)
+        plottingFrame.grid(row=1, column=0, columnspan=3)
+        plottingFrame.grid_remove()
         return plottingFrame
 
     def createAddReaderButton(self, readerFrame, invokeFn):
         createButton = PlusIconButton(readerFrame, invokeFn)
         self.createButtons.append(createButton)
-        createButton.createButton.grid(row=1, column=0, columnspan=3, sticky='nsew')
-        return createButton.createButton
+        createButton.button.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        createButton.show()
+        return createButton
 
     @staticmethod
     def createIndicator(readerFrame, defaultIndicatorColor):
@@ -86,8 +145,7 @@ class ReaderPageAllocator:
 
     @staticmethod
     def createTimer(readerFrame):
-        timer = RunningTimer()
-        timer.createWidget(readerFrame)
+        timer = RunningTimer(readerFrame)
         timer.timer.grid(row=0, column=0, sticky='nw')
         return timer
 
@@ -98,15 +156,29 @@ class ReaderPageAllocator:
         return header
 
     @staticmethod
+    def createConnectButton(readerFrame, invokeFn):
+        connectReadersButton = ConnectReaderButton(readerFrame, invokeFn)
+        connectReadersButton.button.grid(row=1, column=0, columnspan=3)
+        connectReadersButton.hide()
+        return connectReadersButton
+
+    @staticmethod
+    def createCalibrateButton(readerFrame, invokeFn):
+        calibrateReadersButton = CalibrateReaderButton(readerFrame, invokeFn)
+        calibrateReadersButton.button.grid(row=1, column=0, columnspan=3)
+        calibrateReadersButton.hide()
+        return calibrateReadersButton
+
+    @staticmethod
     def createStartButton(readerFrame, invokeFn):
         startButton = StartButton(readerFrame, invokeFn)
-        startButton.startButton.grid(row=2, column=0, sticky='sw')
-        startButton.startButton["state"] = "disabled"
-        return startButton.startButton
+        startButton.button.grid(row=2, column=0, sticky='sw')
+        startButton.disable()
+        return startButton
 
     @staticmethod
     def createStopButton(readerFrame, invokeFn):
         stopButton = StopButton(readerFrame, invokeFn)
-        stopButton.stopButton.grid(row=2, column=2, sticky='se')
-        stopButton.stopButton["state"] = "disabled"
-        return stopButton.stopButton
+        stopButton.button.grid(row=2, column=2, sticky='se')
+        stopButton.disable()
+        return stopButton

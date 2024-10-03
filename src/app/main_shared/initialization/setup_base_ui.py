@@ -25,8 +25,8 @@ class SetupBaseUi:
             self.SoftwareUpdate = DevSoftwareUpdate(self.RootManager, major_version, minor_version)
         else:
             self.SoftwareUpdate = SoftwareUpdate(self.RootManager, major_version, minor_version)
-        self.createMenus()
         self.bodyFrame = self.createFrames()
+        self.createMenus()
         self.createTheme()
 
     def createMenus(self):

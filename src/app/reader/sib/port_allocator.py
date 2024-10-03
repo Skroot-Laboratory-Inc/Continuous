@@ -17,9 +17,6 @@ class PortAllocator:
     def removePort(self, port):
         self.ports.remove(port)
 
-    def resetPorts(self):
-        self.ports = []
-
     @staticmethod
     def getMatchingPort(serialNumber) -> ListPortInfo:
         ports = list_ports.comports()

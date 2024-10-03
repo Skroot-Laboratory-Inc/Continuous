@@ -13,9 +13,7 @@ class AwsServiceInterfaceMetaClass(type):
                 hasattr(subclass, 'uploadExperimentLog') and
                 callable(subclass.uploadExperimentLog) and
                 hasattr(subclass, 'uploadIssueLog') and
-                callable(subclass.uploadIssueLog) and
-                hasattr(subclass, 'downloadIssueLogIfModified') and
-                callable(subclass.downloadIssueLogIfModified))
+                callable(subclass.uploadIssueLog))
 
 
 class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):

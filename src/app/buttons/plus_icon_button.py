@@ -15,10 +15,20 @@ class PlusIconButton(ButtonInterface):
         resizedImage = image.resize((200, 200), Image.Resampling.LANCZOS)
         self.createIcon = ImageTk.PhotoImage(resizedImage)
 
-        self.createButton = tk.Button(
+        self.button = tk.Button(
             master,
             bg=Colors().secondaryColor,
             highlightthickness=0,
             borderwidth=0,
             image=self.createIcon,
             command=lambda: invokeFn())
+
+    def hide(self):
+        self.button["state"] = "disabled"
+        self.button.grid_remove()
+
+    def show(self):
+        self.button["state"] = "normal"
+        self.button.grid()
+        self.button.tkraise()
+

@@ -3,9 +3,10 @@ import tkinter as tk
 from importlib.metadata import version as version_api
 from tkinter import messagebox
 
+from reactivex.subject import BehaviorSubject
+
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper.helper_functions import getOperatingSystem
-from src.app.main_shared.initialization.buttons import ButtonFunctions
 from src.app.main_shared.initialization.setup_base_ui import SetupBaseUi
 from src.app.main_shared.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
 from src.app.model.guided_setup_input import GuidedSetupInput
@@ -22,13 +23,13 @@ class MainShared:
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
 
+        self.freqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.ReaderPageManager = ReaderPageManager(rootManager)
         self.guidedSetupForm = GuidedSetupInput()
         self.configureRoot()
         self.bodyFrame = SetupBaseUi(self.RootManager, major_version, minor_version).bodyFrame
         self.isDevMode = DevProperties().isDevMode
-        self.Buttons = ButtonFunctions(self, self.RootManager)
         self.createReadersUi()
 
     def configureRoot(self):
@@ -48,11 +49,18 @@ class MainShared:
         readersPerScreen = GuiProperties().readersPerScreen
         numScreens = GuiProperties().numScreens
         self.ReaderPageManager.createPages(numScreens)
+
         for screenNumber in range(0, numScreens):
             readerPage = self.ReaderPageManager.getPage(screenNumber)
             startingReaderNumber = 1 + screenNumber*readersPerScreen
             finalReaderNumber = startingReaderNumber + readersPerScreen
-            globalThreadManager = ReaderPageThreadManager(readerPage, startingReaderNumber, finalReaderNumber)
+            ReaderPageThreadManager(
+                readerPage,
+                startingReaderNumber,
+                finalReaderNumber,
+                self.freqToggleSet,
+                self.RootManager,
+            )
 
             self.ReaderPageManager.createNextAndPreviousFrameButtons()
             self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))

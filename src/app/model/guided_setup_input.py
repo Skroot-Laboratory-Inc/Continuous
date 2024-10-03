@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 
 from src.app.helper.helper_functions import formatDate, datetimeToMillis
@@ -12,43 +11,39 @@ class GuidedSetupInput:
         self.month = self.date.month
         self.day = self.date.day
         self.year = self.date.year
-        self.numReaders = guidedSetupDefaults.numReaders
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
         self.experimentId = guidedSetupDefaults.experimentId
         self.equilibrationTime = guidedSetupDefaults.equilibrationTime
         self.savePath = ""
 
-    def getMonth(self):
+    def getMonth(self) -> int:
         return self.month
 
-    def getDay(self):
+    def getDay(self) -> int:
         return self.day
 
-    def getYear(self):
+    def getYear(self) -> int:
         return self.year
 
     def getDate(self):
         return formatDate(self.date.date())
 
-    def getDateMillis(self):
+    def getDateMillis(self) -> int:
         return datetimeToMillis(self.date)
 
-    def getNumReaders(self):
-        return int(self.numReaders)
-
-    def getScanRate(self):
+    def getScanRate(self) -> float:
         return float(self.scanRate)
 
-    def getCalibrate(self):
+    def getCalibrate(self) -> bool:
         return self.calibrate
 
-    def getExperimentId(self):
+    def getExperimentId(self) -> str:
         return self.experimentId
 
-    def getEquilibrationTime(self):
+    def getEquilibrationTime(self) -> float:
         return float(self.equilibrationTime)
 
-    def getSavePath(self):
+    def getSavePath(self) -> str:
         return self.savePath
 

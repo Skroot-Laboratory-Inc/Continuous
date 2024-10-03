@@ -6,18 +6,16 @@ from src.app.theme.font_theme import FontTheme
 
 
 class RunningTimer:
-    def __init__(self):
-        self.startTime = None
-        self.timer = None
+    def __init__(self, frame, font=None, backgroundColor='white', foregroundColor='black'):
         self.defaultFont = FontTheme().primary
-
-    def createWidget(self, frame, font=None, backgroundColor='white', foregroundColor='black'):
         if font is None:
             font = self.defaultFont
         self.startTime = time.time()
         self.timer = tk.Label(frame, text="0h 0m 0s", font=font, background=backgroundColor, foreground=foregroundColor)
+        self.frame = frame
 
     def resetTimer(self):
+        self.startTime = time.time()
         self.timer.configure(text="0h 0m 0s", font=self.defaultFont, background='white', foreground='black')
 
     def updateTime(self, font=None, backgroundColor='white', foregroundColor='black'):

@@ -19,26 +19,21 @@ from src.app.reader.reader import Reader
 from src.app.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
-from src.app.widget.issues.issue_log import IssueLog
-from src.app.widget.timer import RunningTimer
 
 
 class ReaderThreadManager:
-    def __init__(self, reader: Reader, rootManager: RootManager, globalFileManager, bodyFrame, resetRunFunc, guidedSetupForm: GuidedSetupInput, freqToggleSet, issueLog: IssueLog):
+    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: GuidedSetupInput, freqToggleSet, resetRunFunc):
         self.guidedSetupForm = guidedSetupForm
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
-        self.Timer = RunningTimer()
-        self.bodyFrame = bodyFrame
+        self.Timer = reader.ReaderPageAllocator.getTimer(reader.readerNumber)
         self.isDevMode = DevProperties().isDevMode
         self.freqToggleSet = freqToggleSet
-        self.IssueLog = issueLog
-        # self.freqToggleSet = BehaviorSubject("Signal Check")
-        self.GlobalFileManager = globalFileManager
         self.RootManager = rootManager
         self.Reader = reader
-        # Current Issues is supposed to be a dict of all issues used for updating text_notification on successful runs. Needs fixing.
+        # Current Issues is supposed to be a dict of all issues used for updating text_notification on successful runs.
+        # Needs fixing.
         self.currentIssues = {}
 
         self.finishedEquilibrationPeriod = False
@@ -94,7 +89,7 @@ class ReaderThreadManager:
         if self.Reader.readerNumber in self.currentIssues and not self.currentIssues[self.Reader.readerNumber].resolved:
             self.currentIssues[self.Reader.readerNumber].resolveIssue()
             if type(self.currentIssues[self.Reader.readerNumber]) is Issue:
-                self.IssueLog.updateIssue(self.currentIssues[self.Reader.readerNumber])
+                self.Reader.AutomatedIssueManager.updateIssue(self.currentIssues[self.Reader.readerNumber])
             del self.currentIssues[self.Reader.readerNumber]
 
     def mainLoop(self):
@@ -109,7 +104,7 @@ class ReaderThreadManager:
                     self.takeSweep()
                 except SIBConnectionError:
                     if self.Reader.readerNumber not in self.currentIssues:
-                        self.currentIssues[self.Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Reader Connection Error On Reader {self.Reader.readerNumber}.")
+                        self.currentIssues[self.Reader.readerNumber] = self.Reader.AutomatedIssueManager.createIssue(f"Automated - Reader Connection Error On Reader {self.Reader.readerNumber}.")
                     self.Reader.Indicator.changeIndicatorRed()
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
@@ -124,7 +119,7 @@ class ReaderThreadManager:
                         f"Sweep failed for reader {self.Reader.readerNumber}, SIB reconnection was successful.")
                 except SIBException:
                     if self.Reader.readerNumber not in self.currentIssues:
-                        self.currentIssues[self.Reader.readerNumber] = self.IssueLog.createIssue(f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.")
+                        self.currentIssues[self.Reader.readerNumber] = self.Reader.AutomatedIssueManager.createIssue(f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.")
                     self.Reader.Indicator.changeIndicatorRed()
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
@@ -139,7 +134,7 @@ class ReaderThreadManager:
                         self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
                             IssueProperties().consecutiveAnalysisIssue,
                             f"Automated - Analysis Failed On Reader {self.Reader.readerNumber}.",
-                            self.IssueLog.createIssue,
+                            self.Reader.AutomatedIssueManager.createIssue,
                         )
                     self.Reader.Indicator.changeIndicatorRed()
                     logging.exception(f'Error Analyzing Data, Reader {self.Reader.readerNumber} failed to analyze scan {self.Reader.FileManager.getCurrentScanNumber()}')
@@ -156,7 +151,7 @@ class ReaderThreadManager:
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText(f"Reader {self.Reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
-        self.resetRunFunc()
+        self.resetRunFunc(self.Reader.readerNumber)
         logging.info(f'Reader {self.Reader.readerNumber} finished run.')
 
     def checkIfScanTookTooLong(self, timeTaken):

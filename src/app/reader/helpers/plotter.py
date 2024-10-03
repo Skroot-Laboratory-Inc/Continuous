@@ -1,3 +1,5 @@
+import tkinter
+
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.model.result_set.result_set import ResultSet
@@ -7,17 +9,11 @@ from src.app.widget.figure import FigureCanvas
 
 
 class Plotter:
-    def __init__(self, readerColor, readerNumber, FileManager: ReaderFileManager):
-        colors = Colors()
+    def __init__(self, readerNumber, FileManager: ReaderFileManager, frequencyFrame: tkinter.Frame):
         self.FileManager = FileManager
         self.readerNumber = readerNumber
-        self.secondaryColor = colors.secondaryColor
-        self.frequencyPlot = None
-        self.frequencyCanvas = None
-        self.frequencyFrame = None
-        self.readerColor = readerColor
+        self.frequencyFrame = frequencyFrame
         self.ReaderFigureCanvas = FigureCanvas(
-            readerColor,
             f'Signal Check Reader {self.readerNumber}',
             'Frequency (MHz)',
             None,
@@ -39,7 +35,7 @@ class Plotter:
         self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
         yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
-        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, self.readerColor)
+        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().primaryColor)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 

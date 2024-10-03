@@ -1,5 +1,5 @@
 {
-    "v2.6.0": {
+  "v2.6.0": {
     "features": {
       "1": "Removed R&D functionality from production app."
     },
@@ -161,5 +161,10 @@
   },
   "v2.5.3": {
     "other": "Major code refactor"
+  },
+  "v2.5.41": {
+    "features": {
+      "1": "Added analysis time to derivative script."
+    }
   }
 }
