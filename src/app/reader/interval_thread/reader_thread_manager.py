@@ -2,6 +2,7 @@ import logging
 import math
 import threading
 import time
+from typing import Callable
 
 import numpy as np
 from sibcontrol import SIBConnectionError, SIBException
@@ -22,8 +23,9 @@ from src.app.widget import text_notification
 
 
 class ReaderThreadManager:
-    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: GuidedSetupInput, freqToggleSet, resetRunFunc):
+    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: GuidedSetupInput, freqToggleSet, resetRunFunc, issueOccurredFn: Callable):
         self.guidedSetupForm = guidedSetupForm
+        self.issueOccurredFn = issueOccurredFn
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
@@ -59,8 +61,9 @@ class ReaderThreadManager:
                         logging.info(f"Failed to set zero point for {self.Reader.readerNumber}. SGI values unreliable.")
                         zeroPoint = 1
                     self.Reader.getAnalyzer().setZeroPoint(zeroPoint)
-                    self.freqToggleSet.on_next("SGI")
                     self.Reader.finishedEquilibrationPeriod = True
+                    self.Reader.currentFrequencyToggle = "SGI"
+                    # self.freqToggleSet.on_next("SGI")
                     logging.info(f"Zero Point Set for reader {self.Reader.readerNumber}: {zeroPoint} MHz")
                     self.Reader.resetReaderRun()
                     self.createDisplayMenus()
@@ -103,14 +106,30 @@ class ReaderThreadManager:
                 try:
                     self.takeSweep()
                 except SIBConnectionError:
-                    if self.Reader.readerNumber not in self.currentIssues:
-                        self.currentIssues[self.Reader.readerNumber] = self.Reader.AutomatedIssueManager.createIssue(f"Automated - Reader Connection Error On Reader {self.Reader.readerNumber}.")
+                    if self.Reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[self.Reader.readerNumber].persistIssue()
+                    else:
+                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                            IssueProperties().consecutiveHardwareIssue,
+                            f"Automated - Reader Connection Error On Reader {self.Reader.readerNumber}.",
+                            self.Reader.AutomatedIssueManager.createIssue,
+                        )
                     self.Reader.Indicator.changeIndicatorRed()
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
                         f'Connection Error: Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}')
                     text_notification.setText(f"Sweep Failed, check reader {self.Reader.readerNumber} connection.")
                 except SIBReconnectException:
+                    if self.Reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[self.Reader.readerNumber].persistIssue()
+                    else:
+                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                            IssueProperties().consecutiveHardwareIssue,
+                            f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.",
+                            self.Reader.AutomatedIssueManager.createIssue,
+                        )
                     self.Reader.Indicator.changeIndicatorRed()
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
@@ -118,8 +137,15 @@ class ReaderThreadManager:
                     text_notification.setText(
                         f"Sweep failed for reader {self.Reader.readerNumber}, SIB reconnection was successful.")
                 except SIBException:
-                    if self.Reader.readerNumber not in self.currentIssues:
-                        self.currentIssues[self.Reader.readerNumber] = self.Reader.AutomatedIssueManager.createIssue(f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.")
+                    if self.Reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[self.Reader.readerNumber].persistIssue()
+                    else:
+                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                            IssueProperties().consecutiveHardwareIssue,
+                            f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.",
+                            self.Reader.AutomatedIssueManager.createIssue,
+                        )
                     self.Reader.Indicator.changeIndicatorRed()
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
@@ -142,7 +168,7 @@ class ReaderThreadManager:
                 finally:
                     self.Timer.updateTime()
                     self.Reader.FileManager.incrementScanNumber(self.scanRate)
-                if self.currentIssues == {}:
+                if not self.issueOccurredFn():
                     text_notification.setText("All readers successfully recorded data.")
             except:
                 logging.exception('Unknown error has occurred')
@@ -151,6 +177,8 @@ class ReaderThreadManager:
                 self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText(f"Reader {self.Reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
+        if self.Reader.finishedEquilibrationPeriod:
+            self.Reader.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
         self.resetRunFunc(self.Reader.readerNumber)
         logging.info(f'Reader {self.Reader.readerNumber} finished run.')
 

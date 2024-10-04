@@ -34,10 +34,10 @@ class AwsService(AwsServiceInterface):
                 tags={
                     "end_date": None,
                     "start_date": guidedSetupForm.getDateMillis(),
-                    "experiment_id": guidedSetupForm.getExperimentId(),
+                    "lot_id": guidedSetupForm.getLotId(),
+                    "incubator": guidedSetupForm.getIncubator(),
                     "scan_rate": guidedSetupForm.getScanRate(),
-                    "num_readers": guidedSetupForm.getNumReaders(),
-                }
+                },
             )
             self.awsLastCsvUploadTime = scanNumber
 
@@ -48,10 +48,10 @@ class AwsService(AwsServiceInterface):
             tags={
                 "end_date": datetimeToMillis(datetime.now()),
                 "start_date": guidedSetupForm.getDateMillis(),
-                "experiment_id": guidedSetupForm.getExperimentId(),
+                "lot_id": guidedSetupForm.getLotId(),
+                "incubator": guidedSetupForm.getIncubator(),
                 "scan_rate": guidedSetupForm.getScanRate(),
-                "num_readers": guidedSetupForm.getNumReaders(),
-            }
+            },
         )
 
     def uploadIssueLog(self):

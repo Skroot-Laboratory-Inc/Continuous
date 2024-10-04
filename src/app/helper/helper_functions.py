@@ -139,7 +139,6 @@ def getZeroPoint(equilibrationTime, frequencies):
         while np.isnan(zeroPoint):
             zeroPoint = np.nanmean(frequencies[-pointsUsed:])
             pointsUsed += 5
-            logging.info(zeroPoint, pointsUsed, frequencies)
             if pointsUsed > 100:
                 zeroPoint = np.nanmean(frequencies)
                 break

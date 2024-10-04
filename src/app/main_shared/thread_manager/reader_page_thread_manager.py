@@ -1,6 +1,8 @@
 import logging
 from tkinter import messagebox
 
+from reactivex.subject import BehaviorSubject
+
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.model.guided_setup_input import GuidedSetupInput
@@ -15,7 +17,7 @@ from src.app.widget.guided_setup import SetupForm
 
 
 class ReaderPageThreadManager:
-    def __init__(self, readerPage, startingReaderNumber, finalReaderNumber, freqToggleSet, rootManager: RootManager):
+    def __init__(self, readerPage, startingReaderNumber, finalReaderNumber, mainFreqToggleSet, rootManager: RootManager):
         self.readerAllocator = ReaderPageAllocator(
             readerPage,
             startingReaderNumber,
@@ -25,11 +27,19 @@ class ReaderPageThreadManager:
             self.startReaderThread,
             self.stopReaderThread,
         )
-        self.freqToggleSet = freqToggleSet
-        self.RootManager = rootManager
-        self.SibFinder = SibFinder(rootManager)
         self.readerThreads = {}
         self.Readers = {}
+        self.mainFreqToggleSet = mainFreqToggleSet
+        self.mainFreqToggleSet.subscribe(lambda toggle: self.toggleReaderView(toggle))
+        self.RootManager = rootManager
+        self.SibFinder = SibFinder(rootManager)
+
+    def toggleReaderView(self, toggle):
+        for Reader in self.Readers.values():
+            if Reader.finishedEquilibrationPeriod:
+                Reader.currentFrequencyToggle = toggle
+                # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
+                Reader.plotFrequencyButton.invoke()
 
     def connectReader(self, readerNumber):
         try:
@@ -41,14 +51,14 @@ class ReaderPageThreadManager:
                 readerNumber,
                 self.readerAllocator,
                 sib,
-                self.freqToggleSet,
             )
             self.readerThreads[readerNumber] = ReaderThreadManager(
                 self.Readers[readerNumber],
                 self.RootManager,
                 guidedSetupForm,
-                self.freqToggleSet,
+                self.mainFreqToggleSet,
                 self.resetReader,
+                self.issueOccurred,
             )
             return shouldCalibrate
         except UserExitedException:
@@ -57,6 +67,13 @@ class ReaderPageThreadManager:
             logging.exception("Failed to connect new reader. ")
             text_notification.setText(f"Failed to connect reader for vessel {readerNumber}")
             return None
+
+    def issueOccurred(self):
+        # Will not work when more than one reader page is present.
+        for readerThread in self.readerThreads.values():
+            if readerThread.currentIssues != {}:
+                return True
+        return False
 
     def calibrateReader(self, readerNumber):
         self.Readers[readerNumber].SibInterface.calibrateIfRequired()
@@ -73,6 +90,7 @@ class ReaderPageThreadManager:
 
     def resetReader(self, readerNumber):
         self.getReader(readerNumber).SibInterface.close()
+        self.getReader(readerNumber).Indicator.changeIndicatorGreen()
         for widgets in self.getReaderPageFrame(readerNumber).plotFrame.winfo_children():
             widgets.destroy()
 

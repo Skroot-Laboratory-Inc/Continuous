@@ -1,7 +1,11 @@
 {
   "v2.6.0": {
     "features": {
-      "1": "Removed R&D functionality from production app."
+      "1": "Removed R&D functionality from production app.",
+      "2": "Updated reader threads to start/stop individually.",
+      "3": "Updated readers to upload their own analyzed files for the production dashboard.",
+      "4": "Updated experiment ID to lot ID",
+      "5": "Added tagging by incubator ID, which can be updated by the guided setup form for now."
     },
     "other": {
       "1": "Removed all functionality related to inoculation. ",
@@ -10,7 +14,8 @@
       "4": "Removed all functionality related to summary plotting. ",
       "5": "Removed all functionality related to second axis. ",
       "6": "Removed most advanced settings from the menubar. ",
-      "7": "Removed all functionality related to end of experiment view. "
+      "7": "Removed all functionality related to end of experiment view. ",
+      "8": "Removed version.json in place with a type checking python class."
     }
   },
   "v2.5.36": {

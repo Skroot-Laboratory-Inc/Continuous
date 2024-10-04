@@ -35,7 +35,7 @@ class Plotter:
         self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
         yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
-        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().primaryColor)
+        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().lightPrimaryColor)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 

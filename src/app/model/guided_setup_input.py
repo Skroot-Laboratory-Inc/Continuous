@@ -1,3 +1,4 @@
+import socket
 from datetime import datetime
 
 from src.app.helper.helper_functions import formatDate, datetimeToMillis
@@ -13,7 +14,8 @@ class GuidedSetupInput:
         self.year = self.date.year
         self.scanRate = guidedSetupDefaults.scanRate
         self.calibrate = guidedSetupDefaults.calibrate
-        self.experimentId = guidedSetupDefaults.experimentId
+        self.lotId = guidedSetupDefaults.lotId
+        self.incubator = socket.gethostname()
         self.equilibrationTime = guidedSetupDefaults.equilibrationTime
         self.savePath = ""
 
@@ -38,8 +40,11 @@ class GuidedSetupInput:
     def getCalibrate(self) -> bool:
         return self.calibrate
 
-    def getExperimentId(self) -> str:
-        return self.experimentId
+    def getLotId(self) -> str:
+        return self.lotId
+
+    def getIncubator(self) -> str:
+        return self.incubator
 
     def getEquilibrationTime(self) -> float:
         return float(self.equilibrationTime)

@@ -23,7 +23,7 @@ class MainShared:
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
 
-        self.freqToggleSet = BehaviorSubject("Signal Check")
+        self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.ReaderPageManager = ReaderPageManager(rootManager)
         self.guidedSetupForm = GuidedSetupInput()
@@ -58,7 +58,7 @@ class MainShared:
                 readerPage,
                 startingReaderNumber,
                 finalReaderNumber,
-                self.freqToggleSet,
+                self.mainFreqToggleSet,
                 self.RootManager,
             )
 

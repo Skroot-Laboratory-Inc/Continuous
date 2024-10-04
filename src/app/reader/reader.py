@@ -26,7 +26,7 @@ from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 
 
 class Reader(ReaderInterface):
-    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface, freqToggleSet):
+    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface):
         self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
         if DevProperties().isDevMode:
             self.AwsService = DevAwsService(self.FileManager, globalFileManager)
@@ -42,6 +42,7 @@ class Reader(ReaderInterface):
         self.Colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
+        self.currentFrequencyToggle = "Signal Check"
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
@@ -59,10 +60,9 @@ class Reader(ReaderInterface):
                 self.getAnalyzer().ResultSet,
                 self.getAnalyzer().zeroPoint,
                 self.getAnalyzer().sweepData,
-                self.freqToggleSet
+                self.currentFrequencyToggle
             )
         )
-        freqToggleSet.subscribe(lambda toggle: self.setViewToggle(toggle))
 
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
         return Plottable(
@@ -83,11 +83,6 @@ class Reader(ReaderInterface):
         self.Analyzer.resetRun()
 
     """ End of required public facing functions. """
-
-    def setViewToggle(self, toggle):
-        self.freqToggleSet = toggle
-        # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
-        self.plotFrequencyButton.invoke()
 
     def initialize(self, savePath):
         if not os.path.exists(savePath):

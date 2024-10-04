@@ -1,4 +1,5 @@
 import os
+import socket
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -20,7 +21,8 @@ class SetupForm:
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.experimentIdEntry = tk.StringVar(value=guidedSetupInputs.getExperimentId())
+        self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
+        self.incubatorEntry = tk.StringVar(value=guidedSetupInputs.getIncubator())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
@@ -73,9 +75,16 @@ class SetupForm:
 
         entriesMap['Date'] = dateFrame
 
-        entriesMap['Experiment ID'] = tk.Entry(
+        entriesMap['Lot ID'] = tk.Entry(
             self.window,
-            textvariable=self.experimentIdEntry,
+            textvariable=self.lotIdEntry,
+            borderwidth=0,
+            highlightthickness=0,
+            justify="center")
+
+        entriesMap['Incubator'] = tk.Entry(
+            self.window,
+            textvariable=self.incubatorEntry,
             borderwidth=0,
             highlightthickness=0,
             justify="center")
@@ -124,13 +133,14 @@ class SetupForm:
             self.guidedSetupResults.calibrate = False
 
     def onSubmit(self):
-        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != "":
+        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()
-            self.guidedSetupResults.experimentId = self.experimentIdEntry.get()
+            self.guidedSetupResults.lotId = self.lotIdEntry.get()
+            self.guidedSetupResults.incubator = self.incubatorEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.takeScreenshot()
@@ -147,14 +157,14 @@ class SetupForm:
         if not os.path.exists(baseSavePath):
             os.mkdir(baseSavePath)
         if not os.path.exists(
-                f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"):
-            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"
+                f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"):
+            return f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"
         else:
             incrementalNumber = 0
             while os.path.exists(
-                    f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"):
+                    f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"):
                 incrementalNumber += 1
-            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"
+            return f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"
 
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
