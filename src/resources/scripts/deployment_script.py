@@ -60,6 +60,8 @@ release_notes_fp = '../release-notes.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
 release_notes_bucket = 'release-notes'
+# Eventually we want this to be release specific, but will require some timing and app updates.
+# release_notes_bucket = f'release-notes/{release_bucket}'
 
 try:
     # zip up the whole package

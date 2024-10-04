@@ -15,7 +15,8 @@
       "5": "Removed all functionality related to second axis. ",
       "6": "Removed most advanced settings from the menubar. ",
       "7": "Removed all functionality related to end of experiment view. ",
-      "8": "Removed version.json in place with a type checking python class."
+      "8": "Removed version.json in place with a type checking python class.",
+      "9": "Added 'smart' display toggle to only update display of readers who have reached equilibration time. "
     }
   },
   "v2.5.36": {
