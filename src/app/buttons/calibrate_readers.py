@@ -12,6 +12,9 @@ class CalibrateReaderButton(ButtonInterface):
             command=lambda: invokeFn(),
         )
 
+    def disable(self):
+        self.button["state"] = "disabled"
+
     def hide(self):
         self.button["state"] = "disabled"
         self.button.grid_remove()

@@ -1,5 +1,4 @@
 import os
-import socket
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -8,12 +7,13 @@ import pyautogui
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.helper.helper_functions import centerWindowOnFrame
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.ui_manager.root_manager import RootManager
 
 
-class SetupForm:
-    def __init__(self, rootManager: RootManager, guidedSetupInputs: GuidedSetupInput):
+class SetupReaderForm:
+    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, centeredOn: tk.Frame):
         self.RootManager = rootManager
         self.window = self.RootManager.createTopLevel()
         self.entrySize = 10
@@ -29,13 +29,6 @@ class SetupForm:
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
         self.window.minsize(200, 200)
-        w = self.window.winfo_reqwidth()
-        h = self.window.winfo_reqheight()
-        ws = self.window.winfo_screenwidth()
-        hs = self.window.winfo_screenheight()
-        x = (ws / 2) - (w / 2)
-        y = (hs / 2) - (h / 2)
-        self.window.geometry('+%d+%d' % (x, y))
         self.RootManager.raiseAboveRoot(self.window)
 
         ''' MM DD YYYY Date entry '''
@@ -121,9 +114,10 @@ class SetupForm:
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='Default.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
+        centerWindowOnFrame(self.window, centeredOn)
         self.RootManager.waitForWindow(self.window)
 
-    def getConfiguration(self) -> (GuidedSetupInput, GlobalFileManager):
+    def getConfiguration(self) -> (SetupReaderFormInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
 
     def setCalibrate(self):

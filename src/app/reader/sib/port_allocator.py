@@ -18,7 +18,7 @@ class PortAllocator:
         self.ports.remove(port)
 
     @staticmethod
-    def getMatchingPort(serialNumber) -> ListPortInfo:
+    def getMatchingPort(serialNumber) -> str:
         ports = list_ports.comports()
         port = [port.device for port in ports if port.serial_number == serialNumber][0]
         return port

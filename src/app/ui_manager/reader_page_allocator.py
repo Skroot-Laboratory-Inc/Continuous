@@ -87,22 +87,12 @@ class ReaderPageAllocator:
         readerFrame.timer.resetTimer()
 
     def stopReader(self, readerNumber):
-        shouldStop = self.stopFn(readerNumber)
-        if shouldStop:
-            readerFrame = self.getReaderFrame(readerNumber)
-            readerFrame.stopButton.disable()
-            readerFrame.hidePlotFrame()
-            readerFrame.createButton.show()
-            readerFrame.timer.resetTimer()
+        stopReaderThread = threading.Thread(target=self.stopFn, args=(readerNumber,), daemon=True)
+        stopReaderThread.start()
 
     def calibrateReader(self, readerNumber):
         calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
         calibrateReaderThread.start()
-        text_notification.setText(f"Calibration started for Vessel {readerNumber}")
-        readerFrame = self.getReaderFrame(readerNumber)
-        readerFrame.calibrateButton.hide()
-        readerFrame.startButton.enable()
-        readerFrame.showPlotFrame()
 
     def getIndicator(self, readerNumber):
         return self.getReaderFrame(readerNumber).indicatorCanvas, self.getReaderFrame(readerNumber).indicator

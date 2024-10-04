@@ -74,6 +74,7 @@ def instantiateReader(port, portAllocator, readerNumber, globalFileManager, cali
             text_notification.setText("Failed to connect to SiB")
             sib.close()
     except:
+        portAllocator.removePort(port)
         logging.exception(f"Failed to instantiate reader {readerNumber}")
 
 

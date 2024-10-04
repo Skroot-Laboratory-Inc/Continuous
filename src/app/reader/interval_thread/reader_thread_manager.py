@@ -10,7 +10,7 @@ from sibcontrol import SIBConnectionError, SIBException
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper.helper_functions import getZeroPoint
-from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
 from src.app.properties.common_properties import CommonProperties
@@ -23,7 +23,7 @@ from src.app.widget import text_notification
 
 
 class ReaderThreadManager:
-    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: GuidedSetupInput, freqToggleSet, resetRunFunc, issueOccurredFn: Callable):
+    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: SetupReaderFormInput, freqToggleSet, resetRunFunc, issueOccurredFn: Callable):
         self.guidedSetupForm = guidedSetupForm
         self.issueOccurredFn = issueOccurredFn
         self.scanRate = guidedSetupForm.getScanRate()

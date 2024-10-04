@@ -5,7 +5,7 @@ from reactivex.subject import BehaviorSubject
 
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.reader.interval_thread.reader_thread_manager import ReaderThreadManager
 from src.app.reader.reader import Reader
 from src.app.reader.sib.sib_finder import SibFinder
@@ -13,7 +13,7 @@ from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
-from src.app.widget.guided_setup import SetupForm
+from src.app.widget.setup_reader_form import SetupReaderForm
 
 
 class ReaderPageThreadManager:
@@ -43,7 +43,7 @@ class ReaderPageThreadManager:
 
     def connectReader(self, readerNumber):
         try:
-            guidedSetupForm, globalFileManager = self.readerForm()
+            guidedSetupForm, globalFileManager = self.readerForm(readerNumber)
             shouldCalibrate = guidedSetupForm.getCalibrate()
             sib = self.SibFinder.connectSib(readerNumber, globalFileManager, shouldCalibrate)
             self.Readers[readerNumber] = Reader(
@@ -76,8 +76,14 @@ class ReaderPageThreadManager:
         return False
 
     def calibrateReader(self, readerNumber):
+        readerFrame = self.readerAllocator.getReaderFrame(readerNumber)
+        readerFrame.calibrateButton.disable()
+        text_notification.setText(f"Calibration started for Vessel {readerNumber}")
         self.Readers[readerNumber].SibInterface.calibrateIfRequired()
         text_notification.setText(f"Calibration Complete for Vessel {readerNumber}")
+        readerFrame.calibrateButton.hide()
+        readerFrame.startButton.enable()
+        readerFrame.showPlotFrame()
 
     def startReaderThread(self, readerNumber):
         self.readerThreads[readerNumber].startReaderLoop()
@@ -100,13 +106,25 @@ class ReaderPageThreadManager:
             f'Are you sure you wish to stop vessel {readerNumber}?')
         if endExperiment == 'yes':
             logging.info('Experiment ended by user.')
+            readerFrame = self.readerAllocator.getReaderFrame(readerNumber)
+            readerFrame.stopButton.disable()
+            text_notification.setText(
+                f"Stopped scanning for vessel {readerNumber}. Please wait for current sweep to complete to reset it."
+            )
             self.readerThreads[readerNumber].thread.shutdown_flag.set()
-            return True
+            self.readerThreads[readerNumber].thread.join()
+            readerFrame.hidePlotFrame()
+            readerFrame.createButton.show()
+            readerFrame.timer.resetTimer()
         else:
             return False
 
-    def readerForm(self) -> (GuidedSetupInput, GlobalFileManager):
-        setupForm = SetupForm(self.RootManager, GuidedSetupInput())
+    def readerForm(self, readerNumber) -> (SetupReaderFormInput, GlobalFileManager):
+        setupForm = SetupReaderForm(
+            self.RootManager,
+            SetupReaderFormInput(),
+            self.readerAllocator.getReaderFrame(readerNumber).frame,
+        )
         try:
             return setupForm.getConfiguration()
         except:

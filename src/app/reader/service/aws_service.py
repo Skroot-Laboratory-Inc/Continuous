@@ -7,7 +7,7 @@ from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import datetimeToMillis
 from src.app.reader.service.aws_service_interface import AwsServiceInterface
-from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.aws_properties import AwsProperties
 
 
@@ -23,10 +23,10 @@ class AwsService(AwsServiceInterface):
         self.awsLastCsvUploadTime = 100001
         self.awsLastNotesUploadTime = 100001
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput):
         self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm)
 
-    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: GuidedSetupInput):
+    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput):
         if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.ReaderFileManager.getSmoothAnalyzed(),
@@ -41,7 +41,7 @@ class AwsService(AwsServiceInterface):
             )
             self.awsLastCsvUploadTime = scanNumber
 
-    def uploadFinalExperimentFiles(self, guidedSetupForm: GuidedSetupInput):
+    def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput):
         self.AwsBoto3Service.uploadFile(
             self.ReaderFileManager.getSmoothAnalyzed(),
             "text/csv",

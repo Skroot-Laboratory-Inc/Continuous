@@ -2,21 +2,21 @@ import socket
 from datetime import datetime
 
 from src.app.helper.helper_functions import formatDate, datetimeToMillis
-from src.app.properties.guided_setup_defaults import GuidedSetupDefaults
+from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
 
 
-class GuidedSetupInput:
+class SetupReaderFormInput:
     def __init__(self):
-        guidedSetupDefaults = GuidedSetupDefaults()
+        setupReaderFormDefaults = SetupReaderFormDefaults()
         self.date = datetime.now()
         self.month = self.date.month
         self.day = self.date.day
         self.year = self.date.year
-        self.scanRate = guidedSetupDefaults.scanRate
-        self.calibrate = guidedSetupDefaults.calibrate
-        self.lotId = guidedSetupDefaults.lotId
+        self.scanRate = setupReaderFormDefaults.scanRate
+        self.calibrate = setupReaderFormDefaults.calibrate
+        self.lotId = setupReaderFormDefaults.lotId
         self.incubator = socket.gethostname()
-        self.equilibrationTime = guidedSetupDefaults.equilibrationTime
+        self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
 
     def getMonth(self) -> int:
