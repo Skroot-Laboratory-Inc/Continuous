@@ -8,6 +8,9 @@ class FrameManager:
         self.Colors = Colors()
         self.RootManager = rootManager
         self.GuiProperties = GuiProperties()
+        self.bannerFrame = self.createBannerFrame()
+        self.bodyFrame = self.createBodyFrame()
+        self.footerFrame = self.createFooterFrame()
 
     def createBannerFrame(self):
         bannerFrame = self.RootManager.createFrame(self.Colors.secondaryColor)

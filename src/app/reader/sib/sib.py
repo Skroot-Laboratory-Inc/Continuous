@@ -33,6 +33,8 @@ class Sib(SibInterface):
         self.yAxisLabel = Properties.yAxisLabel
         self.calibrationFilename = calibrationFileName
         self.calibrationRequired = calibrationRequired
+        self.stopFreqMHz = None
+        self.startFreqMHz = None
         if not calibrationRequired:
             self.loadCalibrationFile()
 
@@ -68,6 +70,7 @@ class Sib(SibInterface):
     def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()
+        self.loadCalibrationFile()
 
     def takeCalibrationScan(self) -> bool:
         try:
@@ -95,6 +98,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set start frequency.")
+            logging.exception("Failed to set start frequency.")
             return False
 
     def setStopFrequency(self, stopFreqMHz) -> bool:
@@ -106,6 +110,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set stop frequency.")
+            logging.exception("Failed to set stop frequency.")
             return False
 
     """ End of required implementations, SIB specific below"""

@@ -1,5 +1,3 @@
-import tkinter as tk
-
 from src.app.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 
@@ -10,9 +8,7 @@ class Indicator:
         self.indicatorColor = self.Colors.green
         self.ReaderPageAllocator = readerPageAllocator
         self.readerNumber = readerNumber
-        self.indicatorCanvas, self.indicator = self.ReaderPageAllocator.createIndicator(
-            self.readerNumber,
-            self.indicatorColor)
+        self.indicatorCanvas, self.indicator = self.ReaderPageAllocator.getIndicator(self.readerNumber)
 
     def changeIndicatorGreen(self):
         self.indicatorCanvas.itemconfig(self.indicator, fill=self.Colors.green)

@@ -7,12 +7,13 @@ import pyautogui
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.guided_setup_input import GuidedSetupInput
+from src.app.helper.helper_functions import centerWindowOnFrame
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.ui_manager.root_manager import RootManager
 
 
-class SetupForm:
-    def __init__(self, rootManager: RootManager, guidedSetupInputs: GuidedSetupInput):
+class SetupReaderForm:
+    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, centeredOn: tk.Frame):
         self.RootManager = rootManager
         self.window = self.RootManager.createTopLevel()
         self.entrySize = 10
@@ -20,22 +21,14 @@ class SetupForm:
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.experimentIdEntry = tk.StringVar(value=guidedSetupInputs.getExperimentId())
+        self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
+        self.incubatorEntry = tk.StringVar(value=guidedSetupInputs.getIncubator())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
-        self.numReadersEntry = tk.StringVar(value=guidedSetupInputs.getNumReaders())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
         self.window.minsize(200, 200)
-        self.window.protocol("WM_DELETE_WINDOW", self.onClosing)
-        w = self.window.winfo_reqwidth()
-        h = self.window.winfo_reqheight()
-        ws = self.window.winfo_screenwidth()
-        hs = self.window.winfo_screenheight()
-        x = (ws / 2) - (w / 2)
-        y = (hs / 2) - (h / 2)
-        self.window.geometry('+%d+%d' % (x, y))
         self.RootManager.raiseAboveRoot(self.window)
 
         ''' MM DD YYYY Date entry '''
@@ -75,15 +68,19 @@ class SetupForm:
 
         entriesMap['Date'] = dateFrame
 
-        entriesMap['Experiment ID'] = tk.Entry(
+        entriesMap['Lot ID'] = tk.Entry(
             self.window,
-            textvariable=self.experimentIdEntry,
+            textvariable=self.lotIdEntry,
             borderwidth=0,
             highlightthickness=0,
             justify="center")
 
-        options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-        entriesMap["Number of Readers"] = createDropdown(self.window, self.numReadersEntry, options, True)
+        entriesMap['Incubator'] = tk.Entry(
+            self.window,
+            textvariable=self.incubatorEntry,
+            borderwidth=0,
+            highlightthickness=0,
+            justify="center")
 
         options = ["2", "5", "10"]
         entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, True)
@@ -114,12 +111,13 @@ class SetupForm:
                              bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
 
-        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='W.TButton')
+        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='Default.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
+        centerWindowOnFrame(self.window, centeredOn)
         self.RootManager.waitForWindow(self.window)
 
-    def getConfiguration(self) -> (GuidedSetupInput, GlobalFileManager):
+    def getConfiguration(self) -> (SetupReaderFormInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
 
     def setCalibrate(self):
@@ -129,14 +127,14 @@ class SetupForm:
             self.guidedSetupResults.calibrate = False
 
     def onSubmit(self):
-        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.experimentIdEntry.get() != "":
-            self.guidedSetupResults.numReaders = int(self.numReadersEntry.get())
+        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()
-            self.guidedSetupResults.experimentId = self.experimentIdEntry.get()
+            self.guidedSetupResults.lotId = self.lotIdEntry.get()
+            self.guidedSetupResults.incubator = self.incubatorEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.takeScreenshot()
@@ -153,21 +151,14 @@ class SetupForm:
         if not os.path.exists(baseSavePath):
             os.mkdir(baseSavePath)
         if not os.path.exists(
-                f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"):
-            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()}"
+                f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"):
+            return f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"
         else:
             incrementalNumber = 0
             while os.path.exists(
-                    f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"):
+                    f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"):
                 incrementalNumber += 1
-            return f"{baseSavePath}/{date}_{self.experimentIdEntry.get()} ({incrementalNumber})"
-
-    def onClosing(self):
-        if messagebox.askokcancel("Exit", "Are you sure you want to close the program?"):
-            self.window.destroy()
-            self.RootManager.destroyRoot()
-        else:
-            self.RootManager.raiseAboveRoot(self.window)
+            return f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"
 
     def takeScreenshot(self):
         x, y = self.window.winfo_rootx(), self.window.winfo_rooty()

@@ -11,6 +11,7 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.helper.helper_functions import getCwd, getOperatingSystem, runShScript
 from src.app.widget import release_notes, text_notification
+from src.resources.version import Version
 
 
 class SoftwareUpdate(AwsBoto3):
@@ -20,8 +21,8 @@ class SoftwareUpdate(AwsBoto3):
         self.newestMinorVersion = minor_version
         self.RootManager = rootManager
         self.newestZipVersion = ''
-        self.releaseNotesPrefix = 'release-notes'
-        with open('../resources/release-notes.json') as f:
+        self.releaseNotesPrefix = f'release-notes/{Version().getUseCase()}'
+        with open('../resources/release-notes-manufacturing.json') as f:
             self.releaseNotes = json.load(f)
         self.CommonFileManager = CommonFileManager()
 
@@ -101,7 +102,7 @@ class SoftwareUpdate(AwsBoto3):
                 dictionary = json.load(f)
             self.releaseNotes.update(dictionary)
             os.remove(localFilename)
-            with open(f"../resources/release-notes.json", "w") as outfile:
+            with open(f"../resources/release-notes-manufacturing.json", "w") as outfile:
                 outfile.write(json.dumps(self.releaseNotes))
 
     def getCurrentReleaseNotes(self):

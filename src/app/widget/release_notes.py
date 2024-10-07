@@ -74,10 +74,10 @@ class ReleaseNotes(PopupInterface):
     def createDownloadAndCancelButtons(self, window, row):
         row = self.createSpacer(window, row)
         downloadButton = ttk.Button(window, text="Download", command=lambda: self.setDownload(True),
-                                    style='W.TButton')
+                                    style='Default.TButton')
         downloadButton.grid(row=row, column=0, sticky='w')
         cancelButton = ttk.Button(window, text="Cancel", command=lambda: self.setDownload(False),
-                                  style='W.TButton')
+                                  style='Default.TButton')
         cancelButton.grid(row=row, column=1, sticky='w')
 
     def setDownload(self, value):

@@ -5,15 +5,15 @@ from src.app.buttons.button_interface import ButtonInterface
 
 class StartButton(ButtonInterface):
     def __init__(self, master, invokeFn):
-        self.startButton = ttk.Button(
+        self.button = ttk.Button(
             master,
-            text="Start Experiment",
-            style='W.TButton',
+            text="Start",
+            style='Default.TButton',
             command=lambda: invokeFn(),
         )
 
-    def place(self):
-        self.startButton.place(relx=0.46, rely=0.47)
+    def disable(self):
+        self.button["state"] = "disabled"
 
-    def destroySelf(self):
-        self.startButton.destroy()
+    def enable(self):
+        self.button["state"] = "normal"

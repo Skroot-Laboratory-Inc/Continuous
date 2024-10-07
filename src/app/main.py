@@ -13,25 +13,26 @@ except KeyError:
         '.',
         '../..',
     ]
-import json
 
 import matplotlib as mpl
 
+from src.resources.version import Version
 from src.app.ui_manager.root_manager import RootManager
 from src.app.main_shared.main_shared import MainShared
 
 
 class Main(MainShared):
-    def __init__(self, version, major_version, minor_version):
+    def __init__(self):
         self.GuiManager = RootManager()
-        super().__init__(self.GuiManager, version, major_version, minor_version)
+        version = Version()
+        super().__init__(
+            self.GuiManager,
+            f"Version: Cell_v{version.getMajorVersion()}.{version.getMinorVersion()}",
+            version.getMajorVersion(),
+            version.getMinorVersion(),
+        )
         self.GuiManager.callMainLoop()
 
 
-with open('../resources/version.json') as versionFile:
-    _version = json.load(versionFile)
-
-_major_version = _version['major_version']
-_minor_version = _version['minor_version']
 mpl.use('TkAgg')
-Main(f"Version: Cell_v{_major_version}.{_minor_version}", _major_version, _minor_version)
+Main()

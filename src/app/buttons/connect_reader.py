@@ -3,17 +3,14 @@ from tkinter import ttk
 from src.app.buttons.button_interface import ButtonInterface
 
 
-class CalibrateReaderButton(ButtonInterface):
+class ConnectReaderButton(ButtonInterface):
     def __init__(self, master, invokeFn):
         self.button = ttk.Button(
             master,
-            text="Calibrate",
+            text="Connect Reader",
             style='Default.TButton',
             command=lambda: invokeFn(),
         )
-
-    def disable(self):
-        self.button["state"] = "disabled"
 
     def hide(self):
         self.button["state"] = "disabled"

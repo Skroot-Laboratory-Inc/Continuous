@@ -1,11 +1,12 @@
 import os
-import json
 import shutil
-import zipfile
 import traceback
+import zipfile
 
 import boto3
 from botocore.config import Config
+
+from src.resources.version import Version
 
 
 def zip_files(folder_path, zip_name):
@@ -21,6 +22,7 @@ def zip_files(folder_path, zip_name):
                 print(file_path, arcname)
                 zipf.write(file_path, arcname)
 
+
 def s3_upload_file(file_path, file_name, aws_folder_name, tag_str=''):
     s3 = boto3.resource('s3')
     b = s3.Bucket('skroot-data')
@@ -28,6 +30,7 @@ def s3_upload_file(file_path, file_name, aws_folder_name, tag_str=''):
         file_path, f'{aws_folder_name}/{file_name}',
         ExtraArgs={'Tagging': tag_str}
     )
+
 
 def check_before_overwrite(bucket, zip_name):
     try:
@@ -45,22 +48,19 @@ def check_before_overwrite(bucket, zip_name):
     except:
         raise
 
-with open('../version.json') as j_file:
-    version = json.load(j_file)
 
-major_version = version['major_version']
-minor_version = version['minor_version']
-release_bucket = version['release_bucket']
-valid_release_bucket_values = ["Dev", "R&D", "Production"]
-if release_bucket not in valid_release_bucket_values:
-    raise Exception(f"release_bucket is not a valid value, '{release_bucket}' not in {valid_release_bucket_values}")
+version = Version()
+major_version = version.getMajorVersion()
+minor_version = version.getMinorVersion()
+release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-release_notes_fp = '../release-notes.json'
+release_notes_fp = '../release-notes-manufacturing.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
-release_notes_bucket = 'release-notes'
+# Eventually we want this to be release specific, but will require some timing and app updates.
+release_notes_bucket = f'release-notes/{version.getUseCase()}'
 
 try:
     # zip up the whole package
@@ -76,7 +76,7 @@ try:
         software_releases_bucket, 
         tag_str=f'major_version={major_version}&minor_version={minor_version}'
     )
-    # Upload the resources/release-notes.json file to the bucket skroot-data/release-notes
+    # Upload the resources/release-notes-manufacturing.json file to the bucket skroot-data/release-notes
     print(f" > Uploading Release Notes as '{release_notes_name}' from '{release_notes_fp}'")
     s3_upload_file(
         release_notes_fp, 

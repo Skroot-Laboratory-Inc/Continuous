@@ -123,6 +123,18 @@ def formatDate(date):
     return date.isoformat()
 
 
+def centerWindowOnFrame(window, frame):
+    window.update()
+    frame_x = frame.winfo_x()
+    frame_y = frame.winfo_y()
+    center_x = frame_x + (frame.winfo_width() // 2)
+    center_y = frame_y + (frame.winfo_height() // 2)
+    x = center_x - (window.winfo_width() // 2)
+    y = center_y - (window.winfo_height() // 2)
+    print(x, y)
+    window.geometry('+%d+%d' % (x, y))
+
+
 def formatDatetime(date: datetime.datetime):
     return date.strftime('%m/%d/%Y %I:%M:%S %p')
 
@@ -139,7 +151,6 @@ def getZeroPoint(equilibrationTime, frequencies):
         while np.isnan(zeroPoint):
             zeroPoint = np.nanmean(frequencies[-pointsUsed:])
             pointsUsed += 5
-            logging.info(zeroPoint, pointsUsed, frequencies)
             if pointsUsed > 100:
                 zeroPoint = np.nanmean(frequencies)
                 break

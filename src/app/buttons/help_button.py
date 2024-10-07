@@ -10,26 +10,22 @@ from src.app.widget.information_panel import InformationPanel
 
 
 class HelpButton(ButtonInterface):
-    def __init__(self, rootManager: RootManager, AppModule):
+    def __init__(self, master, rootManager: RootManager):
         fileManager = CommonFileManager()
         image = Image.open(fileManager.getHelpIcon())
         resizedImage = image.resize((15, 15), Image.Resampling.LANCZOS)
         self.helpIcon = ImageTk.PhotoImage(resizedImage)
         self.RootManager = rootManager
-        self.AppModule = AppModule
         self.helpButton = ttk.Button(
-            self.RootManager.getRoot(),
+            master,
             text="Need help?",
             image=self.helpIcon,
             compound=tk.LEFT,
-            style='W.TButton',
+            style='Help.TButton',
             command=lambda: self.invoke())
 
     def place(self):
         self.helpButton.pack(side='bottom', anchor='se')
 
     def invoke(self):
-        InformationPanel(self.AppModule, self.helpIcon, self.RootManager)
-
-    def destroySelf(self):
-        self.helpButton.destroy()
+        InformationPanel(self.helpIcon, self.RootManager)
