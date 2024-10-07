@@ -25,6 +25,9 @@ class Version:
     def getMinorVersion(self) -> int:
         return self.minorVersion
 
+    def getUseCase(self) -> str:
+        return self.useCase.value
+
     def getReleaseBucket(self) -> str:
         if self.developmentVersion == DevelopmentVersion.Dev:
             return self.developmentVersion.value

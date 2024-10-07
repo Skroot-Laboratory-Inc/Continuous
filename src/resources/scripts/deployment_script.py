@@ -56,12 +56,11 @@ release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-release_notes_fp = '../release-notes.json'
+release_notes_fp = '../release-notes-manufacturing.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
-release_notes_bucket = 'release-notes'
 # Eventually we want this to be release specific, but will require some timing and app updates.
-# release_notes_bucket = f'release-notes/{release_bucket}'
+release_notes_bucket = f'release-notes/{version.getUseCase()}'
 
 try:
     # zip up the whole package
@@ -77,7 +76,7 @@ try:
         software_releases_bucket, 
         tag_str=f'major_version={major_version}&minor_version={minor_version}'
     )
-    # Upload the resources/release-notes.json file to the bucket skroot-data/release-notes
+    # Upload the resources/release-notes-manufacturing.json file to the bucket skroot-data/release-notes
     print(f" > Uploading Release Notes as '{release_notes_name}' from '{release_notes_fp}'")
     s3_upload_file(
         release_notes_fp, 
