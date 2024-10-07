@@ -19,7 +19,8 @@ class PostProcessingAnalyzer:
         self.equilibrationTime = equilibrationTime
         self.experimentFolderDirectory = experimentFolderDirectory
         self.summaryAnalyzedLocation = f'{self.experimentFolderDirectory}/Post Processing'
-        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/Reader **/'))]
+        self.readerDirectories = [folder for folder in glob.glob(f'{self.experimentFolderDirectory}/Reader **/')]
+        self.readerDirectories.sort(key=self.sortFn)
         self.rawDataScansMap = {}
         self.resultSetMap = {}
         self.zeroPointMap = {}
@@ -103,3 +104,7 @@ class PostProcessingAnalyzer:
                 # Filename is not a number
                 pass
         return numberedFiles
+
+    @staticmethod
+    def sortFn(folderDirectory):
+        return int(os.path.basename(os.path.dirname(folderDirectory)).replace("Reader ", ""))
