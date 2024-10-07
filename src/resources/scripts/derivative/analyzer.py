@@ -12,13 +12,15 @@ from src.app.reader.analyzer.analyzer import Analyzer
 
 
 class DerivativeAnalyzer:
-    def __init__(self, experimentFolderDirectory, equilibrationTime):
+    def __init__(self, experimentFolderDirectory, equilibrationTime, analysisTime):
         self.equilibrationTime = equilibrationTime
+        self.analysisTime = analysisTime
         self.experimentFolderDirectory = experimentFolderDirectory
         self.postProcessingLocation = f'{self.experimentFolderDirectory}/Post Processing'
         if not os.path.exists(self.postProcessingLocation):
             os.mkdir(self.postProcessingLocation)
-        self.readerDirectories = [folder for folder in sorted(glob.glob(f'{self.experimentFolderDirectory}/Reader **/'))]
+        self.readerDirectories = [folder for folder in glob.glob(f'{self.experimentFolderDirectory}/Reader **/')]
+        self.readerDirectories.sort(key=self.sortFn)
         self.analyzedFileMap = {}
         self.resultMap = {}
 
@@ -36,6 +38,9 @@ class DerivativeAnalyzer:
             readerSGICopy = readerSGI.copy()
             for index, value in enumerate(readerTime):
                 if value < self.equilibrationTime:
+                    readerTimeCopy.remove(value)
+                    readerSGICopy.remove(readerSGI[index])
+                if value > self.analysisTime:
                     readerTimeCopy.remove(value)
                     readerSGICopy.remove(readerSGI[index])
             cubicValues, derivativeValues = analyzer.calculateDerivativeValues(readerTimeCopy, readerSGICopy)
@@ -77,3 +82,7 @@ class DerivativeAnalyzer:
                 rowData.append(results["derivative"])
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
+
+    @staticmethod
+    def sortFn(folderDirectory):
+        return int(os.path.basename(os.path.dirname(folderDirectory)).replace("Reader ", ""))
