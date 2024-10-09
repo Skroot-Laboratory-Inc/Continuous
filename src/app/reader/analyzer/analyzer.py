@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, formatDatetime
+from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, datetimeToMillis
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
@@ -78,13 +78,10 @@ class Analyzer(AnalyzerInterface):
         with open(self.FileManager.getSmoothAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth())
-            writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
+            writer.writerow(['Timestamp', 'Skroot Growth Index (SGI)'])
             writer.writerows(zip(
-                self.ResultSet.getFilenames(),
-                self.ResultSet.getDenoiseTimeSmooth(),
-                [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()],
+                [datetimeToMillis(timestamp) for timestamp in self.ResultSet.getTimestamps()],
                 equilibratedY,
-                self.ResultSet.getDenoiseFrequencySmooth(),
             ))
 
     def setZeroPoint(self, zeroPoint):

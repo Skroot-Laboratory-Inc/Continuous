@@ -97,7 +97,7 @@ class ReaderThreadManager:
 
     def mainLoop(self):
         if self.isDevMode:
-            self.guidedSetupForm.scanRate = DevProperties().scanRate
+            self.scanRate = DevProperties().scanRate
         self.thread.shutdown_flag = threading.Event()
 
         while not self.thread.shutdown_flag.is_set():
