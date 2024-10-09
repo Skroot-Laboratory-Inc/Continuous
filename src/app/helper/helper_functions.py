@@ -131,7 +131,6 @@ def centerWindowOnFrame(window, frame):
     center_y = frame_y + (frame.winfo_height() // 2)
     x = center_x - (window.winfo_width() // 2)
     y = center_y - (window.winfo_height() // 2)
-    print(x, y)
     window.geometry('+%d+%d' % (x, y))
 
 
