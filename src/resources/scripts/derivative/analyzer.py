@@ -44,7 +44,7 @@ class DerivativeAnalyzer:
                     readerTimeCopy.remove(value)
                     readerSGICopy.remove(readerSGI[index])
             cubicValues, derivativeValues = analyzer.calculateDerivativeValues(readerTimeCopy, readerSGICopy)
-            potentialHarvestTime = readerTime[derivativeValues.index(max(derivativeValues))]
+            potentialHarvestTime = readerTimeCopy[derivativeValues.index(max(derivativeValues))]
 
             if readerTimeCopy.index(potentialHarvestTime) < 0.99*len(readerTimeCopy):
                 plt.axvline(x=potentialHarvestTime)
