@@ -13,6 +13,7 @@ from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDS
 from src.app.exception.sib_exception import SIBReconnectException
 from src.app.helper import helper_functions
 from src.app.model.sweep_data import SweepData
+from src.app.properties.common_properties import CommonProperties
 from src.app.properties.sib_properties import SibProperties
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
@@ -82,6 +83,8 @@ class Sib(SibInterface):
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
+            self.setStartFrequency(CommonProperties().defaultStartFrequency)
+            self.setStopFrequency(CommonProperties().defaultEndFrequency)
             return True
         except:
             self.calibrationFailed = True

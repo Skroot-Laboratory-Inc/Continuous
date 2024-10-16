@@ -61,7 +61,7 @@ class ReaderPageAllocator:
                 self.createStartButton(readerFrame, lambda num=readerNumber: self.startReader(num)),
                 self.createStopButton(readerFrame, lambda num=readerNumber: self.stopReader(num)),
                 # self.createConnectButton(readerFrame, lambda num=readerNumber: self.connectFn(num)),
-                self.createCalibrateButton(readerFrame, lambda num=readerNumber: self.calibrateReader(  num)),
+                self.createCalibrateButton(readerFrame, lambda num=readerNumber: self.calibrateReader(num)),
                 self.createAddReaderButton(readerFrame, lambda num=readerNumber: self.connectNewReader(num)),
             )
 
