@@ -48,18 +48,17 @@ class SibFinder:
             except:
                 attempts += 1
                 if attempts > 3:
-                    messagebox.showerror(
+                    messagebox.showinfo(
                         f'Reader {readerNumber}',
-                        f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
-                    break
+                        f'Failed to connect to Reader {readerNumber}. Cancelling connection.')
                 else:
                     shouldContinue = messagebox.askokcancel(
                         f'Reader {readerNumber}',
-                        f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
-                        f'Press cancel to shutdown the app.')
+                        f'Reader {readerNumber} not found\n'
+                        f'Please plug in Vessel {readerNumber} then press OK\n'
+                        'Press cancel to cancel the connection process.')
                     if not shouldContinue:
                         break
-        raise UserExitedException("The user chose not to go forward during port finding.")
 
 
 def instantiateReader(port, portAllocator, readerNumber, globalFileManager, calibrationRequired) -> SibInterface:
