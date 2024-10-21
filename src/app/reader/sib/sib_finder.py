@@ -4,8 +4,10 @@ from tkinter import messagebox
 
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper.helper_functions import getOperatingSystem
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.sib.dev_sib import DevSib
+from src.app.reader.sib.hub_port_allocator import HubPortAllocator
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
@@ -15,7 +17,10 @@ from src.app.widget import text_notification
 
 class SibFinder:
     def __init__(self, rootManager: RootManager):
-        self.PortAllocator = PortAllocator()
+        if getOperatingSystem() == "windows":
+            self.PortAllocator = PortAllocator()
+        else:
+            self.PortAllocator = HubPortAllocator()
         self.RootManager = rootManager
 
     def connectSib(self, readerNumber, globalFileManager, calibrate: bool):
@@ -38,7 +43,7 @@ class SibFinder:
         while filteredPorts == [] and attempts <= 3:
             time.sleep(2)
             try:
-                port = self.PortAllocator.getNewPort()
+                port = self.PortAllocator.getPortForReader(readerNumber)
                 return port
             except:
                 attempts += 1

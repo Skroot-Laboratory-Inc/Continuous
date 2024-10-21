@@ -2,26 +2,26 @@ from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
 from src.app.helper.helper_functions import getOperatingSystem
+from src.app.reader.sib.port_allocator_interface import PortAllocatorInterface
 
 
-class PortAllocator:
+class PortAllocator(PortAllocatorInterface):
     def __init__(self):
-        self.ports = []
+        self.ports = {}
         self.os = getOperatingSystem()
 
-    def getNewPort(self) -> (ListPortInfo, str):
-        port = getNewPorts(self.os, self.ports)
-        self.ports.append(port.device)
+    def getPortForReader(self, readerNumber) -> ListPortInfo:
+        if readerNumber in self.ports:
+            return self.ports[readerNumber]
+        port = getNewPorts(self.os, self.ports.values())
+        self.ports[readerNumber] = port.device
         return port
 
-    def removePort(self, port):
-        self.ports.remove(port)
+    def removePort(self, readerNumber):
+        del self.ports[readerNumber]
 
-    @staticmethod
-    def getMatchingPort(serialNumber) -> str:
-        ports = list_ports.comports()
-        port = [port.device for port in ports if port.serial_number == serialNumber][0]
-        return port
+    def resetPorts(self):
+        self.ports = {}
 
 
 def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
