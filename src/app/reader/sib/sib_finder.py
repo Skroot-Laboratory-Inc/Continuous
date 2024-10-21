@@ -4,8 +4,10 @@ from tkinter import messagebox
 
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper.helper_functions import getOperatingSystem
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.sib.dev_sib import DevSib
+from src.app.reader.sib.hub_port_allocator import HubPortAllocator
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib import Sib
 from src.app.reader.sib.sib_interface import SibInterface
@@ -15,7 +17,10 @@ from src.app.widget import text_notification
 
 class SibFinder:
     def __init__(self, rootManager: RootManager):
-        self.PortAllocator = PortAllocator()
+        if getOperatingSystem() == "windows":
+            self.PortAllocator = PortAllocator()
+        else:
+            self.PortAllocator = HubPortAllocator()
         self.RootManager = rootManager
 
     def connectSib(self, readerNumber, globalFileManager, calibrate: bool):
@@ -38,23 +43,22 @@ class SibFinder:
         while filteredPorts == [] and attempts <= 3:
             time.sleep(2)
             try:
-                port = self.PortAllocator.getNewPort()
+                port = self.PortAllocator.getPortForReader(readerNumber)
                 return port
             except:
                 attempts += 1
                 if attempts > 3:
-                    messagebox.showerror(
+                    messagebox.showinfo(
                         f'Reader {readerNumber}',
-                        f'Reader {readerNumber}\nNew Reader not found more than 3 times,\nApp Restart required.')
-                    break
+                        f'Failed to connect to Reader {readerNumber}. Cancelling connection.')
                 else:
                     shouldContinue = messagebox.askokcancel(
                         f'Reader {readerNumber}',
-                        f'Reader {readerNumber}\nNew Reader not found, ensure a new Reader is plugged in, then press OK\n'
-                        f'Press cancel to shutdown the app.')
+                        f'Reader {readerNumber} not found\n'
+                        f'Please plug in Vessel {readerNumber} then press OK\n'
+                        'Press cancel to cancel the connection process.')
                     if not shouldContinue:
                         break
-        raise UserExitedException("The user chose not to go forward during port finding.")
 
 
 def instantiateReader(port, portAllocator, readerNumber, globalFileManager, calibrationRequired) -> SibInterface:

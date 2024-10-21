@@ -127,7 +127,7 @@ class Sib(SibInterface):
 
     def close(self) -> bool:
         try:
-            self.PortAllocator.removePort(self.port)
+            self.PortAllocator.removePort(self.readerNumber)
             self.sib.close()
             return True
         except:
@@ -228,7 +228,7 @@ class Sib(SibInterface):
             self.reset()
             time.sleep(1.0)
         try:
-            port = self.PortAllocator.getMatchingPort(self.serialNumber)
+            port = self.PortAllocator.getPortForReader(self.readerNumber)
             self.initialize(port)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
