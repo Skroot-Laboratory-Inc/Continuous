@@ -19,3 +19,18 @@ These files are the files executed at runtime to run the application
 These files are where automated testing suites are utilized for code quality.
 ### Resources
 These files are static files used throughout the codebase, and by developers for accelerated development.
+
+# Git Management
+## Main Branches
+- `master-R&D` is the master branch for the R&D track.
+- `master` is the master branch for the Manufacturing track.
+
+### Applying changes from one branch to both R&D and Manufacturing
+1. Create the change based off of either `master` or `master-R&D`
+   2. For this example will create them off of `master`
+3. Merge the changes into `master`
+3. git checkout -b `branch_name` `origin/master-R&D`
+   4. Creates a branch called `branch_name` based off of `origin/master-R&D`
+4. git cherry-pick `origin/master`
+   5. Grabs the last commit from `origin/master` and applied it to `branch_name`
+5. Merge `branch_name` into `master-R&D`

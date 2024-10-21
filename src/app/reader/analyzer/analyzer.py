@@ -32,11 +32,12 @@ class Analyzer(AnalyzerInterface):
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(datetime.now())
         try:
-            _, maxFreq = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
+            peakHeight, maxFreq, peakWidth = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
             resultSet.setMaxFrequency(maxFreq)
-            maxMag, maxFreq = self.findMaximumDataSmooth(sweepData)
+            maxMag, maxFreq, peakWidth = self.findMaximumDataSmooth(sweepData)
             resultSet.setMaxVoltsSmooth(maxMag)
             resultSet.setMaxFrequencySmooth(maxFreq)
+            resultSet.setPeakWidthSmooth(peakWidth)
             if shouldDenoise:
                 time, frequency = self.denoise(
                     self.ResultSet.getTime() + [resultSet.time],
@@ -138,7 +139,7 @@ class Analyzer(AnalyzerInterface):
         amplitude = popt[0]
         centroid = popt[1]
         peakWidth = popt[2]
-        return amplitude, centroid
+        return amplitude, centroid, peakWidth
 
     @staticmethod
     def calculateDerivativeValues(time, sgi):

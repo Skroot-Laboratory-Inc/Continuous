@@ -12,6 +12,7 @@ class ResultSet:
         self.maxFrequencySmooth = []
         self.filenames = []
         self.timestamps = []
+        self.peakWidthsSmooth = []
 
         self.denoiseTimeSmooth = []
         self.denoiseTime = []
@@ -20,6 +21,9 @@ class ResultSet:
 
     def getTime(self) -> List[float]:
         return self.time
+
+    def getPeakWidthsSmooth(self) -> List[float]:
+        return self.peakWidthsSmooth
 
     def getMaxFrequency(self) -> List[float]:
         return self.maxFrequency
@@ -55,6 +59,7 @@ class ResultSet:
         self.maxFrequencySmooth = self.maxFrequencySmooth[-1:]
         self.filenames = self.filenames[-1:]
         self.timestamps = self.timestamps[-1:]
+        self.peakWidthsSmooth = self.peakWidthsSmooth[-1:]
 
         self.denoiseFrequency = self.denoiseFrequency[-1:]
         self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
@@ -68,9 +73,11 @@ class ResultSet:
         self.maxFrequencySmooth.append(values.maxFrequencySmooth)
         self.filenames.append(values.filename)
         self.timestamps.append(values.timestamp)
+        self.peakWidthsSmooth.append(values.peakWidthSmooth)
 
         # Denoise values change with time, so the entire array gets set at once.
         self.denoiseTime = values.denoiseTime
         self.denoiseTimeSmooth = values.denoiseTimeSmooth
         self.denoiseFrequency = values.denoiseFrequency
         self.denoiseFrequencySmooth = values.denoiseFrequencySmooth
+

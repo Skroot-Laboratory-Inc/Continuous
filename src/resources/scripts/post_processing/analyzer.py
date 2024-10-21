@@ -78,6 +78,14 @@ class PostProcessingAnalyzer:
                     ResultSet.getMaxFrequencySmooth()
                 )
                 rowData.append(readerSGI)
+
+                rowHeaders.append(f'{readerId} Magnitude')
+                readerSGI = ResultSet.getMaxVoltsSmooth()
+                rowData.append(readerSGI)
+
+                rowHeaders.append(f'{readerId} Peak Width')
+                peakWidths = ResultSet.getPeakWidthsSmooth()
+                rowData.append(peakWidths)
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 

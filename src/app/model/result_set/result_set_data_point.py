@@ -9,6 +9,7 @@ class ResultSetDataPoint:
         self.maxFrequencySmooth = np.nan
         self.filename = ""
         self.timestamp = np.nan
+        self.peakWidthSmooth = np.nan
 
         self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
         self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
@@ -38,6 +39,9 @@ class ResultSetDataPoint:
 
     def setMaxFrequencySmooth(self, maxFrequencySmoothed):
         self.maxFrequencySmooth = maxFrequencySmoothed
+
+    def setPeakWidthSmooth(self, peakWidthSmooth):
+        self.peakWidthSmooth = peakWidthSmooth
 
     def setFilename(self, filename):
         self.filename = filename
