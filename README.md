@@ -31,6 +31,6 @@ These files are static files used throughout the codebase, and by developers for
 3. Merge the changes into `master`
 3. git checkout -b `branch_name` `origin/master-R&D`
    4. Creates a branch called `branch_name` based off of `origin/master-R&D`
-4. git cherry-pick `origin/master`
+4. git cherry-pick `origin/master` -m 1
    5. Grabs the last commit from `origin/master` and applied it to `branch_name`
 5. Merge `branch_name` into `master-R&D`
