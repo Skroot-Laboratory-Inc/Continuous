@@ -28,4 +28,8 @@ class HelpButton(ButtonInterface):
         self.helpButton.pack(side='bottom', anchor='se')
 
     def invoke(self):
-        InformationPanel(self.helpIcon, self.RootManager)
+        self.helpButton["state"] = "disabled"
+        infoPanel = InformationPanel(self.helpIcon, self.RootManager)
+        self.RootManager.waitForWindow(infoPanel.window)
+        self.helpButton["state"] = "normal"
+

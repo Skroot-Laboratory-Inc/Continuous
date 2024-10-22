@@ -9,12 +9,14 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper.helper_functions import centerWindowOnFrame
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 
 
 class SetupReaderForm:
     def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, centeredOn: tk.Frame):
         self.RootManager = rootManager
+        self.Fonts = FontTheme()
         self.window = self.RootManager.createTopLevel()
         self.entrySize = 10
         self.guidedSetupResults = guidedSetupInputs
@@ -28,35 +30,38 @@ class SetupReaderForm:
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
-        self.window.minsize(200, 200)
-        self.RootManager.raiseAboveRoot(self.window)
 
         ''' MM DD YYYY Date entry '''
         dateFrame = tk.Frame(self.window, bg='white')
         tk.Spinbox(dateFrame,
                    textvariable=self.monthEntry,
                    width=round(self.entrySize / 4),
+                   font=self.Fonts.setupFormText,
                    from_=1,
                    to=12,
                    borderwidth=0,
                    highlightthickness=0).grid(row=0, column=1)
         tk.Label(dateFrame,
                  text="/",
+                 font=self.Fonts.setupFormText,
                  bg='white',
                  width=round(self.entrySize / 10)).grid(row=0, column=2)
         tk.Spinbox(dateFrame,
                    textvariable=self.dayEntry,
                    width=round(self.entrySize / 4),
+                   font=self.Fonts.setupFormText,
                    from_=1,
                    to=31,
                    borderwidth=0,
                    highlightthickness=0).grid(row=0, column=3)
         tk.Label(dateFrame,
                  text="/", bg='white',
+                 font=self.Fonts.setupFormText,
                  width=round(self.entrySize / 10)).grid(row=0, column=4)
         tk.Spinbox(dateFrame,
                    textvariable=self.yearEntry,
                    width=round(self.entrySize / 2),
+                   font=self.Fonts.setupFormText,
                    from_=2023,
                    to=2050,
                    borderwidth=0,
@@ -72,6 +77,7 @@ class SetupReaderForm:
             self.window,
             textvariable=self.lotIdEntry,
             borderwidth=0,
+            font=self.Fonts.setupFormText,
             highlightthickness=0,
             justify="center")
 
@@ -79,6 +85,7 @@ class SetupReaderForm:
             self.window,
             textvariable=self.incubatorEntry,
             borderwidth=0,
+            font=self.Fonts.setupFormText,
             highlightthickness=0,
             justify="center")
 
@@ -90,7 +97,7 @@ class SetupReaderForm:
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
-            tk.Label(self.window, text=entryLabelText, bg='white').grid(row=row, column=0, sticky='w')
+            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row, column=0, sticky='w')
             entry.grid(row=row, column=1, sticky="ew")
             row += 1
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
@@ -105,8 +112,10 @@ class SetupReaderForm:
         var = tk.Checkbutton(self.window,
                              text="Calibration Required",
                              variable=self.calibrateRequired,
+                             font=self.Fonts.primary,
                              onvalue=1,
                              offvalue=0,
+                             pady=5,
                              command=self.setCalibrate,
                              bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
@@ -114,6 +123,9 @@ class SetupReaderForm:
         self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='Default.TButton')
         row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
+        self.cancelButton = ttk.Button(self.window, text="Cancel", command=lambda: self.onCancel(), style='Default.TButton')
+        self.cancelButton.grid(row=row, column=1, sticky="se")
+        self.RootManager.raiseAboveRoot(self.window)
         centerWindowOnFrame(self.window, centeredOn)
         self.RootManager.waitForWindow(self.window)
 
@@ -126,6 +138,9 @@ class SetupReaderForm:
         if self.calibrateRequired.get() == 0:
             self.guidedSetupResults.calibrate = False
 
+    def onCancel(self):
+        self.window.destroy()
+
     def onSubmit(self):
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
@@ -137,7 +152,6 @@ class SetupReaderForm:
             self.guidedSetupResults.incubator = self.incubatorEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
-            self.takeScreenshot()
             self.window.destroy()
         else:
             messagebox.showerror(
@@ -160,23 +174,13 @@ class SetupReaderForm:
                 incrementalNumber += 1
             return f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"
 
-    def takeScreenshot(self):
-        x, y = self.window.winfo_rootx(), self.window.winfo_rooty()
-        w, h = self.window.winfo_width(), self.window.winfo_height()
-        if not os.path.exists(os.path.dirname(self.guidedSetupResults.savePath)):
-            os.mkdir(os.path.dirname(self.guidedSetupResults.savePath))
-        if not os.path.exists(self.guidedSetupResults.savePath):
-            os.mkdir(self.guidedSetupResults.savePath)
-        im = pyautogui.screenshot(region=(x, y, w, round(h * 0.77)))
-        im.save(self.GlobalFileManager.getSetupForm())
-
 
 def createDropdown(root, entryVariable, options, addSpace):
     if addSpace:
         options = [f"             {option}             " for option in options]
     scanRateValue = entryVariable.get()
     optionMenu = tk.OptionMenu(root, entryVariable, *options)
-    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False)
+    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False, font=FontTheme().setupFormText)
     optionMenu["menu"].config(bg="white")
     entryVariable.set(scanRateValue)
     return optionMenu

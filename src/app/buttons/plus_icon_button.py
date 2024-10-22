@@ -14,6 +14,7 @@ class PlusIconButton(ButtonInterface):
         image = Image.open(commonFileManager.getAddIcon())
         resizedImage = image.resize((200, 200), Image.Resampling.LANCZOS)
         self.createIcon = ImageTk.PhotoImage(resizedImage)
+        self.invokeFn = invokeFn
 
         self.button = tk.Button(
             master,
@@ -21,7 +22,12 @@ class PlusIconButton(ButtonInterface):
             highlightthickness=0,
             borderwidth=0,
             image=self.createIcon,
-            command=lambda: invokeFn())
+            command=lambda: self.invoke())
+
+    def invoke(self):
+        self.button["state"] = "disabled"
+        self.invokeFn()
+        self.button["state"] = "normal"
 
     def hide(self):
         self.button["state"] = "disabled"

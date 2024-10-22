@@ -1,20 +1,22 @@
 import tkinter as tk
 
 from src.app.helper.helper_functions import isMenuOptionPresent
+from src.app.theme.font_theme import FontTheme
 
 
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
-        self.menubar = tk.Menu(self.root)
+        self.fonts = FontTheme()
+        self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
         self.setMenubar()
 
     def instantiateNewMenubarRibbon(self):
-        return tk.Menu(self.menubar, tearoff=0)
+        return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar, border=10)
 
     def addMenubarCascade(self, label, menu):
         if not isMenuOptionPresent(self.menubar, label):
-            self.menubar.add_cascade(label=label, menu=menu)
+            self.menubar.add_cascade(label=label, menu=menu, font=self.fonts.menubar)
 
     def setMenubar(self):
         self.root.config(menu=self.menubar)
