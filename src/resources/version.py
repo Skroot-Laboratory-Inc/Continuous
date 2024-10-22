@@ -14,8 +14,8 @@ class UseCase(Enum):
 
 class Version:
     def __init__(self):
-        self.majorVersion = 2.5
-        self.minorVersion = 55
+        self.majorVersion = 1.0
+        self.minorVersion = 2
         self.useCase = UseCase.Manufacturing
         self.developmentVersion = DevelopmentVersion.Dev
 
@@ -29,8 +29,5 @@ class Version:
         return self.useCase.value
 
     def getReleaseBucket(self) -> str:
-        if self.developmentVersion == DevelopmentVersion.Dev:
-            return self.developmentVersion.value
-        else:
-            return f"{self.useCase.value}-{self.developmentVersion.value}"
+        return f"{self.useCase.value}-{self.developmentVersion.value}"
 
