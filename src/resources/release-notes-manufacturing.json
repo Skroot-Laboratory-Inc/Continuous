@@ -1,4 +1,13 @@
 {
+  "v1.0.3": {
+    "features": {
+      "1": "Updated reader connection to display when connection is successful",
+      "2": "Updated install-script to prevent port suspension on USB ports"
+    },
+    "bugfixes": {
+      "1": "Fixed SIB reconnection when using hub ports."
+    }
+  },
   "v1.0.0": {
     "features": {
       "1": "Removed R&D functionality from production app.",

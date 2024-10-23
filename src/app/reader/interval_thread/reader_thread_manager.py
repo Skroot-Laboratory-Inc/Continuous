@@ -9,7 +9,7 @@ from sibcontrol import SIBConnectionError, SIBException
 
 from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
 from src.app.exception.sib_exception import SIBReconnectException
-from src.app.helper.helper_functions import getZeroPoint
+from src.app.helper.helper_functions import getZeroPoint, getSibPowerStatus
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
@@ -119,6 +119,9 @@ class ReaderThreadManager:
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
                         f'Connection Error: Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}')
+                    logging.info(
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                    )
                     text_notification.setText(f"Sweep Failed, check reader {self.Reader.readerNumber} connection.")
                 except SIBReconnectException:
                     if self.Reader.readerNumber in self.currentIssues:
@@ -134,6 +137,9 @@ class ReaderThreadManager:
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
                         f'Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}, but reconnected successfully')
+                    logging.info(
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                    )
                     text_notification.setText(
                         f"Sweep failed for reader {self.Reader.readerNumber}, SIB reconnection was successful.")
                 except SIBException:
@@ -150,6 +156,9 @@ class ReaderThreadManager:
                     self.Reader.getAnalyzer().recordFailedScan()
                     logging.exception(
                         f'Hardware Problem: Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}')
+                    logging.info(
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                    )
                     text_notification.setText(
                         f"Sweep Failed With Hardware Cause for reader {self.Reader.readerNumber}, contact a Skroot representative if the issue persists.")
                 except AnalysisException:

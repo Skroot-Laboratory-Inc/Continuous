@@ -23,6 +23,9 @@ class PortAllocator(PortAllocatorInterface):
     def resetPorts(self):
         self.ports = {}
 
+    def getPowerStatus(self, readerNumber: str) -> str:
+        return "N/A -> not using hub port finding."
+
 
 def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
     ports = list_ports.comports()
