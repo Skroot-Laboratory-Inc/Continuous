@@ -3,6 +3,7 @@ import threading
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
+from src.app.helper.helper_functions import getSibPowerStatus
 from src.app.properties.hardware_properties import HardwareProperties
 from src.app.reader.sib.port_allocator_interface import PortAllocatorInterface
 from src.app.uhubctl import usb
@@ -35,20 +36,6 @@ class HubPortAllocator(PortAllocatorInterface):
                 )
             raise Exception()
 
-    def createVirtualPortMap(self, hubShortPath):
-        return {
-            1: f"{hubShortPath}.4",
-            2: f"{hubShortPath}.3",
-            3: f"{hubShortPath}.2",
-            4: f"{hubShortPath}.1.4",
-            5: f"{hubShortPath}.1.3",
-            6: f"{hubShortPath}.1.2",
-            7: f"{hubShortPath}.1.1.4",
-            8: f"{hubShortPath}.1.1.3",
-            9: f"{hubShortPath}.1.1.2",
-            10: f"{hubShortPath}.1.1.1",
-        }
-
     def scanForPorts(self):
         self.resetPorts()
         for hub in usb.discover_hubs():
@@ -67,12 +54,31 @@ class HubPortAllocator(PortAllocatorInterface):
     def removePort(self, readerNumber: str):
         # Here for backwards compatibility with windows.
         pass
+    
+    def getPortPowerStatus(self, readerNumber: str):
+        return getSibPowerStatus(self.readerVirtualPortMap[readerNumber])
 
     def resetPorts(self):
         self.virtualPortDescriptionMap = {}
         self.descriptionComPortMap = {}
         self.readerPhysicalPortMap = {}
         self.readerVirtualPortMap = {}
+
+    @staticmethod
+    def createVirtualPortMap(hubShortPath):
+        return {
+            1: f"{hubShortPath}.4",
+            2: f"{hubShortPath}.3",
+            3: f"{hubShortPath}.2",
+            4: f"{hubShortPath}.1.4",
+            5: f"{hubShortPath}.1.3",
+            6: f"{hubShortPath}.1.2",
+            7: f"{hubShortPath}.1.1.4",
+            8: f"{hubShortPath}.1.1.3",
+            9: f"{hubShortPath}.1.1.2",
+            10: f"{hubShortPath}.1.1.1",
+        }
+
 
 def getDictKeyByValue(dictionary, searchValue):
     for key, value in dictionary.items():

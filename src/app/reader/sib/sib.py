@@ -68,6 +68,9 @@ class Sib(SibInterface):
         except SIBException:
             raise
 
+    def getPowerStatus(self) -> str:
+        return self.PortAllocator.getPowerStatus(self.readerNumber)
+
     def calibrateIfRequired(self):
         if self.calibrationRequired:
             self.takeCalibrationScan()

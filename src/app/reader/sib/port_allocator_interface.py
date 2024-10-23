@@ -11,6 +11,8 @@ class PortAllocatorInterfaceMetaClass(type):
                 callable(subclass.getPortForReader) and
                 hasattr(subclass, 'removePort') and
                 callable(subclass.removePort) and
+                hasattr(subclass, 'getPowerStatus') and
+                callable(subclass.getPowerStatus) and
                 hasattr(subclass, 'resetPorts') and
                 callable(subclass.resetPorts))
 
@@ -22,6 +24,9 @@ class PortAllocatorInterface(metaclass=PortAllocatorInterfaceMetaClass):
 
     def removePort(self, readerNumber: str):
         """ Removes a port from the list of ports currently in use. """
+
+    def getPowerStatus(self, readerNumber: str) -> str:
+        """ Gets the port's power status for a given readerNumber. """
 
     def resetPorts(self):
         """ Resets ports allocated to readers. """

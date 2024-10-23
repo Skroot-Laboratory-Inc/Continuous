@@ -17,6 +17,8 @@ class SibInterfaceMetaClass(type):
                 callable(subclass.loadCalibrationFile) and
                 hasattr(subclass, 'setStartFrequency') and
                 callable(subclass.setStartFrequency) and
+                hasattr(subclass, 'getPowerStatus') and
+                callable(subclass.getPowerStatus) and
                 hasattr(subclass, 'setStopFrequency') and
                 callable(subclass.setStopFrequency) and
                 hasattr(subclass, 'getYAxisLabel') and
@@ -50,4 +52,7 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
 
     def getYAxisLabel(self) -> str:
         """ Returns the yaxislabel, or units of the magnitude of the graph. """
+
+    def getPowerStatus(self) -> str:
+        """ Gets the port's power status for a given readerNumber. """
 

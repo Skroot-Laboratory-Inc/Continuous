@@ -7,4 +7,5 @@ sudo apt remove brltty -y &&
 sudo usermod -a -G dialout skroot &&
 sudo cp ../delete_old_files /etc/cron.d &&
 sudo cp ../52-usb.rules /etc/udev/rules.d/52-usb.rules &&
+sudo cp ../92-usb-input-no-powersave.rules /etc/udev/rules.d/92-usb-input-no-powersave.rules &&
 sudo udevadm trigger --attr-match=subsystem=usb

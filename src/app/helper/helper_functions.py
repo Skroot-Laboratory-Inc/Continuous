@@ -94,6 +94,11 @@ def getDesktopLocation():
         return os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
 
 
+def getSibPowerStatus(hubReaderPath):
+    return subprocess.run(['cat', f'/sys/bus/usb/devices/{hubReaderPath}/power/runtime_status']).stdout
+
+
+
 def getOperatingSystem():
     """ This gets the current operating system, linux or windows. """
     try:
