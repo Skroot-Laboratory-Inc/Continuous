@@ -25,10 +25,12 @@ class HubPortAllocator(PortAllocatorInterface):
         if self.thread.is_alive():
             self.thread.join()
         if readerNumber in self.readerPhysicalPortMap:
+            text_notification.setText(f"Connection successful for Vessel {readerNumber}")
             return self.readerPhysicalPortMap[readerNumber]
         else:
             self.scanForPorts()
             if readerNumber in self.readerPhysicalPortMap:
+                text_notification.setText(f"Connection successful for Vessel {readerNumber}")
                 return self.readerPhysicalPortMap[readerNumber]
             else:
                 text_notification.setText(
@@ -52,8 +54,7 @@ class HubPortAllocator(PortAllocatorInterface):
             self.readerPhysicalPortMap[readerNumber] = physicalPort
 
     def removePort(self, readerNumber: str):
-        # Here for backwards compatibility with windows.
-        pass
+        del self.readerPhysicalPortMap[readerNumber]
     
     def getPortPowerStatus(self, readerNumber: str):
         return getSibPowerStatus(self.readerVirtualPortMap[readerNumber])

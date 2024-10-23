@@ -232,7 +232,7 @@ class Sib(SibInterface):
             time.sleep(1.0)
         try:
             port = self.PortAllocator.getPortForReader(self.readerNumber)
-            self.initialize(port)
+            self.initialize(port.device)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
             self.checkAndSendConfiguration()

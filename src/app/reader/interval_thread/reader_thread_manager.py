@@ -120,7 +120,7 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Connection Error: Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}')
                     logging.info(
-                        f'{self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
                     )
                     text_notification.setText(f"Sweep Failed, check reader {self.Reader.readerNumber} connection.")
                 except SIBReconnectException:
@@ -138,7 +138,7 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}, but reconnected successfully')
                     logging.info(
-                        f'{self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
                     )
                     text_notification.setText(
                         f"Sweep failed for reader {self.Reader.readerNumber}, SIB reconnection was successful.")
@@ -157,7 +157,7 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Hardware Problem: Reader {self.Reader.readerNumber} failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}')
                     logging.info(
-                        f'{self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
+                        f'Reader {self.Reader.readerNumber} is currently in the state: {self.Reader.SibInterface.getPowerStatus()}'
                     )
                     text_notification.setText(
                         f"Sweep Failed With Hardware Cause for reader {self.Reader.readerNumber}, contact a Skroot representative if the issue persists.")
