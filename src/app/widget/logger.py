@@ -8,7 +8,7 @@ def loggerSetup(location, version):
     open(location, 'w+').close()
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="%(id)s - %(asctime)s [%(levelname)s] %(message)s",
         handlers=[
             logging.FileHandler(location)
         ]
@@ -20,17 +20,18 @@ def loggerSetup(location, version):
     logging.getLogger("boto3").setLevel(logging.ERROR)
     logging.getLogger("botocore").setLevel(logging.ERROR)
     logging.getLogger('s3transfer').setLevel(logging.ERROR)
-    logging.info(f'Logger Setup {version}')
+    logging.info(f'Logger Setup {version}', extra={"id": "global"})
     return
 
 
 class DuplicateFilter(logging.Filter):
     def __init__(self):
+        super().__init__()
         self.consecutive_repeats = 0
         self.consecutive_repeats_warning = 100
         self.last_log = ""
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord):
         # add other fields if you need more granular comparison, depends on your app
         current_log = (record.levelno, record.msg)
         if current_log != getattr(self, "last_log", None):

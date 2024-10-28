@@ -45,7 +45,7 @@ class Sib(SibInterface):
     def loadCalibrationFile(self):
         self.calibrationFrequency, self.calibrationVolts = loadCalibrationFile(self.calibrationFilename)
         selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
-        logging.info(f'Self resonant frequency for reader {self.readerNumber} is {selfResonance} MHz')
+        logging.info(f'Self resonant frequency is {selfResonance} MHz', extra={"id": f"Reader {self.readerNumber}"})
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         try:
@@ -92,7 +92,7 @@ class Sib(SibInterface):
         except:
             self.calibrationFailed = True
             text_notification.setText(f"Failed to perform calibration for reader {self.readerNumber}.")
-            logging.exception("Failed to perform calibration.")
+            logging.exception("Failed to perform calibration.", extra={"id": f"Reader {self.readerNumber}"})
             return False
 
     def setStartFrequency(self, startFreqMHz) -> bool:
@@ -104,7 +104,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set start frequency.")
-            logging.exception("Failed to set start frequency.")
+            logging.exception("Failed to set start frequency.", extra={"id": f"Reader {self.readerNumber}"})
             return False
 
     def setStopFrequency(self, stopFreqMHz) -> bool:
@@ -116,7 +116,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set stop frequency.")
-            logging.exception("Failed to set stop frequency.")
+            logging.exception("Failed to set stop frequency.", extra={"id": f"Reader {self.readerNumber}"})
             return False
 
     """ End of required implementations, SIB specific below"""
@@ -159,16 +159,16 @@ class Sib(SibInterface):
             else:
                 return False
         except sibcontrol.SIBException as e:
-            logging.exception("Failed to perform handshake")
+            logging.exception("Failed to perform handshake", extra={"id": f"Reader {self.readerNumber}"})
             return False
 
     def getFirmwareVersion(self) -> str:
         try:
             firmware_version = self.sib.version()
-            logging.info(f'The SIB Firmware is version: {firmware_version}')
+            logging.info(f'The SIB Firmware is version: {firmware_version}', extra={"id": f"Reader {self.readerNumber}"})
             return firmware_version
         except sibcontrol.SIBException as e:
-            logging.exception("Failed to set firmware version")
+            logging.exception("Failed to set firmware version", extra={"id": f"Reader {self.readerNumber}"})
             return ''
 
     def sleep(self) -> None:
@@ -203,10 +203,10 @@ class Sib(SibInterface):
                     # SIB is sending measurement data. Add it to the conversion results array
                     conversion_results.extend(tmp_data)
                 else:
-                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}")
+                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": f"Reader {self.readerNumber}"})
             except:
                 sweep_complete = True
-                logging.exception("An error occurred while waiting for scan to complete")
+                logging.exception("An error occurred while waiting for scan to complete", extra={"id": f"Reader {self.readerNumber}"})
                 raise
         self.sleep()
         return convertAdcToVolts(conversion_results)
@@ -220,13 +220,13 @@ class Sib(SibInterface):
         return calibratedVolts
 
     def resetDDSConfiguration(self):
-        logging.info("The DDS did not get configured correctly, performing hard reset.")
+        logging.info("The DDS did not get configured correctly, performing hard reset.", extra={"id": f"Reader {self.readerNumber}"})
         self.sib.reset_sib()
         time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
         self.resetSibConnection()
 
     def resetSibConnection(self):
-        logging.info("Problem with serial connection. Closing and then re-opening port.")
+        logging.info("Problem with serial connection. Closing and then re-opening port.", extra={"id": f"Reader {self.readerNumber}"})
         if self.sib.is_open():
             self.reset()
             time.sleep(1.0)
@@ -250,9 +250,9 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
         calibrationFrequency = readings['Frequency (MHz)'].values.tolist()
         return calibrationFrequency, calibrationVolts
     except KeyError or ValueError:
-        logging.exception("Column did not exist")
+        logging.exception("Column did not exist", extra={"id": calibrationFilename})
     except Exception:
-        logging.exception("Failed to load in calibration")
+        logging.exception("Failed to load in calibration", extra={"id": calibrationFilename})
 
 
 def createScanFile(outputFileName, frequency, volts, yAxisLabel):

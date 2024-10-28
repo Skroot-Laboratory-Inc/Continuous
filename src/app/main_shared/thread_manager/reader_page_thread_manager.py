@@ -17,7 +17,8 @@ from src.app.widget.setup_reader_form import SetupReaderForm
 
 
 class ReaderPageThreadManager:
-    def __init__(self, readerPage, startingReaderNumber, finalReaderNumber, mainFreqToggleSet, rootManager: RootManager):
+    def __init__(self, readerPage, startingReaderNumber, finalReaderNumber, mainFreqToggleSet,
+                 rootManager: RootManager):
         self.readerAllocator = ReaderPageAllocator(
             readerPage,
             startingReaderNumber,
@@ -64,7 +65,7 @@ class ReaderPageThreadManager:
         except UserExitedException:
             return None
         except:
-            logging.exception("Failed to connect new reader. ")
+            logging.exception("Failed to connect new reader.", extra={"id": f"Reader {readerNumber}"})
             text_notification.setText(f"Failed to connect reader for vessel {readerNumber}")
             return None
 
@@ -105,7 +106,7 @@ class ReaderPageThreadManager:
             f'Stop Vessel #{readerNumber}',
             f'Are you sure you wish to stop vessel {readerNumber}?')
         if endExperiment == 'yes':
-            logging.info('Experiment ended by user.')
+            logging.info('Experiment ended by user.', extra={"id": f"Reader {readerNumber}"})
             readerFrame = self.readerAllocator.getReaderFrame(readerNumber)
             readerFrame.stopButton.disable()
             text_notification.setText(

@@ -21,7 +21,7 @@ class MainShared:
     def __init__(self, rootManager: RootManager, version, major_version, minor_version):
         self.CommonFileManager = CommonFileManager()
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
-        logging.info(f'Sibcontrol version: {version_api("sibcontrol")}')
+        logging.info(f'Sibcontrol version: {version_api("sibcontrol")}', extra={"id": "global"})
 
         self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
