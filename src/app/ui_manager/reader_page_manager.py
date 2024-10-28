@@ -32,7 +32,7 @@ class ReaderPageManager:
                         relheight=self.GuiProperties.bodyHeight)
             frame.tkraise()
         except:
-            logging.exception(f'Failed to update reader screen.')
+            logging.exception(f'Failed to update reader screen.', extra={"id": "readerPageManager"})
 
     def getPage(self, screenNumber):
         return self.readerPages[screenNumber]

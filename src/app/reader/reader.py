@@ -99,4 +99,4 @@ class Reader(ReaderInterface):
             else:
                 text_notification.setText(f"No calibration found for Reader {self.readerNumber}",
                                           ('Courier', 12, 'bold'), self.Colors.primaryColor, 'red')
-                logging.info(f"No calibration found for Reader {self.readerNumber}")
+                logging.info(f"No calibration found.", extra={"id": f"Reader {self.readerNumber}"})

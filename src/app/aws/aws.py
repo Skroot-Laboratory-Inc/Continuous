@@ -37,14 +37,14 @@ class AwsBoto3:
                         fileLocation,
                         self.bucket,
                         f'{folder["Prefix"]}{self.runUuid}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags), "CacheControl": "no-cache"})
+                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
+                                   "CacheControl": "no-cache"})
                     self.runFolder = f'{folder["Prefix"]}{self.runUuid}'
                     break
                 except Exception as e:
                     if type(e.__context__) is botocore.exceptions.ClientError:
                         pass  # This means unauthorized
                     else:
-                        logging.exception('Failed to find a bucket that the user is authorized for.')
                         raise
 
     def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
@@ -57,13 +57,14 @@ class AwsBoto3:
                         fileLocation,
                         self.bucket,
                         f'{self.runFolder}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags), "CacheControl": "no-cache"})
+                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
+                                   "CacheControl": "no-cache"})
             except botocore.exceptions.EndpointConnectionError:
-                logging.info('no internet')
+                logging.info('no internet', extra={"id": "aws"})
                 self.disabled = True
                 return False
             except:
-                logging.exception('Error - most likely there were no folders found in AWS.')
+                logging.exception('Error - most likely there were no folders found in AWS.', extra={"id": "aws"})
                 return False
             return True
         else:
@@ -74,17 +75,17 @@ class AwsBoto3:
             try:
                 self.s3.delete_object(Bucket=self.bucket, Key=fileName)
             except botocore.exceptions.EndpointConnectionError:
-                logging.info('no internet')
+                logging.info('no internet', extra={"id": "aws"})
                 self.disabled = True
             except:
-                logging.exception('Failed to delete file')
+                logging.exception('Failed to delete file', extra={"id": "aws"})
 
     def downloadFile(self, aws_filename, local_filename):
         if not self.disabled:
             try:
                 self.s3.download_file(self.bucket, aws_filename, local_filename)
             except botocore.exceptions.EndpointConnectionError:
-                logging.info('no internet')
+                logging.info('no internet', extra={"id": "aws"})
                 self.disabled = True
             except:
                 pass

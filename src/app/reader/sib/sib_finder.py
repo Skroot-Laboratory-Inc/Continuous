@@ -30,10 +30,10 @@ class SibFinder:
                 return instantiateReader(port, self.PortAllocator, readerNumber, globalFileManager, calibrate)
             except UserExitedException:
                 self.RootManager.destroyRoot()
-                logging.exception("User exited during port finding.")
+                logging.exception("User exited during port finding.", extra={"id": f"Reader {readerNumber}"})
                 raise
             except:
-                logging.exception("Failed to connect new reader.")
+                logging.exception("Failed to connect new reader.", extra={"id": f"Reader {readerNumber}"})
         else:
             return DevSib(readerNumber)
 
@@ -74,12 +74,12 @@ def instantiateReader(port, portAllocator, readerNumber, globalFileManager, cali
         if success:
             return sib
         else:
-            logging.info(f"Failed to handshake SIB #{readerNumber} on port {port}")
+            logging.info(f"Failed to handshake SIB #{readerNumber} on port {port}", extra={"id": f"Reader {readerNumber}"})
             text_notification.setText("Failed to connect to SiB")
             sib.close()
     except:
         portAllocator.removePort(port)
-        logging.exception(f"Failed to instantiate reader {readerNumber}")
+        logging.exception(f"Failed to instantiate reader.", extra={"id": f"Reader {readerNumber}"})
 
 
 def pauseUntilUserClicks(readerNumber):

@@ -46,7 +46,7 @@ class SoftwareUpdate(AwsBoto3):
             else:
                 text_notification.setText("Software update aborted.")
         except:
-            logging.exception("failed to update software")
+            logging.exception("failed to update software", extra={"id": "software-update"})
 
     def checkForSoftwareUpdates(self):
         updateRequired = False
@@ -74,7 +74,7 @@ class SoftwareUpdate(AwsBoto3):
                 except botocore.exceptions.ClientError:
                     continue  # This means it's an R&D update, and we are not using an R&D profile
                 except:
-                    logging.exception("failed to get tags of software update file")
+                    logging.exception("failed to get tags of software update file", extra={"id": "software-update"})
                 # find the greatest version in the s3 bucket
                 if (most_recent_version[0] < majorVersion) or \
                         (most_recent_version[0] == majorVersion and most_recent_version[1] < minorVersion):

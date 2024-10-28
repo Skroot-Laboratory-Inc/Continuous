@@ -69,12 +69,14 @@ class HarvestAlgorithm(AlgorithmInterface):
             if not self.closeToHarvest:
                 if lastFiveIncreasing and previousFiveDecreasing:
                     logging.info(
-                        f'Flask {self.readerNumber} is close to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}')
+                        f'Close to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}',
+                        extra={"id": f"Reader {self.readerNumber}"})
                     self.Indicator.changeIndicatorYellow()
                     self.closeToHarvest = True
             else:
                 if lastFiveDecreasing and previousFiveIncreasing:
                     logging.info(
-                        f'Flask {self.readerNumber} is ready to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}')
+                        f'Ready to harvest at time {time[-1]} hours for {time[-self.backwardPoints]}',
+                        extra={"id": f"Reader {self.readerNumber}"})
                     self.Indicator.changeIndicatorRed()
                     self.readyToHarvest = True
