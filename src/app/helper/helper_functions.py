@@ -5,6 +5,7 @@ import stat
 import subprocess
 import tkinter as tk
 import zipfile
+from tkinter import messagebox
 
 import numpy as np
 import startfile
@@ -183,3 +184,13 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     bounds = window.grid_bbox()
     windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
     return windowRoot, window
+
+
+def confirmAndPowerDown():
+    endExperiment = messagebox.askquestion(
+        f'Shut down PC',
+        f'Are you sure you wish to shutdown the PC?')
+    if endExperiment == 'yes':
+        if getOperatingSystem() == "linux":
+            process = subprocess.Popen(['sudo', "-S", 'shutdown', 'now'], stdin=subprocess.PIPE)
+            process.communicate("skroot".encode())

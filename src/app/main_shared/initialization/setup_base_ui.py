@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 
 from src.app.buttons.help_button import HelpButton
+from src.app.buttons.power_button import PowerButton
 from src.app.main_shared.service.dev_software_update import DevSoftwareUpdate
 from src.app.main_shared.service.software_update import SoftwareUpdate
 from src.app.properties.dev_properties import DevProperties
@@ -49,9 +50,13 @@ class SetupBaseUi:
         helpButton = HelpButton(self.FrameManager.footerFrame, self.RootManager)
         helpButton.helpButton.place(relx=1, rely=1.0, anchor='se')
 
-        text_notification.createWidget(self.FrameManager.bannerFrame)
+        self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=1)
+        self.FrameManager.bannerFrame.grid_columnconfigure(1, weight=0)
+        widget = text_notification.createWidget(self.FrameManager.bannerFrame)
         text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
-        text_notification.packWidget()
+        widget.grid(row=0, column=0, sticky='nsew')
+        powerButton = PowerButton(self.FrameManager.bannerFrame).button
+        powerButton.grid(row=0, column=1)
         return self.FrameManager.bodyFrame
 
     def createTheme(self):

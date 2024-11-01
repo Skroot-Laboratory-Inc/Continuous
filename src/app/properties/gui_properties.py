@@ -4,7 +4,7 @@ class GuiProperties:
         Main GUI configuration
         """
         self.bannerRelY = 0
-        self.bannerHeight = 0.025
+        self.bannerHeight = 0.04
 
         self.footerHeight = 0.04
 

@@ -9,6 +9,7 @@ class CommonFileManager:
         resourcesDir = f"{srcDir}/src/resources"
         self.helpIconPng = rf"{resourcesDir}/help.png"
         self.addIcon = rf"{resourcesDir}/plus.png"
+        self.powerIcon = rf"{resourcesDir}/power.png"
         self.refreshIcon = rf"{resourcesDir}/refresh.jpg"
         self.downloadPng = rf"{resourcesDir}/download.png"
         self.squareLogo = rf"{resourcesDir}/squareLogo.PNG"
@@ -30,6 +31,9 @@ class CommonFileManager:
 
     def getAddIcon(self):
         return self.addIcon
+
+    def getPowerIcon(self):
+        return self.powerIcon
 
     def getRefreshIcon(self):
         return self.refreshIcon
