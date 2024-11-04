@@ -38,6 +38,7 @@ class MainShared:
         if operatingSystem == 'windows':
             self.RootManager.setState('zoomed')
         elif operatingSystem == 'linux':
+            self.RootManager.setFullscreen()
             self.RootManager.setAttribute('-zoomed', True)
 
         def _create_circle(this, x, y, r, **kwargs):

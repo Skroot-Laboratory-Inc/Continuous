@@ -7,10 +7,7 @@ from src.app.theme.font_theme import FontTheme
 def createWidget(frame):
     global widget
     widget = tk.Label(frame, text="")
-
-
-def packWidget():
-    widget.pack(fill='x')
+    return widget
 
 
 def setText(text, font=None, backgroundColor=None, foregroundColor=None):

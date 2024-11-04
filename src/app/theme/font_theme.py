@@ -8,7 +8,8 @@ class FontTheme:
         self.primary = font.Font(family='Helvetica', size=10)
         self.header1 = font.Font(family='Helvetica', size=14, weight="bold")
         self.header2 = font.Font(family='Helvetica', size=12, weight="bold")
+        self.menubar = font.Font(family='Helvetica', size=12)
         self.header3 = font.Font(family='Helvetica', size=10, weight="bold")
         self.buttons = font.Font(family='Helvetica', size=9, weight="bold")
+        self.setupFormText = font.Font(family='Helvetica', size=12)
 
-        
