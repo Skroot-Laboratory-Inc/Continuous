@@ -1,4 +1,10 @@
 {
+  "v1.0.7": {
+    "bugfixes": {
+      "1": "Fixed root window to stay behind toplevels",
+      "2": "Fixed analyzer in post_processing to handle errors in analysis"
+    }
+  },
   "v1.0.3": {
     "features": {
       "1": "Updated reader connection to display when connection is successful",
