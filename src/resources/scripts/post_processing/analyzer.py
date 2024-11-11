@@ -8,6 +8,7 @@ import numpy as np
 import pandas
 from progress.bar import IncrementalBar
 
+from src.app.exception.analysis_exception import AnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.model.sweep_data import SweepData
@@ -49,15 +50,18 @@ class PostProcessingAnalyzer:
                 sweepData = SweepData(
                     scanReadings['Frequency (MHz)'].values.tolist(),
                     scanReadings['Signal Strength (Unitless)'].values.tolist())
-                analyzer.analyzeScan(sweepData, False)
-                if not setZeroPoint:
-                    currentTimePoint = readerFileManager.scanNumber - 100000
-                    if currentTimePoint >= self.equilibrationTime*60:
-                        zeroPoint = getZeroPoint(
-                            self.equilibrationTime,
-                            analyzer.ResultSet.getMaxFrequencySmooth())
-                        setZeroPoint = True
-                        analyzer.resetRun()
+                try:
+                    analyzer.analyzeScan(sweepData, False)
+                    if not setZeroPoint:
+                        currentTimePoint = readerFileManager.scanNumber - 100000
+                        if currentTimePoint >= self.equilibrationTime*60:
+                            zeroPoint = getZeroPoint(
+                                self.equilibrationTime,
+                                analyzer.ResultSet.getMaxFrequencySmooth())
+                            setZeroPoint = True
+                            analyzer.resetRun()
+                except AnalysisException as e:
+                    print(e)
             self.zeroPointMap[readerId] = zeroPoint
             self.resultSetMap[readerId] = analyzer.ResultSet
             readerProgressBar.finish()

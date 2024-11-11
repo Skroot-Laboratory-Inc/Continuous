@@ -7,6 +7,7 @@ from src.app.theme.font_theme import FontTheme
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
+        self.root.bind('<FocusIn>', self.lowerWindow)
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
         self.setMenubar()
@@ -74,3 +75,6 @@ class RootManager:
 
     def registerEvent(self, event, eventFn):
         self.root.bind(event, eventFn)
+
+    def lowerWindow(self, event):
+        self.root.lower()
