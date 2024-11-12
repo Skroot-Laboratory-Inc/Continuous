@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from src.app.helper.helper_functions import isMenuOptionPresent
+from src.app.helper.helper_functions import isMenuOptionPresent, openKeyboard
 from src.app.theme.font_theme import FontTheme
 
 
@@ -10,6 +10,7 @@ class RootManager:
         self.root.bind('<FocusIn>', self.lowerWindow)
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
+        self.root.bind_class("Entry", "<FocusIn>", openKeyboardBinding)
         self.setMenubar()
 
     def instantiateNewMenubarRibbon(self):
@@ -78,3 +79,7 @@ class RootManager:
 
     def lowerWindow(self, event):
         self.root.lower()
+
+
+def openKeyboardBinding(event):
+    openKeyboard()

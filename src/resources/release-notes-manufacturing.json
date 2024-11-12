@@ -2,7 +2,8 @@
   "v1.0.7": {
     "bugfixes": {
       "1": "Fixed root window to stay behind toplevels",
-      "2": "Fixed analyzer in post_processing to handle errors in analysis"
+      "2": "Fixed analyzer in post_processing to handle errors in analysis",
+      "3": "Fixed OSK for kiosk manufacturing app."
     }
   },
   "v1.0.3": {
