@@ -3,11 +3,9 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 
-import pyautogui
-
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper.helper_functions import centerWindowOnFrame
+from src.app.helper.helper_functions import centerWindowOnFrame, destroyKeyboard
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
@@ -153,6 +151,7 @@ class SetupReaderForm:
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.window.destroy()
+            destroyKeyboard()
         else:
             messagebox.showerror(
                 "Incorrect Formatting",

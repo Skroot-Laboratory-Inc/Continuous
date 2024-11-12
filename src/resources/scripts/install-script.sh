@@ -2,7 +2,7 @@
 sudo apt-get install python3-pip -y &&
 sudo python3 -m pip install --upgrade pip &&
 pip install -r ./requirements.txt &&
-sudo apt-get install python3-pil.imagetk libhidapi-dev scrot gnome-screenshot uhubctl -y &&
+sudo apt-get install python3-pil.imagetk libhidapi-dev scrot gnome-screenshot uhubctl onboard -y &&
 sudo apt remove brltty -y &&
 sudo usermod -a -G dialout skroot &&
 sudo cp ../delete_old_files /etc/cron.d &&

@@ -194,3 +194,11 @@ def confirmAndPowerDown():
         if getOperatingSystem() == "linux":
             process = subprocess.Popen(['sudo', "-S", 'shutdown', 'now'], stdin=subprocess.PIPE)
             process.communicate("skroot".encode())
+
+
+def destroyKeyboard():
+    subprocess.Popen(["pkill", "onboard"])
+
+
+def openKeyboard():
+    subprocess.Popen("onboard")
