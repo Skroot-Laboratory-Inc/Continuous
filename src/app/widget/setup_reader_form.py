@@ -2,20 +2,22 @@ import os
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
+from typing import Callable
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper.helper_functions import centerWindowOnFrame, destroyKeyboard
+from src.app.helper.helper_functions import destroyKeyboard, getOperatingSystem
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
-from src.app.ui_manager.root_manager import RootManager
 
 
 class SetupReaderForm:
-    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, centeredOn: tk.Frame):
-        self.RootManager = rootManager
+    def __init__(self, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame, submitFn: Callable):
+        self.parent = parent
+        self.submitFn = submitFn
         self.Fonts = FontTheme()
-        self.window = self.RootManager.createTopLevel()
+        self.window = tk.Frame(parent, background=Colors().secondaryColor)
         self.entrySize = 10
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
@@ -28,6 +30,7 @@ class SetupReaderForm:
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(1, weight=1)
+        self.window.pack(expand=True)
 
         ''' MM DD YYYY Date entry '''
         dateFrame = tk.Frame(self.window, bg='white')
@@ -123,9 +126,6 @@ class SetupReaderForm:
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = ttk.Button(self.window, text="Cancel", command=lambda: self.onCancel(), style='Default.TButton')
         self.cancelButton.grid(row=row, column=1, sticky="se")
-        self.RootManager.raiseAboveRoot(self.window)
-        centerWindowOnFrame(self.window, centeredOn)
-        self.RootManager.waitForWindow(self.window)
 
     def getConfiguration(self) -> (SetupReaderFormInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
@@ -137,7 +137,7 @@ class SetupReaderForm:
             self.guidedSetupResults.calibrate = False
 
     def onCancel(self):
-        self.window.destroy()
+        self.parent.grid_remove()
 
     def onSubmit(self):
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
@@ -150,13 +150,14 @@ class SetupReaderForm:
             self.guidedSetupResults.incubator = self.incubatorEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
-            self.window.destroy()
-            destroyKeyboard()
+            self.parent.grid_remove()
+            self.submitFn()
+            if getOperatingSystem() == "linux":
+                destroyKeyboard()
         else:
             messagebox.showerror(
                 "Incorrect Formatting",
                 "One (or more) of the values entered is not formatted properly")
-            self.window.tkraise()
 
     def createSavePath(self, date):
         FileManager = CommonFileManager()

@@ -1,5 +1,4 @@
 import datetime
-import logging
 import os
 import stat
 import subprocess
@@ -200,5 +199,4 @@ def destroyKeyboard():
     subprocess.Popen(["pkill", "onboard"])
 
 
-def openKeyboard():
-    subprocess.Popen("onboard")
+

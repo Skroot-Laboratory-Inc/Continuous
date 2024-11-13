@@ -12,6 +12,7 @@ from src.app.theme.colors import Colors
 class InformationPanel:
     def __init__(self, helpIcon, rootManager: RootManager):
         self.window = rootManager.createTopLevel()
+        self.window.grab_set()
         self.window.grid_columnconfigure(0, weight=1, minsize=35)
         self.window.grid_columnconfigure(1, weight=9, minsize=100)
         self.window.grid_columnconfigure(2, weight=1, minsize=35)

@@ -6,11 +6,12 @@ from src.app.buttons.connect_reader import ConnectReaderButton
 from src.app.buttons.plus_icon_button import PlusIconButton
 from src.app.buttons.start_button import StartButton
 from src.app.buttons.stop_button import StopButton
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
-from src.app.widget import text_notification
+from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
@@ -52,18 +53,24 @@ class ReaderPageAllocator:
                 sticky='nesw')
             self.createHeader(readerFrame, readerNumber)
             indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
+            configuration, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
             self.readerFrames[readerNumber] = ReaderFrame(
                 readerFrame,
                 self.createPlotFrame(readerFrame),
+                setupFrame,
+                configuration,
                 self.createTimer(readerFrame),
                 indicator,
                 indicatorCanvas,
                 self.createStartButton(readerFrame, lambda num=readerNumber: self.startReader(num)),
                 self.createStopButton(readerFrame, lambda num=readerNumber: self.stopReader(num)),
-                # self.createConnectButton(readerFrame, lambda num=readerNumber: self.connectFn(num)),
                 self.createCalibrateButton(readerFrame, lambda num=readerNumber: self.calibrateReader(num)),
-                self.createAddReaderButton(readerFrame, lambda num=readerNumber: self.connectNewReader(num)),
+                self.createAddReaderButton(readerFrame, lambda num=readerNumber: self.createGuidedSetup(num)),
             )
+
+    def createGuidedSetup(self, readerNumber):
+        self.getReaderFrame(readerNumber).setupFrame.tkraise()
+        self.getReaderFrame(readerNumber).showSetupFrame()
 
     def connectNewReader(self, readerNumber):
         shouldCalibrate = self.connectFn(readerNumber)
@@ -111,6 +118,13 @@ class ReaderPageAllocator:
         plottingFrame.grid(row=1, column=0, columnspan=3)
         plottingFrame.grid_remove()
         return plottingFrame
+
+    def createSetupFrame(self, readerFrame, submitFn):
+        setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
+        setupReaderForm = SetupReaderForm(SetupReaderFormInput(), setupFrame, submitFn)
+        setupFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        setupFrame.grid_remove()
+        return setupReaderForm, setupFrame
 
     def createAddReaderButton(self, readerFrame, invokeFn):
         createButton = PlusIconButton(readerFrame, invokeFn)
