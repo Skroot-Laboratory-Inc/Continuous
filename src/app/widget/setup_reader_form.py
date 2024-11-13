@@ -98,8 +98,12 @@ class SetupReaderForm:
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
+
             tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row, column=0, sticky='w')
             entry.grid(row=row, column=1, sticky="ew")
+            if entryLabelText == "Lot ID" or entryLabelText == "Incubator":
+                entry['state'] = "disabled"
+                entry['disabledbackground'] = Colors().secondaryColor
             row += 1
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1

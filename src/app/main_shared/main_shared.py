@@ -9,7 +9,6 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.initialization.setup_base_ui import SetupBaseUi
 from src.app.main_shared.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.gui_properties import GuiProperties
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
@@ -26,7 +25,6 @@ class MainShared:
         self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.ReaderPageManager = ReaderPageManager(rootManager)
-        self.guidedSetupForm = SetupReaderFormInput()
         self.configureRoot()
         self.bodyFrame = SetupBaseUi(self.RootManager, major_version, minor_version).bodyFrame
         self.isDevMode = DevProperties().isDevMode

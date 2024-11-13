@@ -9,7 +9,7 @@ from src.app.theme.font_theme import FontTheme
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
-        self.root.bind('<FocusIn>', self.lowerWindow)
+        # self.root.bind('<FocusIn>', self.lowerWindow)
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
         # if getOperatingSystem() == "linux":

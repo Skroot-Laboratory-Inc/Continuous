@@ -1,18 +1,16 @@
 {
-  "v1.0.7": {
+  "v1.0.20": {
     "bugfixes": {
-      "1": "Fixed root window to stay behind toplevels",
-      "2": "Fixed analyzer in post_processing to handle errors in analysis",
-      "3": "Fixed OSK for kiosk manufacturing app."
+      "1": "Added touchscreen scrolling support for release notes dialog"
     }
   },
-  "v1.0.3": {
+  "v1.0.16": {
     "features": {
-      "1": "Updated reader connection to display when connection is successful",
-      "2": "Updated install-script to prevent port suspension on USB ports"
+      "1": "Added random number generator for Lot ID",
+      "2": "Embedded reader setup form rather than a popup."
     },
-    "bugfixes": {
-      "1": "Fixed SIB reconnection when using hub ports."
+    "other": {
+      "1": "Removed onscreen keyboard"
     }
   },
   "v1.0.0": {

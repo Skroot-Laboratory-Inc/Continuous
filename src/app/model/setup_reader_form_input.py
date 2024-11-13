@@ -1,7 +1,9 @@
+import random
 import socket
+import string
 from datetime import datetime
 
-from src.app.helper.helper_functions import formatDate, datetimeToMillis
+from src.app.helper.helper_functions import formatDate, datetimeToMillis, generateLotId
 from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
 
 
@@ -14,7 +16,7 @@ class SetupReaderFormInput:
         self.year = self.date.year
         self.scanRate = setupReaderFormDefaults.scanRate
         self.calibrate = setupReaderFormDefaults.calibrate
-        self.lotId = setupReaderFormDefaults.lotId
+        self.lotId = generateLotId()
         self.incubator = socket.gethostname()
         self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
