@@ -4,3 +4,4 @@ class CommonProperties:
         self.defaultEndFrequency = 160
         self.denoiseSet = True
         self.disableSaveFullFiles = False
+        self.lotIdLength = 5

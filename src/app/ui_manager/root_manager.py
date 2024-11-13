@@ -1,17 +1,23 @@
+import subprocess
+import threading
 import tkinter as tk
 
-from src.app.helper.helper_functions import isMenuOptionPresent, openKeyboard
+from src.app.helper.helper_functions import isMenuOptionPresent, getOperatingSystem
 from src.app.theme.font_theme import FontTheme
 
 
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
-        self.root.bind('<FocusIn>', self.lowerWindow)
+        # self.root.bind('<FocusIn>', self.lowerWindow)
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
-        self.root.bind_class("Entry", "<FocusIn>", openKeyboardBinding)
+        # if getOperatingSystem() == "linux":
+        #     self.root.bind_class("Entry", "<FocusIn>", self.openKeyboard)
         self.setMenubar()
+
+    def updateIdleTasks(self):
+        self.root.update_idletasks()
 
     def instantiateNewMenubarRibbon(self):
         return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar, border=10)
@@ -80,6 +86,14 @@ class RootManager:
     def lowerWindow(self, event):
         self.root.lower()
 
+    def openKeyboard(self, event):
+        stopReaderThread = threading.Thread(target=self.openKeyboardThread, args=(), daemon=True)
+        stopReaderThread.start()
 
-def openKeyboardBinding(event):
-    openKeyboard()
+    def openKeyboardThread(self):
+        topLevel = self.createTopLevel()
+        frame = tk.Frame(topLevel)
+        frame.pack()
+        processId = subprocess.Popen(['onboard', "-e"], stdout=subprocess.PIPE)
+        output = processId.stdout.readlines()
+        subprocess.Popen(['xdotool', "windowreparent", f"{output}, f{frame.winfo_id()}"])

@@ -1,7 +1,8 @@
 import datetime
-import logging
 import os
+import random
 import stat
+import string
 import subprocess
 import tkinter as tk
 import zipfile
@@ -10,6 +11,8 @@ from tkinter import messagebox
 import numpy as np
 import startfile
 
+from src.app.helper.vertical_scrolled_frame import VerticalScrolledFrame
+from src.app.properties.common_properties import CommonProperties
 from src.app.widget import text_notification
 
 
@@ -165,25 +168,10 @@ def getZeroPoint(equilibrationTime, frequencies):
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     windowRoot.minsize(width=650, height=550)
     windowRoot.maxsize(width=800, height=550)
-    windowCanvas = tk.Canvas(
-        windowRoot, bg='white', borderwidth=0,
-        highlightthickness=0
-    )
-    window = tk.Frame(windowRoot, bg='white', borderwidth=0)
-    windowCanvas.create_window(0, 0, anchor="nw", window=window)
-    # Linux uses Button-5 for scroll down and Button-4 for scroll up
-    window.bind_all('<Button-4>', lambda e: windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
-    window.bind_all('<Button-5>', lambda e: windowCanvas.yview_scroll(int(e.num), 'units'))
-    # Windows uses MouseWheel for scrolling
-    window.bind_all('<MouseWheel>',
-                         lambda e: windowCanvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
-    fillOutWindowFn(window)
-    windowCanvas.grid(row=0, column=0, sticky="nsew")
-    windowCanvas.update()
-    window.update()
-    bounds = window.grid_bbox()
-    windowCanvas.configure(scrollregion=(0, 0, bounds[2] + 25, bounds[3] + 25))
-    return windowRoot, window
+    window = VerticalScrolledFrame(windowRoot, bg='white', borderwidth=0, height=800, width=600)
+    fillOutWindowFn(window.interior)
+    window.pack(expand=True, fill=tk.BOTH)
+    return windowRoot, window.interior
 
 
 def confirmAndPowerDown():
@@ -200,5 +188,6 @@ def destroyKeyboard():
     subprocess.Popen(["pkill", "onboard"])
 
 
-def openKeyboard():
-    subprocess.Popen("onboard")
+def generateLotId() -> str:
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=CommonProperties().lotIdLength))

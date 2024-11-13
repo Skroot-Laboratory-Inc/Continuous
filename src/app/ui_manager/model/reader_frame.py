@@ -12,18 +12,20 @@ class ReaderFrame:
     def __init__(self,
                  frame: tk.Frame,
                  plotFrame: tk.Frame,
+                 setupFrame: tk.Frame,
+                 configuration,
                  timer: RunningTimer,
                  indicator,
                  indicatorCanvas: tk.Canvas,
                  startButton: StartButton,
                  stopButton: StopButton,
-                 # connectButton: ConnectReaderButton,
                  calibrateButton: CalibrateReaderButton,
                  createButton: PlusIconButton):
         self.frame = frame
         self.createButton = createButton
         self.plotFrame = plotFrame
-        # self.connectButton = connectButton
+        self.setupFrame = setupFrame
+        self.configuration = configuration
         self.calibrateButton = calibrateButton
         self.indicatorCanvas = indicatorCanvas
         self.timer = timer
@@ -36,4 +38,10 @@ class ReaderFrame:
 
     def showPlotFrame(self):
         self.plotFrame.grid()
+
+    def hideSetupFrame(self):
+        self.setupFrame.grid_remove()
+
+    def showSetupFrame(self):
+        self.setupFrame.grid()
 

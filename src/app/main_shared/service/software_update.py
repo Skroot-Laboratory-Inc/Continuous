@@ -37,12 +37,14 @@ class SoftwareUpdate(AwsBoto3):
                                     self.CommonFileManager.getRemoteDesktopFile())
                     text_notification.setText(
                         "Installing new dependencies... please wait. This may take up to a minute.")
+                    self.RootManager.updateIdleTasks()
                     runShScript(
                         self.CommonFileManager.getInstallScript(),
                         self.CommonFileManager.getExperimentLog(),
                     )
                 text_notification.setText(
                     f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}")
+                self.RootManager.updateIdleTasks()
             else:
                 text_notification.setText("Software update aborted.")
         except:

@@ -1,11 +1,7 @@
 import logging
 from tkinter import messagebox
 
-from reactivex.subject import BehaviorSubject
-
 from src.app.exception.common_exceptions import UserExitedException
-from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.reader.interval_thread.reader_thread_manager import ReaderThreadManager
 from src.app.reader.reader import Reader
 from src.app.reader.sib.sib_finder import SibFinder
@@ -13,7 +9,6 @@ from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
-from src.app.widget.setup_reader_form import SetupReaderForm
 
 
 class ReaderPageThreadManager:
@@ -44,7 +39,7 @@ class ReaderPageThreadManager:
 
     def connectReader(self, readerNumber):
         try:
-            guidedSetupForm, globalFileManager = self.readerForm(readerNumber)
+            guidedSetupForm, globalFileManager = self.readerAllocator.getReaderFrame(readerNumber).configuration.getConfiguration()
             shouldCalibrate = guidedSetupForm.getCalibrate()
             sib = self.SibFinder.connectSib(readerNumber, globalFileManager, shouldCalibrate)
             self.Readers[readerNumber] = Reader(
@@ -119,14 +114,3 @@ class ReaderPageThreadManager:
             readerFrame.timer.resetTimer()
         else:
             return False
-
-    def readerForm(self, readerNumber) -> (SetupReaderFormInput, GlobalFileManager):
-        setupForm = SetupReaderForm(
-            self.RootManager,
-            SetupReaderFormInput(),
-            self.readerAllocator.getReaderFrame(readerNumber).frame,
-        )
-        try:
-            return setupForm.getConfiguration()
-        except:
-            raise UserExitedException("The user cancelled guided setup.")
