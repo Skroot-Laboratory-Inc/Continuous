@@ -12,8 +12,8 @@ class RootManager:
         self.root.bind('<FocusIn>', self.lowerWindow)
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
-        if getOperatingSystem() == "linux":
-            self.root.bind_class("Entry", "<FocusIn>", self.openKeyboard)
+        # if getOperatingSystem() == "linux":
+        #     self.root.bind_class("Entry", "<FocusIn>", self.openKeyboard)
         self.setMenubar()
 
     def updateIdleTasks(self):

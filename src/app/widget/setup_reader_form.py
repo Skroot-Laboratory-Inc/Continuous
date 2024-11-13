@@ -152,8 +152,8 @@ class SetupReaderForm:
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()
             self.submitFn()
-            if getOperatingSystem() == "linux":
-                destroyKeyboard()
+            # if getOperatingSystem() == "linux":
+            #     destroyKeyboard()
         else:
             messagebox.showerror(
                 "Incorrect Formatting",
