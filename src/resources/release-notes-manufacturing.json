@@ -1,4 +1,9 @@
 {
+  "v1.0.21": {
+    "bugfixes": {
+      "1": "Added support for new hubs by limiting usage to USB2."
+    }
+  },
   "v1.0.20": {
     "bugfixes": {
       "1": "Added touchscreen scrolling support for release notes dialog"
