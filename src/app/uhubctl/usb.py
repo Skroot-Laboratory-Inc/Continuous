@@ -16,7 +16,7 @@ def discover_hubs() -> List["Hub"]:
     """
     hubs = []
 
-    pattern = re.compile(r"Current status for hub ([.\d-]+)")
+    pattern = re.compile(r"Current status for hub ([.\d-]+).+USB2.+")
 
     for line in UHubCtl.exec():
         regex = pattern.match(line)
