@@ -9,7 +9,8 @@ import botocore
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
-from src.app.helper.helper_functions import getCwd, getOperatingSystem, runShScript
+from src.app.helper.helper_functions import getCwd, getOperatingSystem, runShScript, confirmAndPowerDown, shouldRestart, \
+    restart
 from src.app.widget import release_notes, text_notification
 from src.resources.version import Version
 
@@ -45,6 +46,7 @@ class SoftwareUpdate(AwsBoto3):
                 text_notification.setText(
                     f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}")
                 self.RootManager.updateIdleTasks()
+                restart()
             else:
                 text_notification.setText("Software update aborted.")
         except:
@@ -119,5 +121,8 @@ class SoftwareUpdate(AwsBoto3):
         self.mergeReleaseNotesIfNeededAndSave()
         ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
         if ReleaseNotes.download:
-            self.downloadFile(self.newestZipVersion, local_filename)
+            confirmRestart = shouldRestart()
+            if confirmRestart:
+                self.downloadFile(self.newestZipVersion, local_filename)
+            return confirmRestart
         return ReleaseNotes.download

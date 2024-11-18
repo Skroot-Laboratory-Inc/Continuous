@@ -179,9 +179,24 @@ def confirmAndPowerDown():
         f'Shut down PC',
         f'Are you sure you wish to shutdown the PC?')
     if endExperiment == 'yes':
-        if getOperatingSystem() == "linux":
-            process = subprocess.Popen(['sudo', "-S", 'shutdown', 'now'], stdin=subprocess.PIPE)
-            process.communicate("skroot".encode())
+        shutdown()
+
+
+def shutdown():
+    if getOperatingSystem() == "linux":
+        process = subprocess.Popen(['sudo', "-S", 'shutdown', 'now'], stdin=subprocess.PIPE)
+        process.communicate("skroot".encode())
+
+
+def restart():
+    if getOperatingSystem() == "linux":
+        subprocess.Popen(["systemctl", 'reboot', '-i'], stdin=subprocess.PIPE)
+
+
+def shouldRestart():
+    return messagebox.askquestion(
+        f'Restart Required',
+        f'Software update will require the system to restart. Are you sure you would like to continue?')
 
 
 def destroyKeyboard():
