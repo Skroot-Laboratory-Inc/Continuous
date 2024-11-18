@@ -25,8 +25,8 @@ class MainShared:
         self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.ReaderPageManager = ReaderPageManager(rootManager)
-        self.configureRoot()
         self.bodyFrame = SetupBaseUi(self.RootManager, major_version, minor_version).bodyFrame
+        self.configureRoot()
         self.isDevMode = DevProperties().isDevMode
         self.createReadersUi()
 
@@ -35,6 +35,7 @@ class MainShared:
         self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
         if operatingSystem == 'windows':
             self.RootManager.setState('zoomed')
+            self.RootManager.setFullscreen()
         elif operatingSystem == 'linux':
             self.RootManager.setFullscreen()
             self.RootManager.setAttribute('-zoomed', True)
