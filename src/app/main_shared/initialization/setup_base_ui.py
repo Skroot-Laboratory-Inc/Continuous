@@ -18,14 +18,14 @@ class SetupBaseUi:
     def __init__(self, rootManager: RootManager, major_version, minor_version):
         self.Colors = Colors()
         self.RootManager = rootManager
-        self.FrameManager = FrameManager(self.RootManager)
-        self.GuiProperties = GuiProperties()
-        self.version = f'{major_version}.{minor_version}'
         self.isDevMode = DevProperties().isDevMode
         if self.isDevMode:
             self.SoftwareUpdate = DevSoftwareUpdate(self.RootManager, major_version, minor_version)
         else:
             self.SoftwareUpdate = SoftwareUpdate(self.RootManager, major_version, minor_version)
+        self.FrameManager = FrameManager(self.RootManager)
+        self.GuiProperties = GuiProperties()
+        self.version = f'{major_version}.{minor_version}'
         self.bodyFrame = self.createFrames()
         self.createMenus()
         self.createTheme()

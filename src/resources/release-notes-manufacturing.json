@@ -8,7 +8,8 @@
     },
     "bugfixes": {
       "1": "Added support for new hubs by limiting usage to USB2.",
-      "2": "Added touchscreen scrolling support for release notes dialog"
+      "2": "Added touchscreen scrolling support for release notes dialog",
+      "3": "Fixed footer disappearing when software update is available."
     },
     "other": {
       "1": "Removed onscreen keyboard"

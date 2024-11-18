@@ -20,7 +20,7 @@ class RootManager:
         self.root.update_idletasks()
 
     def instantiateNewMenubarRibbon(self):
-        return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar, border=10)
+        return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar)
 
     def addMenubarCascade(self, label, menu):
         if not isMenuOptionPresent(self.menubar, label):
@@ -66,7 +66,10 @@ class RootManager:
         self.root.attributes(attribute, state)
 
     def setFullscreen(self):
-        self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
+        self.root.update_idletasks()
+        self.root.geometry(
+            f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()-self.menubar.winfo_reqheight()}"
+        )
 
     def setProtocol(self, protocol, invokeFn):
         self.root.protocol(protocol, invokeFn)
