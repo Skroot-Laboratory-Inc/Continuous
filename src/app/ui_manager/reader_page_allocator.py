@@ -51,9 +51,9 @@ class ReaderPageAllocator:
                 row=self.positions[position]["row"],
                 column=self.positions[position]["column"],
                 sticky='nesw')
-            self.createHeader(readerFrame, readerNumber)
             indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
             configuration, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
+            self.createHeader(readerFrame, readerNumber, configuration.lotIdEntry.get())
             self.readerFrames[readerNumber] = ReaderFrame(
                 readerFrame,
                 self.createPlotFrame(readerFrame),
@@ -154,8 +154,8 @@ class ReaderPageAllocator:
         return timer
 
     @staticmethod
-    def createHeader(readerFrame, readerNumber):
-        header = tk.Label(readerFrame, text=f"Vessel {readerNumber}", font=FontTheme().header3, background=Colors().secondaryColor, foreground=Colors().primaryColor)
+    def createHeader(readerFrame, readerNumber, lotId):
+        header = tk.Label(readerFrame, text=f"Reader {readerNumber}: {lotId}", font=FontTheme().header3, background=Colors().secondaryColor, foreground=Colors().primaryColor)
         header.grid(row=0, column=1, sticky='n')
         return header
 

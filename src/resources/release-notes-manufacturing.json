@@ -1,42 +1,17 @@
 {
-  "v1.0.21": {
-    "bugfixes": {
-      "1": "Added support for new hubs by limiting usage to USB2."
-    }
-  },
-  "v1.0.20": {
-    "bugfixes": {
-      "1": "Added touchscreen scrolling support for release notes dialog"
-    }
-  },
-  "v1.0.16": {
+  "v1.1.0": {
     "features": {
       "1": "Added random number generator for Lot ID",
-      "2": "Embedded reader setup form rather than a popup."
+      "2": "Embedded reader setup form rather than a popup.",
+      "3": "Added a dialog to the software update dialog to restart the computer.",
+      "4": "Added identifier to title of reader grid with Lot ID."
+    },
+    "bugfixes": {
+      "1": "Added support for new hubs by limiting usage to USB2.",
+      "2": "Added touchscreen scrolling support for release notes dialog"
     },
     "other": {
       "1": "Removed onscreen keyboard"
-    }
-  },
-  "v1.0.0": {
-    "features": {
-      "1": "Removed R&D functionality from production app.",
-      "2": "Updated reader threads to start/stop individually.",
-      "3": "Updated readers to upload their own analyzed files for the production dashboard.",
-      "4": "Updated experiment ID to lot ID",
-      "5": "Added tagging by incubator ID, which can be updated by the guided setup form for now."
-    },
-    "other": {
-      "1": "Removed all functionality related to inoculation. ",
-      "2": "Removed all functionality related to manual issue reporting. ",
-      "3": "Removed all functionality related to experiment notes. ",
-      "4": "Removed all functionality related to summary plotting. ",
-      "5": "Removed all functionality related to second axis. ",
-      "6": "Removed most advanced settings from the menubar. ",
-      "7": "Removed all functionality related to end of experiment view. ",
-      "8": "Removed version.json in place with a type checking python class.",
-      "9": "Added 'smart' display toggle to only update display of readers who have reached equilibration time. ",
-      "10": "Moved guided setup form to center on the readers frame. "
     }
   }
 }
