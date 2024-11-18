@@ -194,9 +194,13 @@ def restart():
 
 
 def shouldRestart():
-    return messagebox.askquestion(
+    response = messagebox.askquestion(
         f'Restart Required',
         f'Software update will require the system to restart. Are you sure you would like to continue?')
+    if response == "yes":
+        return True
+    else:
+        return False
 
 
 def destroyKeyboard():
