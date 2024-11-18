@@ -28,6 +28,9 @@ class Version:
     def getUseCase(self) -> str:
         return self.useCase.value
 
+    def getDevelopmentVersion(self):
+        return self.developmentVersion.value
+
     def getReleaseBucket(self) -> str:
         return f"{self.useCase.value}/{self.developmentVersion.value}"
 

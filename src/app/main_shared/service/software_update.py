@@ -56,12 +56,15 @@ class SoftwareUpdate(AwsBoto3):
         updateRequired = False
         newestVersion = ""
         if not self.disabled:
-            allReleases = self.s3.list_objects_v2(Bucket='skroot-data', Prefix="software-releases")
+            allReleases = self.s3.list_objects_v2(
+                Bucket='skroot-data',
+                Prefix=f"software-releases/{Version().getUseCase()}",
+            )
             # first, we're just going through the releases and finding the most recent one
             most_recent_version = (self.newestMajorVersion, self.newestMinorVersion)
             for item in allReleases['Contents']:
                 filename = item['Key']
-                if filename == 'software-releases/':
+                if filename[-1] == '/':
                     continue  # Don't try to get tags of the folder itself
                 try:
                     tagsDict = self.s3.get_object_tagging(Bucket='skroot-data', Key=filename)
@@ -75,7 +78,7 @@ class SoftwareUpdate(AwsBoto3):
                         # We are looking at an untagged item, likely a folder.
                         majorVersion = 0.0
                         minorVersion = 0
-                except botocore.exceptions.ClientError:
+                except botocore.exceptions.ClientError as e:
                     continue  # This means it's an R&D update, and we are not using an R&D profile
                 except:
                     logging.exception("failed to get tags of software update file", extra={"id": "software-update"})
