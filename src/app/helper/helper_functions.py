@@ -1,5 +1,6 @@
 import datetime
 import os
+import platform
 import random
 import stat
 import string
@@ -102,16 +103,6 @@ def getSibPowerStatus(hubReaderPath):
     return subprocess.run(['cat', f'/sys/bus/usb/devices/{hubReaderPath}/power/runtime_status']).stdout
 
 
-
-def getOperatingSystem():
-    """ This gets the current operating system, linux or windows. """
-    try:
-        os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-        return 'windows'
-    except KeyError:
-        return 'linux'
-
-
 def getCwd():
     """ This gets the directory the app is being run from i.e. the path to main.py. """
     return os.getcwd()
@@ -183,13 +174,13 @@ def confirmAndPowerDown():
 
 
 def shutdown():
-    if getOperatingSystem() == "linux":
+    if platform.system() == "Linux":
         process = subprocess.Popen(['sudo', "-S", 'shutdown', 'now'], stdin=subprocess.PIPE)
         process.communicate("skroot".encode())
 
 
 def restart():
-    if getOperatingSystem() == "linux":
+    if platform.system() == "Linux":
         subprocess.Popen(["systemctl", 'reboot', '-i'], stdin=subprocess.PIPE)
 
 

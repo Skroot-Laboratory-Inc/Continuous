@@ -1,8 +1,14 @@
+import platform
 import subprocess
 import threading
 import tkinter as tk
+from tkinter.constants import BOTH, TRUE
 
-from src.app.helper.helper_functions import isMenuOptionPresent, getOperatingSystem
+from PIL import Image, ImageTk
+
+from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper.helper_functions import isMenuOptionPresent
+from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 
 
@@ -10,14 +16,35 @@ class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
         # self.root.bind('<FocusIn>', self.lowerWindow)
+        image = Image.open(CommonFileManager().getSquareLogo())
+        resizedImage = image.resize(
+            (self.root.winfo_screenwidth(), self.root.winfo_screenheight()),
+            Image.Resampling.LANCZOS
+        )
+        self.splashImage = ImageTk.PhotoImage(resizedImage)
+        self.splash = self.createSplash()
         self.fonts = FontTheme()
         self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
-        # if getOperatingSystem() == "linux":
+        # if platform.system() == "Linux":
         #     self.root.bind_class("Entry", "<FocusIn>", self.openKeyboard)
         self.setMenubar()
 
     def updateIdleTasks(self):
         self.root.update_idletasks()
+
+    def createSplash(self):
+        topLevel = self.createTopLevel()
+        splash_label = tk.Label(topLevel, image=self.splashImage, background=Colors().secondaryColor)
+        splash_label.pack(fill=BOTH, expand=TRUE)
+        topLevel.wm_transient(self.root)
+        if platform.system() == 'Windows':
+            topLevel.state('zoomed')
+        elif platform.system() == 'Linux':
+            topLevel.attributes('-zoomed', True)
+        return topLevel
+
+    def destroySplash(self):
+        self.splash.after(2000, lambda: self.splash.destroy())
 
     def instantiateNewMenubarRibbon(self):
         return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar)

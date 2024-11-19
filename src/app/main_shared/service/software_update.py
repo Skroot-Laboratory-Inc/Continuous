@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import platform
 import shutil
 from zipfile import ZipFile
 
@@ -8,9 +9,9 @@ import botocore
 
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.ui_manager.root_manager import RootManager
-from src.app.helper.helper_functions import getCwd, getOperatingSystem, runShScript, confirmAndPowerDown, shouldRestart, \
+from src.app.helper.helper_functions import getCwd, runShScript, shouldRestart, \
     restart
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import release_notes, text_notification
 from src.resources.version import Version
 
@@ -33,7 +34,7 @@ class SoftwareUpdate(AwsBoto3):
             if downloadUpdate:
                 with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
                     file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
-                if getOperatingSystem() == "linux":
+                if platform.system() == "Linux":
                     shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(),
                                     self.CommonFileManager.getRemoteDesktopFile())
                     text_notification.setText(

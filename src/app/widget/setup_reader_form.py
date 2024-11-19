@@ -6,7 +6,6 @@ from typing import Callable
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper.helper_functions import destroyKeyboard, getOperatingSystem
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
@@ -156,7 +155,7 @@ class SetupReaderForm:
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()
             self.submitFn()
-            # if getOperatingSystem() == "linux":
+            # if platform.system() == "Linux":
             #     destroyKeyboard()
         else:
             messagebox.showerror(

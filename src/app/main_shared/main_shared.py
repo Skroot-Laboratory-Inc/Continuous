@@ -1,4 +1,5 @@
 import logging
+import platform
 import tkinter as tk
 from importlib.metadata import version as version_api
 from tkinter import messagebox
@@ -6,7 +7,6 @@ from tkinter import messagebox
 from reactivex.subject import BehaviorSubject
 
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.helper.helper_functions import getOperatingSystem
 from src.app.main_shared.initialization.setup_base_ui import SetupBaseUi
 from src.app.main_shared.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
 from src.app.properties.dev_properties import DevProperties
@@ -21,7 +21,6 @@ class MainShared:
         self.CommonFileManager = CommonFileManager()
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         logging.info(f'Sibcontrol version: {version_api("sibcontrol")}', extra={"id": "global"})
-
         self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.ReaderPageManager = ReaderPageManager(rootManager)
@@ -29,14 +28,14 @@ class MainShared:
         self.configureRoot()
         self.isDevMode = DevProperties().isDevMode
         self.createReadersUi()
+        self.RootManager.destroySplash()
 
     def configureRoot(self):
-        operatingSystem = getOperatingSystem()
         self.RootManager.setProtocol("WM_DELETE_WINDOW", self.onClosing)
-        if operatingSystem == 'windows':
+        if platform.system() == 'Windows':
             self.RootManager.setState('zoomed')
             self.RootManager.setFullscreen()
-        elif operatingSystem == 'linux':
+        elif platform.system() == 'Linux':
             self.RootManager.setFullscreen()
             self.RootManager.setAttribute('-zoomed', True)
 

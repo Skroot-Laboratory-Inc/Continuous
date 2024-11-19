@@ -36,7 +36,8 @@ class SetupBaseUi:
             settingsMenuSoftware = self.RootManager.instantiateNewMenubarRibbon()
             settingsMenuSoftware.add_command(
                 label="Update",
-                command=lambda: self.SoftwareUpdate.downloadSoftwareUpdate())
+                command=lambda: self.SoftwareUpdate.downloadSoftwareUpdate(),
+                font=("", 30))
             self.RootManager.addMenubarCascade("Software", settingsMenuSoftware)
 
     def createFrames(self):

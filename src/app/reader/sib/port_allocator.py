@@ -1,19 +1,19 @@
+import platform
+
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
-from src.app.helper.helper_functions import getOperatingSystem
 from src.app.reader.sib.port_allocator_interface import PortAllocatorInterface
 
 
 class PortAllocator(PortAllocatorInterface):
     def __init__(self):
         self.ports = {}
-        self.os = getOperatingSystem()
 
     def getPortForReader(self, readerNumber) -> ListPortInfo:
         if readerNumber in self.ports:
             return self.ports[readerNumber]
-        port = getNewPorts(self.os, self.ports.values())
+        port = getNewPorts(self.ports.values())
         self.ports[readerNumber] = port.device
         return port
 
@@ -27,9 +27,9 @@ class PortAllocator(PortAllocatorInterface):
         return "N/A -> not using hub port finding."
 
 
-def getNewPorts(currentOs, portsTaken) -> ListPortInfo:
+def getNewPorts(portsTaken) -> ListPortInfo:
     ports = list_ports.comports()
-    if currentOs == "windows":
+    if platform.system() == "Windows":
         filteredPorts = [port for port in ports if
                             "USB Serial Device" in port.description and port.device not in portsTaken]
     else:

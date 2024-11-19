@@ -1,10 +1,10 @@
 import logging
+import platform
 import time
 from tkinter import messagebox
 
 from src.app.exception.common_exceptions import UserExitedException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import getOperatingSystem
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.hub_port_allocator import HubPortAllocator
@@ -17,7 +17,7 @@ from src.app.widget import text_notification
 
 class SibFinder:
     def __init__(self, rootManager: RootManager):
-        if getOperatingSystem() == "windows":
+        if platform.system() == "Windows":
             self.PortAllocator = PortAllocator()
         else:
             self.PortAllocator = HubPortAllocator()
