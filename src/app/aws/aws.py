@@ -47,17 +47,19 @@ class AwsBoto3:
                     else:
                         raise
 
-    def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
+    def uploadFile(self, fileLocation, fileType, tags={}, subDir=None) -> bool:
         if not self.disabled:
             try:
                 if not self.runFolder:
                     self.findFolderAndUploadFile(fileLocation, fileType, tags)
                 else:
+                    destination = f'{self.runFolder}/{os.path.basename(fileLocation)}'
+                    if subDir:
+                        destination = f'{destination}/{subDir}'
                     self.s3.upload_file(
-                        fileLocation,
-                        self.bucket,
-                        f'{self.runFolder}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
+                        fileLocation, self.bucket, destination,
+                        ExtraArgs={'ContentType': fileType,
+                                   "Tagging": parse.urlencode(tags),
                                    "CacheControl": "no-cache"})
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet', extra={"id": "aws"})

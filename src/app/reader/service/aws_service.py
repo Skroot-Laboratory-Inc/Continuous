@@ -17,11 +17,13 @@ class AwsService(AwsServiceInterface):
         self.CommonFileManager = CommonFileManager()
         self.AwsProperties = AwsProperties()
         self.csvUploadRate = self.AwsProperties.csvUploadRate
+        self.rawDataUploadRate = self.AwsProperties.rawDataUploadRate
         self.notesUploadRate = self.AwsProperties.notesUploadRate
         self.ReaderFileManager = readerFileManager
         self.GlobalFileManager = globalFileManager
-        self.awsLastCsvUploadTime = 100001
-        self.awsLastNotesUploadTime = 100001
+        self.awsLastCsvUploadTime = 100000
+        self.awsLastRawDataUploadTime = 100000
+        self.awsLastNotesUploadTime = 100000
 
     def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput):
         self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm)
@@ -40,6 +42,12 @@ class AwsService(AwsServiceInterface):
                 },
             )
             self.awsLastCsvUploadTime = scanNumber
+        if (scanNumber - self.awsLastRawDataUploadTime) >= self.rawDataUploadRate:
+            self.AwsBoto3Service.uploadFile(
+                self.ReaderFileManager.getCurrentScan(),
+                "text/csv",
+            )
+            self.awsLastRawDataUploadTime = scanNumber
 
     def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput):
         self.AwsBoto3Service.uploadFile(

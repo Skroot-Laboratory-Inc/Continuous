@@ -6,12 +6,14 @@
       "3": "Added a dialog to the software update dialog to restart the computer.",
       "4": "Added identifier to title of reader grid with Lot ID.",
       "5": "Added splash screen while UI loads.",
-      "6": "Increased size of software update dropdown."
+      "6": "Increased size of software update dropdown.",
+      "7": "Uploads raw data scans to AWS once every 3 hours"
     },
     "bugfixes": {
       "1": "Added support for new hubs by limiting usage to USB2.",
       "2": "Added touchscreen scrolling support for release notes dialog",
-      "3": "Fixed footer disappearing when software update is available."
+      "3": "Fixed footer disappearing when software update is available.",
+      "4": "Fixed footer disappearing when there is no software update after equilibration"
     },
     "other": {
       "1": "Removed onscreen keyboard",
