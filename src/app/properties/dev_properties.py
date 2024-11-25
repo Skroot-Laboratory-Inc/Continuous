@@ -7,7 +7,7 @@ class DevProperties:
     def __init__(self):
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
         self.tryDevMode = True
-        self.disableAws = False
+        self.disableAws = True
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:

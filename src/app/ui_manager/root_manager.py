@@ -52,12 +52,18 @@ class RootManager:
     def addMenubarCascade(self, label, menu):
         if not isMenuOptionPresent(self.menubar, label):
             self.menubar.add_cascade(label=label, menu=menu, font=self.fonts.menubar)
+            self.deleteMenubar(" ")
+            self.setFullscreen()
 
     def setMenubar(self):
+        fillerMenu = self.instantiateNewMenubarRibbon()
+        self.menubar.add_cascade(label=" ", menu=fillerMenu, font=self.fonts.menubar)
+        self.menubar.entryconfig(" ", state="disabled")
         self.root.config(menu=self.menubar)
 
-    def deleteMenubar(self, menubarId):
-        self.menubar.delete(menubarId)
+    def deleteMenubar(self, menubarLabel):
+        if isMenuOptionPresent(self.menubar, menubarLabel):
+            self.menubar.delete(menubarLabel)
 
     def createTopLevel(self):
         return tk.Toplevel(self.root, bg='white', padx=25, pady=25)
