@@ -23,7 +23,7 @@ class AwsServiceInterfaceMetaClass(type):
 
 class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime, flagged: bool):
         """ Uploads the summary csv for the experiment. """
 
     def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):

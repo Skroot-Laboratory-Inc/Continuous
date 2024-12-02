@@ -37,6 +37,12 @@ class AutomatedIssueManager:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
         self.AwsService.uploadIssueLog()
 
+    def hasOpenIssues(self):
+        for issue in self.issues:
+            if not issue.resolved:
+                return True
+        return False
+
     @staticmethod
     def jsonFromIssues(issues):
         jsonIssues = [issue.asJson() for issue in issues]
