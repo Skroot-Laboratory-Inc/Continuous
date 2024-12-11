@@ -1,4 +1,5 @@
 import csv
+import logging
 import os.path
 from datetime import datetime
 
@@ -11,10 +12,11 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, datetimeToMillis
+from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, datetimeToMillis, gaussian
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
+from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 
 
@@ -51,6 +53,19 @@ class Analyzer(AnalyzerInterface):
                 )
                 resultSet.setDenoiseTimeSmooth(time)
                 resultSet.setDenoiseFrequencySmooth(frequency)
+            if shouldDenoise:
+                cubic, derivative, secondDerivative = self.calculateDerivativeValues(
+                    resultSet.denoiseTime,
+                    frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
+                )
+            else:
+                cubic, derivative, secondDerivative = self.calculateDerivativeValues(
+                    resultSet.time,
+                    frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
+                )
+            resultSet.setDerivative(derivative)
+            resultSet.setSecondDerivative(secondDerivative)
+            resultSet.setCubic(cubic)
         except:
             raise ScanAnalysisException()
         finally:
@@ -65,6 +80,10 @@ class Analyzer(AnalyzerInterface):
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
+        try:
+            timestamps = [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()]
+        except:
+            timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency())
@@ -72,17 +91,20 @@ class Analyzer(AnalyzerInterface):
             writer.writerows(zip(
                 self.ResultSet.getFilenames(),
                 self.ResultSet.getDenoiseTime(),
-                [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()],
+                timestamps,
                 equilibratedY,
                 self.ResultSet.getDenoiseFrequency(),
             ))
         with open(self.FileManager.getSmoothAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth())
-            writer.writerow(['Timestamp', 'Skroot Growth Index (SGI)'])
+            writer.writerow(['Timestamp', 'Skroot Growth Index (SGI)', 'Cubic', 'Derivative', 'Second Derivative'])
             writer.writerows(zip(
-                [datetimeToMillis(timestamp) for timestamp in self.ResultSet.getTimestamps()],
+                timestamps,
                 equilibratedY,
+                self.ResultSet.getCubic(),
+                self.ResultSet.getDerivative(),
+                self.ResultSet.getSecondDerivative(),
             ))
 
     def setZeroPoint(self, zeroPoint):
@@ -143,24 +165,29 @@ class Analyzer(AnalyzerInterface):
 
     @staticmethod
     def calculateDerivativeValues(time, sgi):
-        cubicValues = []
-        derivativeValues = []
-        chunk_size = 30
-        plt.scatter(time, sgi, color='tab:green', label="real data")
-        for i in range(0, len(time), chunk_size):
-            timeChunk = time[i:i + chunk_size]
-            sgiChunk = sgi[i:i + chunk_size]
-            cubicFit = np.polyfit(timeChunk, sgiChunk, 3)
-            cubicFunction = np.poly1d(cubicFit)
-            cubicValues = cubicValues + list(cubicFunction(timeChunk))
-            derivativeFunction = np.polyder(cubicFunction)
-            derivativeValues = derivativeValues + list(derivativeFunction(timeChunk))
-        derivativeSmooth = list(savgol_filter(derivativeValues, 101, 2))
-        return cubicValues, derivativeSmooth
+        derivativeValue = np.nan
+        cubicValue = np.nan
+        secondDerivativeValue = np.nan
+        try:
+            chunk_size = HarvestProperties().derivativePoints
+            if len(time) > chunk_size:
+                timeChunk = time[-chunk_size:]
+                sgiChunk = sgi[-chunk_size:]
 
+                cubicFit = np.polyfit(timeChunk, sgiChunk, 3)
 
-def gaussian(x, amplitude, centroid, peak_width):
-    return amplitude * np.exp(-(x - centroid) ** 2 / (2 * peak_width ** 2))
+                cubicFunction = np.poly1d(cubicFit)
+                cubicValue = cubicFunction(time[-1])
+
+                derivativeFunction = np.polyder(cubicFunction)
+                derivativeValue = derivativeFunction(time[-1])
+
+                secondDerivativeFunction = np.polyder(derivativeFunction)
+                secondDerivativeValue = secondDerivativeFunction(time[-1])
+        except:
+            logging.exception("Failed to get derivative values", extra={"id": "global"})
+        finally:
+            return cubicValue, derivativeValue, secondDerivativeValue
 
 
 def getDenoiseParameters(numberOfTimePoints):

@@ -64,6 +64,11 @@ def millisToDatetime(millis: int):
     return datetime.datetime.fromtimestamp(millis / 1000)
 
 
+def gaussian(x, amplitude, centroid, std):
+    """ Standard gaussian fit. """
+    return amplitude * np.exp(-(x - centroid) ** 2 / (2 * std ** 2))
+
+
 def datetimeToMillis(dt: datetime.datetime):
     """ This converts from a datetime object to epoch millis. """
     return int(dt.timestamp() * 1000)

@@ -85,7 +85,7 @@ class ReaderThreadManager:
         self.Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
         self.Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
         self.Reader.Analyzer.createAnalyzedFiles()
-        # self.Reader.HarvestAlgorithm.check(self.Reader.getResultSet())
+        self.Reader.HarvestAlgorithm.check(self.Reader.getResultSet())
         self.Reader.Indicator.changeIndicatorGreen()
         if self.Reader.finishedEquilibrationPeriod:
             self.Reader.AwsService.uploadExperimentFilesOnInterval(

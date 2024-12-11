@@ -19,8 +19,7 @@ from src.resources.scripts.derivative.analyzer import DerivativeAnalyzer
 
 print("Please select the experiment directory you would like to analyze.")
 experimentFolderDirectory = tkinter.filedialog.askdirectory()
-equilibrationTime = input("Enter Equilibration Time in hours: ")
-analyzer = DerivativeAnalyzer(experimentFolderDirectory, float(equilibrationTime))
+analyzer = DerivativeAnalyzer(experimentFolderDirectory)
 analyzer.loadReaderAnalyzed()
 analyzer.calculateDerivative()
 analyzer.createDerivativeSummaryAnalyzed()

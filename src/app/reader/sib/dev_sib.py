@@ -15,7 +15,7 @@ class DevSib(SibInterface):
         Properties = SibProperties()
         self.DevProperties = DevProperties()
         self.yAxisLabel = Properties.yAxisLabel
-        self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/{readerNumber}/1*.csv')
+        self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/1*.csv')
         self.currentDevFileIndex, self.currentDevFile = next(
             (x, val) for x, val in enumerate(self.devFiles)
             if float(os.path.basename(val)[0:-4]) > self.DevProperties.startTime + 100000
