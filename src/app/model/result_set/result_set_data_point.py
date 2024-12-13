@@ -10,10 +10,8 @@ class ResultSetDataPoint:
         self.filename = ""
         self.timestamp = np.nan
         self.peakWidthSmooth = np.nan
-
         self.derivative = np.nan
         self.secondDerivative = np.nan
-        self.cubic = np.nan
 
         self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
         self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
@@ -58,6 +56,3 @@ class ResultSetDataPoint:
 
     def setSecondDerivative(self, secondDerivative):
         self.secondDerivative = secondDerivative
-
-    def setCubic(self, cubic):
-        self.cubic = cubic

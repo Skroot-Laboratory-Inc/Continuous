@@ -2,6 +2,7 @@ import csv
 import logging
 import os.path
 from datetime import datetime
+from itertools import zip_longest
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -54,18 +55,19 @@ class Analyzer(AnalyzerInterface):
                 resultSet.setDenoiseTimeSmooth(time)
                 resultSet.setDenoiseFrequencySmooth(frequency)
             if shouldDenoise:
-                cubic, derivative, secondDerivative = self.calculateDerivativeValues(
+                derivative, secondDerivative = self.calculateDerivativeValues(
                     resultSet.denoiseTime,
                     frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
+                    resultSet.derivative,
                 )
             else:
-                cubic, derivative, secondDerivative = self.calculateDerivativeValues(
+                derivative, secondDerivative = self.calculateDerivativeValues(
                     resultSet.time,
                     frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
+                    resultSet.derivative,
                 )
             resultSet.setDerivative(derivative)
             resultSet.setSecondDerivative(secondDerivative)
-            resultSet.setCubic(cubic)
         except:
             raise ScanAnalysisException()
         finally:
@@ -86,26 +88,34 @@ class Analyzer(AnalyzerInterface):
             timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
-            equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency())
-            writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
-            writer.writerows(zip(
-                self.ResultSet.getFilenames(),
-                self.ResultSet.getDenoiseTime(),
-                timestamps,
-                equilibratedY,
-                self.ResultSet.getDenoiseFrequency(),
-            ))
+            rowHeaders = []
+            rowData = []
+            rowHeaders.append('Filename')
+            rowData.append(self.ResultSet.getFilenames())
+            rowHeaders.append('Time (hours)')
+            rowData.append(self.ResultSet.getDenoiseTime())
+            rowHeaders.append('Timestamp')
+            rowData.append(timestamps)
+            rowHeaders.append('Skroot Growth Index (SGI)')
+            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
+            rowHeaders.append('Frequency (MHz)')
+            rowData.append(self.ResultSet.getDenoiseFrequency())
+            writer.writerow(rowHeaders)
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
         with open(self.FileManager.getSmoothAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
-            equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth())
-            writer.writerow(['Timestamp', 'Skroot Growth Index (SGI)', 'Cubic', 'Derivative', 'Second Derivative'])
-            writer.writerows(zip(
-                timestamps,
-                equilibratedY,
-                self.ResultSet.getCubic(),
-                self.ResultSet.getDerivative(),
-                self.ResultSet.getSecondDerivative(),
-            ))
+            rowHeaders = []
+            rowData = []
+            rowHeaders.append('Timestamp')
+            rowData.append(timestamps)
+            rowHeaders.append('Skroot Growth Index (SGI)')
+            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
+            rowHeaders.append('Derivative')
+            rowData.append(self.ResultSet.getDerivativeMean())
+            rowHeaders.append('Second Derivative')
+            rowData.append(self.ResultSet.getSecondDerivativeMean())
+            writer.writerow(rowHeaders)
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
@@ -164,30 +174,34 @@ class Analyzer(AnalyzerInterface):
         return amplitude, centroid, peakWidth
 
     @staticmethod
-    def calculateDerivativeValues(time, sgi):
+    def calculateDerivativeValues(time, sgi, derivative):
         derivativeValue = np.nan
-        cubicValue = np.nan
         secondDerivativeValue = np.nan
+        if len(sgi) > HarvestProperties().savgolPoints:
+            sgi = savgol_filter(sgi, HarvestProperties().savgolPoints, 2)
         try:
             chunk_size = HarvestProperties().derivativePoints
             if len(time) > chunk_size:
                 timeChunk = time[-chunk_size:]
                 sgiChunk = sgi[-chunk_size:]
 
-                cubicFit = np.polyfit(timeChunk, sgiChunk, 3)
+                linearFit = np.polyfit(timeChunk, sgiChunk, 1)
+                linearFunction = np.poly1d(linearFit)
 
-                cubicFunction = np.poly1d(cubicFit)
-                cubicValue = cubicFunction(time[-1])
-
-                derivativeFunction = np.polyder(cubicFunction)
+                derivativeFunction = np.polyder(linearFunction)
                 derivativeValue = derivativeFunction(time[-1])
 
-                secondDerivativeFunction = np.polyder(derivativeFunction)
-                secondDerivativeValue = secondDerivativeFunction(time[-1])
+                derivativeChunk = derivative[-chunk_size:]
+
+                linearFit = np.polyfit(timeChunk, derivativeChunk, 1)
+                linearFunction = np.poly1d(linearFit)
+
+                derivativeFunction = np.polyder(linearFunction)
+                secondDerivativeValue = derivativeFunction(time[-1])
         except:
             logging.exception("Failed to get derivative values", extra={"id": "global"})
         finally:
-            return cubicValue, derivativeValue, secondDerivativeValue
+            return derivativeValue, secondDerivativeValue
 
 
 def getDenoiseParameters(numberOfTimePoints):

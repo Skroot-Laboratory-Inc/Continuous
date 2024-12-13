@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import datetimeToMillis, millisToDatetime
+from src.app.model.result_set.result_set import ResultSet
+from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
@@ -42,49 +44,39 @@ class DerivativeAnalyzer:
             startTime = readerTime[0]
             timeInHours = [time - startTime for time in readerTime]
             readerSGI = readings['Skroot Growth Index (SGI)'].values.tolist()
-            cubicValues = []
-            derivativeValues = []
-            secondDerivativeValues = []
-            stdValues = []
-            peakValues = []
+            resultSet = ResultSet()
             for index in range(len(readerSGI)):
-                cubicValue, derivativeValue, secondDerivativeValue = analyzer.calculateDerivativeValues(
+                derivativeValue, secondDerivativeValue = analyzer.calculateDerivativeValues(
                     timeInHours[:index],
                     readerSGI[:index],
+                    resultSet.derivative
                 )
-                cubicValues.append(cubicValue)
-                derivativeValues.append(derivativeValue)
-                secondDerivativeValues.append(secondDerivativeValue)
-                if index > HarvestProperties().savgolPoints*2 and not np.isnan(np.nanmean(derivativeValues)):
-                    center, std = harvestAlgorithm.harvestAlgorithm(
-                        timeInHours[:index],
-                        derivativeValues[:index],
-                    )
-                    peakValues.append(center)
-                    stdValues.append(std)
-                else:
-                    peakValues.append(np.nan)
-                    stdValues.append(np.nan)
+                dataPoint = ResultSetDataPoint(resultSet)
+                dataPoint.setDerivative(derivativeValue)
+                dataPoint.setSecondDerivative(secondDerivativeValue)
+                resultSet.setValues(dataPoint)
 
-            plt.scatter(timeInHours, readerSGI, color='tab:green')
-            plt.scatter(timeInHours, cubicValues, color='tab:blue')
-            plt.scatter(timeInHours, readerSGI, color='k', s=4)
-            plt.ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
-            plt.xlabel("Time Since Equilibration", color='k')
             plt.title(readerId)
-            ax2 = plt.twinx()
-            ax2.scatter(timeInHours, derivativeValues, color='tab:orange')
-            ax2.set_ylabel("Skroot Growth Rate  (SGR)", color='tab:orange')
+            plt.xlabel("Time Since Equilibration", color='k')
+            fig, ax = plt.subplots()
+            fig.subplots_adjust(right=0.75)
+            ax2 = ax.twinx()
+            ax3 = ax.twinx()
+            ax3.spines.right.set_position(("axes", 1.2))
+            ax2.spines.right.set_position(("axes", 1))
+            ax.scatter(timeInHours, readerSGI, color='k', s=4)
+            ax.set_ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
+            ax2.scatter(timeInHours[:len(resultSet.getDerivativeMean())], resultSet.getDerivativeMean(), color='tab:orange')
+            ax2.set_ylabel("Derivative Mean", color='tab:orange')
+            ax3.scatter(timeInHours[:len(resultSet.getSecondDerivativeMean())], resultSet.getSecondDerivativeMean(), color='tab:red')
+            ax3.set_ylabel("Second Derivative Mean", color='tab:red')
             plt.savefig(f"{os.path.dirname(os.path.dirname(readerAnalyzed))}/Post Processing/{readerId}.jpg")
             plt.clf()
             self.resultMap[readerId] = {
                 "time": timeInHours,
                 "sgi": readerSGI,
-                "cubic": cubicValues,
-                "derivative": derivativeValues,
-                "secondDerivative": secondDerivativeValues,
-                "peak": peakValues,
-                "std": stdValues
+                "derivative": resultSet.getDerivativeMean(),
+                "secondDerivative": resultSet.getSecondDerivativeMean(),
             }
 
     def createDerivativeSummaryAnalyzed(self):
@@ -98,16 +90,10 @@ class DerivativeAnalyzer:
                 rowData.append(results["time"])
                 rowHeaders.append(f'SGI {readerId} ')
                 rowData.append(results["sgi"])
-                rowHeaders.append(f'Cubic {readerId} ')
-                rowData.append(results["cubic"])
                 rowHeaders.append(f'Derivative {readerId} ')
                 rowData.append(results["derivative"])
                 rowHeaders.append(f'Second Derivative {readerId} ')
                 rowData.append(results["secondDerivative"])
-                rowHeaders.append(f'Peak {readerId} ')
-                rowData.append(results["peak"])
-                rowHeaders.append(f'Std {readerId} ')
-                rowData.append(results["std"])
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 

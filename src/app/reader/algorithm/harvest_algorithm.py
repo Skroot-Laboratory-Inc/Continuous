@@ -25,7 +25,7 @@ class HarvestAlgorithm(AlgorithmInterface):
 
     def check(self, resultSet):
         if len(resultSet.getDenoiseTime()) > self.savgolPoints:
-            self.harvestAlgorithm(resultSet.getDenoiseTime(), resultSet.getDerivative())
+            self.harvestAlgorithm(resultSet.getDenoiseTime(), resultSet.getDerivativeMean())
 
     def getStatus(self):
         return self.harvested

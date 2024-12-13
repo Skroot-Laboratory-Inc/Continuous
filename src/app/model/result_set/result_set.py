@@ -6,6 +6,7 @@ from scipy.signal import savgol_filter
 
 from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.properties.harvest_properties import HarvestProperties
 
 
 class ResultSet:
@@ -19,7 +20,8 @@ class ResultSet:
         self.peakWidthsSmooth = []
         self.derivative = []
         self.secondDerivative = []
-        self.cubic = []
+        self.derivativeMean = []
+        self.secondDerivativeMean = []
 
         self.denoiseTimeSmooth = []
         self.denoiseTime = []
@@ -44,14 +46,11 @@ class ResultSet:
     def getFilenames(self) -> List[str]:
         return self.filenames
 
-    def getDerivative(self) -> List[float]:
+    def getDerivativeMean(self) -> List[float]:
         return self.derivative
 
-    def getSecondDerivative(self) -> List[float]:
-        return self.secondDerivative
-
-    def getCubic(self) -> List[float]:
-        return self.cubic
+    def getSecondDerivativeMean(self) -> List[float]:
+        return self.secondDerivativeMean
 
     def getTimestamps(self) -> List[datetime]:
         return self.timestamps
@@ -76,9 +75,10 @@ class ResultSet:
         self.filenames = self.filenames[-1:]
         self.timestamps = self.timestamps[-1:]
         self.peakWidthsSmooth = self.peakWidthsSmooth[-1:]
-        self.cubic = self.cubic[-1:]
         self.derivative = self.derivative[-1:]
         self.secondDerivative = self.secondDerivative[-1:]
+        self.derivativeMean = self.derivativeMean[-1:]
+        self.secondDerivativeMean = self.secondDerivativeMean[-1:]
 
         self.denoiseFrequency = self.denoiseFrequency[-1:]
         self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
@@ -93,13 +93,24 @@ class ResultSet:
         self.filenames.append(values.filename)
         self.timestamps.append(values.timestamp)
         self.peakWidthsSmooth.append(values.peakWidthSmooth)
-        self.cubic.append(values.cubic)
         self.derivative.append(values.derivative)
         self.secondDerivative.append(values.secondDerivative)
+        if len(self.derivative) > HarvestProperties().derivativePoints:
+            self.derivativeMean.append(self.takeDerivativeMean(self.derivative))
+        else:
+            self.derivativeMean.append(np.nan)
+        if len(self.secondDerivative) > HarvestProperties().derivativePoints*2:
+            self.secondDerivativeMean.append(self.takeDerivativeMean(self.secondDerivative))
+        else:
+            self.secondDerivativeMean.append(np.nan)
 
         # Denoise values change with time, so the entire array gets set at once.
         self.denoiseTime = values.denoiseTime
         self.denoiseTimeSmooth = values.denoiseTimeSmooth
         self.denoiseFrequency = values.denoiseFrequency
         self.denoiseFrequencySmooth = values.denoiseFrequencySmooth
+
+    @staticmethod
+    def takeDerivativeMean(rawValues: List[float]):
+        return np.nanmean(rawValues[-HarvestProperties().derivativePoints:])
 
