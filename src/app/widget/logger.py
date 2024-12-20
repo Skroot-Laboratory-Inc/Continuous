@@ -40,5 +40,6 @@ class DuplicateFilter(logging.Filter):
             return True
         self.consecutive_repeats += 1
         if self.consecutive_repeats % self.consecutive_repeats_warning == 0:
-            logging.warning(f"{self.last_log} recorded {self.consecutive_repeats_warning} times in a row.")
+            logging.warning(f"{self.last_log} recorded {self.consecutive_repeats_warning} times in a row.",
+                            extra={"id": "global"})
         return False

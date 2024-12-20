@@ -12,8 +12,8 @@ class DevProperties:
             self.isDevMode = True
         else:
             self.isDevMode = False
-        self.startTime = 0*60  # Minutes
-        self.scanRate = 2/60
+        self.startTime = 24*60  # Minutes
+        self.scanRate = 1/60
         # self.mode = "GUI"
         self.mode = "Analysis"
 

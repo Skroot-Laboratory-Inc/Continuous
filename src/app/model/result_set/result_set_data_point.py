@@ -10,6 +10,7 @@ class ResultSetDataPoint:
         self.filename = ""
         self.timestamp = np.nan
         self.peakWidthSmooth = np.nan
+        self.derivative = np.nan
 
         self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
         self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
@@ -48,3 +49,6 @@ class ResultSetDataPoint:
 
     def setTimestamp(self, timestamp):
         self.timestamp = timestamp
+
+    def setDerivative(self, derivative):
+        self.derivative = derivative

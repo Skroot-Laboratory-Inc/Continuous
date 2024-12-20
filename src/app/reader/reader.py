@@ -52,7 +52,7 @@ class Reader(ReaderInterface):
         self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
-        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager, readerNumber, self.Indicator)
+        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager)
         self.plotFrequencyButton = ttk.Button(
             readerPageAllocator.readerPage,
             text="Real Time Plot",

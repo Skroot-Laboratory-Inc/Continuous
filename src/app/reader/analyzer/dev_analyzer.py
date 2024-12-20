@@ -19,8 +19,8 @@ class DevAnalyzer(Analyzer):
 
         self.DevProperties = DevProperties()
         self.FileManager.scanNumber = self.DevProperties.startTime + 100000
-        self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/{readerNumber}/1*.csv')
-        devRunAnalyzed = pandas.read_csv(rf'{self.DevProperties.devBaseFolder}/{readerNumber}/smoothAnalyzed.csv')
+        self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/1*.csv')
+        devRunAnalyzed = pandas.read_csv(rf'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/smoothAnalyzed.csv')
         self.devTime = self.columnFromCsvOrZero(devRunAnalyzed, 'Time (hours)', len(self.devFiles))
         self.devTimestamps = self.columnFromCsvOrZero(devRunAnalyzed, 'Timestamp', len(self.devFiles))
         self.devFilenames = self.columnFromCsvOrZero(devRunAnalyzed, 'Filename', len(self.devFiles))
@@ -31,9 +31,13 @@ class DevAnalyzer(Analyzer):
             'Skroot Growth Index (SGI)'
         )
         self.devDb = self.columnFromCsvOrZero(devRunAnalyzed, 'Signal Strength (Unitless)', len(self.devFiles))
-        self.currentDevFileIndex, self.currentDevFile = next(
+        _, self.currentDevFile = next(
             (x, val) for x, val in enumerate(self.devFiles)
             if float(os.path.basename(val)[0:-4]) > self.DevProperties.startTime + 100000
+        )
+        self.currentDevFileIndex, _ = next(
+            (x, val) for x, val in enumerate(self.devTime)
+            if val*60 > self.DevProperties.startTime
         )
         self.loadDevMode()
 

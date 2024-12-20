@@ -1,6 +1,7 @@
 import csv
 import glob
 import os
+from datetime import datetime
 from itertools import zip_longest
 
 import numpy as np
@@ -8,13 +9,15 @@ import pandas
 from matplotlib import pyplot as plt
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper.helper_functions import datetimeToMillis
+from src.app.model.result_set.result_set import ResultSet
+from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 
 
 class DerivativeAnalyzer:
-    def __init__(self, experimentFolderDirectory, equilibrationTime, analysisTime):
-        self.equilibrationTime = equilibrationTime
-        self.analysisTime = analysisTime
+    def __init__(self, experimentFolderDirectory):
         self.experimentFolderDirectory = experimentFolderDirectory
         self.postProcessingLocation = f'{self.experimentFolderDirectory}/Post Processing'
         if not os.path.exists(self.postProcessingLocation):
@@ -31,38 +34,46 @@ class DerivativeAnalyzer:
     def calculateDerivative(self):
         analyzer = Analyzer(ReaderFileManager("", 1))
         for readerId, readerAnalyzed in self.analyzedFileMap.items():
+            harvestAlgorithm = HarvestAlgorithm(ReaderFileManager("", 1))
             readings = pandas.read_csv(readerAnalyzed)
-            readerTime = readings['Time (hours)'].values.tolist()
+            try:
+                readerTime = [datetimeToMillis(datetime.strptime(time, "%m/%y/%Y  %I:%M:%S %p"))/3600000 for time in readings['Timestamp'].values.tolist()]
+            except:
+                readerTime = [datetimeToMillis(datetime.fromisoformat(time))/3600000 for time in readings['Timestamp'].values.tolist()]
+            startTime = readerTime[0]
+            timeInHours = [time - startTime for time in readerTime]
             readerSGI = readings['Skroot Growth Index (SGI)'].values.tolist()
-            readerTimeCopy = readerTime.copy()
-            readerSGICopy = readerSGI.copy()
-            for index, value in enumerate(readerTime):
-                if value < self.equilibrationTime:
-                    readerTimeCopy.remove(value)
-                    readerSGICopy.remove(readerSGI[index])
-                if value > self.analysisTime:
-                    readerTimeCopy.remove(value)
-                    readerSGICopy.remove(readerSGI[index])
-            cubicValues, derivativeValues = analyzer.calculateDerivativeValues(readerTimeCopy, readerSGICopy)
-            potentialHarvestTime = readerTimeCopy[derivativeValues.index(max(derivativeValues))]
-
-            if readerTimeCopy.index(potentialHarvestTime) < 0.99*len(readerTimeCopy):
-                plt.axvline(x=potentialHarvestTime)
-            plt.scatter(readerTimeCopy, cubicValues, color='tab:blue')
-            plt.scatter(readerTimeCopy, readerSGICopy, color='k', s=4)
-            plt.ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
-            plt.xlabel("Time (hours)", color='k')
+            resultSet = ResultSet()
+            for index in range(len(readerSGI)):
+                derivativeValue = analyzer.calculateDerivativeValues(
+                    timeInHours[:index],
+                    readerSGI[:index],
+                )
+                dataPoint = ResultSetDataPoint(resultSet)
+                dataPoint.setDerivative(derivativeValue)
+                dataPoint.setDenoiseTime(timeInHours[:index+1])
+                resultSet.setValues(dataPoint)
+                harvestAlgorithm.check(resultSet)
             plt.title(readerId)
-            ax2 = plt.twinx()
-            ax2.scatter(readerTimeCopy, derivativeValues, color='tab:orange')
-            ax2.set_ylabel("Skroot Growth Rate  (SGR)", color='tab:orange')
+            plt.xlabel("Time Since Equilibration", color='k')
+            fig, ax = plt.subplots()
+            ax2 = ax.twinx()
+            ax.scatter(timeInHours, readerSGI, color='k', s=4)
+            ax.set_ylabel("Skroot Growth Index  (SGI)", color='tab:blue')
+            ax2.scatter(timeInHours[:len(resultSet.smoothDerivativeMean)], resultSet.smoothDerivativeMean, color='tab:orange')
+            ax2.set_ylabel("Derivative Mean", color='tab:orange')
             plt.savefig(f"{os.path.dirname(os.path.dirname(readerAnalyzed))}/Post Processing/{readerId}.jpg")
             plt.clf()
+            print(np.nanmax(harvestAlgorithm.historicalHarvestTime))
             self.resultMap[readerId] = {
-                "time": readerTimeCopy,
-                "sgi": readerSGICopy,
-                "cubic": cubicValues,
-                "derivative": derivativeValues
+                "time": timeInHours,
+                "sgi": readerSGI,
+                "derivative": resultSet.smoothDerivativeMean,
+                "peak": harvestAlgorithm.historicalCentroid,
+                "std": harvestAlgorithm.historicalStd,
+                "rSquared": harvestAlgorithm.historicalRSquared,
+                "harvest": harvestAlgorithm.historicalHarvestTime,
+                "timeToHarvest": harvestAlgorithm.historicalTimeToHarvest,
             }
 
     def createDerivativeSummaryAnalyzed(self):
@@ -76,10 +87,18 @@ class DerivativeAnalyzer:
                 rowData.append(results["time"])
                 rowHeaders.append(f'SGI {readerId} ')
                 rowData.append(results["sgi"])
-                rowHeaders.append(f'Cubic {readerId} ')
-                rowData.append(results["cubic"])
                 rowHeaders.append(f'Derivative {readerId} ')
                 rowData.append(results["derivative"])
+                rowHeaders.append(f'Peak {readerId} ')
+                rowData.append(results["peak"])
+                rowHeaders.append(f'Std {readerId} ')
+                rowData.append(results["std"])
+                rowHeaders.append(f'R Squared {readerId} ')
+                rowData.append(results["rSquared"])
+                rowHeaders.append(f'Harvest Time {readerId} ')
+                rowData.append(results["harvest"])
+                rowHeaders.append(f'Time To Harvest {readerId} ')
+                rowData.append(results["timeToHarvest"])
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 

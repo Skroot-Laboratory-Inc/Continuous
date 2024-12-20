@@ -1,9 +1,10 @@
 import csv
+import logging
 import os.path
 from datetime import datetime
+from itertools import zip_longest
 
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
@@ -11,10 +12,11 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, datetimeToMillis
+from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, gaussian
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
+from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 
 
@@ -51,6 +53,17 @@ class Analyzer(AnalyzerInterface):
                 )
                 resultSet.setDenoiseTimeSmooth(time)
                 resultSet.setDenoiseFrequencySmooth(frequency)
+            if shouldDenoise:
+                derivative = self.calculateDerivativeValues(
+                    resultSet.denoiseTime,
+                    frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
+                )
+            else:
+                derivative = self.calculateDerivativeValues(
+                    resultSet.time,
+                    frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
+                )
+            resultSet.setDerivative(derivative)
         except:
             raise ScanAnalysisException()
         finally:
@@ -65,25 +78,38 @@ class Analyzer(AnalyzerInterface):
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
+        try:
+            timestamps = [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()]
+        except:
+            timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
-            equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency())
-            writer.writerow(['Filename', 'Time (hours)', 'Timestamp', 'Skroot Growth Index (SGI)', 'Frequency (MHz)'])
-            writer.writerows(zip(
-                self.ResultSet.getFilenames(),
-                self.ResultSet.getDenoiseTime(),
-                [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()],
-                equilibratedY,
-                self.ResultSet.getDenoiseFrequency(),
-            ))
+            rowHeaders = []
+            rowData = []
+            rowHeaders.append('Filename')
+            rowData.append(self.ResultSet.getFilenames())
+            rowHeaders.append('Time (hours)')
+            rowData.append(self.ResultSet.getDenoiseTime())
+            rowHeaders.append('Timestamp')
+            rowData.append(timestamps)
+            rowHeaders.append('Skroot Growth Index (SGI)')
+            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
+            rowHeaders.append('Frequency (MHz)')
+            rowData.append(self.ResultSet.getDenoiseFrequency())
+            writer.writerow(rowHeaders)
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
         with open(self.FileManager.getSmoothAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
-            equilibratedY = frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth())
-            writer.writerow(['Timestamp', 'Skroot Growth Index (SGI)'])
-            writer.writerows(zip(
-                [datetimeToMillis(timestamp) for timestamp in self.ResultSet.getTimestamps()],
-                equilibratedY,
-            ))
+            rowHeaders = []
+            rowData = []
+            rowHeaders.append('Timestamp')
+            rowData.append(timestamps)
+            rowHeaders.append('Skroot Growth Index (SGI)')
+            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
+            rowHeaders.append('Derivative')
+            rowData.append(self.ResultSet.getDerivativeMean())
+            writer.writerow(rowHeaders)
+            writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 
     def setZeroPoint(self, zeroPoint):
         self.zeroPoint = zeroPoint
@@ -143,24 +169,26 @@ class Analyzer(AnalyzerInterface):
 
     @staticmethod
     def calculateDerivativeValues(time, sgi):
-        cubicValues = []
-        derivativeValues = []
-        chunk_size = 30
-        plt.scatter(time, sgi, color='tab:green', label="real data")
-        for i in range(0, len(time), chunk_size):
-            timeChunk = time[i:i + chunk_size]
-            sgiChunk = sgi[i:i + chunk_size]
-            cubicFit = np.polyfit(timeChunk, sgiChunk, 3)
-            cubicFunction = np.poly1d(cubicFit)
-            cubicValues = cubicValues + list(cubicFunction(timeChunk))
-            derivativeFunction = np.polyder(cubicFunction)
-            derivativeValues = derivativeValues + list(derivativeFunction(timeChunk))
-        derivativeSmooth = list(savgol_filter(derivativeValues, 101, 2))
-        return cubicValues, derivativeSmooth
+        derivativeValue = np.nan
+        try:
+            chunk_size = HarvestProperties().derivativePoints
+            if len(time) > chunk_size:
+                timeChunk = time[-chunk_size:]
+                sgiChunk = sgi[-chunk_size:]
 
-
-def gaussian(x, amplitude, centroid, peak_width):
-    return amplitude * np.exp(-(x - centroid) ** 2 / (2 * peak_width ** 2))
+                timeChanges = []
+                sgiChanges = []
+                for index in range(len(timeChunk)-1):
+                    sgiChanges.append(sgiChunk[index+1] - sgiChunk[index])
+                    timeChanges.append(timeChunk[index+1] - timeChunk[index])
+                quartile1 = np.nanquantile(sgiChanges, 0.25)
+                quartile3 = np.nanquantile(sgiChanges, 0.75)
+                finalSgiChanges = [sgi for sgi in sgiChanges if quartile1 < sgi < quartile3]
+                derivativeValue = np.nanmean(finalSgiChanges) / np.nanmean(timeChanges)
+        except:
+            logging.exception("Failed to get derivative values", extra={"id": "global"})
+        finally:
+            return derivativeValue
 
 
 def getDenoiseParameters(numberOfTimePoints):
