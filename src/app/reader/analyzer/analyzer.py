@@ -54,12 +54,12 @@ class Analyzer(AnalyzerInterface):
                 resultSet.setDenoiseTimeSmooth(time)
                 resultSet.setDenoiseFrequencySmooth(frequency)
             if shouldDenoise:
-                derivative, secondDerivative = self.calculateDerivativeValues(
+                derivative = self.calculateDerivativeValues(
                     resultSet.denoiseTime,
                     frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
                 )
             else:
-                derivative, secondDerivative = self.calculateDerivativeValues(
+                derivative = self.calculateDerivativeValues(
                     resultSet.time,
                     frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
                 )
@@ -178,11 +178,6 @@ class Analyzer(AnalyzerInterface):
                 timeChunk = time[-chunk_size:]
                 sgiChunk = sgi[-chunk_size:]
 
-                # linearFit = np.polyfit(timeChunk, sgiChunk, 1)
-                # linearFunction = np.poly1d(linearFit)
-                #
-                # derivativeFunction = np.polyder(linearFunction)
-                # derivativeValue = derivativeFunction(time[-1])
                 timeChanges = []
                 sgiChanges = []
                 for index in range(len(timeChunk)-1):
