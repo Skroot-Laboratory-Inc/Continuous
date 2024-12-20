@@ -5,7 +5,6 @@ from datetime import datetime
 from itertools import zip_longest
 
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
@@ -13,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, datetimeToMillis, gaussian
+from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, gaussian
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
@@ -58,16 +57,13 @@ class Analyzer(AnalyzerInterface):
                 derivative, secondDerivative = self.calculateDerivativeValues(
                     resultSet.denoiseTime,
                     frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
-                    resultSet.derivative,
                 )
             else:
                 derivative, secondDerivative = self.calculateDerivativeValues(
                     resultSet.time,
                     frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
-                    resultSet.derivative,
                 )
             resultSet.setDerivative(derivative)
-            resultSet.setSecondDerivative(secondDerivative)
         except:
             raise ScanAnalysisException()
         finally:
@@ -174,34 +170,32 @@ class Analyzer(AnalyzerInterface):
         return amplitude, centroid, peakWidth
 
     @staticmethod
-    def calculateDerivativeValues(time, sgi, derivative):
+    def calculateDerivativeValues(time, sgi):
         derivativeValue = np.nan
-        secondDerivativeValue = np.nan
-        if len(sgi) > HarvestProperties().savgolPoints:
-            sgi = savgol_filter(sgi, HarvestProperties().savgolPoints, 2)
         try:
             chunk_size = HarvestProperties().derivativePoints
             if len(time) > chunk_size:
                 timeChunk = time[-chunk_size:]
                 sgiChunk = sgi[-chunk_size:]
 
-                linearFit = np.polyfit(timeChunk, sgiChunk, 1)
-                linearFunction = np.poly1d(linearFit)
-
-                derivativeFunction = np.polyder(linearFunction)
-                derivativeValue = derivativeFunction(time[-1])
-
-                derivativeChunk = derivative[-chunk_size:]
-
-                linearFit = np.polyfit(timeChunk, derivativeChunk, 1)
-                linearFunction = np.poly1d(linearFit)
-
-                derivativeFunction = np.polyder(linearFunction)
-                secondDerivativeValue = derivativeFunction(time[-1])
+                # linearFit = np.polyfit(timeChunk, sgiChunk, 1)
+                # linearFunction = np.poly1d(linearFit)
+                #
+                # derivativeFunction = np.polyder(linearFunction)
+                # derivativeValue = derivativeFunction(time[-1])
+                timeChanges = []
+                sgiChanges = []
+                for index in range(len(timeChunk)-1):
+                    sgiChanges.append(sgiChunk[index+1] - sgiChunk[index])
+                    timeChanges.append(timeChunk[index+1] - timeChunk[index])
+                quartile1 = np.nanquantile(sgiChanges, 0.25)
+                quartile3 = np.nanquantile(sgiChanges, 0.75)
+                finalSgiChanges = [sgi for sgi in sgiChanges if quartile1 < sgi < quartile3]
+                derivativeValue = np.nanmean(finalSgiChanges) / np.nanmean(timeChanges)
         except:
             logging.exception("Failed to get derivative values", extra={"id": "global"})
         finally:
-            return derivativeValue, secondDerivativeValue
+            return derivativeValue
 
 
 def getDenoiseParameters(numberOfTimePoints):

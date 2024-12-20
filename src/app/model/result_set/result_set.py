@@ -4,7 +4,6 @@ from typing import List
 import numpy as np
 from scipy.signal import savgol_filter
 
-from src.app.helper.helper_functions import frequencyToIndex
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.properties.harvest_properties import HarvestProperties
 
@@ -19,9 +18,8 @@ class ResultSet:
         self.timestamps = []
         self.peakWidthsSmooth = []
         self.derivative = []
-        self.secondDerivative = []
         self.derivativeMean = []
-        self.secondDerivativeMean = []
+        self.smoothDerivativeMean = []
 
         self.denoiseTimeSmooth = []
         self.denoiseTime = []
@@ -47,10 +45,7 @@ class ResultSet:
         return self.filenames
 
     def getDerivativeMean(self) -> List[float]:
-        return self.derivative
-
-    def getSecondDerivativeMean(self) -> List[float]:
-        return self.secondDerivativeMean
+        return self.smoothDerivativeMean
 
     def getTimestamps(self) -> List[datetime]:
         return self.timestamps
@@ -76,9 +71,8 @@ class ResultSet:
         self.timestamps = self.timestamps[-1:]
         self.peakWidthsSmooth = self.peakWidthsSmooth[-1:]
         self.derivative = self.derivative[-1:]
-        self.secondDerivative = self.secondDerivative[-1:]
         self.derivativeMean = self.derivativeMean[-1:]
-        self.secondDerivativeMean = self.secondDerivativeMean[-1:]
+        self.smoothDerivativeMean = self.derivativeMean[-1:]
 
         self.denoiseFrequency = self.denoiseFrequency[-1:]
         self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
@@ -94,15 +88,15 @@ class ResultSet:
         self.timestamps.append(values.timestamp)
         self.peakWidthsSmooth.append(values.peakWidthSmooth)
         self.derivative.append(values.derivative)
-        self.secondDerivative.append(values.secondDerivative)
         if len(self.derivative) > HarvestProperties().derivativePoints:
             self.derivativeMean.append(self.takeDerivativeMean(self.derivative))
+            if len(self.derivativeMean) > 151:
+                self.smoothDerivativeMean = savgol_filter(self.derivativeMean, 151, 2)
+            else:
+                self.smoothDerivativeMean = self.derivativeMean
         else:
             self.derivativeMean.append(np.nan)
-        if len(self.secondDerivative) > HarvestProperties().derivativePoints*2:
-            self.secondDerivativeMean.append(self.takeDerivativeMean(self.secondDerivative))
-        else:
-            self.secondDerivativeMean.append(np.nan)
+            self.smoothDerivativeMean.append(np.nan)
 
         # Denoise values change with time, so the entire array gets set at once.
         self.denoiseTime = values.denoiseTime

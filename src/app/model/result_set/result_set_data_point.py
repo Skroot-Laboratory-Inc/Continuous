@@ -11,7 +11,6 @@ class ResultSetDataPoint:
         self.timestamp = np.nan
         self.peakWidthSmooth = np.nan
         self.derivative = np.nan
-        self.secondDerivative = np.nan
 
         self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
         self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
@@ -53,6 +52,3 @@ class ResultSetDataPoint:
 
     def setDerivative(self, derivative):
         self.derivative = derivative
-
-    def setSecondDerivative(self, secondDerivative):
-        self.secondDerivative = secondDerivative
