@@ -28,13 +28,14 @@ from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 class Reader(ReaderInterface):
     def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface):
         self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
+        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager)
         if DevProperties().isDevMode:
             self.AwsService = DevAwsService(self.FileManager, globalFileManager)
-            self.Analyzer = DevAnalyzer(self.FileManager, readerNumber)
+            self.Analyzer = DevAnalyzer(self.FileManager, readerNumber, self.HarvestAlgorithm)
             self.SibInterface = DevSib(readerNumber)
         else:
             self.AwsService = AwsService(self.FileManager, globalFileManager)
-            self.Analyzer = Analyzer(self.FileManager)
+            self.Analyzer = Analyzer(self.FileManager, self.HarvestAlgorithm)
             self.SibInterface = sibInterface
         self.AutomatedIssueManager = AutomatedIssueManager(self.AwsService, globalFileManager)
         self.ReaderPageAllocator = readerPageAllocator
@@ -52,7 +53,6 @@ class Reader(ReaderInterface):
         self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
-        self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager)
         self.plotFrequencyButton = ttk.Button(
             readerPageAllocator.readerPage,
             text="Real Time Plot",

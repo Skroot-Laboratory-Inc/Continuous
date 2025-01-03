@@ -17,15 +17,17 @@ from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
 from src.app.properties.harvest_properties import HarvestProperties
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 
 
 class Analyzer(AnalyzerInterface):
-    def __init__(self, FileManager: ReaderFileManager):
+    def __init__(self, FileManager: ReaderFileManager, harvestAlgorithm: HarvestAlgorithm):
         self.zeroPoint = 1
         self.ResultSet = ResultSet()
         self.sweepData = SweepData([], [])
         self.FileManager = FileManager
+        self.HarvestAlgorithm = harvestAlgorithm
 
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
@@ -108,6 +110,8 @@ class Analyzer(AnalyzerInterface):
             rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
             rowHeaders.append('Derivative')
             rowData.append(self.ResultSet.getDerivativeMean())
+            rowHeaders.append('Estimated Harvest Time (hrs)')
+            rowData.append(self.HarvestAlgorithm.historicalHarvestTime)
             writer.writerow(rowHeaders)
             writer.writerows(zip_longest(*rowData, fillvalue=np.nan))
 

@@ -74,6 +74,10 @@ def datetimeToMillis(dt: datetime.datetime):
     return int(dt.timestamp() * 1000)
 
 
+def datetimeToDisplay(dt: datetime.datetime):
+    return dt.strftime('%a %b %d, %I:%M %p')
+
+
 def convertToPercent(item):
     """ This converts a single value into a percent i.e. 1.08 into 8%"""
     return (item - 1) * 100

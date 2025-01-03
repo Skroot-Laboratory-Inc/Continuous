@@ -27,9 +27,9 @@ class HarvestAlgorithm(AlgorithmInterface):
 
     def check(self, resultSet):
         center, std, rSquared, harvestTime = np.nan, np.nan, np.nan, np.nan
-        if len(resultSet.getDenoiseTime()) > self.derivativePoints:
-            center, std, rSquared, harvestTime = self.harvestAlgorithm(resultSet.getDenoiseTime(), resultSet.getDerivativeMean())
-        self.historicalTime.append(resultSet.getDenoiseTime()[-1])
+        if len(resultSet.getTime()) > self.derivativePoints:
+            center, std, rSquared, harvestTime = self.harvestAlgorithm(resultSet.getTime(), resultSet.getDerivativeMean())
+        self.historicalTime.append(resultSet.getTime()[-1])
         self.historicalStd.append(std)
         self.historicalCentroid.append(center)
         self.historicalRSquared.append(rSquared)
@@ -37,8 +37,10 @@ class HarvestAlgorithm(AlgorithmInterface):
         if np.isnan(harvestTime) or harvestTime == 0:
             self.historicalTimeToHarvest.append(0)
         else:
-            self.historicalTimeToHarvest.append(harvestTime-resultSet.getDenoiseTime()[-1])
-        return center, std, rSquared, harvestTime
+            if harvestTime < resultSet.getTime()[-1]:
+                self.harvested = True
+            self.historicalTimeToHarvest.append(harvestTime-resultSet.getTime()[-1])
+        return harvestTime
 
     def getStatus(self):
         return self.harvested
@@ -47,6 +49,11 @@ class HarvestAlgorithm(AlgorithmInterface):
 
     def harvestAlgorithm(self, time, derivative):
         centroid, std, rSquared = self.findGaussianStd(time, derivative)
+        if len(time) != len(derivative):
+            logging.warning(
+                f"Cannot estimate harvest window, len(time)={len(time)} != len(derivative)={len(derivative)}",
+                extra={"id": "harvest algorithm"},
+            )
         proposedHarvestTime = centroid + HarvestProperties().standardDeviationsToHarvest * std
         if self.harvestTrackable(centroid, std, rSquared, time[-1], derivative[-1], proposedHarvestTime):
             self.differentPredictions.append(proposedHarvestTime)

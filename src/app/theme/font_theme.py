@@ -6,6 +6,7 @@ class FontTheme:
         self.italicUnderline = font.Font(family='Helvetica', size=9, underline=True, slant="italic")
         self.footnote = font.Font(family='Helvetica', size=7, slant="italic")
         self.primary = font.Font(family='Helvetica', size=10)
+        self.primaryBoldUnderlined = font.Font(family='Helvetica', size=10, weight="bold", underline=True)
         self.header1 = font.Font(family='Helvetica', size=14, weight="bold")
         self.header2 = font.Font(family='Helvetica', size=12, weight="bold")
         self.menubar = font.Font(family='Helvetica', size=15)
