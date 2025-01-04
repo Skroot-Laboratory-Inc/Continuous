@@ -31,6 +31,7 @@ class SetupReaderFormInput:
         return self.year
 
     def getDate(self):
+        self.date = datetime.now()
         return formatDate(self.date.date())
 
     def getDateMillis(self) -> int:
@@ -53,4 +54,12 @@ class SetupReaderFormInput:
 
     def getSavePath(self) -> str:
         return self.savePath
+
+    def resetRun(self):
+        self.date = datetime.now()
+        self.month = self.date.month
+        self.day = self.date.day
+        self.year = self.date.year
+        self.lotId = generateLotId()
+        return self
 

@@ -1,11 +1,11 @@
 import tkinter as tk
 
 from src.app.buttons.calibrate_readers import CalibrateReaderButton
-from src.app.buttons.connect_reader import ConnectReaderButton
 from src.app.buttons.plus_icon_button import PlusIconButton
 from src.app.buttons.start_button import StartButton
 from src.app.buttons.stop_button import StopButton
 from src.app.widget.harvest_text import HarvestText
+from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
@@ -16,7 +16,8 @@ class ReaderFrame:
                  plotFrame: tk.Frame,
                  harvestText: HarvestText,
                  setupFrame: tk.Frame,
-                 configuration,
+                 setupReaderForm: SetupReaderForm,
+                 header: tk.Label,
                  timer: RunningTimer,
                  indicator,
                  indicatorCanvas: tk.Canvas,
@@ -30,9 +31,10 @@ class ReaderFrame:
         self.plotFrame = plotFrame
         self.harvestText = harvestText
         self.setupFrame = setupFrame
-        self.configuration = configuration
+        self.setupReaderForm = setupReaderForm
         self.calibrateButton = calibrateButton
         self.indicatorCanvas = indicatorCanvas
+        self.header = header
         self.timer = timer
         self.indicator = indicator
         self.startButton = startButton
@@ -49,4 +51,9 @@ class ReaderFrame:
 
     def showSetupFrame(self):
         self.setupFrame.grid()
+
+    def resetSetupForm(self, readerNumber):
+        configuration = self.setupReaderForm.updateConfiguration()
+        self.header.configure(text=f"Reader {readerNumber}: {configuration.getLotId()}")
+
 

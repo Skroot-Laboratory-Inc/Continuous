@@ -142,6 +142,14 @@ class SetupReaderForm:
     def onCancel(self):
         self.parent.grid_remove()
 
+    def updateConfiguration(self):
+        guidedSetupInputs = self.guidedSetupResults.resetRun()
+        self.lotIdEntry.set(guidedSetupInputs.getLotId())
+        self.monthEntry.set(guidedSetupInputs.getMonth())
+        self.dayEntry.set(guidedSetupInputs.getDay())
+        self.yearEntry.set(guidedSetupInputs.getYear())
+        return self.guidedSetupResults
+
     def onSubmit(self):
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())

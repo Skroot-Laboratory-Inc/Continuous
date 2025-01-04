@@ -39,7 +39,7 @@ class ReaderPageThreadManager:
 
     def connectReader(self, readerNumber):
         try:
-            guidedSetupForm, globalFileManager = self.readerAllocator.getReaderFrame(readerNumber).configuration.getConfiguration()
+            guidedSetupForm, globalFileManager = self.readerAllocator.getReaderFrame(readerNumber).setupReaderForm.getConfiguration()
             shouldCalibrate = guidedSetupForm.getCalibrate()
             sib = self.SibFinder.connectSib(readerNumber, globalFileManager, shouldCalibrate)
             self.Readers[readerNumber] = Reader(
@@ -111,6 +111,7 @@ class ReaderPageThreadManager:
             self.readerThreads[readerNumber].thread.join()
             readerFrame.hidePlotFrame()
             readerFrame.createButton.show()
+            readerFrame.resetSetupForm(readerNumber)
             readerFrame.timer.resetTimer()
         else:
             return False
