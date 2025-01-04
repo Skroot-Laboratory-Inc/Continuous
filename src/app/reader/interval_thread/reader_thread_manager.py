@@ -202,14 +202,17 @@ class ReaderThreadManager:
                         f"Sweep Analysis Failed, check sensor placement on reader {reader.readerNumber}.")
                 finally:
                     self.Timer.updateTime()
-                    reader.FileManager.incrementScanNumber(5)
+                    reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
                 if not self.issueOccurredFn():
                     text_notification.setText("All readers successfully recorded data.")
             except:
                 logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:
                 currentTime = time.time()
-                # self.checkIfScanTookTooLong(currentTime - startTime)
+                if self.isDevMode and DevProperties().enforceScanRate:
+                    pass
+                else:
+                    self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText(f"Reader {reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
         if reader.finishedEquilibrationPeriod:
