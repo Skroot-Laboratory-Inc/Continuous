@@ -39,7 +39,10 @@ class DerivativeAnalyzer:
             try:
                 readerTime = [datetimeToMillis(datetime.strptime(time, "%m/%y/%Y  %I:%M:%S %p"))/3600000 for time in readings['Timestamp'].values.tolist()]
             except:
-                readerTime = [datetimeToMillis(datetime.fromisoformat(time))/3600000 for time in readings['Timestamp'].values.tolist()]
+                try:
+                    readerTime = [datetimeToMillis(datetime.fromisoformat(time))/3600000 for time in readings['Timestamp'].values.tolist()]
+                except:
+                    readerTime = [time/3600000 for time in readings['Timestamp'].values.tolist()]
             startTime = readerTime[0]
             timeInHours = [time - startTime for time in readerTime]
             readerSGI = readings['Skroot Growth Index (SGI)'].values.tolist()
@@ -51,7 +54,7 @@ class DerivativeAnalyzer:
                 )
                 dataPoint = ResultSetDataPoint(resultSet)
                 dataPoint.setDerivative(derivativeValue)
-                dataPoint.setDenoiseTime(timeInHours[:index+1])
+                dataPoint.setTime(timeInHours[:index+1])
                 resultSet.setValues(dataPoint)
                 harvestAlgorithm.check(resultSet)
             plt.title(readerId)
@@ -64,7 +67,6 @@ class DerivativeAnalyzer:
             ax2.set_ylabel("Derivative Mean", color='tab:orange')
             plt.savefig(f"{os.path.dirname(os.path.dirname(readerAnalyzed))}/Post Processing/{readerId}.jpg")
             plt.clf()
-            print(np.nanmax(harvestAlgorithm.historicalHarvestTime))
             self.resultMap[readerId] = {
                 "time": timeInHours,
                 "sgi": readerSGI,

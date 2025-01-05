@@ -8,12 +8,13 @@ class DevProperties:
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
         self.tryDevMode = True
         self.disableAws = True
+        self.enforceScanRate = True
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:
             self.isDevMode = False
-        self.startTime = 24*60  # Minutes
-        self.scanRate = 1/60
+        self.startTime = 48*60  # Minutes
+        self.scanRate = .5/60
         # self.mode = "GUI"
         self.mode = "Analysis"
 

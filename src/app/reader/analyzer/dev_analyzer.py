@@ -1,11 +1,13 @@
 import glob
 import os.path
 
+import numpy as np
 import pandas
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 
 
@@ -14,8 +16,8 @@ class DevAnalyzer(Analyzer):
     DevAnalyzer uses all the functions in Analyzer but overwrites AnalyzeScan to pull from static files depending
     on the dev mode.
     """
-    def __init__(self, FileManager: ReaderFileManager, readerNumber):
-        super().__init__(FileManager)
+    def __init__(self, FileManager: ReaderFileManager, readerNumber, harvestAlgorithm: HarvestAlgorithm):
+        super().__init__(FileManager, harvestAlgorithm)
 
         self.DevProperties = DevProperties()
         self.FileManager.scanNumber = self.DevProperties.startTime + 100000
@@ -53,9 +55,14 @@ class DevAnalyzer(Analyzer):
 
     def loadDevMode(self):
         self.ResultSet.time = self.devTime[0:self.currentDevFileIndex]
+        self.ResultSet.denoiseTime = self.devTime[0:self.currentDevFileIndex]
         self.ResultSet.denoiseTimeSmooth = self.devTime[0:self.currentDevFileIndex]
         self.ResultSet.timestamps = self.devTimestamps[0:self.currentDevFileIndex]
         self.ResultSet.filenames = self.devFilenames[0:self.currentDevFileIndex]
+        self.ResultSet.smoothDerivativeMean = [np.nan for _ in self.devTime[0:self.currentDevFileIndex]]
+        self.ResultSet.derivativeMean = [np.nan for _ in self.devTime[0:self.currentDevFileIndex]]
+        self.ResultSet.derivative = [np.nan for _ in self.devTime[0:self.currentDevFileIndex]]
+        self.ResultSet.peakWidthsSmooth = [np.nan for _ in self.devTime[0:self.currentDevFileIndex]]
 
         self.ResultSet.maxVoltsSmooth = self.devDb[0:self.currentDevFileIndex]
 

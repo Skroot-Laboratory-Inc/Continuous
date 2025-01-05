@@ -29,7 +29,7 @@ class ReaderThreadManager:
         self.issueOccurredFn = issueOccurredFn
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
-        self.thread = threading.Thread(target=self.mainLoop, args=(), daemon=True)
+        self.thread = threading.Thread(target=self.mainLoop, args=(reader,), daemon=True)
         self.Timer = reader.ReaderPageAllocator.getTimer(reader.readerNumber)
         self.isDevMode = DevProperties().isDevMode
         self.freqToggleSet = freqToggleSet
@@ -76,29 +76,39 @@ class ReaderThreadManager:
                 f"Failed to find the zero point for reader {self.Reader.readerNumber}, last 5 points: {self.Reader.getResultSet().getMaxFrequencySmooth()[-5:]}")
 
     def takeSweep(self):
-        self.Reader.Indicator.changeIndicatorYellow()
+        reader = self.Reader
+        reader.Indicator.changeIndicatorYellow()
         self.checkZeroPoint()
-        sweepData = self.Reader.SibInterface.takeScan(
-            self.Reader.FileManager.getCurrentScan(),
+        sweepData = reader.SibInterface.takeScan(
+            reader.FileManager.getCurrentScan(),
             self.disableFullSaveFiles,
         )
-        self.Reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
-        self.Reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
-        self.Reader.Analyzer.createAnalyzedFiles()
-        self.Reader.HarvestAlgorithm.check(self.Reader.getResultSet())
-        self.Reader.Indicator.changeIndicatorGreen()
-        if self.Reader.finishedEquilibrationPeriod:
-            self.Reader.AwsService.uploadExperimentFilesOnInterval(
-                self.Reader.FileManager.getCurrentScanNumber(),
+        reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
+        reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
+        reader.Analyzer.createAnalyzedFiles()
+        reader.HarvestAlgorithm.check(reader.getResultSet())
+        if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
+            reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.updateSaturationTime(
+                reader.HarvestAlgorithm.currentHarvestPrediction,
+                reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+            )
+        if reader.HarvestAlgorithm.harvested:
+            reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.isNowSaturated(
+                reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+            )
+        reader.Indicator.changeIndicatorGreen()
+        if reader.finishedEquilibrationPeriod:
+            reader.AwsService.uploadExperimentFilesOnInterval(
+                reader.FileManager.getCurrentScanNumber(),
                 self.guidedSetupForm,
             )
-        if self.Reader.readerNumber in self.currentIssues and not self.currentIssues[self.Reader.readerNumber].resolved:
-            self.currentIssues[self.Reader.readerNumber].resolveIssue()
-            if type(self.currentIssues[self.Reader.readerNumber]) is Issue:
-                self.Reader.AutomatedIssueManager.updateIssue(self.currentIssues[self.Reader.readerNumber])
-            del self.currentIssues[self.Reader.readerNumber]
+        if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
+            self.currentIssues[reader.readerNumber].resolveIssue()
+            if type(self.currentIssues[reader.readerNumber]) is Issue:
+                reader.AutomatedIssueManager.updateIssue(self.currentIssues[reader.readerNumber])
+            del self.currentIssues[reader.readerNumber]
 
-    def mainLoop(self):
+    def mainLoop(self, reader):
         if self.isDevMode:
             self.scanRate = DevProperties().scanRate
         self.thread.shutdown_flag = threading.Event()
@@ -109,103 +119,106 @@ class ReaderThreadManager:
                 try:
                     self.takeSweep()
                 except SIBConnectionError:
-                    if self.Reader.readerNumber in self.currentIssues:
-                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
-                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[
-                                self.Reader.readerNumber].persistIssue()
+                    if reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[reader.readerNumber] = self.currentIssues[
+                                reader.readerNumber].persistIssue()
                     else:
-                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                        self.currentIssues[reader.readerNumber] = PotentialIssue(
                             IssueProperties().consecutiveHardwareIssue,
-                            f"Automated - Reader Connection Error On Reader {self.Reader.readerNumber}.",
-                            self.Reader.AutomatedIssueManager.createIssue,
+                            f"Automated - Reader Connection Error On Reader {reader.readerNumber}.",
+                            reader.AutomatedIssueManager.createIssue,
                         )
-                    self.Reader.Indicator.changeIndicatorRed()
-                    self.Reader.getAnalyzer().recordFailedScan()
+                    reader.Indicator.changeIndicatorRed()
+                    reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Connection Error: Failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"})
+                        f'Connection Error: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
+                        extra={"id": f"Reader {reader.readerNumber}"})
                     logging.info(
                         f'SIB currently in the state: {self.Reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"}
+                        extra={"id": f"Reader {reader.readerNumber}"}
                     )
-                    text_notification.setText(f"Sweep Failed, check reader {self.Reader.readerNumber} connection.")
+                    text_notification.setText(f"Sweep Failed, check reader {reader.readerNumber} connection.")
                 except SIBReconnectException:
-                    if self.Reader.readerNumber in self.currentIssues:
-                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
-                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[
-                                self.Reader.readerNumber].persistIssue()
+                    if reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[reader.readerNumber] = self.currentIssues[
+                                reader.readerNumber].persistIssue()
                     else:
-                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                        self.currentIssues[reader.readerNumber] = PotentialIssue(
                             IssueProperties().consecutiveHardwareIssue,
-                            f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.",
-                            self.Reader.AutomatedIssueManager.createIssue,
+                            f"Automated - Hardware Issue Identified On Reader {reader.readerNumber}.",
+                            reader.AutomatedIssueManager.createIssue,
                         )
-                    self.Reader.Indicator.changeIndicatorRed()
-                    self.Reader.getAnalyzer().recordFailedScan()
+                    reader.Indicator.changeIndicatorRed()
+                    reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"})
+                        f'Failed to take scan {reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
+                        extra={"id": f"Reader {reader.readerNumber}"})
                     logging.info(
-                        f'SIB currently in the state: {self.Reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"}
+                        f'SIB currently in the state: {reader.SibInterface.getPowerStatus()}',
+                        extra={"id": f"Reader {reader.readerNumber}"}
                     )
                     text_notification.setText(
-                        f"Sweep failed for reader {self.Reader.readerNumber}, SIB reconnection was successful.")
+                        f"Sweep failed for reader {reader.readerNumber}, SIB reconnection was successful.")
                 except SIBException:
-                    if self.Reader.readerNumber in self.currentIssues:
-                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
-                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[
-                                self.Reader.readerNumber].persistIssue()
+                    if reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[reader.readerNumber] = self.currentIssues[
+                                reader.readerNumber].persistIssue()
                     else:
-                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                        self.currentIssues[reader.readerNumber] = PotentialIssue(
                             IssueProperties().consecutiveHardwareIssue,
-                            f"Automated - Hardware Issue Identified On Reader {self.Reader.readerNumber}.",
-                            self.Reader.AutomatedIssueManager.createIssue,
+                            f"Automated - Hardware Issue Identified On Reader {reader.readerNumber}.",
+                            reader.AutomatedIssueManager.createIssue,
                         )
-                    self.Reader.Indicator.changeIndicatorRed()
-                    self.Reader.getAnalyzer().recordFailedScan()
+                    reader.Indicator.changeIndicatorRed()
+                    reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Hardware Problem: Failed to take scan {self.Reader.FileManager.getCurrentScanNumber()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"})
+                        f'Hardware Problem: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
+                        extra={"id": f"Reader {reader.readerNumber}"})
                     logging.info(
-                        f'SIB currently in the state: {self.Reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"}
+                        f'SIB currently in the state: {reader.SibInterface.getPowerStatus()}',
+                        extra={"id": f"Reader {reader.readerNumber}"}
                     )
                     text_notification.setText(
-                        f"Sweep Failed With Hardware Cause for reader {self.Reader.readerNumber}, contact a Skroot representative if the issue persists.")
+                        f"Sweep Failed With Hardware Cause for reader {reader.readerNumber}, contact a Skroot representative if the issue persists.")
                 except AnalysisException:
-                    if self.Reader.readerNumber in self.currentIssues:
-                        if type(self.currentIssues[self.Reader.readerNumber]) is PotentialIssue:
-                            self.currentIssues[self.Reader.readerNumber] = self.currentIssues[
-                                self.Reader.readerNumber].persistIssue()
+                    if reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[reader.readerNumber] = self.currentIssues[
+                                reader.readerNumber].persistIssue()
                     else:
-                        self.currentIssues[self.Reader.readerNumber] = PotentialIssue(
+                        self.currentIssues[reader.readerNumber] = PotentialIssue(
                             IssueProperties().consecutiveAnalysisIssue,
-                            f"Automated - Analysis Failed On Reader {self.Reader.readerNumber}.",
-                            self.Reader.AutomatedIssueManager.createIssue,
+                            f"Automated - Analysis Failed On Reader {reader.readerNumber}.",
+                            reader.AutomatedIssueManager.createIssue,
                         )
-                    self.Reader.Indicator.changeIndicatorRed()
+                    reader.Indicator.changeIndicatorRed()
                     logging.exception(
-                        f'Error Analyzing Data, failed to analyze scan {self.Reader.FileManager.getCurrentScanNumber()}',
-                        extra={"id": f"Reader {self.Reader.readerNumber}"})
+                        f'Error Analyzing Data, failed to analyze scan {reader.FileManager.getCurrentScanNumber()}',
+                        extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
-                        f"Sweep Analysis Failed, check sensor placement on reader {self.Reader.readerNumber}.")
+                        f"Sweep Analysis Failed, check sensor placement on reader {reader.readerNumber}.")
                 finally:
                     self.Timer.updateTime()
-                    self.Reader.FileManager.incrementScanNumber(self.scanRate)
+                    reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
                 if not self.issueOccurredFn():
                     text_notification.setText("All readers successfully recorded data.")
             except:
-                logging.exception('Unknown error has occurred', extra={"id": f"Reader {self.Reader.readerNumber}"})
+                logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:
                 currentTime = time.time()
-                self.checkIfScanTookTooLong(currentTime - startTime)
+                if self.isDevMode and DevProperties().enforceScanRate:
+                    pass
+                else:
+                    self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-        text_notification.setText(f"Reader {self.Reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
-        if self.Reader.finishedEquilibrationPeriod:
-            self.Reader.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
-        self.resetRunFunc(self.Reader.readerNumber)
-        logging.info(f'Finished run.', extra={"id": f"Reader {self.Reader.readerNumber}"})
+        text_notification.setText(f"Reader {reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
+        if reader.finishedEquilibrationPeriod:
+            reader.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm)
+        self.resetRunFunc(reader.readerNumber)
+        logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
 
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:

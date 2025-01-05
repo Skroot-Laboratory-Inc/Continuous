@@ -11,6 +11,7 @@ from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
+from src.app.widget.harvest_text import HarvestText
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
@@ -54,9 +55,12 @@ class ReaderPageAllocator:
             indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
             configuration, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
             self.createHeader(readerFrame, readerNumber, configuration.lotIdEntry.get())
+            mainPlottingFrame, plottingFrame, harvestText = self.createPlotFrame(readerFrame)
             self.readerFrames[readerNumber] = ReaderFrame(
                 readerFrame,
-                self.createPlotFrame(readerFrame),
+                mainPlottingFrame,
+                plottingFrame,
+                harvestText,
                 setupFrame,
                 configuration,
                 self.createTimer(readerFrame),
@@ -114,10 +118,16 @@ class ReaderPageAllocator:
         return self.getReaderFrame(readerNumber).timer
 
     def createPlotFrame(self, readerFrame):
-        plottingFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        plottingFrame.grid(row=1, column=0, columnspan=3)
-        plottingFrame.grid_remove()
-        return plottingFrame
+        mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
+        mainFrame.grid(row=1, column=0, columnspan=3)
+        mainFrame.grid_rowconfigure(0, weight=9, minsize=265)
+        mainFrame.grid_rowconfigure(1, weight=1, minsize=35)
+        plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
+        plottingFrame.grid(row=0, column=0, sticky='nsew')
+        harvestText = HarvestText(mainFrame)
+        harvestText.text.grid(row=1, column=0)
+        mainFrame.grid_remove()
+        return mainFrame, plottingFrame, harvestText
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
