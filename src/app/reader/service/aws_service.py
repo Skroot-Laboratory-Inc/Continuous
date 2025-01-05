@@ -5,7 +5,7 @@ from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import datetimeToMillis
+from src.app.helper.helper_functions import datetimeToMillis, datetimeToDisplay
 from src.app.reader.service.aws_service_interface import AwsServiceInterface
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.aws_properties import AwsProperties
@@ -25,10 +25,10 @@ class AwsService(AwsServiceInterface):
         self.awsLastRawDataUploadTime = 100000
         self.awsLastNotesUploadTime = 100000
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput):
-        self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm)
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
+        self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm, saturationDate)
 
-    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput):
+    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
         if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.ReaderFileManager.getSmoothAnalyzed(),
@@ -39,6 +39,7 @@ class AwsService(AwsServiceInterface):
                     "lot_id": guidedSetupForm.getLotId(),
                     "incubator": guidedSetupForm.getIncubator(),
                     "scan_rate": guidedSetupForm.getScanRate(),
+                    "saturation_date": datetimeToDisplay(saturationDate),
                 },
             )
             self.awsLastCsvUploadTime = scanNumber
@@ -49,7 +50,7 @@ class AwsService(AwsServiceInterface):
             )
             self.awsLastRawDataUploadTime = scanNumber
 
-    def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput):
+    def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
         self.AwsBoto3Service.uploadFile(
             self.ReaderFileManager.getSmoothAnalyzed(),
             "text/csv",
@@ -59,6 +60,7 @@ class AwsService(AwsServiceInterface):
                 "lot_id": guidedSetupForm.getLotId(),
                 "incubator": guidedSetupForm.getIncubator(),
                 "scan_rate": guidedSetupForm.getScanRate(),
+                "saturation_date": datetimeToDisplay(saturationDate),
             },
         )
 
@@ -67,19 +69,3 @@ class AwsService(AwsServiceInterface):
             self.GlobalFileManager.getIssueLog(),
             'application/json'
         )
-
-    def downloadIssueLogIfModified(self, lastDownloaded):
-        lastModified = self.AwsBoto3Service.getLastModified(
-            f'{self.AwsBoto3Service.runFolder}/{os.path.basename(self.GlobalFileManager.getIssueLog())}',
-        )
-        if lastModified > lastDownloaded:
-            self.downloadIssueLog()
-            return lastModified
-        return lastDownloaded
-
-    def downloadIssueLog(self):
-        return self.AwsBoto3Service.downloadFile(
-            f'{self.AwsBoto3Service.runFolder}/{os.path.basename(self.GlobalFileManager.getIssueLog())}',
-            self.GlobalFileManager.getIssueLog(),
-        )
-

@@ -53,8 +53,8 @@ class ReaderPageAllocator:
                 column=self.positions[position]["column"],
                 sticky='nesw')
             indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
-            configuration, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
-            self.createHeader(readerFrame, readerNumber, configuration.lotIdEntry.get())
+            setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
+            header = self.createHeader(readerFrame, readerNumber, setupReaderForm.lotIdEntry.get())
             mainPlottingFrame, plottingFrame, harvestText = self.createPlotFrame(readerFrame)
             self.readerFrames[readerNumber] = ReaderFrame(
                 readerFrame,
@@ -62,7 +62,8 @@ class ReaderPageAllocator:
                 plottingFrame,
                 harvestText,
                 setupFrame,
-                configuration,
+                setupReaderForm,
+                header,
                 self.createTimer(readerFrame),
                 indicator,
                 indicatorCanvas,

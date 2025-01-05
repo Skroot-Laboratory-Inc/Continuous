@@ -30,6 +30,7 @@ class AwsBoto3:
         self.runUuid = datetimeToMillis(datetime.datetime.now())
 
     def findFolderAndUploadFile(self, fileLocation, fileType, tags):
+        """ Internal use only to upload the first file of a folder. """
         if not self.disabled:
             for folder in self.folders:
                 try:
@@ -63,7 +64,6 @@ class AwsBoto3:
                                    "CacheControl": "no-cache"})
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet', extra={"id": "aws"})
-                self.disabled = True
                 return False
             except:
                 logging.exception('Error - most likely there were no folders found in AWS.', extra={"id": "aws"})
@@ -71,31 +71,3 @@ class AwsBoto3:
             return True
         else:
             return False
-
-    def deleteFile(self, fileName):
-        if not self.disabled:
-            try:
-                self.s3.delete_object(Bucket=self.bucket, Key=fileName)
-            except botocore.exceptions.EndpointConnectionError:
-                logging.info('no internet', extra={"id": "aws"})
-                self.disabled = True
-            except:
-                logging.exception('Failed to delete file', extra={"id": "aws"})
-
-    def downloadFile(self, aws_filename, local_filename):
-        if not self.disabled:
-            try:
-                self.s3.download_file(self.bucket, aws_filename, local_filename)
-            except botocore.exceptions.EndpointConnectionError:
-                logging.info('no internet', extra={"id": "aws"})
-                self.disabled = True
-            except:
-                pass
-
-    def getLastModified(self, aws_filename):
-        if not self.disabled:
-            try:
-                response = self.s3.head_object(Bucket=self.bucket, Key=aws_filename)
-                return response['LastModified']
-            except:
-                pass

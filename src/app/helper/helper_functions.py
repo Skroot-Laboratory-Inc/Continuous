@@ -75,7 +75,11 @@ def datetimeToMillis(dt: datetime.datetime):
 
 
 def datetimeToDisplay(dt: datetime.datetime):
-    return dt.strftime('%a %b %d, %I:%M %p')
+    """ Converts a datetime to a string. i.e. Mon Jan 3rd, 5:50 PM """
+    if dt is not None:
+        return dt.strftime('%a %b %d, %I:%M %p')
+    else:
+        return None
 
 
 def convertToPercent(item):
