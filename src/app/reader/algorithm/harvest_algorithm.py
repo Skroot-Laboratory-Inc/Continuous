@@ -22,7 +22,7 @@ class HarvestAlgorithm(AlgorithmInterface):
         self.historicalRSquared = []
         self.historicalHarvestTime = []
         self.historicalTimeToHarvest = []
-        self.currentHarvestPrediction = 0
+        self.currentHarvestPrediction = np.nan
         self.differentPredictions = []
 
     def check(self, resultSet):

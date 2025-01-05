@@ -1,3 +1,8 @@
+from datetime import datetime
+
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
+
+
 class AwsServiceInterfaceMetaClass(type):
     """This checks that classes that implement AwsServiceInterface implement all members of the class"""
 
@@ -18,10 +23,10 @@ class AwsServiceInterfaceMetaClass(type):
 
 class AwsServiceInterface(metaclass=AwsServiceInterfaceMetaClass):
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm):
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
         """ Uploads the summary csv for the experiment. """
 
-    def uploadFinalExperimentFiles(self, guidedSetupForm):
+    def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
         """ Uploads the summary csv for the experiment. """
 
     def uploadExperimentLog(self):
