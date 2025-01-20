@@ -39,7 +39,7 @@ class AwsService(AwsServiceInterface):
                     "lot_id": guidedSetupForm.getLotId(),
                     "incubator": guidedSetupForm.getIncubator(),
                     "scan_rate": guidedSetupForm.getScanRate(),
-                    "saturation_date": datetimeToDisplay(saturationDate),
+                    "saturation_date": saturationDate,
                 },
             )
             self.awsLastCsvUploadTime = scanNumber
@@ -60,7 +60,7 @@ class AwsService(AwsServiceInterface):
                 "lot_id": guidedSetupForm.getLotId(),
                 "incubator": guidedSetupForm.getIncubator(),
                 "scan_rate": guidedSetupForm.getScanRate(),
-                "saturation_date": datetimeToDisplay(saturationDate),
+                "saturation_date": saturationDate,
             },
         )
 

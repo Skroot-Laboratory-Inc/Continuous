@@ -99,17 +99,10 @@ class ReaderThreadManager:
             )
         reader.Indicator.changeIndicatorGreen()
         if reader.finishedEquilibrationPeriod:
-            if not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                predictedHarvestDate = datetime.datetime.now() + datetime.timedelta(
-                    hours=int(reader.HarvestAlgorithm.currentHarvestPrediction),
-                    minutes=round(reader.HarvestAlgorithm.currentHarvestPrediction*60) % 60,
-                )
-            else:
-                predictedHarvestDate = None
             reader.AwsService.uploadExperimentFilesOnInterval(
                 reader.FileManager.getCurrentScanNumber(),
                 self.guidedSetupForm,
-                predictedHarvestDate,
+                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
             )
         if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
             self.currentIssues[reader.readerNumber].resolveIssue()
@@ -225,14 +218,10 @@ class ReaderThreadManager:
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText(f"Reader {reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
         if reader.finishedEquilibrationPeriod:
-            if not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                predictedHarvestDate = datetime.datetime.now() + datetime.timedelta(
-                    hours=int(reader.HarvestAlgorithm.currentHarvestPrediction),
-                    minutes=round(reader.HarvestAlgorithm.currentHarvestPrediction*60) % 60,
-                )
-            else:
-                predictedHarvestDate = None
-            reader.AwsService.uploadFinalExperimentFiles(self.guidedSetupForm, predictedHarvestDate)
+            reader.AwsService.uploadFinalExperimentFiles(
+                self.guidedSetupForm,
+                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
+            )
         self.resetRunFunc(reader.readerNumber)
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
 
