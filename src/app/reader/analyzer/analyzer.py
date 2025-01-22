@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 from src.app.exception.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, formatDatetime, gaussian
+from src.app.helper.helper_functions import frequencyToIndex, gaussian, datetimeToMillis
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
@@ -80,10 +80,7 @@ class Analyzer(AnalyzerInterface):
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
-        try:
-            timestamps = [formatDatetime(timestamp) for timestamp in self.ResultSet.getTimestamps()]
-        except:
-            timestamps = self.ResultSet.getTimestamps()
+        timestamps = [datetimeToMillis(date) for date in self.ResultSet.getTimestamps()]
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             rowHeaders = []

@@ -71,3 +71,13 @@ class AwsBoto3:
             return True
         else:
             return False
+
+    def downloadFile(self, aws_filename, local_filename):
+        if not self.disabled:
+            try:
+                self.s3.download_file(self.bucket, aws_filename, local_filename)
+            except botocore.exceptions.EndpointConnectionError:
+                logging.info('no internet', extra={"id": "aws"})
+                self.disabled = True
+            except:
+                pass
