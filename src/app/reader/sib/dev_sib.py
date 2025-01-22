@@ -3,6 +3,7 @@ import os
 import shutil
 
 import pandas
+from sibcontrol import SIBConnectionError
 
 from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
@@ -25,6 +26,9 @@ class DevSib(SibInterface):
         self.currentDevFileIndex += 1
         currentScanFile = self.devFiles[self.currentDevFileIndex]
         readings = pandas.read_csv(currentScanFile)
+        if self.DevProperties.sibShouldError:
+            if self.currentDevFileIndex in self.DevProperties.errorScans:
+                raise SIBConnectionError()
         if not disableSaveFiles:
             shutil.copy(currentScanFile, outputFilename)
         return SweepData(

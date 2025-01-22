@@ -25,10 +25,11 @@ class AwsService(AwsServiceInterface):
         self.awsLastRawDataUploadTime = 100000
         self.awsLastNotesUploadTime = 100000
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
-        self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm, saturationDate)
+    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime, flagged: bool):
+        self.uploadReaderCsvOnInterval(scanNumber, guidedSetupForm, saturationDate, flagged)
+        self.uploadRawDataOnInterval(scanNumber)
 
-    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
+    def uploadReaderCsvOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime, flagged: bool):
         if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.ReaderFileManager.getSmoothAnalyzed(),
@@ -40,9 +41,12 @@ class AwsService(AwsServiceInterface):
                     "incubator": guidedSetupForm.getIncubator(),
                     "scan_rate": guidedSetupForm.getScanRate(),
                     "saturation_date": saturationDate,
+                    "flagged": flagged,
                 },
             )
             self.awsLastCsvUploadTime = scanNumber
+
+    def uploadRawDataOnInterval(self, scanNumber):
         if (scanNumber - self.awsLastRawDataUploadTime) >= self.rawDataUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.ReaderFileManager.getCurrentScan(),
@@ -61,6 +65,7 @@ class AwsService(AwsServiceInterface):
                 "incubator": guidedSetupForm.getIncubator(),
                 "scan_rate": guidedSetupForm.getScanRate(),
                 "saturation_date": saturationDate,
+                "flagged": False,
             },
         )
 

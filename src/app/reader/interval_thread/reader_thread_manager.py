@@ -78,37 +78,40 @@ class ReaderThreadManager:
 
     def takeSweep(self):
         reader = self.Reader
-        reader.Indicator.changeIndicatorYellow()
-        self.checkZeroPoint()
-        sweepData = reader.SibInterface.takeScan(
-            reader.FileManager.getCurrentScan(),
-            self.disableFullSaveFiles,
-        )
-        reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
-        reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
-        reader.Analyzer.createAnalyzedFiles()
-        reader.HarvestAlgorithm.check(reader.getResultSet())
-        if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-            reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.updateSaturationTime(
-                reader.HarvestAlgorithm.currentHarvestPrediction,
-                reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+        try:
+            reader.Indicator.changeIndicatorYellow()
+            self.checkZeroPoint()
+            sweepData = reader.SibInterface.takeScan(
+                reader.FileManager.getCurrentScan(),
+                self.disableFullSaveFiles,
             )
-        if reader.HarvestAlgorithm.harvested:
-            reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.isNowSaturated(
-                reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
-            )
-        reader.Indicator.changeIndicatorGreen()
-        if reader.finishedEquilibrationPeriod:
-            reader.AwsService.uploadExperimentFilesOnInterval(
-                reader.FileManager.getCurrentScanNumber(),
-                self.guidedSetupForm,
-                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
-            )
-        if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
-            self.currentIssues[reader.readerNumber].resolveIssue()
-            if type(self.currentIssues[reader.readerNumber]) is Issue:
-                reader.AutomatedIssueManager.updateIssue(self.currentIssues[reader.readerNumber])
-            del self.currentIssues[reader.readerNumber]
+            reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
+            reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
+            reader.HarvestAlgorithm.check(reader.getResultSet())
+            if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
+                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.updateSaturationTime(
+                    reader.HarvestAlgorithm.currentHarvestPrediction,
+                    reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+                )
+            if reader.HarvestAlgorithm.harvested:
+                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.isNowSaturated(
+                    reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+                )
+            reader.Indicator.changeIndicatorGreen()
+            if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
+                self.currentIssues[reader.readerNumber].resolveIssue()
+                if type(self.currentIssues[reader.readerNumber]) is Issue:
+                    reader.AutomatedIssueManager.updateIssue(self.currentIssues[reader.readerNumber])
+                del self.currentIssues[reader.readerNumber]
+        finally:
+            reader.Analyzer.createAnalyzedFiles()
+            if reader.finishedEquilibrationPeriod:
+                reader.AwsService.uploadExperimentFilesOnInterval(
+                    reader.FileManager.getCurrentScanNumber(),
+                    self.guidedSetupForm,
+                    reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
+                    reader.AutomatedIssueManager.hasOpenIssues()
+                )
 
     def mainLoop(self, reader):
         if self.isDevMode:
