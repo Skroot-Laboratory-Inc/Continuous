@@ -12,6 +12,7 @@ from src.app.exception.analysis_exception import AnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper.helper_functions import frequencyToIndex, getZeroPoint
 from src.app.model.sweep_data import SweepData
+from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 
 
@@ -35,7 +36,7 @@ class PostProcessingAnalyzer:
     def analyzeReaderScans(self):
         for readerId, rawDataFiles in self.rawDataScansMap.items():
             readerFileManager = ReaderFileManager("", 1)
-            analyzer = Analyzer(readerFileManager)
+            analyzer = Analyzer(readerFileManager, HarvestAlgorithm(readerFileManager))
             setZeroPoint = False
             zeroPoint = 1
             readerProgressBar = IncrementalBar(
@@ -52,6 +53,9 @@ class PostProcessingAnalyzer:
                     scanReadings['Signal Strength (Unitless)'].values.tolist())
                 try:
                     analyzer.analyzeScan(sweepData, False)
+                except AnalysisException as e:
+                    print(e)
+                finally:
                     if not setZeroPoint:
                         currentTimePoint = readerFileManager.scanNumber - 100000
                         if currentTimePoint >= self.equilibrationTime*60:
@@ -60,8 +64,6 @@ class PostProcessingAnalyzer:
                                 analyzer.ResultSet.getMaxFrequencySmooth())
                             setZeroPoint = True
                             analyzer.resetRun()
-                except AnalysisException as e:
-                    print(e)
             self.zeroPointMap[readerId] = zeroPoint
             self.resultSetMap[readerId] = analyzer.ResultSet
             readerProgressBar.finish()

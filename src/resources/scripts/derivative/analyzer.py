@@ -32,19 +32,24 @@ class DerivativeAnalyzer:
             self.analyzedFileMap[os.path.basename(os.path.dirname(directory))] = f'{directory}/smoothAnalyzed.csv'
 
     def calculateDerivative(self):
-        analyzer = Analyzer(ReaderFileManager("", 1))
+        readerFileManager = ReaderFileManager("", 1)
         for readerId, readerAnalyzed in self.analyzedFileMap.items():
-            harvestAlgorithm = HarvestAlgorithm(ReaderFileManager("", 1))
+            harvestAlgorithm = HarvestAlgorithm(readerFileManager)
+            analyzer = Analyzer(readerFileManager, harvestAlgorithm)
             readings = pandas.read_csv(readerAnalyzed)
-            try:
-                readerTime = [datetimeToMillis(datetime.strptime(time, "%m/%y/%Y  %I:%M:%S %p"))/3600000 for time in readings['Timestamp'].values.tolist()]
-            except:
+            softwareVersion = "R&D"
+            if softwareVersion == "R&D":
+                timeInHours = [time for time in readings['Time (hours)'].values.tolist()]
+            else:
                 try:
-                    readerTime = [datetimeToMillis(datetime.fromisoformat(time))/3600000 for time in readings['Timestamp'].values.tolist()]
+                    readerTime = [datetimeToMillis(datetime.strptime(time, "%m/%y/%Y  %I:%M:%S %p"))/3600000 for time in readings['Timestamp'].values.tolist()]
                 except:
-                    readerTime = [time/3600000 for time in readings['Timestamp'].values.tolist()]
-            startTime = readerTime[0]
-            timeInHours = [time - startTime for time in readerTime]
+                    try:
+                        readerTime = [datetimeToMillis(datetime.fromisoformat(time))/3600000 for time in readings['Timestamp'].values.tolist()]
+                    except:
+                        readerTime = [time/3600000 for time in readings['Timestamp'].values.tolist()]
+                startTime = readerTime[0]
+                timeInHours = [time - startTime for time in readerTime]
             readerSGI = readings['Skroot Growth Index (SGI)'].values.tolist()
             resultSet = ResultSet()
             for index in range(len(readerSGI)):
@@ -54,7 +59,7 @@ class DerivativeAnalyzer:
                 )
                 dataPoint = ResultSetDataPoint(resultSet)
                 dataPoint.setDerivative(derivativeValue)
-                dataPoint.setTime(timeInHours[:index+1])
+                dataPoint.setTime(timeInHours[index+1])
                 resultSet.setValues(dataPoint)
                 harvestAlgorithm.check(resultSet)
             plt.title(readerId)
