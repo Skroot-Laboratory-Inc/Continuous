@@ -45,7 +45,7 @@ class SetupBaseUi:
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         copyrightLabel = tk.Label(
             self.FrameManager.footerFrame,
-            text='\u00A9 Skroot Laboratory, Inc 2018-2024. All rights reserved.',
+            text='\u00A9 Skroot Laboratory, Inc 2018-2025. All rights reserved.',
             bg='white')
         copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
         helpButton = HelpButton(self.FrameManager.footerFrame, self.RootManager)
