@@ -9,16 +9,19 @@ import botocore
 from botocore.client import Config
 
 from src.app.helper.helper_functions import datetimeToMillis
+from src.app.model.dynamodbConfig import DynamodbConfig
 
 
 class AwsBoto3:
     def __init__(self):
         config = Config(connect_timeout=5, read_timeout=5)
         self.s3 = boto3.client('s3', config=config)
+        self.dynamodb = boto3.client('dynamodb', config=config)
         self.disabled = False
         self.bucket = 'skroot-data'
         self.dataPrefix = 'experiments/'
         self.runFolder = None
+        self.customerId = None
         try:
             self.folders = self.s3.list_objects_v2(
                 Bucket=self.bucket,
@@ -27,7 +30,7 @@ class AwsBoto3:
             )['CommonPrefixes']
         except:
             self.disabled = True
-        self.runUuid = datetimeToMillis(datetime.datetime.now())
+        self.runUid = datetimeToMillis(datetime.datetime.now())
 
     def findFolderAndUploadFile(self, fileLocation, fileType, tags):
         """ Internal use only to upload the first file of a folder. """
@@ -37,10 +40,11 @@ class AwsBoto3:
                     self.s3.upload_file(
                         fileLocation,
                         self.bucket,
-                        f'{folder["Prefix"]}{self.runUuid}/{os.path.basename(fileLocation)}',
+                        f'{folder["Prefix"]}{self.runUid}/{os.path.basename(fileLocation)}',
                         ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
                                    "CacheControl": "no-cache"})
-                    self.runFolder = f'{folder["Prefix"]}{self.runUuid}'
+                    self.customerId = str(folder["Prefix"]).split('/')[-2]
+                    self.runFolder = f'{folder["Prefix"]}{self.runUid}'
                     break
                 except Exception as e:
                     if type(e.__context__) is botocore.exceptions.ClientError:
@@ -81,3 +85,22 @@ class AwsBoto3:
                 self.disabled = True
             except:
                 pass
+
+    def pushExperimentRow(self, config: DynamodbConfig) -> bool:
+        if not self.disabled:
+            if self.customerId is not None:
+                self.dynamodb.put_item(
+                    TableName='runs',
+                    Item={
+                        'customerId': {'S': self.customerId},
+                        'runUid': {'N': str(self.runUid)},
+                        'startDate': {'N': str(config.startDate)},
+                        'endDate': {'S': str(config.endDate)},
+                        'saturationDate': {'S': config.saturationDate},
+                        'incubator': {'S': config.incubator},
+                        'lotId': {'S': config.lotId},
+                        'automatedFlagged': {'BOOL': config.flagged},
+                    }
+                )
+                return True
+        return False
