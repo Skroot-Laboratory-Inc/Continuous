@@ -37,7 +37,7 @@ class DerivativeAnalyzer:
             harvestAlgorithm = HarvestAlgorithm(readerFileManager)
             analyzer = Analyzer(readerFileManager, harvestAlgorithm)
             readings = pandas.read_csv(readerAnalyzed)
-            softwareVersion = "R&D"
+            softwareVersion = "Manufacturing"
             if softwareVersion == "R&D":
                 timeInHours = [time for time in readings['Time (hours)'].values.tolist()]
             else:
@@ -59,7 +59,7 @@ class DerivativeAnalyzer:
                 )
                 dataPoint = ResultSetDataPoint(resultSet)
                 dataPoint.setDerivative(derivativeValue)
-                dataPoint.setTime(timeInHours[index+1])
+                dataPoint.setTime(timeInHours[index])
                 resultSet.setValues(dataPoint)
                 harvestAlgorithm.check(resultSet)
             plt.title(readerId)
