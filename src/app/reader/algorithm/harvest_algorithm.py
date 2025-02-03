@@ -57,7 +57,10 @@ class HarvestAlgorithm(AlgorithmInterface):
         proposedHarvestTime = centroid + HarvestProperties().standardDeviationsToHarvest * std
         if self.harvestTrackable(centroid, std, rSquared, time[-1], derivative[-1], proposedHarvestTime):
             self.differentPredictions.append(proposedHarvestTime)
-            self.currentHarvestPrediction = np.nanmean(self.differentPredictions)
+            if len(self.differentPredictions) > 20:
+                self.currentHarvestPrediction = np.nanmean(self.differentPredictions[-20:])
+            else:
+                self.currentHarvestPrediction = np.nanmean(self.differentPredictions)
         harvestTime = self.currentHarvestPrediction
         return centroid, std, rSquared, harvestTime
 
@@ -73,10 +76,11 @@ class HarvestAlgorithm(AlgorithmInterface):
 
     @staticmethod
     def isReasonableTime(timePoint, derivativePoint, proposedHarvestTime):
-        return ((timePoint + HarvestProperties().hoursFromHarvest
-                 < proposedHarvestTime <
-                 timePoint + HarvestProperties().hoursToHarvestEstimate) and
-                (timePoint > HarvestProperties().daysNotToEstimateHarvest * 24 or derivativePoint > HarvestProperties().fastDerivativeThreshold))
+        isAtLeastXHoursOut = timePoint + HarvestProperties().hoursFromHarvest < proposedHarvestTime
+        isLessThanXHoursOut = proposedHarvestTime < timePoint + HarvestProperties().hoursToHarvestEstimate
+        isFastGrowth = derivativePoint > HarvestProperties().fastDerivativeThreshold
+        isInInitialGrowth = timePoint > HarvestProperties().daysNotToEstimateHarvest * 24
+        return isAtLeastXHoursOut and isLessThanXHoursOut and (isFastGrowth or isInInitialGrowth)
 
 
     @staticmethod

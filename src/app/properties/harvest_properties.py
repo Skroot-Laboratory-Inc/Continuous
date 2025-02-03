@@ -1,5 +1,7 @@
 class HarvestProperties:
     def __init__(self):
+        """ These are the hyperparameters used to determine when to harvest a run. """
+
         """ Sliding window for the number of points to estimate derivative from. """
         self.derivativePoints = 12*8
         """ Do not estimate a value if we are below this threshold. """
@@ -14,7 +16,7 @@ class HarvestProperties:
         """ Ignore the daysNotToEstimateHarvest if the derivative increases beyond this threshold. """
         self.fastDerivativeThreshold = 0.2
         """ First X days to not provide a harvest estimate. """
-        self.daysNotToEstimateHarvest = 2.5
+        self.daysNotToEstimateHarvest = 3
         """ The number of standard deviations out to predict as the start of the harvest window. """
         self.standardDeviationsToHarvest = 2
 

@@ -17,7 +17,8 @@ from src.app.reader.analyzer.analyzer import Analyzer
 
 
 class DerivativeAnalyzer:
-    def __init__(self, experimentFolderDirectory):
+    def __init__(self, experimentFolderDirectory, folderSoftwareVersion):
+        self.folderSoftwareVersion = folderSoftwareVersion
         self.experimentFolderDirectory = experimentFolderDirectory
         self.postProcessingLocation = f'{self.experimentFolderDirectory}/Post Processing'
         if not os.path.exists(self.postProcessingLocation):
@@ -37,8 +38,7 @@ class DerivativeAnalyzer:
             harvestAlgorithm = HarvestAlgorithm(readerFileManager)
             analyzer = Analyzer(readerFileManager, harvestAlgorithm)
             readings = pandas.read_csv(readerAnalyzed)
-            softwareVersion = "Manufacturing"
-            if softwareVersion == "R&D":
+            if self.folderSoftwareVersion == "R&D":
                 timeInHours = [time for time in readings['Time (hours)'].values.tolist()]
             else:
                 try:
