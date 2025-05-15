@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from distutils.version import StrictVersion
 
-from src.app.helper.helper_functions import makeToplevelScrollable
+from src.app.helper_methods.ui_helpers import makeToplevelScrollable
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.popup_interface import PopupInterface

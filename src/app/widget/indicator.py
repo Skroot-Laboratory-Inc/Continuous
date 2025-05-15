@@ -8,7 +8,7 @@ class Indicator:
         self.indicatorColor = self.Colors.green
         self.ReaderPageAllocator = readerPageAllocator
         self.readerNumber = readerNumber
-        self.indicatorCanvas, self.indicator = self.ReaderPageAllocator.getIndicator(self.readerNumber)
+        self.indicatorCanvas, self.indicator = self.ReaderPageAllocator.getIndicator()
 
     def changeIndicatorGreen(self):
         self.indicatorCanvas.itemconfig(self.indicator, fill=self.Colors.green)

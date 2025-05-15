@@ -6,7 +6,7 @@ from src.app.theme.colors import Colors
 
 class FigureCanvas:
     def __init__(self, yAxisLabel, xAxisLabel, backgroundColor, title, tickSize=7, labelSize=9):
-        self.frequencyFigure = Figure()
+        self.frequencyFigure = Figure(figsize=(3, 2.5))
         self.frequencyFigure.set_layout_engine("tight")
         self.currentPlot = None
         self.tickSize = tickSize

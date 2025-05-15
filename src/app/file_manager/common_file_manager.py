@@ -1,42 +1,34 @@
 import os.path
 
-from src.app.helper.helper_functions import getCwd, getDesktopLocation
-
 
 class CommonFileManager:
     def __init__(self):
         srcDir = f"{os.path.dirname(os.path.dirname(getCwd()))}"
         resourcesDir = f"{srcDir}/src/resources"
-        self.helpIconPng = rf"{resourcesDir}/help.png"
-        self.addIcon = rf"{resourcesDir}/plus.png"
-        self.powerIcon = rf"{resourcesDir}/power.png"
-        self.refreshIcon = rf"{resourcesDir}/refresh.jpg"
-        self.downloadPng = rf"{resourcesDir}/download.png"
-        self.squareLogo = rf"{resourcesDir}/squareLogo.PNG"
+        self.helpIconPng = rf"{resourcesDir}/media/help.png"
+        self.addIcon = rf"{resourcesDir}/media/plus.png"
+        self.powerIcon = rf"{resourcesDir}/media/power.png"
+        self.squareLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.localDesktopFile = rf'{resourcesDir}/desktopApp.desktop'
         self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
         self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
         self.installScript = rf'{resourcesDir}/scripts/install-script.sh'
         self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
         self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
-        self.readMe = f'{resourcesDir}/README_Analysis.md'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
         self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
+        self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
+        self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
+        self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
 
     def getHelpIcon(self):
         return self.helpIconPng
-
-    def getDownloadIcon(self):
-        return self.downloadPng
 
     def getAddIcon(self):
         return self.addIcon
 
     def getPowerIcon(self):
         return self.powerIcon
-
-    def getRefreshIcon(self):
-        return self.refreshIcon
 
     def getLocalDesktopFile(self):
         return self.localDesktopFile
@@ -53,9 +45,6 @@ class CommonFileManager:
     def getSoftwareUpdatePath(self):
         return self.softwareUpdatePath
 
-    def getReadme(self):
-        return self.readMe
-
     def getExperimentLog(self):
         return self.experimentLog
 
@@ -67,4 +56,17 @@ class CommonFileManager:
 
     def getDevBaseFolder(self):
         return self.devBaseFolder
+
+
+def getCwd():
+    """ This gets the directory the app is being run from i.e. the path to main.py. """
+    return os.getcwd()
+
+
+def getDesktopLocation():
+    """ This gets the path to the computer's desktop. """
+    try:
+        return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    except KeyError:
+        return os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
 

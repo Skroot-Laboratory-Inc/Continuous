@@ -4,9 +4,9 @@ class GuiProperties:
         Main GUI configuration
         """
         self.bannerRelY = 0
-        self.bannerHeight = 0.04
+        self.bannerHeight = 0.15
 
-        self.footerHeight = 0.04
+        self.footerHeight = 0.07
 
         self.bodyRelY = self.bannerHeight
         self.bodyHeight = 1 - self.bannerHeight - self.footerHeight
@@ -16,9 +16,8 @@ class GuiProperties:
 
         self.footerRelY = 1-self.footerHeight
 
-
         """
         Reader Page GUI configuration
         """
-        self.readersPerScreen = 4
-        self.numScreens = 1
+        self.readersPerScreen = 1
+        self.numScreens = 4

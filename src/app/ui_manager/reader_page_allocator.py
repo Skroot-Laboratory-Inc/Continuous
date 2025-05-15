@@ -1,85 +1,72 @@
 import threading
 import tkinter as tk
 
-from src.app.buttons.calibrate_readers import CalibrateReaderButton
-from src.app.buttons.connect_reader import ConnectReaderButton
+from src.app.authentication.authentication_popup import AuthenticationPopup
+from src.app.buttons.generic_button import GenericButton
 from src.app.buttons.plus_icon_button import PlusIconButton
-from src.app.buttons.start_button import StartButton
-from src.app.buttons.stop_button import StopButton
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
+from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.harvest_text import HarvestText
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
 class ReaderPageAllocator:
-    def __init__(self, readerPage: tk.Frame, startingReaderNumber, finalReaderNumber, connectFn, calibrateFn, startFn, stopFn):
+    def __init__(self, rootManager: RootManager, readerPage: tk.Frame, readerNumber, connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
+        self.RootManager = rootManager
+        self.readerNumber = readerNumber
         self.calibrateFn = calibrateFn
         self.startFn = startFn
         self.stopFn = stopFn
         self.readerPage = readerPage
         self.maxReadersPerScreen = GuiProperties().readersPerScreen
-        self.startingReaderNumber = startingReaderNumber
-        self.finalReaderNumber = finalReaderNumber
         self.Colors = Colors()
         self.createButtons = []  # This is required for the plus icon to appear. It is removed from memory without it.
-        self.readerFrames = {}
-        self.positions = {
-            0: {"row": 0, "column": 0},
-            1: {"row": 0, "column": 1},
-            2: {"row": 1, "column": 0},
-            3: {"row": 1, "column": 1}
-        }
-        self.createReaderFrames()
+        self.readerFrame = self.createReaderFrames()
 
     def createReaderFrames(self):
-        for readerNumber in range(self.startingReaderNumber, self.finalReaderNumber):
-            position = (readerNumber-1) % self.maxReadersPerScreen
+        readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, padx=5, pady=5)
+        readerFrame.grid_columnconfigure(0, weight=1, minsize=30)
+        readerFrame.grid_columnconfigure(1, weight=9, minsize=490)
+        readerFrame.grid_columnconfigure(2, weight=1, minsize=30)
+        readerFrame.grid_rowconfigure(0, weight=1, minsize=30)
+        readerFrame.grid_rowconfigure(1, weight=9, minsize=290)
+        readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
+        readerFrame.grid(row=0, column=0, sticky='nsew')
+        indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
+        setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda: self.connectNewReader(self.readerNumber))
+        header = self.createHeader(readerFrame, self.readerNumber, setupReaderForm.lotIdEntry.get())
+        mainPlottingFrame, plottingFrame, harvestText = self.createPlotFrame(readerFrame)
+        thisReaderFrame = ReaderFrame(
+            readerFrame,
+            mainPlottingFrame,
+            plottingFrame,
+            harvestText,
+            setupFrame,
+            setupReaderForm,
+            header,
+            self.createTimer(readerFrame),
+            indicator,
+            indicatorCanvas,
+            self.createStartButton(readerFrame, lambda: self.startReader(self.readerNumber)),
+            self.createStopButton(readerFrame, lambda: self.stopReader(self.readerNumber)),
+            self.createCalibrateButton(readerFrame, lambda: self.calibrateReader(self.readerNumber)),
+            self.createAddReaderButton(readerFrame, lambda: self.createGuidedSetup()),
+        )
+        return thisReaderFrame
 
-            readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, highlightbackground="light grey", highlightthickness=2, padx=5, pady=5)
-            readerFrame.grid_columnconfigure(0, weight=1, minsize=35)
-            readerFrame.grid_columnconfigure(1, weight=9, minsize=300)
-            readerFrame.grid_columnconfigure(2, weight=1, minsize=35)
-            readerFrame.grid_rowconfigure(0, weight=1, minsize=35)
-            readerFrame.grid_rowconfigure(1, weight=9, minsize=300)
-            readerFrame.grid_rowconfigure(2, weight=1, minsize=40)
-            readerFrame.grid(
-                row=self.positions[position]["row"],
-                column=self.positions[position]["column"],
-                sticky='nesw')
-            indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
-            setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda num=readerNumber: self.connectNewReader(num))
-            header = self.createHeader(readerFrame, readerNumber, setupReaderForm.lotIdEntry.get())
-            mainPlottingFrame, plottingFrame, harvestText = self.createPlotFrame(readerFrame)
-            self.readerFrames[readerNumber] = ReaderFrame(
-                readerFrame,
-                mainPlottingFrame,
-                plottingFrame,
-                harvestText,
-                setupFrame,
-                setupReaderForm,
-                header,
-                self.createTimer(readerFrame),
-                indicator,
-                indicatorCanvas,
-                self.createStartButton(readerFrame, lambda num=readerNumber: self.startReader(num)),
-                self.createStopButton(readerFrame, lambda num=readerNumber: self.stopReader(num)),
-                self.createCalibrateButton(readerFrame, lambda num=readerNumber: self.calibrateReader(num)),
-                self.createAddReaderButton(readerFrame, lambda num=readerNumber: self.createGuidedSetup(num)),
-            )
-
-    def createGuidedSetup(self, readerNumber):
-        self.getReaderFrame(readerNumber).setupFrame.tkraise()
-        self.getReaderFrame(readerNumber).showSetupFrame()
+    def createGuidedSetup(self):
+        self.getReaderFrame().setupFrame.tkraise()
+        self.getReaderFrame().showSetupFrame()
 
     def connectNewReader(self, readerNumber):
         shouldCalibrate = self.connectFn(readerNumber)
-        readerFrame = self.getReaderFrame(readerNumber)
+        readerFrame = self.getReaderFrame()
         if shouldCalibrate is None:
             pass  # This means that it failed to find the reader.
         elif shouldCalibrate:
@@ -92,31 +79,34 @@ class ReaderPageAllocator:
             readerFrame.showPlotFrame()
 
     def startReader(self, readerNumber):
-        self.startFn(readerNumber)
-        readerFrame = self.getReaderFrame(readerNumber)
-        readerFrame.startButton.disable()
-        readerFrame.stopButton.enable()
-        readerFrame.timer.resetTimer()
+        if AuthenticationPopup(self.RootManager).isAuthenticated:
+            self.startFn(readerNumber)
+            readerFrame = self.getReaderFrame()
+            readerFrame.startButton.disable()
+            readerFrame.stopButton.enable()
+            readerFrame.timer.resetTimer()
 
     def stopReader(self, readerNumber):
-        stopReaderThread = threading.Thread(target=self.stopFn, args=(readerNumber,), daemon=True)
-        stopReaderThread.start()
+        if AuthenticationPopup(self.RootManager).isAuthenticated:
+            stopReaderThread = threading.Thread(target=self.stopFn, args=(readerNumber,), daemon=True)
+            stopReaderThread.start()
 
     def calibrateReader(self, readerNumber):
-        calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
-        calibrateReaderThread.start()
+        if AuthenticationPopup(self.RootManager).isAuthenticated:
+            calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
+            calibrateReaderThread.start()
 
-    def getIndicator(self, readerNumber):
-        return self.getReaderFrame(readerNumber).indicatorCanvas, self.getReaderFrame(readerNumber).indicator
+    def getIndicator(self):
+        return self.getReaderFrame().indicatorCanvas, self.getReaderFrame().indicator
 
-    def getPlottingFrame(self, readerNumber):
-        return self.getReaderFrame(readerNumber).plotFrame
+    def getPlottingFrame(self):
+        return self.getReaderFrame().plotFrame
 
-    def getReaderFrame(self, readerNumber) -> ReaderFrame:
-        return self.readerFrames[readerNumber]
+    def getReaderFrame(self) -> ReaderFrame:
+        return self.readerFrame
 
-    def getTimer(self, readerNumber) -> RunningTimer:
-        return self.getReaderFrame(readerNumber).timer
+    def getTimer(self) -> RunningTimer:
+        return self.getReaderFrame().timer
 
     def createPlotFrame(self, readerFrame):
         mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
@@ -172,28 +162,28 @@ class ReaderPageAllocator:
 
     @staticmethod
     def createConnectButton(readerFrame, invokeFn):
-        connectReadersButton = ConnectReaderButton(readerFrame, invokeFn)
+        connectReadersButton = GenericButton("Connect Reader", readerFrame, invokeFn)
         connectReadersButton.button.grid(row=1, column=0, columnspan=3)
         connectReadersButton.hide()
         return connectReadersButton
 
     @staticmethod
     def createCalibrateButton(readerFrame, invokeFn):
-        calibrateReadersButton = CalibrateReaderButton(readerFrame, invokeFn)
+        calibrateReadersButton = GenericButton("Calibrate", readerFrame, invokeFn)
         calibrateReadersButton.button.grid(row=1, column=0, columnspan=3)
         calibrateReadersButton.hide()
         return calibrateReadersButton
 
     @staticmethod
     def createStartButton(readerFrame, invokeFn):
-        startButton = StartButton(readerFrame, invokeFn)
+        startButton = GenericButton("Start", readerFrame, invokeFn)
         startButton.button.grid(row=2, column=0, sticky='sw')
         startButton.disable()
         return startButton
 
     @staticmethod
     def createStopButton(readerFrame, invokeFn):
-        stopButton = StopButton(readerFrame, invokeFn)
+        stopButton = GenericButton("Stop", readerFrame, invokeFn)
         stopButton.button.grid(row=2, column=2, sticky='se')
         stopButton.disable()
         return stopButton

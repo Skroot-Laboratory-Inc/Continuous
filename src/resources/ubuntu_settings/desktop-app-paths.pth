@@ -1,0 +1,6 @@
+# This adds paths to the desktop app, allowing it to reference files within itself. Incorrect directories are ignored.
+
+/home/administrator/.local/DesktopApp/src/app
+/home/administrator/.local/DesktopApp
+/home/kiosk/.local/DesktopApp/src/app
+/home/kiosk/.local/DesktopApp

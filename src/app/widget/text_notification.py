@@ -6,13 +6,13 @@ from src.app.theme.font_theme import FontTheme
 
 def createWidget(frame):
     global widget
-    widget = tk.Label(frame, text="")
+    widget = tk.Label(frame, text="", wraplength=600)
     return widget
 
 
 def setText(text, font=None, backgroundColor=None, foregroundColor=None):
     if font is None:
-        font = FontTheme().primary
+        font = FontTheme().textNotification
     if backgroundColor is None:
         backgroundColor = Colors().primaryColor
     if foregroundColor is None:

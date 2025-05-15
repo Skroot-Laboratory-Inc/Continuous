@@ -1,9 +1,8 @@
-import random
 import socket
-import string
 from datetime import datetime
 
-from src.app.helper.helper_functions import formatDate, datetimeToMillis, generateLotId
+from src.app.helper_methods.datetime_helpers import datetimeToMillis, formatDate
+from src.app.helper_methods.helper_functions import generateLotId
 from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
 
 

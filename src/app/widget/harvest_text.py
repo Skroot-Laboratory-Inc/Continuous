@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 
-from src.app.helper.helper_functions import datetimeToDisplay
+from src.app.helper_methods.ui_helpers import datetimeToDisplay
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 
@@ -17,7 +17,7 @@ class HarvestText:
         self.text = tk.Label(
             master,
             text=f"{self.label}: {self.timeFrame}",
-            font=FontTheme().primary,
+            font=FontTheme().primary2,
             background=Colors().secondaryColor,
             foreground=Colors().primaryColor)
 

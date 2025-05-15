@@ -1,7 +1,7 @@
 import tkinter
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, convertListToPercent, convertToPercent
+from src.app.helper_methods.data_helpers import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.sweep_data import SweepData
 from src.app.theme.colors import Colors

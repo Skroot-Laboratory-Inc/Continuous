@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from src.app.aws.aws import AwsBoto3
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.helper.helper_functions import centerWindowOnFrame
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.theme.colors import Colors

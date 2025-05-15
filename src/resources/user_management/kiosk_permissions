@@ -1,0 +1,36 @@
+# Allows the kiosk user to add/lock/unlock users without a password prompt
+kiosk ALL=(ALL) NOPASSWD: /usr/sbin/useradd, /usr/sbin/usermod -L *, /usr/sbin/usermod -U *
+
+# Allows the kiosk user to change password requirements
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/chage
+
+# Allows the kiosk user to run the kiosk_auth_check python file without a password
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_check.py
+
+# Allows the kiosk user to run the kiosk_auth_password_reset python file without a password
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_password_reset.py
+
+# Allows the kiosk user to transfer ownership of files they own without a password verification
+kiosk ALL=(ALL) NOPASSWD: /bin/sh /usr/local/bin/safe_chown.sh * *
+
+# Allows the kiosk user to lock down files as read-only immutable files.
+kiosk ALL=(ALL) NOPASSWD: /bin/chmod, /usr/bin/chattr
+
+# Allows the kiosk user to log into virtual terminal 1 to sign in to another user.
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/chvt 1
+
+# Allows the kiosk user to mount and unmount USB drives.
+kiosk ALL=(root) NOPASSWD: /bin/mount -o umask=000 /dev/sd*, /bin/umount /media/usb
+
+# Allows the kiosk user to update password requirements.
+kiosk ALL=(root) NOPASSWD: /usr/local/bin/kiosk_update_password_policy.py *
+
+# Allows the kiosk user to export auth audit trails.
+kiosk ALL=(ALL) NOPASSWD: /bin/grep * /var/log/kiosk_auth.log*
+kiosk ALL=(ALL) NOPASSWD: /bin/zgrep * /var/log/kiosk_auth.log*
+kiosk ALL=(ALL) NOPASSWD: /bin/cp /var/log/aide/aide-weekly-summary-*.log /media/usb/Audit
+
+# Allows the kiosk user to get and set configurations.
+kiosk ALL=(ALL) NOPASSWD: /bin/grep * /etc/environment
+kiosk ALL=(ALL) NOPASSWD: /bin/sed -i * /etc/environment
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/tee -a /etc/environment

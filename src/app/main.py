@@ -1,27 +1,11 @@
-import os
-import sys
-
-try:
-    desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-except KeyError:
-    desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-    sys.path = [
-        '/usr/lib/python3.10',
-        '/usr/lib/python3.10/lib-dynload',
-        '/usr/local/lib/python3.10/dist-packages',
-        '/usr/lib/python3/dist-packages',
-        '.',
-        '../..',
-    ]
-
 import matplotlib as mpl
 
-from src.resources.version import Version
+from src.app.common_modules.common_modules import CommonModules
 from src.app.ui_manager.root_manager import RootManager
-from src.app.main_shared.main_shared import MainShared
+from src.resources.version.version import Version
 
 
-class Main(MainShared):
+class Main(CommonModules):
     def __init__(self):
         self.GuiManager = RootManager()
         version = Version()

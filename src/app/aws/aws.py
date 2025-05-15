@@ -1,22 +1,21 @@
 import datetime
 import logging
 import os
-import uuid
 from urllib import parse
 
 import boto3
 import botocore
 from botocore.client import Config
 
-from src.app.helper.helper_functions import datetimeToMillis
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.dynamodbConfig import DynamodbConfig
 
 
 class AwsBoto3:
     def __init__(self):
         config = Config(connect_timeout=5, read_timeout=5)
-        self.s3 = boto3.client('s3', config=config)
-        self.dynamodb = boto3.client('dynamodb', config=config)
+        self.s3 = boto3.client('s3', config=config, region_name='us-east-2')
+        self.dynamodb = boto3.client('dynamodb', config=config, region_name='us-east-2')
         self.disabled = False
         self.bucket = 'skroot-data'
         self.dataPrefix = 'experiments/'

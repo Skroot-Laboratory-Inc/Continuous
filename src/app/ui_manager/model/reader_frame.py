@@ -1,9 +1,7 @@
 import tkinter as tk
 
-from src.app.buttons.calibrate_readers import CalibrateReaderButton
+from src.app.buttons.generic_button import GenericButton
 from src.app.buttons.plus_icon_button import PlusIconButton
-from src.app.buttons.start_button import StartButton
-from src.app.buttons.stop_button import StopButton
 from src.app.widget.harvest_text import HarvestText
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
@@ -21,9 +19,9 @@ class ReaderFrame:
                  timer: RunningTimer,
                  indicator,
                  indicatorCanvas: tk.Canvas,
-                 startButton: StartButton,
-                 stopButton: StopButton,
-                 calibrateButton: CalibrateReaderButton,
+                 startButton: GenericButton,
+                 stopButton: GenericButton,
+                 calibrateButton: GenericButton,
                  createButton: PlusIconButton):
         self.frame = frame
         self.createButton = createButton
