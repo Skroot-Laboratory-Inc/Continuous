@@ -1,22 +1,25 @@
+import platform
 import subprocess
 import tkinter as tk
-from tkinter import messagebox
-from typing import Callable
 
 from PIL import Image, ImageTk
 
-from src.app.buttons.button_interface import ButtonInterface
+from src.app.authentication.authentication_popup import AuthenticationPopup
+from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.helper.helper_functions import confirmAndPowerDown
+from src.app.helper_methods.helper_functions import restartPc
 from src.app.theme.colors import Colors
+from src.app.ui_manager.root_manager import RootManager
+from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
-class PowerButton(ButtonInterface):
-    def __init__(self, master):
+class PowerButton:
+    def __init__(self, master, rootManager: RootManager):
         commonFileManager = CommonFileManager()
         image = Image.open(commonFileManager.getPowerIcon())
-        resizedImage = image.resize((50, 50), Image.Resampling.LANCZOS)
+        resizedImage = image.resize((75, 75), Image.Resampling.LANCZOS)
         self.powerIcon = ImageTk.PhotoImage(resizedImage)
+        self.RootManager = rootManager
 
         self.button = tk.Button(
             master,
@@ -30,16 +33,29 @@ class PowerButton(ButtonInterface):
             command=lambda: self.invoke())
 
     def invoke(self):
-        self.button["state"] = "disabled"
-        confirmAndPowerDown()
-        self.button["state"] = "normal"
+        self.button.configure(state="disabled")
+        confirmAndRestart(self.RootManager)
+        self.button.configure(state="normal")
 
     def hide(self):
-        self.button["state"] = "disabled"
+        self.button.configure(state="disabled")
         self.button.grid_remove()
 
     def show(self):
-        self.button["state"] = "normal"
+        self.button.configure(state="normal")
         self.button.grid()
         self.button.tkraise()
 
+
+def confirmAndRestart(rootManager: RootManager):
+    """ Prompts the user to confirm that they would like to restart, then restarts the pi. """
+    if AuthenticationPopup(rootManager).isAuthenticated:
+        try:
+            ConfirmationPopup(
+                rootManager,
+                'Reboot Reader',
+                'Are you sure you wish to restart the system?',
+            )
+            restartPc()
+        except UserConfirmationException:
+            pass

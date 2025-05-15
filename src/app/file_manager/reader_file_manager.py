@@ -1,4 +1,4 @@
-from src.app.helper.helper_functions import getDesktopLocation
+import os
 
 
 class ReaderFileManager:
@@ -50,3 +50,11 @@ class ReaderFileManager:
 
     def getCurrentScan(self):
         return f"{self.readerSavePath}/{self.scanNumber}.csv"
+
+
+def getDesktopLocation():
+    """ This gets the path to the computer's desktop. """
+    try:
+        return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    except KeyError:
+        return os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')

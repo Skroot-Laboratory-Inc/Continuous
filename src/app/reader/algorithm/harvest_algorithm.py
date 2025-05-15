@@ -2,10 +2,9 @@ import logging
 
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.signal import savgol_filter
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import gaussian
+from src.app.helper_methods.data_helpers import gaussian
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.algorithm_interface import AlgorithmInterface
 

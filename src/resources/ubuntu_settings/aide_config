@@ -1,0 +1,2 @@
+0 0 * * * /usr/local/bin/daily-aide-check.sh
+55 23 * * 0 /usr/local/bin/weekly-aide-summary.sh 

@@ -7,23 +7,22 @@ from typing import List
 
 import numpy as np
 import pandas
-import sibcontrol
-from sibcontrol import SIBConnectionError, SIBTimeoutError, SIBException, SIBDDSConfigError
 
-from src.app.exception.sib_exception import SIBReconnectException
-from src.app.helper import helper_functions
+from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.helper_methods.data_helpers import truncateByX
+from src.app.helper_methods.helper_functions import getSibPort
 from src.app.model.sweep_data import SweepData
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.sib_properties import SibProperties
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
+from src.resources.sibcontrol import sibcontrol
+from src.resources.sibcontrol.sibcontrol import SIBDDSConfigError, SIBException, SIBConnectionError, SIBTimeoutError
 
 
 class Sib(SibInterface):
-    def __init__(self, port, calibrationFileName, readerNumber, PortAllocator, calibrationRequired=False):
+    def __init__(self, port, calibrationFileName, calibrationRequired=False):
         self.calibrationFailed = False
-        self.readerNumber = readerNumber
-        self.PortAllocator = PortAllocator
         self.initialize(port.device)
         self.serialNumber = port.serial_number
         Properties = SibProperties()
@@ -31,21 +30,21 @@ class Sib(SibInterface):
         self.calibrationStopFreq = Properties.calibrationStopFreq
         self.stepSize = Properties.stepSize
         self.initialSpikeMhz = Properties.initialSpikeMhz
-        self.yAxisLabel = Properties.yAxisLabel
         self.calibrationFilename = calibrationFileName
         self.calibrationRequired = calibrationRequired
         self.stopFreqMHz = None
         self.startFreqMHz = None
         if not calibrationRequired:
-            self.loadCalibrationFile()
+            self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
 
     def getYAxisLabel(self) -> str:
-        return self.yAxisLabel
+        return SibProperties().yAxisLabel
 
     def loadCalibrationFile(self):
-        self.calibrationFrequency, self.calibrationVolts = loadCalibrationFile(self.calibrationFilename)
-        selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
-        logging.info(f'Self resonant frequency is {selfResonance} MHz', extra={"id": f"Reader {self.readerNumber}"})
+        frequency, volts = loadCalibrationFile(self.calibrationFilename)
+        selfResonance = findSelfResonantFrequency(frequency, volts, [50, 170], 1.8)
+        logging.info(f'Self resonant frequency is {selfResonance} MHz', extra={"id": f"Reader"})
+        return frequency, volts
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         try:
@@ -53,8 +52,6 @@ class Sib(SibInterface):
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             calibratedVolts = self.calibrationComparison(frequency, volts)
-            if not disableSaveFiles:
-                createScanFile(outputFilename, frequency, calibratedVolts, self.yAxisLabel)
             return SweepData(frequency, calibratedVolts)
         except SIBConnectionError:
             self.resetSibConnection()
@@ -68,13 +65,14 @@ class Sib(SibInterface):
         except SIBException:
             raise
 
-    def getPowerStatus(self) -> str:
-        return self.PortAllocator.getPowerStatus(self.readerNumber)
-
     def calibrateIfRequired(self):
         if self.calibrationRequired:
-            self.takeCalibrationScan()
-        self.loadCalibrationFile()
+            calibrationSuccessful = self.takeCalibrationScan()
+        else:
+            calibrationSuccessful = True
+        if calibrationSuccessful:
+            self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
+        return calibrationSuccessful
 
     def takeCalibrationScan(self) -> bool:
         try:
@@ -85,14 +83,14 @@ class Sib(SibInterface):
             allFrequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
-            createScanFile(self.calibrationFilename, frequency, volts, self.yAxisLabel)
+            createCalibrationFile(self.calibrationFilename, frequency, volts)
             self.setStartFrequency(CommonProperties().defaultStartFrequency)
             self.setStopFrequency(CommonProperties().defaultEndFrequency)
             return True
         except:
             self.calibrationFailed = True
-            text_notification.setText(f"Failed to perform calibration for reader {self.readerNumber}.")
-            logging.exception("Failed to perform calibration.", extra={"id": f"Reader {self.readerNumber}"})
+            text_notification.setText(f"Failed to perform calibration.")
+            logging.exception("Failed to perform calibration.", extra={"id": "Calibration"})
             return False
 
     def setStartFrequency(self, startFreqMHz) -> bool:
@@ -104,7 +102,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set start frequency.")
-            logging.exception("Failed to set start frequency.", extra={"id": f"Reader {self.readerNumber}"})
+            logging.exception("Failed to set start frequency.", extra={"id": f"Sib"})
             return False
 
     def setStopFrequency(self, stopFreqMHz) -> bool:
@@ -116,7 +114,7 @@ class Sib(SibInterface):
             return True
         except:
             text_notification.setText("Failed to set stop frequency.")
-            logging.exception("Failed to set stop frequency.", extra={"id": f"Reader {self.readerNumber}"})
+            logging.exception("Failed to set stop frequency.", extra={"id": f"Sib"})
             return False
 
     """ End of required implementations, SIB specific below"""
@@ -130,7 +128,6 @@ class Sib(SibInterface):
 
     def close(self) -> bool:
         try:
-            self.PortAllocator.removePort(self.readerNumber)
             self.sib.close()
             return True
         except:
@@ -148,6 +145,7 @@ class Sib(SibInterface):
         self.sib = sibcontrol.SIB350(port)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
+        self.sib.wake()
 
     def performHandshake(self) -> bool:
         data = 500332  # Some random 32-bit value
@@ -159,23 +157,17 @@ class Sib(SibInterface):
             else:
                 return False
         except sibcontrol.SIBException as e:
-            logging.exception("Failed to perform handshake", extra={"id": f"Reader {self.readerNumber}"})
+            logging.exception("Failed to perform handshake", extra={"id": "Sib"})
             return False
 
     def getFirmwareVersion(self) -> str:
         try:
             firmware_version = self.sib.version()
-            logging.info(f'The SIB Firmware is version: {firmware_version}', extra={"id": f"Reader {self.readerNumber}"})
+            logging.info(f'The SIB Firmware is version: {firmware_version}', extra={"id": "Sib"})
             return firmware_version
         except sibcontrol.SIBException as e:
-            logging.exception("Failed to set firmware version", extra={"id": f"Reader {self.readerNumber}"})
+            logging.exception("Failed to set firmware version", extra={"id": "Sib"})
             return ''
-
-    def sleep(self) -> None:
-        self.sib.sleep()
-
-    def wake(self) -> None:
-        self.sib.wake()
 
     def checkAndSendConfiguration(self):
         if self.sib.valid_config():
@@ -184,12 +176,11 @@ class Sib(SibInterface):
             self.sib.write_num_pts()  # Send the number of points to the SIB
             self.sib.write_asf()  # Send the signal amplitude to the SIB
         else:
-            text_notification.setText(f"Reader {self.readerNumber} configuration is not valid. Change the reader frequency or number of "
-                                      "points.")
+            text_notification.setText(
+                f"Reader configuration is not valid. Change the reader frequency or number of points.")
 
     def performSweepAndWaitForComplete(self) -> List[str]:
         self.checkAndSendConfiguration()
-        self.wake()
         self.sib.write_sweep_command()
         conversion_results, sweep_complete = list(), False
         while not sweep_complete:
@@ -203,12 +194,11 @@ class Sib(SibInterface):
                     # SIB is sending measurement data. Add it to the conversion results array
                     conversion_results.extend(tmp_data)
                 else:
-                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": f"Reader {self.readerNumber}"})
+                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
             except:
                 sweep_complete = True
-                logging.exception("An error occurred while waiting for scan to complete", extra={"id": f"Reader {self.readerNumber}"})
+                logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
                 raise
-        self.sleep()
         return convertAdcToVolts(conversion_results)
 
     def calibrationComparison(self, frequency, volts):
@@ -220,18 +210,18 @@ class Sib(SibInterface):
         return calibratedVolts
 
     def resetDDSConfiguration(self):
-        logging.info("The DDS did not get configured correctly, performing hard reset.", extra={"id": f"Reader {self.readerNumber}"})
+        logging.info("The DDS did not get configured correctly, performing hard reset.", extra={"id": "Sib"})
         self.sib.reset_sib()
         time.sleep(5)  # The host will need to wait until the SIB re-initializes. I do not know how long this takes.
         self.resetSibConnection()
 
     def resetSibConnection(self):
-        logging.info("Problem with serial connection. Closing and then re-opening port.", extra={"id": f"Reader {self.readerNumber}"})
+        logging.info("Problem with serial connection. Closing and then re-opening port.", extra={"id": "Sib"})
         if self.sib.is_open():
             self.reset()
             time.sleep(1.0)
         try:
-            port = self.PortAllocator.getPortForReader(self.readerNumber)
+            port = getSibPort()
             self.initialize(port.device)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)
@@ -255,17 +245,11 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
         logging.exception("Failed to load in calibration", extra={"id": calibrationFilename})
 
 
-def createScanFile(outputFileName, frequency, volts, yAxisLabel):
-    if 'Calibration.csv' in outputFileName:
-        yAxisLabel = 'Signal Strength (V)'
-    else:
-        volts = helper_functions.convertListToPercent(volts)
-        yAxisLabel = yAxisLabel
+def createCalibrationFile(outputFileName, frequency, volts):
     with open(outputFileName, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['Frequency (MHz)', yAxisLabel])
+        writer.writerow(['Frequency (MHz)', 'Signal Strength (V)'])
         writer.writerows(zip(frequency, volts))
-    return
 
 
 def calculateFrequencyValues(startFreqMHz, stopFreqMHz, df) -> List[str]:
@@ -307,7 +291,7 @@ def getNumPointsSweep(startFreq, stopFreq):
 
 
 def findSelfResonantFrequency(frequency, volts, scanRange, threshold):
-    inRangeFrequencies, inRangeVolts = helper_functions.truncateByX(scanRange[0], scanRange[1], frequency, volts)
+    inRangeFrequencies, inRangeVolts = truncateByX(scanRange[0], scanRange[1], frequency, volts)
     for index, yval in enumerate(inRangeVolts):
         if yval > threshold:
             return inRangeFrequencies[index]

@@ -4,7 +4,7 @@ import shutil
 import tkinter.ttk as ttk
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex
+from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set.result_set import ResultSet
 from src.app.properties.common_properties import CommonProperties
@@ -47,7 +47,7 @@ class Reader(ReaderInterface):
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
-            readerPageAllocator.getPlottingFrame(readerNumber),
+            readerPageAllocator.getPlottingFrame(),
         )
         self.SibInterface.setStartFrequency(CommonProperties().defaultStartFrequency)
         self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)

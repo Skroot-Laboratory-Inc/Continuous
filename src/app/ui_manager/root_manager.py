@@ -1,71 +1,38 @@
-import platform
-import subprocess
-import threading
 import tkinter as tk
-from tkinter.constants import BOTH, TRUE
 
-from PIL import Image, ImageTk
-
-from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.helper.helper_functions import isMenuOptionPresent
+from src.app.properties.gui_properties import GuiProperties
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
+from src.app.widget import text_notification
 
 
 class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
-        # self.root.bind('<FocusIn>', self.lowerWindow)
-        image = Image.open(CommonFileManager().getSquareLogo())
-        resizedImage = image.resize(
-            (self.root.winfo_screenwidth(), self.root.winfo_screenheight()),
-            Image.Resampling.LANCZOS
-        )
-        self.splashImage = ImageTk.PhotoImage(resizedImage)
-        self.splash = self.createSplash()
         self.fonts = FontTheme()
-        self.menubar = tk.Menu(self.root, font=self.fonts.menubar)
-        # if platform.system() == "Linux":
-        #     self.root.bind_class("Entry", "<FocusIn>", self.openKeyboard)
+        self.menubar = tk.Menu(self.root, font=self.fonts.primary)
+        self.validateInteger = (self.root.register(validate_integer), '%P')
+        self.validateIntegerError = (self.root.register(show_validation_error))
         self.setMenubar()
 
-    def updateIdleTasks(self):
-        self.root.update_idletasks()
-
-    def createSplash(self):
-        topLevel = self.createTopLevel()
-        splash_label = tk.Label(topLevel, image=self.splashImage, background=Colors().secondaryColor)
-        splash_label.pack(fill=BOTH, expand=TRUE)
-        topLevel.wm_transient(self.root)
-        if platform.system() == 'Windows':
-            topLevel.state('zoomed')
-        elif platform.system() == 'Linux':
-            topLevel.attributes('-zoomed', True)
-        return topLevel
-
-    def destroySplash(self):
-        self.splash.after(2000, lambda: self.splash.destroy())
-
     def instantiateNewMenubarRibbon(self):
-        return tk.Menu(self.menubar, tearoff=0, font=self.fonts.menubar)
+        return tk.Menu(self.menubar, tearoff=0, font=self.fonts.primary, border=10)
 
     def addMenubarCascade(self, label, menu):
         if not isMenuOptionPresent(self.menubar, label):
-            self.menubar.add_cascade(label=label, menu=menu, font=self.fonts.menubar)
-            self.deleteMenubar(" ")
-            self.setFullscreen()
+            self.menubar.add_cascade(label=label, menu=menu, font=self.fonts.primary)
 
     def setMenubar(self):
-        fillerMenu = self.instantiateNewMenubarRibbon()
-        self.menubar.add_cascade(label=" ", menu=fillerMenu, font=self.fonts.menubar)
-        self.menubar.entryconfig(" ", state="disabled")
         self.root.config(menu=self.menubar)
 
-    def deleteMenubar(self, menubarLabel):
-        if isMenuOptionPresent(self.menubar, menubarLabel):
-            self.menubar.delete(menubarLabel)
+    def deleteMenubar(self, menubarId):
+        self.menubar.delete(menubarId)
 
     def createTopLevel(self):
+        self.whiteFrame.place(relx=0,
+                              rely=GuiProperties().bodyRelY,
+                              relwidth=1,
+                              relheight=GuiProperties().bodyHeight)
         return tk.Toplevel(self.root, bg='white', padx=25, pady=25)
 
     def createFrame(self, backgroundColor) -> tk.Frame:
@@ -85,9 +52,7 @@ class RootManager:
 
     def waitForWindow(self, window):
         self.root.wait_window(window)
-
-    def destroyRoot(self):
-        self.root.destroy()
+        self.whiteFrame.place_forget()
 
     def getRoot(self):
         return self.root
@@ -99,10 +64,10 @@ class RootManager:
         self.root.attributes(attribute, state)
 
     def setFullscreen(self):
-        self.root.update_idletasks()
-        self.root.geometry(
-            f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()-self.menubar.winfo_reqheight()}"
-        )
+        self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
+
+    def setWindowSize(self):
+        self.root.geometry(f"850x460+250+150")
 
     def setProtocol(self, protocol, invokeFn):
         self.root.protocol(protocol, invokeFn)
@@ -119,17 +84,33 @@ class RootManager:
     def registerEvent(self, event, eventFn):
         self.root.bind(event, eventFn)
 
-    def lowerWindow(self, event):
-        self.root.lower()
+    def createWhiteFrame(self):
+        self.whiteFrame = self.createFrame(Colors().secondaryColor)
 
-    def openKeyboard(self, event):
-        stopReaderThread = threading.Thread(target=self.openKeyboardThread, args=(), daemon=True)
-        stopReaderThread.start()
 
-    def openKeyboardThread(self):
-        topLevel = self.createTopLevel()
-        frame = tk.Frame(topLevel)
-        frame.pack()
-        processId = subprocess.Popen(['onboard', "-e"], stdout=subprocess.PIPE)
-        output = processId.stdout.readlines()
-        subprocess.Popen(['xdotool', "windowreparent", f"{output}, f{frame.winfo_id()}"])
+def isMenuOptionPresent(menu_bar, menu_label):
+    """
+    Function to check if a menu is already present in the menubar.
+
+    Parameters:
+    - menu_bar (tk.Menu): The menubar to check.
+    - menu_label (str): The label of the menu to check for.
+
+    Returns:
+    - bool: True if the menu is present, False otherwise.
+    """
+    for index in range(menu_bar.index("end") + 1):
+        if menu_bar.type(index) == "cascade" and menu_bar.entrycget(index, "label") == menu_label:
+            return True
+    return False
+
+
+def show_validation_error():
+    text_notification.setText("Invalid Input, configurations must be integer days")
+
+
+def validate_integer(P):
+    if P.isdigit() or P == "":
+        return True
+    else:
+        return False

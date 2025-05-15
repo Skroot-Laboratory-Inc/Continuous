@@ -1,0 +1,10 @@
+/var/log/aide/daily-aide-check-*.log {
+  rotate 52
+  weekly
+  compress
+  dateformat -%Y%W
+  dateext
+  missingok
+  notifempty
+  create 0640 root adm
+}

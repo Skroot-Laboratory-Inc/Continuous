@@ -1,0 +1,66 @@
+import platform
+import tkinter as tk
+from tkinter import ttk
+from typing import List
+
+from src.app.authentication.helpers.functions import clearLockedOutUsers
+from src.app.buttons.generic_button import GenericButton
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame
+from src.app.theme.colors import Colors
+from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.root_manager import RootManager
+
+
+class LockoutNotification:
+    def __init__(self, rootManager: RootManager, usersLocked: List[str]):
+        self.usersLocked = usersLocked
+        self.RootManager = rootManager
+        self.windowRoot = rootManager.createTopLevel()
+        self.windowRoot.config(relief="solid", highlightbackground="black",
+            highlightcolor="black", highlightthickness=1, bd=0)
+        self.username = tk.StringVar()
+        self.password = tk.StringVar()
+        self.windowRoot.transient(rootManager.getRoot())
+
+        self.createHeader()
+        self.createNotification()
+        self.submitButton = self.createConfirmButton()
+        self.cancelButton = self.createCancelButton()
+
+        centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
+        if platform.system() == "Windows":
+            self.windowRoot.overrideredirect(True)
+            self.windowRoot.attributes('-topmost', True)
+        rootManager.waitForWindow(self.windowRoot)
+
+    def createHeader(self):
+        ttk.Label(
+            self.windowRoot,
+            text="Warning: Users Locked Out",
+            font=FontTheme().header1,
+            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+
+    def createNotification(self):
+        ttk.Label(
+            self.windowRoot,
+            text="".join(self.usersLocked),
+            font=FontTheme().primary,
+            background=Colors().secondaryColor).grid(row=1, column=0, columnspan=3)
+
+    def createConfirmButton(self):
+        submitButton = GenericButton("Confirm", self.windowRoot, self.confirm).button
+        submitButton.grid(row=4, column=1, pady=10, columnspan=2, sticky="e")
+        return submitButton
+
+    def createCancelButton(self):
+        cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
+        cancelButton.grid(row=4, column=0, pady=10, sticky="w")
+        return cancelButton
+
+    def confirm(self):
+        clearLockedOutUsers()
+        self.windowRoot.destroy()
+
+    def cancel(self):
+        self.windowRoot.destroy()

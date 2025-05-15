@@ -116,7 +116,7 @@ class SetupReaderForm:
         var = tk.Checkbutton(self.window,
                              text="Calibration Required",
                              variable=self.calibrateRequired,
-                             font=self.Fonts.primary,
+                             font=self.Fonts.setupFormText,
                              onvalue=1,
                              offvalue=0,
                              pady=5,

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from src.app.helper.helper_functions import datetimeToMillis
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.issue.timestamped_message import TimestampedMessage
 
 

@@ -1,8 +1,0 @@
-#!/usr/bin/env xdg-open
-[Desktop Entry]
-Name=Skroot App
-Exec=bash -c "cd $HOME/.local/DesktopApp/src/app && /usr/bin/python3 main.py"
-Icon=/home/skroot/.local/DesktopApp/src/resources/squareLogo.PNG
-Version=v0.0.0
-Terminal=false
-Type=Application

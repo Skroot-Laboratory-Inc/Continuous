@@ -6,7 +6,7 @@ import zipfile
 import boto3
 from botocore.config import Config
 
-from src.resources.version import Version
+from src.resources.version.version import Version
 
 
 def zip_files(folder_path, zip_name):
@@ -56,7 +56,7 @@ release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-release_notes_fp = '../release-notes-manufacturing.json'
+release_notes_fp = '../release-notes.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
 # Eventually we want this to be release specific, but will require some timing and app updates.
@@ -76,7 +76,6 @@ try:
         software_releases_bucket, 
         tag_str=f'major_version={major_version}&minor_version={minor_version}'
     )
-    # Upload the resources/release-notes-manufacturing.json file to the bucket skroot-data/release-notes
     print(f" > Uploading Release Notes as '{release_notes_name}' from '{release_notes_fp}'")
     s3_upload_file(
         release_notes_fp, 

@@ -1,15 +1,14 @@
-from tkinter import ttk
 import tkinter as tk
+from tkinter import ttk
 
 from PIL import Image, ImageTk
 
-from src.app.buttons.button_interface import ButtonInterface
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
-from src.app.widget.information_panel import InformationPanel
+from src.app.widget.sidebar.manuals.troubleshooting_page import TroubleshootingPage
 
 
-class HelpButton(ButtonInterface):
+class HelpButton:
     def __init__(self, master, rootManager: RootManager):
         fileManager = CommonFileManager()
         image = Image.open(fileManager.getHelpIcon())
@@ -29,7 +28,6 @@ class HelpButton(ButtonInterface):
 
     def invoke(self):
         self.helpButton["state"] = "disabled"
-        infoPanel = InformationPanel(self.helpIcon, self.RootManager)
-        self.RootManager.waitForWindow(infoPanel.window)
+        TroubleshootingPage(self.RootManager)
         self.helpButton["state"] = "normal"
 

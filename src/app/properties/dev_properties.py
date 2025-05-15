@@ -7,6 +7,7 @@ class DevProperties:
     def __init__(self):
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
         self.tryDevMode = True
+        self.authEnabled = True
         self.disableAws = False
         self.enforceScanRate = True
         self.sibShouldError = False
@@ -19,4 +20,3 @@ class DevProperties:
         self.scanRate = 0.5/60
         # self.mode = "GUI"
         self.mode = "Analysis"
-

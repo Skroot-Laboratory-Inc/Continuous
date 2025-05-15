@@ -1,0 +1,1 @@
+0 * * * * kiosk find "/home/kiosk/Desktop/Experiment Data" -mindepth 1 -mtime +90 -delete

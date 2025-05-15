@@ -10,9 +10,10 @@ from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from src.app.exception.analysis_exception import ScanAnalysisException
+from src.app.custom_exceptions.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper.helper_functions import frequencyToIndex, gaussian, datetimeToMillis
+from src.app.helper_methods.data_helpers import frequencyToIndex, gaussian
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData

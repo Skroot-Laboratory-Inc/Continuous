@@ -1,4 +1,3 @@
-import datetime
 import logging
 import math
 import threading
@@ -6,14 +5,13 @@ import time
 from typing import Callable
 
 import numpy as np
-from sibcontrol import SIBConnectionError, SIBException
 
-from src.app.exception.analysis_exception import ZeroPointException, AnalysisException
-from src.app.exception.sib_exception import SIBReconnectException
-from src.app.helper.helper_functions import getZeroPoint, getSibPowerStatus
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException
+from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.helper_methods.helper_functions import getZeroPoint
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
+from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.issue_properties import IssueProperties
@@ -21,6 +19,7 @@ from src.app.reader.reader import Reader
 from src.app.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
+from src.resources.sibcontrol.sibcontrol import SIBException, SIBConnectionError
 
 
 class ReaderThreadManager:
@@ -31,7 +30,7 @@ class ReaderThreadManager:
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.thread = threading.Thread(target=self.mainLoop, args=(reader,), daemon=True)
-        self.Timer = reader.ReaderPageAllocator.getTimer(reader.readerNumber)
+        self.Timer = reader.ReaderPageAllocator.getTimer()
         self.isDevMode = DevProperties().isDevMode
         self.freqToggleSet = freqToggleSet
         self.RootManager = rootManager
@@ -86,15 +85,15 @@ class ReaderThreadManager:
                 self.disableFullSaveFiles,
             )
             reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
-            reader.plotFrequencyButton.invoke()  # any changes to GUI must be in main_shared thread
+            reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
             reader.HarvestAlgorithm.check(reader.getResultSet())
             if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.updateSaturationTime(
+                reader.ReaderPageAllocator.getReaderFrame().harvestText.updateSaturationTime(
                     reader.HarvestAlgorithm.currentHarvestPrediction,
                     reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
                 )
             if reader.HarvestAlgorithm.harvested:
-                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.isNowSaturated(
+                reader.ReaderPageAllocator.getReaderFrame().harvestText.isNowSaturated(
                     reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
                 )
             reader.Indicator.changeIndicatorGreen()
@@ -109,7 +108,7 @@ class ReaderThreadManager:
                 reader.AwsService.uploadExperimentFilesOnInterval(
                     reader.FileManager.getCurrentScanNumber(),
                     self.guidedSetupForm,
-                    reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
+                    reader.ReaderPageAllocator.getReaderFrame().harvestText.timeFrame,
                     reader.AutomatedIssueManager.hasOpenIssues()
                 )
 
@@ -219,7 +218,7 @@ class ReaderThreadManager:
                 else:
                     self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-        text_notification.setText(f"Reader {reader.readerNumber} finished run.", ('Courier', 9, 'bold'))
+        text_notification.setText(f"Reader {reader.readerNumber} finished run.")
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
                 self.guidedSetupForm,
