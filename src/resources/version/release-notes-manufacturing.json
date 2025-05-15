@@ -11,7 +11,8 @@
       "8": "Implemented harvest algorithm indicator to inform user of saturation time.",
       "9": "Added functionality to display saturation time on the dashboard.",
       "10": "Added dynamodb functionality to enhance dashboard experience.",
-      "11": "Added raspberry pi configurations for compatibility."
+      "11": "Added raspberry pi configurations for compatibility.",
+      "12": "Added KPI form next to plot with experiment details."
     },
     "bugfixes": {
       "1": "Added support for new hubs by limiting usage to USB2.",

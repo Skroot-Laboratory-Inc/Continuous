@@ -8,6 +8,7 @@ import numpy as np
 
 from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.helper_methods.helper_functions import getZeroPoint
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
@@ -45,7 +46,11 @@ class ReaderThreadManager:
         self.Colors = Colors()
         self.resetRunFunc = resetRunFunc
 
-    def startReaderLoop(self):
+    def startReaderLoop(self, user: str):
+        self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm.setConstants(
+            self.guidedSetupForm.getLotId(),
+            user,
+        )
         self.thread.start()
 
     def checkZeroPoint(self):
@@ -88,13 +93,17 @@ class ReaderThreadManager:
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
             reader.HarvestAlgorithm.check(reader.getResultSet())
             if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                reader.ReaderPageAllocator.getReaderFrame().harvestText.updateSaturationTime(
+                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSaturation(
                     reader.HarvestAlgorithm.currentHarvestPrediction,
-                    reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
                 )
-            if reader.HarvestAlgorithm.harvested:
-                reader.ReaderPageAllocator.getReaderFrame().harvestText.isNowSaturated(
-                    reader.getAnalyzer().ResultSet.getDenoiseTime()[-1],
+            else:
+                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSaturation(
+                    "No Estimate",
+                )
+            if reader.finishedEquilibrationPeriod:
+                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSgi(
+                    frequencyToIndex(self.Reader.Analyzer.zeroPoint,
+                                     self.Reader.Analyzer.ResultSet.getDenoiseFrequencySmooth())[-1],
                 )
             reader.Indicator.changeIndicatorGreen()
             if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
@@ -108,7 +117,7 @@ class ReaderThreadManager:
                 reader.AwsService.uploadExperimentFilesOnInterval(
                     reader.FileManager.getCurrentScanNumber(),
                     self.guidedSetupForm,
-                    reader.ReaderPageAllocator.getReaderFrame().harvestText.timeFrame,
+                    reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime,
                     reader.AutomatedIssueManager.hasOpenIssues()
                 )
 
@@ -138,10 +147,6 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Connection Error: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
-                    logging.info(
-                        f'SIB currently in the state: {self.Reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {reader.readerNumber}"}
-                    )
                     text_notification.setText(f"Sweep Failed, check reader {reader.readerNumber} connection.")
                 except SIBReconnectException:
                     if reader.readerNumber in self.currentIssues:
@@ -222,7 +227,7 @@ class ReaderThreadManager:
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
                 self.guidedSetupForm,
-                reader.ReaderPageAllocator.getReaderFrame(reader.readerNumber).harvestText.timeFrame,
+                reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime.get(),
             )
         self.resetRunFunc(reader.readerNumber)
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
