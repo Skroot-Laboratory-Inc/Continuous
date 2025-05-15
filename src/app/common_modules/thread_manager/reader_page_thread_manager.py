@@ -80,8 +80,8 @@ class ReaderPageThreadManager:
         readerFrame.startButton.enable()
         readerFrame.showPlotFrame()
 
-    def startReaderThread(self, readerNumber):
-        self.readerThreads[readerNumber].startReaderLoop()
+    def startReaderThread(self, readerNumber, user: str):
+        self.readerThreads[readerNumber].startReaderLoop(user)
 
     def getReader(self, readerNumber) -> Reader:
         return self.Readers[readerNumber]
@@ -114,5 +114,6 @@ class ReaderPageThreadManager:
             readerFrame.createButton.show()
             readerFrame.resetSetupForm(readerNumber)
             readerFrame.timer.resetTimer()
+            readerFrame.kpiForm.resetForm()
         except UserConfirmationException:
             return False

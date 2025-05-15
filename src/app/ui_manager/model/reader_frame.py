@@ -2,7 +2,7 @@ import tkinter as tk
 
 from src.app.buttons.generic_button import GenericButton
 from src.app.buttons.plus_icon_button import PlusIconButton
-from src.app.widget.harvest_text import HarvestText
+from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
@@ -12,7 +12,7 @@ class ReaderFrame:
                  frame: tk.Frame,
                  mainPlottingFrame: tk.Frame,
                  plotFrame: tk.Frame,
-                 harvestText: HarvestText,
+                 kpiForm: KpiForm,
                  setupFrame: tk.Frame,
                  setupReaderForm: SetupReaderForm,
                  header: tk.Label,
@@ -27,7 +27,7 @@ class ReaderFrame:
         self.createButton = createButton
         self.mainPlottingFrame = mainPlottingFrame
         self.plotFrame = plotFrame
-        self.harvestText = harvestText
+        self.kpiForm = kpiForm
         self.setupFrame = setupFrame
         self.setupReaderForm = setupReaderForm
         self.calibrateButton = calibrateButton

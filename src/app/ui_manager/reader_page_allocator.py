@@ -11,6 +11,7 @@ from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.harvest_text import HarvestText
+from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
@@ -41,12 +42,12 @@ class ReaderPageAllocator:
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda: self.connectNewReader(self.readerNumber))
         header = self.createHeader(readerFrame, self.readerNumber, setupReaderForm.lotIdEntry.get())
-        mainPlottingFrame, plottingFrame, harvestText = self.createPlotFrame(readerFrame)
+        mainPlottingFrame, plottingFrame, kpiForm = self.createPlotFrame(readerFrame)
         thisReaderFrame = ReaderFrame(
             readerFrame,
             mainPlottingFrame,
             plottingFrame,
-            harvestText,
+            kpiForm,
             setupFrame,
             setupReaderForm,
             header,
@@ -79,8 +80,9 @@ class ReaderPageAllocator:
             readerFrame.showPlotFrame()
 
     def startReader(self, readerNumber):
-        if AuthenticationPopup(self.RootManager).isAuthenticated:
-            self.startFn(readerNumber)
+        auth = AuthenticationPopup(self.RootManager)
+        if auth.isAuthenticated:
+            self.startFn(readerNumber, auth.getUser())
             readerFrame = self.getReaderFrame()
             readerFrame.startButton.disable()
             readerFrame.stopButton.enable()
@@ -110,15 +112,19 @@ class ReaderPageAllocator:
 
     def createPlotFrame(self, readerFrame):
         mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        mainFrame.grid(row=1, column=0, columnspan=3)
-        mainFrame.grid_rowconfigure(0, weight=9, minsize=265)
-        mainFrame.grid_rowconfigure(1, weight=1, minsize=35)
+        mainFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        mainFrame.columnconfigure(0, weight=1)  # Make column 0 expandable
+        mainFrame.rowconfigure(0, weight=1)  # Make row 0 expandable
+        kpiFrame = tk.Frame(mainFrame, bg=Colors().secondaryColor)
+        kpiFrame.grid(row=0, column=0, sticky='w')
+        kpiFrame.grid_columnconfigure(0, weight=1, uniform="plot")
+        kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
-        plottingFrame.grid(row=0, column=0, sticky='nsew')
-        harvestText = HarvestText(mainFrame)
-        harvestText.text.grid(row=1, column=0)
+        plottingFrame.grid(row=0, column=1, sticky='e')
+        kpiForm = KpiForm(kpiFrame, self.RootManager)
+        kpiFrame.grid_remove()
         mainFrame.grid_remove()
-        return mainFrame, plottingFrame, harvestText
+        return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
