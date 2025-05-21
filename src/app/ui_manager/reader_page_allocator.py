@@ -112,14 +112,15 @@ class ReaderPageAllocator:
     def createPlotFrame(self, readerFrame):
         mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
         mainFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
-        mainFrame.columnconfigure(0, weight=1)  # Make column 0 expandable
-        mainFrame.rowconfigure(0, weight=1)  # Make row 0 expandable
+        mainFrame.grid_columnconfigure(0, weight=1, uniform="plot")
+        mainFrame.grid_columnconfigure(1, weight=1, uniform="plot")
+        mainFrame.grid_rowconfigure(0, weight=1)
         kpiFrame = tk.Frame(mainFrame, bg=Colors().secondaryColor)
-        kpiFrame.grid(row=0, column=0, sticky='w')
+        kpiFrame.grid(row=0, column=0, sticky='ew')
         kpiFrame.grid_columnconfigure(0, weight=1, uniform="plot")
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
-        plottingFrame.grid(row=0, column=1, sticky='e')
+        plottingFrame.grid(row=0, column=1, sticky='ew')
         kpiForm = KpiForm(kpiFrame, self.RootManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
