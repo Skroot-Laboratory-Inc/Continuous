@@ -1,4 +1,9 @@
 {
+  "v1.1.3": {
+    "features": {
+      "1": "Moved display toggle to a button next to the plot rather than the menubar."
+    }
+  },
   "v1.1.2": {
     "features": {
       "1": "Fixed visuals during reader scanning."

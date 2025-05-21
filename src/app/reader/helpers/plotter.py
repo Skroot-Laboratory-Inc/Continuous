@@ -20,11 +20,11 @@ class Plotter:
             f'Signal Check Reader {self.readerNumber}'
         )
 
-    def plotFrequencies(self, resultSet: ResultSet, zeroPoint, sweepData: SweepData, freqToggleSet):
+    def plotFrequencies(self, resultSet: ResultSet, zeroPoint, sweepData: SweepData):
         if len(resultSet.getTime()) > 0:
-            if freqToggleSet == "SGI":
+            if self.ReaderFigureCanvas.showSgi.value:
                 self.plotGrowthIndex(resultSet, zeroPoint)
-            elif freqToggleSet == "Signal Check":
+            else:
                 self.plotSignal(resultSet, sweepData)
             self.frequencyFrame.update()
             self.frequencyFrame.update_idletasks()

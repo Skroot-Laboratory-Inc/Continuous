@@ -12,7 +12,7 @@ from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
 class ReaderPageThreadManager:
-    def __init__(self, readerPage, startingReaderNumber, mainFreqToggleSet, rootManager: RootManager):
+    def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager):
         self.readerAllocator = ReaderPageAllocator(
             rootManager,
             readerPage,
@@ -24,17 +24,8 @@ class ReaderPageThreadManager:
         )
         self.readerThreads = {}
         self.Readers = {}
-        self.mainFreqToggleSet = mainFreqToggleSet
-        self.mainFreqToggleSet.subscribe(lambda toggle: self.toggleReaderView(toggle))
         self.RootManager = rootManager
         self.SibFinder = SibFinder()
-
-    def toggleReaderView(self, toggle):
-        for Reader in self.Readers.values():
-            if Reader.finishedEquilibrationPeriod:
-                Reader.currentFrequencyToggle = toggle
-                # Changes to the UI need to be done in the UI thread, where the button was placed, otherwise weird issues occur.
-                Reader.plotFrequencyButton.invoke()
 
     def connectReader(self, readerNumber):
         try:
@@ -51,7 +42,6 @@ class ReaderPageThreadManager:
                 self.Readers[readerNumber],
                 self.RootManager,
                 guidedSetupForm,
-                self.mainFreqToggleSet,
                 self.resetReader,
                 self.issueOccurred,
             )
