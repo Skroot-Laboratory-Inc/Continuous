@@ -10,7 +10,6 @@ from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
-from src.app.widget.harvest_text import HarvestText
 from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
@@ -33,12 +32,12 @@ class ReaderPageAllocator:
     def createReaderFrames(self):
         readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, padx=5, pady=5)
         readerFrame.grid_columnconfigure(0, weight=1, minsize=30)
-        readerFrame.grid_columnconfigure(1, weight=9, minsize=490)
+        readerFrame.grid_columnconfigure(1, weight=9, minsize=100)
         readerFrame.grid_columnconfigure(2, weight=1, minsize=30)
         readerFrame.grid_rowconfigure(0, weight=1, minsize=30)
-        readerFrame.grid_rowconfigure(1, weight=9, minsize=290)
+        readerFrame.grid_rowconfigure(1, weight=9, minsize=100)
         readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
-        readerFrame.grid(row=0, column=0, sticky='nsew')
+        readerFrame.pack(fill=tk.BOTH, expand=True)
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda: self.connectNewReader(self.readerNumber))
         header = self.createHeader(readerFrame, self.readerNumber, setupReaderForm.lotIdEntry.get())
