@@ -8,10 +8,14 @@ from zipfile import ZipFile
 import botocore
 
 from src.app.aws.aws import AwsBoto3
+from src.app.aws.helpers.exceptions import DownloadFailedException
+from src.app.aws.helpers.helpers import runShScript
+from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.file_manager.common_file_manager import CommonFileManager, getCwd
 from src.app.helper_methods.helper_functions import restartPc
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import release_notes, text_notification
+from src.app.widget.confirmation_popup import ConfirmationPopup
 from src.resources.version.version import Version
 
 
@@ -34,21 +38,27 @@ class SoftwareUpdate(AwsBoto3):
                 with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
                     file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
                 if platform.system() == "Linux":
-                    shutil.copyfile(self.CommonFileManager.getLocalDesktopFile(),
-                                    self.CommonFileManager.getRemoteDesktopFile())
+                    shutil.copyfile(
+                        self.CommonFileManager.getLocalDesktopFile(),
+                        self.CommonFileManager.getRemoteDesktopFile(),
+                    )
                     text_notification.setText(
-                        "Installing new dependencies... please wait. This may take up to a minute.")
+                        "Installing new dependencies... please wait.\nThis may take up to a minute."
+                    )
                     self.RootManager.updateIdleTasks()
                     runShScript(
-                        self.CommonFileManager.getInstallScript(),
+                        self.CommonFileManager.getUpdateScript(),
                         self.CommonFileManager.getExperimentLog(),
                     )
                 text_notification.setText(
-                    f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}")
+                    f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}"
+                )
                 self.RootManager.updateIdleTasks()
                 restartPc()
             else:
                 text_notification.setText("Software update aborted.")
+        except UserConfirmationException:
+            pass
         except:
             logging.exception("failed to update software", extra={"id": "software-update"})
 
@@ -87,7 +97,8 @@ class SoftwareUpdate(AwsBoto3):
                         (most_recent_version[0] == majorVersion and most_recent_version[1] < minorVersion):
                     most_recent_version = (majorVersion, minorVersion)
                 if (self.newestMajorVersion < most_recent_version[0]) or \
-                        (self.newestMajorVersion == most_recent_version[0] and self.newestMinorVersion < most_recent_version[1]):
+                        (self.newestMajorVersion == most_recent_version[0] and self.newestMinorVersion <
+                         most_recent_version[1]):
                     updateRequired = True
                     self.updateNewestVersion(majorVersion, minorVersion, filename)
             newestVersion = f"{most_recent_version[0]}.{most_recent_version[1]}"
@@ -95,7 +106,8 @@ class SoftwareUpdate(AwsBoto3):
             return newestVersion, updateRequired
         if updateRequired:
             text_notification.setText(
-                f"Newer software available v{newestVersion} consider upgrading to use new features")
+                f"Newer software available v{newestVersion}.\nConsider upgrading to use new features",
+            )
 
     def updateNewestVersion(self, majorVersion, minorVersion, filename):
         self.newestMajorVersion = majorVersion
@@ -113,19 +125,24 @@ class SoftwareUpdate(AwsBoto3):
                 outfile.write(json.dumps(self.releaseNotes))
 
     def getCurrentReleaseNotes(self):
-        localFilename = f"{getCwd()}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
-        self.downloadFile(
-            f"{self.releaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
-            localFilename
-        )
-        return localFilename
+        try:
+            localFilename = f"{CommonFileManager().getTempNotes()}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
+            self.downloadFile(
+                f"{self.releaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
+                localFilename
+            )
+            return localFilename
+        except DownloadFailedException:
+            text_notification.setText("Failed to download software update.")
 
     def downloadUpdate(self, local_filename):
         self.mergeReleaseNotesIfNeededAndSave()
         ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
         if ReleaseNotes.download:
-            confirmRestart = shouldRestart()
-            if confirmRestart:
-                self.downloadFile(self.newestZipVersion, local_filename)
-            return confirmRestart
+            ConfirmationPopup(
+                self.RootManager,
+                f'Restart Required',
+                f'Software update will require the system to restart.\n\nAre you sure you would like to continue?',
+            )
+            self.downloadFile(self.newestZipVersion, local_filename)
         return ReleaseNotes.download

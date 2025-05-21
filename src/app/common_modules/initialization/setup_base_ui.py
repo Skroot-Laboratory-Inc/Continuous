@@ -29,18 +29,7 @@ class SetupBaseUi:
         self.GuiProperties = GuiProperties()
         self.version = f'{major_version}.{minor_version}'
         self.bodyFrame, self.sidebar = self.createFrames()
-        self.createMenus()
         self.createTheme()
-
-    def createMenus(self):
-        self.SoftwareUpdate.checkForSoftwareUpdates()
-        if self.SoftwareUpdate.newestZipVersion:
-            settingsMenuSoftware = self.RootManager.instantiateNewMenubarRibbon()
-            settingsMenuSoftware.add_command(
-                label="Update",
-                command=lambda: self.SoftwareUpdate.downloadSoftwareUpdate(),
-                font=("", 30))
-            self.RootManager.addMenubarCascade("Software", settingsMenuSoftware)
 
     def createFrames(self):
         versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'Version: v{self.version}', bg='white')
@@ -61,7 +50,7 @@ class SetupBaseUi:
         widget.grid(row=0, column=1, sticky='nsew')
         powerButton = PowerButton(self.FrameManager.bannerFrame, self.RootManager).button
         powerButton.grid(row=0, column=2, sticky='ne')
-        sidebar = Sidebar(self.RootManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame)
+        sidebar = Sidebar(self.RootManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate)
         sidebar.menu_button.grid(row=0, column=0, sticky='nsw')
         return self.FrameManager.bodyFrame, sidebar
 

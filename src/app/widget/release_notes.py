@@ -13,6 +13,9 @@ class ReleaseNotes(PopupInterface):
         self.releaseNotes = sortNotes(releaseNotes)
         self.download = False
         self.windowRoot = rootManager.createTopLevel()
+        self.windowRoot.config(relief="solid", highlightbackground="black",
+                               highlightcolor="black", highlightthickness=1, bd=0)
+        self.windowRoot.transient(rootManager.getRoot())
         self.fonts = FontTheme()
         windowRoot, windowCanvas = makeToplevelScrollable(self.windowRoot, self.fillOutWindowFn)
         rootManager.waitForWindow(windowCanvas)
@@ -46,8 +49,8 @@ class ReleaseNotes(PopupInterface):
                 tk.Label(window,
                          text=f"- {feature}",
                          bg='white',
-                         font=self.fonts.primary,
-                         wraplength=500,
+                         font=self.fonts.primary2,
+                         wraplength=800,
                          justify="left",
                          ).grid(row=row, column=0, sticky='w')
                 row += 1
@@ -63,8 +66,8 @@ class ReleaseNotes(PopupInterface):
                 tk.Label(window,
                          text=f"- {bugfix}",
                          bg='white',
-                         font=self.fonts.primary,
-                         wraplength=500,
+                         font=self.fonts.primary2,
+                         wraplength=800,
                          justify="left",
                          ).grid(row=row, column=0, sticky='w')
                 row += 1

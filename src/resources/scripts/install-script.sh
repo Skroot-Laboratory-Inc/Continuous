@@ -11,6 +11,7 @@ sudo dos2unix ../ubuntu_settings/aide_config
 sudo cp ../ubuntu_settings/aide_config /etc/cron.d
 sudo dos2unix ../ubuntu_settings/desktopApp.desktop
 sudo cp ../ubuntu_settings/desktopApp.desktop /home/kiosk/.local/share/applications
+sudo chown kiosk:kiosk /home/kiosk/.local/share/applications/desktopApp.desktop
 sudo dos2unix ../ubuntu_settings/52-usb.rules
 sudo cp ../ubuntu_settings/52-usb.rules /etc/udev/rules.d/52-usb.rules
 sudo dos2unix ../ubuntu_settings/92-usb-input-no-powersave.rules

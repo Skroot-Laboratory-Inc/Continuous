@@ -1,4 +1,12 @@
 {
+  "v1.1.1": {
+    "features": {
+      "1": "Fixed software updating and release notes, placed it in the sidebar",
+      "2": "Added raspberry pi configurations for compatibility.",
+      "3": "Added KPI form next to plot with experiment details.",
+      "4": "Updated visuals to work with raspberry pi"
+    }
+  },
   "v1.1.0": {
     "features": {
       "1": "Added random number generator for Lot ID",
@@ -10,9 +18,7 @@
       "7": "Uploads raw data scans to AWS once every 3 hours",
       "8": "Implemented harvest algorithm indicator to inform user of saturation time.",
       "9": "Added functionality to display saturation time on the dashboard.",
-      "10": "Added dynamodb functionality to enhance dashboard experience.",
-      "11": "Added raspberry pi configurations for compatibility.",
-      "12": "Added KPI form next to plot with experiment details."
+      "10": "Added dynamodb functionality to enhance dashboard experience."
     },
     "bugfixes": {
       "1": "Added support for new hubs by limiting usage to USB2.",

@@ -10,6 +10,9 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_check.py
 # Allows the kiosk user to run the kiosk_auth_password_reset python file without a password
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_password_reset.py
 
+# Allows the kiosk user to update software without the password prompt
+kiosk ALL=(ALL) NOPASSWD: /bin/sh */update_script.sh
+
 # Allows the kiosk user to transfer ownership of files they own without a password verification
 kiosk ALL=(ALL) NOPASSWD: /bin/sh /usr/local/bin/safe_chown.sh * *
 
