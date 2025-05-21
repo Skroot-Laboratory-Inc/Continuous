@@ -1,4 +1,9 @@
 {
+  "v1.1.2": {
+    "features": {
+      "1": "Fixed visuals during reader scanning."
+    }
+  },
   "v1.1.1": {
     "features": {
       "1": "Fixed software updating and release notes, placed it in the sidebar",
