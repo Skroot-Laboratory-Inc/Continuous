@@ -7,6 +7,7 @@ import boto3
 import botocore
 from botocore.client import Config
 
+from src.app.aws.helpers.exceptions import DownloadFailedException
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.dynamodbConfig import DynamodbConfig
 
@@ -83,7 +84,8 @@ class AwsBoto3:
                 logging.info('no internet', extra={"id": "aws"})
                 self.disabled = True
             except:
-                pass
+                logging.exception("Failed to download release notes")
+                raise DownloadFailedException()
 
     def pushExperimentRow(self, config: DynamodbConfig) -> bool:
         if not self.disabled:

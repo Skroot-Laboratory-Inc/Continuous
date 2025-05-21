@@ -56,7 +56,7 @@ release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-release_notes_fp = '../release-notes.json'
+release_notes_fp = '../version/release-notes-manufacturing.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
 # Eventually we want this to be release specific, but will require some timing and app updates.

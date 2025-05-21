@@ -11,6 +11,7 @@ from src.app.authentication.helpers.constants import AuthenticationConstants
 from src.app.authentication.helpers.exceptions import AuthLogsNotFound, AideLogsNotFound
 from src.app.authentication.helpers.functions import getUsers, getAdmins
 from src.app.authentication.helpers.logging import extractAuthLogs, extractAideLogs, logAuthAction
+from src.app.common_modules.service.software_update import SoftwareUpdate
 from src.app.model.menu_item import MenuItem
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
@@ -30,10 +31,11 @@ from src.app.widget.sidebar.manuals.user_guide_page import UserGuidePage
 
 
 class Sidebar:
-    def __init__(self, rootManager: RootManager, bodyFrame, toolbar):
+    def __init__(self, rootManager: RootManager, bodyFrame, toolbar, softwareUpdate: SoftwareUpdate):
         self.RootManager = rootManager
         self.bodyFrame = bodyFrame
         self.toolbar = toolbar
+        self.softwareUpdate = softwareUpdate
 
         self.menu_open = False
         self.submenu_open = False
@@ -74,6 +76,7 @@ class Sidebar:
                 MenuItem("Configuration", lambda: systemConfiguration(self.RootManager)),
                 MenuItem("Password Rotation", lambda: passwordRequirementsScreen(self.RootManager)),
                 MenuItem("System Settings", lambda: systemAdminPage(self.RootManager)),
+                MenuItem("Software Update", lambda: updateSoftware(self.softwareUpdate)),
             ],
         }
         self.menu_items = [
@@ -270,6 +273,14 @@ def restoreRetiredUser(rootManager: RootManager):
             RestoreUserScreen(rootManager, auth.getUser())
         else:
             text_notification.setText("Cannot restore a user, authentication is disabled.")
+
+
+def updateSoftware(softwareUpdater: SoftwareUpdate):
+    auth = AuthenticationPopup(softwareUpdater.RootManager)
+    if auth.isAuthenticated:
+        softwareUpdater.checkForSoftwareUpdates()
+        if softwareUpdater.newestZipVersion:
+            softwareUpdater.downloadSoftwareUpdate()
 
 
 def exportUserInfo(rootManager: RootManager):

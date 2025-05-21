@@ -9,11 +9,12 @@ class CommonFileManager:
         self.addIcon = rf"{resourcesDir}/media/plus.png"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
         self.squareLogo = rf"{resourcesDir}/media/squareLogo.PNG"
-        self.localDesktopFile = rf'{resourcesDir}/desktopApp.desktop'
+        self.localDesktopFile = rf'{resourcesDir}/ubuntu_settings/desktopApp.desktop'
         self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
         self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
-        self.installScript = rf'{resourcesDir}/scripts/install-script.sh'
+        self.updateScript = rf'{resourcesDir}/scripts/update-script.sh'
         self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
+        self.tempReleaseNotes = fr'{os.path.dirname(srcDir)}'
         self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
         self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
@@ -33,14 +34,17 @@ class CommonFileManager:
     def getLocalDesktopFile(self):
         return self.localDesktopFile
 
-    def getInstallScript(self):
-        return self.installScript
+    def getUpdateScript(self):
+        return self.updateScript
 
     def getRemoteDesktopFile(self):
         return self.remoteDesktopFile
 
     def getTempUpdateFile(self):
         return self.tempSoftwareUpdate
+
+    def getTempNotes(self):
+        return self.tempReleaseNotes
 
     def getSoftwareUpdatePath(self):
         return self.softwareUpdatePath

@@ -10,10 +10,8 @@ class RootManager:
     def __init__(self):
         self.root = tk.Tk()  # everything in the application comes after this
         self.fonts = FontTheme()
-        self.menubar = tk.Menu(self.root, font=self.fonts.primary)
         self.validateInteger = (self.root.register(validate_integer), '%P')
         self.validateIntegerError = (self.root.register(show_validation_error))
-        self.setMenubar()
 
     def instantiateNewMenubarRibbon(self):
         return tk.Menu(self.menubar, tearoff=0, font=self.fonts.primary, border=10)
@@ -21,12 +19,6 @@ class RootManager:
     def addMenubarCascade(self, label, menu):
         if not isMenuOptionPresent(self.menubar, label):
             self.menubar.add_cascade(label=label, menu=menu, font=self.fonts.primary)
-
-    def setMenubar(self):
-        self.root.config(menu=self.menubar)
-
-    def deleteMenubar(self, menubarId):
-        self.menubar.delete(menubarId)
 
     def createTopLevel(self):
         self.whiteFrame.place(relx=0,
@@ -67,7 +59,7 @@ class RootManager:
         self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
 
     def setWindowSize(self):
-        self.root.geometry(f"850x460+250+150")
+        self.root.geometry(f"850x500+250+150")
 
     def setProtocol(self, protocol, invokeFn):
         self.root.protocol(protocol, invokeFn)
@@ -87,22 +79,8 @@ class RootManager:
     def createWhiteFrame(self):
         self.whiteFrame = self.createFrame(Colors().secondaryColor)
 
-
-def isMenuOptionPresent(menu_bar, menu_label):
-    """
-    Function to check if a menu is already present in the menubar.
-
-    Parameters:
-    - menu_bar (tk.Menu): The menubar to check.
-    - menu_label (str): The label of the menu to check for.
-
-    Returns:
-    - bool: True if the menu is present, False otherwise.
-    """
-    for index in range(menu_bar.index("end") + 1):
-        if menu_bar.type(index) == "cascade" and menu_bar.entrycget(index, "label") == menu_label:
-            return True
-    return False
+    def updateIdleTasks(self):
+        self.root.update_idletasks()
 
 
 def show_validation_error():

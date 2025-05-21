@@ -56,7 +56,7 @@ class ConfirmationPopup:
             self.windowRoot,
             text=message,
             font=FontTheme().primary2,
-            background=Colors().secondaryColor).grid(row=3, column=0, pady=20)
+            background=Colors().secondaryColor).grid(row=3, column=0, columnspan=3, pady=20)
 
     def createConfirmButton(self, text: str):
         confirmButton = GenericButton(text, self.windowRoot, self.confirm).button
