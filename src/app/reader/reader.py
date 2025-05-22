@@ -43,7 +43,6 @@ class Reader(ReaderInterface):
         self.Colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
-        self.currentFrequencyToggle = "Signal Check"
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
@@ -60,9 +59,9 @@ class Reader(ReaderInterface):
                 self.getAnalyzer().ResultSet,
                 self.getAnalyzer().zeroPoint,
                 self.getAnalyzer().sweepData,
-                self.currentFrequencyToggle
             )
         )
+        self.Plotter.ReaderFigureCanvas.showSgi.subscribe(lambda toggle: self.plotFrequencyButton.invoke())
 
     def getCurrentPlottable(self, denoiseSet) -> Plottable:
         return Plottable(

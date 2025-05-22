@@ -120,7 +120,7 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(0, weight=1, uniform="plot")
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
-        plottingFrame.grid(row=0, column=1, sticky='ew')
+        plottingFrame.grid(row=0, column=1, sticky='nsew')
         kpiForm = KpiForm(kpiFrame, self.RootManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
@@ -128,7 +128,7 @@ class ReaderPageAllocator:
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        setupReaderForm = SetupReaderForm(SetupReaderFormInput(), setupFrame, submitFn)
+        setupReaderForm = SetupReaderForm(self.RootManager, SetupReaderFormInput(), setupFrame, submitFn)
         setupFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

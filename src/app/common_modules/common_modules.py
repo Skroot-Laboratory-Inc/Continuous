@@ -19,7 +19,6 @@ class CommonModules:
     def __init__(self, rootManager: RootManager, version, major_version, minor_version):
         self.CommonFileManager = CommonFileManager()
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
-        self.mainFreqToggleSet = BehaviorSubject("Signal Check")
         self.RootManager = rootManager
         self.bodyFrame = SetupBaseUi(self.RootManager, major_version, minor_version).bodyFrame
         self.ReaderPageManager = ReaderPageManager(self.bodyFrame)
@@ -49,7 +48,6 @@ class CommonModules:
             ReaderPageThreadManager(
                 readerPage,
                 startingReaderNumber,
-                self.mainFreqToggleSet,
                 self.RootManager,
             )
             self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))

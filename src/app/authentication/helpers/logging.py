@@ -69,8 +69,11 @@ def extractAuthLogs(search_term, output_csv, output_pdf, adminUser):
         # Run grep command to extract relevant logs
         grepCommand = f"sudo grep \"{search_term}\" /var/log/kiosk_auth.log* | sort -r"
         records = parseGrepRecords(grepCommand)
-        grep_command = f"sudo zgrep \"{search_term}\" /var/log/kiosk_auth.log.*.gz | sort -r"
-        compressedRecords = parseGrepRecords(grep_command)
+        try:
+            grep_command = f"sudo zgrep \"{search_term}\" /var/log/kiosk_auth.log.*.gz | sort -r"
+            compressedRecords = parseGrepRecords(grep_command)
+        except FileNotFoundError:
+            compressedRecords = []
         allRecords = records + compressedRecords
         # Write to CSV
         if allRecords:

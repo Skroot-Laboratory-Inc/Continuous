@@ -24,7 +24,7 @@ from src.resources.sibcontrol.sibcontrol import SIBException, SIBConnectionError
 
 
 class ReaderThreadManager:
-    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: SetupReaderFormInput, freqToggleSet,
+    def __init__(self, reader: Reader, rootManager: RootManager, guidedSetupForm: SetupReaderFormInput,
                  resetRunFunc, issueOccurredFn: Callable):
         self.guidedSetupForm = guidedSetupForm
         self.issueOccurredFn = issueOccurredFn
@@ -33,7 +33,6 @@ class ReaderThreadManager:
         self.thread = threading.Thread(target=self.mainLoop, args=(reader,), daemon=True)
         self.Timer = reader.ReaderPageAllocator.getTimer()
         self.isDevMode = DevProperties().isDevMode
-        self.freqToggleSet = freqToggleSet
         self.RootManager = rootManager
         self.Reader = reader
         # Current Issues is supposed to be a dict of all issues used for updating text_notification on successful runs.
@@ -69,12 +68,11 @@ class ReaderThreadManager:
                         zeroPoint = 1
                     self.Reader.getAnalyzer().setZeroPoint(zeroPoint)
                     self.Reader.finishedEquilibrationPeriod = True
-                    self.Reader.currentFrequencyToggle = "SGI"
-                    # self.freqToggleSet.on_next("SGI")
+                    self.Reader.Plotter.ReaderFigureCanvas.reachedEquilibration = True
+                    self.Reader.Plotter.ReaderFigureCanvas.showSgi.on_next(True)
                     logging.info(f"Zero Point Set for reader {self.Reader.readerNumber}: {zeroPoint} MHz",
                                  extra={"id": f"Reader {self.Reader.readerNumber}"})
                     self.Reader.resetReaderRun()
-                    self.createDisplayMenus()
                     self.finishedEquilibrationPeriod = True
         except:
             raise ZeroPointException(
@@ -248,14 +246,3 @@ class ReaderThreadManager:
             time.sleep(0.05)
             self.Timer.updateTime()
             currentTime = time.time()
-
-    def createDisplayMenus(self):
-        settingsMenuDisplay = self.RootManager.instantiateNewMenubarRibbon()
-        settingsMenuDisplay.add_command(label="SGI", command=lambda: self.freqToggleSetting("SGI"))
-        settingsMenuDisplay.add_command(label="Signal Check",
-                                        command=lambda: self.freqToggleSetting("Signal Check"))
-        self.RootManager.addMenubarCascade("Display", settingsMenuDisplay)
-
-    def freqToggleSetting(self, toggle):
-        self.freqToggleSet.on_next(toggle)
-        logging.info(f'freqToggleSet changed to {toggle}', extra={"id": f"Reader {self.Reader.readerNumber}"})

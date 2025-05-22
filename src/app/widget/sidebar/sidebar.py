@@ -185,7 +185,7 @@ class Sidebar:
 
         # Animate closing
         for i in range(self.submenu_width, -1, -10):
-            self.submenu_panel.place(x=current_x - (self.submenu_width - i), y=0)
+            self.submenu_panel.place(x=current_x - (self.submenu_width - i), y=0, relheight=1)
             self.submenu_panel.update()
 
         self.submenu_panel.place_forget()
@@ -205,7 +205,7 @@ class Sidebar:
 
             # Close menu with animation
             for i in range(self.menu_width, -1, -10):
-                self.menu_panel.place(x=-self.menu_width + i, y=0)
+                self.menu_panel.place(x=-self.menu_width + i, y=0, relheight=1)
                 self.menu_panel.update()
             self.menu_open = False
         else:
@@ -213,7 +213,7 @@ class Sidebar:
             self.menu_panel.lift()
             for i in range(self.menu_width + 1):
                 if i % 10 == 0:  # Move in increments of 10 for smoother animation
-                    self.menu_panel.place(x=-self.menu_width + i, y=0)
+                    self.menu_panel.place(x=-self.menu_width + i, y=0, relheight=1)
                     self.menu_panel.update()
             self.menu_open = True
 

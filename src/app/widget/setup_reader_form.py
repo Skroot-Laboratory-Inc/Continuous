@@ -4,15 +4,19 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
+from src.app.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.ui_helpers import launchKeyboard
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.theme.colors import Colors
 from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.root_manager import RootManager
 
 
 class SetupReaderForm:
-    def __init__(self, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame, submitFn: Callable):
+    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame, submitFn: Callable):
+        self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
         self.Fonts = FontTheme()
@@ -31,59 +35,21 @@ class SetupReaderForm:
         self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(expand=True)
 
-        ''' MM DD YYYY Date entry '''
-        dateFrame = tk.Frame(self.window, bg='white')
-        tk.Spinbox(dateFrame,
-                   textvariable=self.monthEntry,
-                   width=round(self.entrySize / 4),
-                   font=self.Fonts.setupFormText,
-                   from_=1,
-                   to=12,
-                   borderwidth=0,
-                   highlightthickness=0).grid(row=0, column=1)
-        tk.Label(dateFrame,
-                 text="/",
-                 font=self.Fonts.setupFormText,
-                 bg='white',
-                 width=round(self.entrySize / 10)).grid(row=0, column=2)
-        tk.Spinbox(dateFrame,
-                   textvariable=self.dayEntry,
-                   width=round(self.entrySize / 4),
-                   font=self.Fonts.setupFormText,
-                   from_=1,
-                   to=31,
-                   borderwidth=0,
-                   highlightthickness=0).grid(row=0, column=3)
-        tk.Label(dateFrame,
-                 text="/", bg='white',
-                 font=self.Fonts.setupFormText,
-                 width=round(self.entrySize / 10)).grid(row=0, column=4)
-        tk.Spinbox(dateFrame,
-                   textvariable=self.yearEntry,
-                   width=round(self.entrySize / 2),
-                   font=self.Fonts.setupFormText,
-                   from_=2023,
-                   to=2050,
-                   borderwidth=0,
-                   highlightthickness=0).grid(row=0, column=5)
-
         ''' Normal entries '''
         entriesMap = {}
         row = 0
 
-        entriesMap['Date'] = dateFrame
-
-        entriesMap['Lot ID'] = tk.Entry(
+        entriesMap['Incubator'] = tk.Entry(
             self.window,
-            textvariable=self.lotIdEntry,
+            textvariable=self.incubatorEntry,
             borderwidth=0,
             font=self.Fonts.setupFormText,
             highlightthickness=0,
             justify="center")
 
-        entriesMap['Incubator'] = tk.Entry(
+        entriesMap['Lot ID'] = tk.Entry(
             self.window,
-            textvariable=self.incubatorEntry,
+            textvariable=self.lotIdEntry,
             borderwidth=0,
             font=self.Fonts.setupFormText,
             highlightthickness=0,
@@ -100,7 +66,9 @@ class SetupReaderForm:
 
             tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row, column=0, sticky='w')
             entry.grid(row=row, column=1, sticky="ew")
-            if entryLabelText == "Lot ID" or entryLabelText == "Incubator":
+            if entryLabelText == "Lot ID":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot()))
+            if entryLabelText == "Incubator":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().secondaryColor
             row += 1
@@ -119,16 +87,16 @@ class SetupReaderForm:
                              font=self.Fonts.setupFormText,
                              onvalue=1,
                              offvalue=0,
-                             pady=5,
+                             pady=10,
                              command=self.setCalibrate,
                              bg='white', borderwidth=0, highlightthickness=0)
         var.grid(row=row, column=1, sticky="ew")
 
-        self.submitButton = ttk.Button(self.window, text="Submit", command=lambda: self.onSubmit(), style='Default.TButton')
+        self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
         row += 1
-        self.submitButton.grid(row=row, column=0, sticky="sw")
-        self.cancelButton = ttk.Button(self.window, text="Cancel", command=lambda: self.onCancel(), style='Default.TButton')
-        self.cancelButton.grid(row=row, column=1, sticky="se")
+        self.submitButton.grid(row=row, column=0, sticky="sw", pady=10)
+        self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
+        self.cancelButton.grid(row=row, column=1, sticky="se", pady=10)
 
     def getConfiguration(self) -> (SetupReaderFormInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
