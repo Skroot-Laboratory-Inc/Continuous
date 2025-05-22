@@ -1,4 +1,12 @@
 {
+  "v1.1.6": {
+    "features": {
+      "1": "Various fixes for visuals with raspberry pi"
+    },
+    "bugfixes": {
+      "1": "Fixed calibration to work when not calibrating"
+    }
+  },
   "v1.1.3": {
     "features": {
       "1": "Moved display toggle to a button next to the plot rather than the menubar."

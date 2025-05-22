@@ -12,10 +12,10 @@ from src.app.widget import text_notification
 class SibFinder:
 
     @staticmethod
-    def connectSib(readerNumber: int):
+    def connectSib(readerNumber: int, calibrationRequired):
         if not DevProperties().isDevMode:
             port = getSibPort()
-            return instantiateReader(port, True)
+            return instantiateReader(port, calibrationRequired)
         else:
             return DevSib(readerNumber)
 

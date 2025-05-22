@@ -31,7 +31,7 @@ class ReaderPageThreadManager:
         try:
             guidedSetupForm, globalFileManager = self.readerAllocator.getReaderFrame().setupReaderForm.getConfiguration()
             shouldCalibrate = guidedSetupForm.getCalibrate()
-            sib = self.SibFinder.connectSib(readerNumber)
+            sib = self.SibFinder.connectSib(readerNumber, shouldCalibrate)
             self.Readers[readerNumber] = Reader(
                 globalFileManager,
                 readerNumber,
