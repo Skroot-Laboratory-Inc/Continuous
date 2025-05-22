@@ -16,5 +16,5 @@ class FontTheme:
         self.primary = font.Font(family='Helvetica', size=20)
         self.primaryBoldUnderlined = font.Font(family='Helvetica', size=20, weight="bold", underline=True)
         self.primary2 = font.Font(family='Helvetica', size=14)
-        self.dropdown = font.Font(family='Helvetica', size=14)
-        self.setupFormText = font.Font(family='Helvetica', size=12)
+        self.dropdown = font.Font(family='Helvetica', size=20)
+        self.setupFormText = font.Font(family='Helvetica', size=18)

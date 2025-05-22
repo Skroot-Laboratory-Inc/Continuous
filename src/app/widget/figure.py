@@ -28,7 +28,7 @@ class FigureCanvas:
 
     def createToggle(self):
         button_ax = self.frequencyFigure.add_axes([0.79, 0.89, 0.2, 0.1])
-        toggle_button = Button(button_ax, 'Toggle', color=Colors().primaryColor)
+        toggle_button = Button(button_ax, 'Toggle', color=Colors().primaryColor, hovercolor=Colors().primaryColor)
         toggle_button.on_clicked(self.toggle_view)
         toggle_button.label.set_color(Colors().secondaryColor)
         return toggle_button
@@ -39,7 +39,7 @@ class FigureCanvas:
     def redrawPlot(self):
         self.frequencyFigure.clear()
         if self.reachedEquilibration:
-            self.createToggle()
+            self.toggle_button = self.createToggle()
         self.currentPlot = self.frequencyFigure.add_subplot(111)
         self.currentPlot.set_ylabel(self.yAxisLabel, color=Colors().lightPrimaryColor, fontsize=self.labelSize)
         self.currentPlot.set_title(self.title, fontsize=self.labelSize)

@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from distutils.version import StrictVersion
 
+from src.app.buttons.generic_button import GenericButton
 from src.app.helper_methods.ui_helpers import makeToplevelScrollable
 from src.app.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
@@ -76,11 +77,9 @@ class ReleaseNotes(PopupInterface):
 
     def createDownloadAndCancelButtons(self, window, row):
         row = self.createSpacer(window, row)
-        downloadButton = ttk.Button(window, text="Download", command=lambda: self.setDownload(True),
-                                    style='Default.TButton')
+        downloadButton = GenericButton("Download", window, lambda: self.setDownload(True)).button
         downloadButton.grid(row=row, column=0, sticky='w')
-        cancelButton = ttk.Button(window, text="Cancel", command=lambda: self.setDownload(False),
-                                  style='Default.TButton')
+        cancelButton = GenericButton("Cancel", window, lambda: self.setDownload(False)).button
         cancelButton.grid(row=row, column=1, sticky='w')
 
     def setDownload(self, value):

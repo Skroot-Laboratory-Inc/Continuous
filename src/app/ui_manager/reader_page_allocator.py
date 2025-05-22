@@ -128,7 +128,7 @@ class ReaderPageAllocator:
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        setupReaderForm = SetupReaderForm(SetupReaderFormInput(), setupFrame, submitFn)
+        setupReaderForm = SetupReaderForm(self.RootManager, SetupReaderFormInput(), setupFrame, submitFn)
         setupFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

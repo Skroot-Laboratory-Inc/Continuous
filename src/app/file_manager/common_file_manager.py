@@ -55,7 +55,7 @@ class CommonFileManager:
     def getDataSavePath(self):
         return self.dataSavePath
 
-    def getSquareLogo(self):
+    def getSkrootLogo(self):
         return self.squareLogo
 
     def getDevBaseFolder(self):
