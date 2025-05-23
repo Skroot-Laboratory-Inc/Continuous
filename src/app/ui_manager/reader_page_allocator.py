@@ -67,6 +67,7 @@ class ReaderPageAllocator:
     def connectNewReader(self, readerNumber):
         shouldCalibrate = self.connectFn(readerNumber)
         readerFrame = self.getReaderFrame()
+        readerFrame.updateHeader(readerNumber)
         if shouldCalibrate is None:
             pass  # This means that it failed to find the reader.
         elif shouldCalibrate:
@@ -129,7 +130,7 @@ class ReaderPageAllocator:
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
         setupReaderForm = SetupReaderForm(self.RootManager, SetupReaderFormInput(), setupFrame, submitFn)
-        setupFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame
 

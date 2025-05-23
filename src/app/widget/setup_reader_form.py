@@ -15,13 +15,13 @@ from src.app.ui_manager.root_manager import RootManager
 
 
 class SetupReaderForm:
-    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame, submitFn: Callable):
+    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
+                 submitFn: Callable):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
         self.Fonts = FontTheme()
         self.window = tk.Frame(parent, background=Colors().secondaryColor)
-        self.entrySize = 10
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
@@ -32,8 +32,9 @@ class SetupReaderForm:
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
-        self.window.grid_columnconfigure(1, weight=1)
-        self.window.pack(expand=True)
+        self.window.grid_columnconfigure(0, weight=1)
+        self.window.grid_columnconfigure(1, weight=2)
+        self.window.pack(fill=tk.BOTH, expand=True)
 
         ''' Normal entries '''
         entriesMap = {}
@@ -64,8 +65,10 @@ class SetupReaderForm:
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
 
-            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row, column=0, sticky='w')
-            entry.grid(row=row, column=1, sticky="ew")
+            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row,
+                                                                                                       column=0,
+                                                                                                       sticky='w')
+            entry.grid(row=row, column=1, sticky="ew", ipady=10)
             if entryLabelText == "Lot ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot()))
             if entryLabelText == "Incubator":
@@ -75,28 +78,22 @@ class SetupReaderForm:
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        ''' Create Spacer between entries and submit option '''
-        spacer = tk.Entry(self.window, borderwidth=0, highlightthickness=0, disabledbackground="white", cursor='arrow')
-        row += 1
-        spacer.grid(row=row, column=1, sticky="ew")
-        spacer['state'] = "disabled"
-
-        var = tk.Checkbutton(self.window,
-                             text="Calibration Required",
-                             variable=self.calibrateRequired,
-                             font=self.Fonts.setupFormText,
-                             onvalue=1,
-                             offvalue=0,
-                             pady=10,
-                             command=self.setCalibrate,
-                             bg='white', borderwidth=0, highlightthickness=0)
-        var.grid(row=row, column=1, sticky="ew")
+        calibrateCheck = tk.Checkbutton(self.window,
+                                        text="Calibration Required",
+                                        variable=self.calibrateRequired,
+                                        font=self.Fonts.setupFormText,
+                                        onvalue=1,
+                                        offvalue=0,
+                                        pady=10,
+                                        command=self.setCalibrate,
+                                        bg='white', borderwidth=0, highlightthickness=0)
+        calibrateCheck.grid(row=row, column=1, sticky="w")
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
         row += 1
-        self.submitButton.grid(row=row, column=0, sticky="sw", pady=10)
+        self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
-        self.cancelButton.grid(row=row, column=1, sticky="se", pady=10)
+        self.cancelButton.grid(row=row, column=1, sticky="se")
 
     def getConfiguration(self) -> (SetupReaderFormInput, GlobalFileManager):
         return self.guidedSetupResults, self.GlobalFileManager
@@ -131,8 +128,6 @@ class SetupReaderForm:
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()
             self.submitFn()
-            # if platform.system() == "Linux":
-            #     destroyKeyboard()
         else:
             messagebox.showerror(
                 "Incorrect Formatting",
@@ -156,10 +151,13 @@ class SetupReaderForm:
 
 def createDropdown(root, entryVariable, options, addSpace):
     if addSpace:
-        options = [f"             {option}             " for option in options]
+        options = [f"{option.center(65)}" for option in options]
     scanRateValue = entryVariable.get()
     optionMenu = tk.OptionMenu(root, entryVariable, *options)
-    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False, font=FontTheme().setupFormText)
+    dropdownOptions = root.nametowidget(optionMenu.menuname)
+    dropdownOptions.config(font=FontTheme().setupFormText)
+    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False,
+                      font=FontTheme().setupFormText)
     optionMenu["menu"].config(bg="white")
     entryVariable.set(scanRateValue)
     return optionMenu
