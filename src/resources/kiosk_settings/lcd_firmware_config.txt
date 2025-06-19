@@ -22,7 +22,9 @@ disable_overscan=1
 
 # Enable the KMS ("full" KMS) graphics overlay, leaving GPU memory as the
 # default (the kernel is in control of graphics memory with full KMS)
-#dtoverlay=vc4-kms-v3d
+dtoverlay=vc4-kms-v3d
+dtoverlay=vc4-kms-dsi-ili9881-7inch
+dtoverlay=goodix
 disable_fw_kms_setup=1
 
 # Autoload overlays for any recognized cameras or displays that are attached
