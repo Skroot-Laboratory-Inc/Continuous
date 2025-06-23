@@ -18,7 +18,7 @@ from src.app.reader.service.aws_service import AwsService
 from src.app.reader.service.dev_aws_service import DevAwsService
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
-from src.app.theme.colors import Colors
+from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator

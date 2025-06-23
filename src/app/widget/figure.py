@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning,
                        message="This figure includes Axes that are not compatible with tight_layout")
 
-from src.app.theme.colors import Colors
+from src.app.ui_manager.theme.colors import Colors
 
 
 class FigureCanvas:

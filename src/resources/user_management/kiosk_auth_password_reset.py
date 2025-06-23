@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import json
-import os
 import subprocess
 import sys
 import syslog
@@ -28,7 +27,7 @@ def change_user_password(admin_username, username, new_password):
 
         if process.returncode != 0:
             logAuthAction("Password Reset", "Failed", username, admin_username)
-            return {"success": False, "message": f"Failed to change password: {stderr}"}
+            return {"success": False, "message": f"{stderr.split('\n')[0] if stderr else ""}"}
 
         logAuthAction(
             "Password Reset",

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 
 
@@ -21,11 +21,11 @@ class KpiForm:
     def addCommonLabels(self, row):
         labelsMap = {}
 
-        labelsMap["Saturation"] = tk.Label(
-            self.parentFrame,
-            font=FontTheme().primary,
-            textvariable=self.saturationTime,
-            bg='white')
+        # labelsMap["Saturation"] = tk.Label(
+        #     self.parentFrame,
+        #     font=FontTheme().primary,
+        #     textvariable=self.saturationTime,
+        #     bg='white')
 
         labelsMap['SGI'] = tk.Label(
             self.parentFrame,
@@ -52,7 +52,7 @@ class KpiForm:
                 textvariable=self.user,
                 bg='white')
 
-        labelsMap['Lot ID'] = tk.Label(
+        labelsMap['Run ID'] = tk.Label(
             self.parentFrame,
             font=FontTheme().primary,
             textvariable=self.lotId,

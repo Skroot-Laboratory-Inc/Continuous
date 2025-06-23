@@ -2,14 +2,15 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import UserDoesntExistException, RestoreUserException
-from src.app.authentication.helpers.functions import restoreUser
-from src.app.buttons.generic_button import GenericButton
+from src.app.authentication.helpers.exceptions import RetireUserException, \
+    UserDoesntExistException, RestoreUserException
+from src.app.authentication.helpers.functions import retireUser, restoreUser
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 from src.app.widget.confirmation_popup import ConfirmationPopup
 
@@ -75,7 +76,7 @@ class RestoreUserScreen:
         except RestoreUserException as e:
             text_notification.setText(f"Failed to restore user. \n{e.message}")
         except UserDoesntExistException:
-            text_notification.setText(f"Failed to restore user.\nUser {self.username.get()} does not exist.")
+            text_notification.setText(f"Failed to restore user.\n`{self.username.get()}` does not exist.")
 
     def restoreUser(self):
         ConfirmationPopup(

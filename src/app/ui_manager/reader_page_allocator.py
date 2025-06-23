@@ -2,12 +2,12 @@ import threading
 import tkinter as tk
 
 from src.app.authentication.authentication_popup import AuthenticationPopup
-from src.app.buttons.generic_button import GenericButton
-from src.app.buttons.plus_icon_button import PlusIconButton
+from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.gui_properties import GuiProperties
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.kpi_form import KpiForm

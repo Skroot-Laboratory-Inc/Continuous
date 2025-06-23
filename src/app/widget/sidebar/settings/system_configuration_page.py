@@ -3,21 +3,23 @@ import tkinter as tk
 from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
-from src.app.buttons.generic_button import GenericButton
+from src.app.authentication.helpers.logging import logAuthAction
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 
 
 class SystemConfigurationPage:
-    def __init__(self, rootManager: RootManager):
+    def __init__(self, rootManager: RootManager, authorizer: str):
         self.RootManager = rootManager
+        self.authorizer = authorizer
         self.AuthConfiguration = AuthConfiguration()
         self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.config(relief="solid", highlightbackground="black",
                                highlightcolor="black", highlightthickness=1, bd=0)
-        self.authEnabled = tk.StringVar(value=styleDropdownOption(self.AuthConfiguration.authenticationEnabled))
+        self.authEnabled = tk.StringVar(value=styleDropdownOption(self.AuthConfiguration.getConfig()))
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()
@@ -62,7 +64,7 @@ class SystemConfigurationPage:
             background=Colors().secondaryColor)
 
     def toggleWarning(self, *args):
-        if self.authEnabled.get().strip() == "False" and self.AuthConfiguration.authenticationEnabled:
+        if self.authEnabled.get().strip() == "False" and self.AuthConfiguration.getConfig():
             self.warningLabel.grid(row=4, column=0, columnspan=3, sticky="w")
         else:
             self.warningLabel.grid_forget()
@@ -73,11 +75,22 @@ class SystemConfigurationPage:
         return submitButton
 
     def submitConfig(self):
-        if platform.system() == "Linux":
-            self.AuthConfiguration.setAuthConfiguration(self.authEnabled.get().strip() == "True")
-        else:
-            self.AuthConfiguration.authenticationEnabled = self.authEnabled.get().strip() == "True"
+        newAuthSetting = self.authEnabled.get().strip() == "True"
+        if self.AuthConfiguration.getConfig() != newAuthSetting:
+            self.submitAuthChanges(self.AuthConfiguration.getConfig(), newAuthSetting)
         self.windowRoot.destroy()
+
+    def submitAuthChanges(self, oldSetting: bool, newSetting: bool):
+        if platform.system() == "Linux":
+            self.AuthConfiguration.setConfig(newSetting)
+        else:
+            self.AuthConfiguration.authenticationEnabled = newSetting
+        logAuthAction(
+            "Authentication Enabled",
+            "Changed",
+            self.authorizer,
+            result=f"`{oldSetting}` to `{newSetting}`"
+        )
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button

@@ -5,12 +5,12 @@ from tkinter import ttk
 from src.app.authentication.helpers.exceptions import RetireUserException, \
     UserDoesntExistException, SystemAdminException, InsufficientPermissions
 from src.app.authentication.helpers.functions import retireUser
-from src.app.buttons.generic_button import GenericButton
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 from src.app.widget.confirmation_popup import ConfirmationPopup
 
@@ -84,7 +84,7 @@ class RetireUserScreen:
         except UserConfirmationException:
             pass
         except UserDoesntExistException:
-            text_notification.setText(f"Failed to retire user.\nUser {self.username.get()} does not exist.")
+            text_notification.setText(f"Failed to retire user.\n`{self.username.get()}` does not exist.")
         except SystemAdminException as e:
             text_notification.setText(f"Failed to retire user. \n{e.message}")
         except InsufficientPermissions as e:

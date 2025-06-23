@@ -2,8 +2,8 @@ import datetime
 import tkinter as tk
 
 from src.app.helper_methods.ui_helpers import datetimeToDisplay
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 
 
 class HarvestText:

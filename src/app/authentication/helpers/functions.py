@@ -2,6 +2,10 @@ import json
 import logging
 import os
 import platform
+if platform.system() == "Linux":
+    from pwquality import PWQSettings, PWQError
+else:
+    from pwquality_windows import PWQSettings, PWQError
 import subprocess
 from datetime import datetime
 from pathlib import Path
@@ -10,11 +14,11 @@ from typing import List
 from src.app.authentication.helpers.constants import AuthenticationConstants
 from src.app.authentication.helpers.exceptions import UserExistsException, UserDoesntExistException, \
     BadPasswordException, PamException, IncorrectPasswordException, PasswordExpired, SystemAdminException, \
-    InsufficientPermissions, ResetPasswordException, RetireUserException
+    InsufficientPermissions, ResetPasswordException, RetireUserException, ModifyUserRoleException
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.authentication.model.user import User
 from src.app.authentication.model.user_role import UserRole
-from src.app.authentication.password_policy_manager.password_policy_manager import PasswordPolicyManager
+from src.app.authentication.password_policy_manager.password_rotation_manager import PasswordRotationManager
 from src.app.widget import text_notification
 
 
@@ -63,31 +67,26 @@ def createKioskAdmin(user: str, passwd: str):
 
 def addAgingParams(username: str):
     if platform.system() == "Linux":
-        passwordPolicies = PasswordPolicyManager()
+        passwordPolicies = PasswordRotationManager()
         subprocess.run(['sudo', 'chage',
                         '-M', str(passwordPolicies.max_days),
-                        '-W', str(passwordPolicies.warn_age),
                         '-I', str(passwordPolicies.inactive_days),
                         username],
                        capture_output=True, text=True)
 
 
 def check_password_quality(username, password) -> (bool, str):
-    if platform.system() == "Linux":
-        import pwquality
-        try:
-            pwq = pwquality.PWQSettings()
-            pwq.read_config()
+    try:
+        pwq = PWQSettings()
+        pwq.read_config()
 
-            # Check the password quality - returns score or raises exception
-            score = pwq.check(password, None, username)
-            return True, ""
-        except pwquality.PWQError as e:
-            error_code, message = e.args
-            logging.info(f"Password rejected: {message}")
-            return False, message
-    else:
+        # Check the password quality - returns score or raises exception
+        score = pwq.check(password, None, username)
         return True, ""
+    except PWQError as e:
+        error_code, message = e.args
+        logging.info(f"Password rejected: {message}")
+        return False, message
 
 
 def user_exists(username):
@@ -201,9 +200,6 @@ def authorizedToReset(authorizer: str, resetUserTarget: str) -> bool:
     if authorizer == resetUserTarget:
         #  You can reset your own password.
         return True
-    print(authorizerRole)
-    print(resetUserRole)
-    print(UserRole.USER)
     if authorizerRole == UserRole.USER:
         #  Users cannot reset anyone else's password
         raise InsufficientPermissions("Users can only reset their own password")
@@ -241,9 +237,6 @@ def authorizedToRetire(authorizer: str, retireUserTarget: str) -> bool:
     """
     authorizerRole = getRole(authorizer)
     retireUserRole = getRole(retireUserTarget)
-    print(authorizerRole)
-    print(retireUserRole)
-    print(UserRole.USER)
     if retireUserRole == UserRole.SYSTEM_ADMIN:
         #  Nobody can retire the system administrator
         raise SystemAdminException("The system administrator cannot be retired.")
@@ -295,7 +288,7 @@ def getRole(username: str) -> UserRole:
     elif username in getSudoers():
         return UserRole.SYSTEM_ADMIN
     else:
-        text_notification.setText(f"User not found: {username}")
+        raise UserDoesntExistException(f"`{username} is not in the system.")
 
 
 def getAdmins() -> List[User]:
@@ -303,7 +296,36 @@ def getAdmins() -> List[User]:
         import grp
         users = grp.getgrnam(AuthenticationConstants().adminGroup).gr_mem
     else:
-        users = ["test_admin1", "test_admin2"]
+        users = [
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+            "test_admin1",
+            "test_admin2",
+        ]
     return [User(username, True) for username in users]
 
 
@@ -326,9 +348,9 @@ def getUsers() -> List[User]:
 
 
 def retireUser(authorizer: str, retireUserTarget: str):
-    logAuthAction("Retire User", "Initiated", retireUserTarget, authorizer=authorizer)
     if not user_exists(retireUserTarget):
         raise UserDoesntExistException()
+    logAuthAction("Retire User", "Initiated", retireUserTarget, authorizer=authorizer)
     if authorizedToRetire(authorizer, retireUserTarget):
         process = subprocess.Popen(["sudo", "usermod", "-L", retireUserTarget])
         process.wait()
@@ -342,15 +364,49 @@ def retireUser(authorizer: str, retireUserTarget: str):
             )
         else:
             logAuthAction("Retire User", "Failed", retireUserTarget, authorizer=authorizer)
-            logging.info(f"Failed to delete user {retireUserTarget} by {authorizer}. Return code: {process.returncode}",
+            logging.info(f"Failed to delete `{retireUserTarget}` by {authorizer}. Return code: {process.returncode}",
                          extra={"id": "auth"})
-            raise RetireUserException(f"User {retireUserTarget} not deleted.")
+            raise RetireUserException(f"`{retireUserTarget}` not deleted.")
+
+
+def modifyRole(authorizer: str, modifyUser: str, newRole: UserRole):
+    if not user_exists(modifyUser):
+        raise UserDoesntExistException()
+    logAuthAction("Modify User", "Initiated", modifyUser, authorizer=authorizer)
+    if newRole == UserRole.USER:
+        addGroup = AuthenticationConstants().userGroup
+        removeGroup = AuthenticationConstants().adminGroup
+    elif newRole == UserRole.ADMIN:
+        addGroup = AuthenticationConstants().adminGroup
+        removeGroup = AuthenticationConstants().userGroup
+    else:
+        raise ModifyUserRoleException("New role is not an admin or user.")
+    removeProcess = subprocess.Popen(["sudo", "gpasswd", "-d", modifyUser, removeGroup])
+    removeProcess.wait()
+    addProcess = subprocess.Popen(["sudo", "gpasswd", "-a", modifyUser, addGroup])
+    addProcess.wait()
+    if addProcess.returncode == 0 and removeProcess.returncode == 0:
+        logAuthAction(
+            "Modify User",
+            "Successful",
+            modifyUser,
+            authorizer=authorizer,
+            result=f"'{modifyUser}' is now {newRole.prefixed_display_name}",
+        )
+    else:
+        logAuthAction("Modify User", "Failed", modifyUser, authorizer=authorizer)
+        logging.info(
+            f"Failed to change role for {modifyUser} to {newRole.display_name} by {authorizer}. "
+            f"Return codes: add:{addProcess.returncode} and remove:{removeProcess.returncode}",
+            extra={"id": "auth"},
+        )
+        raise ModifyUserRoleException(f"`{modifyUser}` not changed to {newRole.display_name}.")
 
 
 def restoreUser(adminUsername: str, username: str) -> (bool, str):
-    logAuthAction("Restore User", "Initiated", username, authorizer=adminUsername)
     if not user_exists(username):
         raise UserDoesntExistException()
+    logAuthAction("Restore User", "Initiated", username, authorizer=adminUsername)
     process = subprocess.Popen(["sudo", "usermod", "-U", username])
     process.wait()
     if process.returncode == 0:
@@ -364,10 +420,10 @@ def restoreUser(adminUsername: str, username: str) -> (bool, str):
         return True, ""
     else:
         logAuthAction("Restore User", "Failed", username, authorizer=adminUsername)
-        logging.info(f"Failed to restore user {username} by {adminUsername}. Return code: {process.returncode}",
+        logging.info(f"Failed to restore `{username}` by {adminUsername}. Return code: {process.returncode}",
                      extra={"id": "auth"})
-        text_notification.setText(f"Error restoring user: {username}")
-        return False, f"User {username} not restored."
+        text_notification.setText(f"Error restoring `{username}`")
+        return False, f"`{username}` not restored."
 
 
 def addLockedOutUser(username: str):
@@ -381,8 +437,8 @@ def addLockedOutUser(username: str):
     # Only add the username if it's not already in the file
     if not user_already_logged:
         with open(lockoutFile, 'a') as f:
-            f.write(f"User '{username}' locked out on {datetime.now().isoformat(timespec='minutes')}\n")
-        logging.info(f"LOCKOUT: User {username} has been locked out")
+            f.write(f"'{username}' locked out on {datetime.now().isoformat(timespec='minutes')}\n")
+        logging.info(f"LOCKOUT: `{username}` has been locked out")
 
 
 def getLockedOutUsers() -> List[str]:
@@ -415,13 +471,12 @@ def setFileOwner(filePath: str, newOwner: str):
 
 
 def getFileOwner(filename: str) -> str:
-    filePath = Path(filename)
-    statInfo = filePath.stat()
-    uid = statInfo.st_uid
-    try:
+    if platform.system() == "Linux":
+        filePath = Path(filename)
+        statInfo = filePath.stat()
+        uid = statInfo.st_uid
         import pwd
         username = pwd.getpwuid(uid).pw_name
         return username
-    except (ImportError, KeyError):
-        # For Windows or if username can't be resolved
-        return str(uid)
+    else:
+        return "Windows User"

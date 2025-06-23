@@ -1,13 +1,10 @@
-import logging
 import platform
 import tkinter as tk
-from importlib.metadata import version as version_api
 
-from reactivex.subject import BehaviorSubject
-
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.setup_base_ui import SetupBaseUi
 from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.gui_properties import GuiProperties
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
@@ -20,7 +17,8 @@ class CommonModules:
         self.CommonFileManager = CommonFileManager()
         logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
         self.RootManager = rootManager
-        self.bodyFrame = SetupBaseUi(self.RootManager, major_version, minor_version).bodyFrame
+        self.sessionManager = SessionManager()
+        self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager, major_version, minor_version).bodyFrame
         self.ReaderPageManager = ReaderPageManager(self.bodyFrame)
         self.configureRoot()
         self.isDevMode = DevProperties().isDevMode

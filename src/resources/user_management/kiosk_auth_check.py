@@ -20,23 +20,22 @@ def authenticate_user(username, password):
     if authCode == 6:
         isLockedOut, duration = get_unlock_time(user)
         if isLockedOut:
-            authReason = f"User has been locked out for 10 minutes."
+            authReason = f"User has been locked out for {int(get_unlock_time_from_config()/60)} minutes."
     if authCode == 7:
         isLockedOut, duration = get_unlock_time(user)
         if isLockedOut:
-            authReason = f"User is locked out for {duration}"
+            authReason = f"`{username}` is locked out for {duration}"
         elif isInactive(username):
             authReason = "Password is locked, contact an administrator for a reset."
     elif authCode == 12:
         if isExpired(username):
-            authReason = "User password is expired, please reset."
+            authReason = f"{username}'s password is expired, please reset."
             authResult = True
     if authResult:
         logAuthAction(
             "Authentication Attempt",
             "Successful",
-            username,
-            result=f"'{username}' is permitted access."
+            username
         )
     else:
         logAuthAction("Authentication Attempt", "Failed", username, extra=f"Code {authCode} for reason {authReason}")

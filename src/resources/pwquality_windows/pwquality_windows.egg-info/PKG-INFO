@@ -1,0 +1,57 @@
+Metadata-Version: 2.4
+Name: pwquality-windows
+Version: 1.0.0
+Summary: Windows-compatible interface replicating Ubuntu python-pwquality package
+Home-page: https://github.com/yourusername/pwquality-windows
+Author: Your Name
+Author-email: Your Name <your.email@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/pwquality-windows
+Project-URL: Repository, https://github.com/yourusername/pwquality-windows
+Project-URL: Issues, https://github.com/yourusername/pwquality-windows/issues
+Keywords: password,quality,security,validation,pwquality
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Security
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: flake8; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# PWQuality Windows
+
+A Windows-compatible Python interface that replicates the functionality of Ubuntu's `python-pwquality` package. This package provides comprehensive password quality checking without requiring `libpwquality` or other system dependencies.
+
+## Features
+
+- **Complete API Compatibility**: Drop-in replacement for Ubuntu's python-pwquality
+- **Cross-Platform**: Works on Windows, Linux, and macOS
+- **No Dependencies**: Pure Python implementation with no external requirements
+- **Comprehensive Checking**: All standard password quality checks including:
+  - Length validation
+  - Character class requirements
+  - Repeat character detection
+  - Sequential pattern detection
+  - Dictionary/common password checking
+  - Username and personal information detection
+  - Palindrome detection
+  - Password similarity comparison
+
+## Installation
+
+Install from your local package:
+
+```bash
+pip install .

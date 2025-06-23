@@ -22,8 +22,14 @@ class RetireUserException(AuthenticationException):
         self.message = message
 
 
+class ModifyUserRoleException(AuthenticationException):
+    """ Exception thrown when an error occurs while modifying a user role. """
+    def __init__(self, message):
+        self.message = message
+
+
 class SystemAdminException(AuthenticationException):
-    """ Exception thrown when a user tries to retire/reset the password of the system administrator. """
+    """ Exception thrown when a user tries to modify the system administrator. """
     def __init__(self, message):
         self.message = message
 

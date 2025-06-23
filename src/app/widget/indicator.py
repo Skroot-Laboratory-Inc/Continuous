@@ -1,4 +1,4 @@
-from src.app.theme.colors import Colors
+from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 
 

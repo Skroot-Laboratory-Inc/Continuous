@@ -1,25 +1,24 @@
-import platform
-import subprocess
 import tkinter as tk
 
 from PIL import Image, ImageTk
 
-from src.app.authentication.authentication_popup import AuthenticationPopup
+from src.app.authentication.helpers.decorators import requireUser
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import restartPc
-from src.app.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
 from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
 class PowerButton:
-    def __init__(self, master, rootManager: RootManager):
-        commonFileManager = CommonFileManager()
-        image = Image.open(commonFileManager.getPowerIcon())
+    def __init__(self, master, rootManager: RootManager, sessionManager: SessionManager):
+        image = Image.open(CommonFileManager().getPowerIcon())
         resizedImage = image.resize((75, 75), Image.Resampling.LANCZOS)
         self.powerIcon = ImageTk.PhotoImage(resizedImage)
-        self.RootManager = rootManager
+        self.rootManager = rootManager
+        self.sessionManager = sessionManager
 
         self.button = tk.Button(
             master,
@@ -34,7 +33,7 @@ class PowerButton:
 
     def invoke(self):
         self.button.configure(state="disabled")
-        confirmAndRestart(self.RootManager)
+        self.confirmAndRestart()
         self.button.configure(state="normal")
 
     def hide(self):
@@ -46,13 +45,12 @@ class PowerButton:
         self.button.grid()
         self.button.tkraise()
 
-
-def confirmAndRestart(rootManager: RootManager):
-    """ Prompts the user to confirm that they would like to restart, then restarts the pi. """
-    if AuthenticationPopup(rootManager).isAuthenticated:
+    @requireUser
+    def confirmAndRestart(self):
+        """ Prompts the user to confirm that they would like to restart, then restarts the pi. """
         try:
             ConfirmationPopup(
-                rootManager,
+                self.rootManager,
                 'Reboot Reader',
                 'Are you sure you wish to restart the system?',
             )

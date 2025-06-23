@@ -5,11 +5,11 @@ from tkinter import ttk
 from src.app.authentication.helpers.exceptions import PasswordMismatchException, ResetPasswordException, \
     BadPasswordException, SystemAdminException, InsufficientPermissions
 from src.app.authentication.helpers.functions import resetPassword, check_password_quality
-from src.app.buttons.generic_button import GenericButton
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 
 

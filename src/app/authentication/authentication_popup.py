@@ -8,22 +8,25 @@ from src.app.authentication.helpers.exceptions import IncorrectPasswordException
 from src.app.authentication.helpers.functions import validateUserCredentials, getLockedOutUsers, getRole
 from src.app.authentication.lockout_notification import LockoutNotification
 from src.app.authentication.model.user_role import UserRole
-from src.app.buttons.generic_button import GenericButton
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.manage_users.password_reset_screen import PasswordResetScreen
 
 
 class AuthenticationPopup:
-    def __init__(self, rootManager: RootManager, administratorRequired: bool = False, systemAdminRequired: bool = False, forceAuthenticate: bool = False):
-        if AuthConfiguration().authenticationEnabled or forceAuthenticate:
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager = None,
+                 administratorRequired: bool = False, systemAdminRequired: bool = False, forceAuthenticate: bool = False):
+        if AuthConfiguration().getConfig() or forceAuthenticate:
             self.isAuthenticated = False
             self.administratorRequired = administratorRequired
             self.systemAdminRequired = systemAdminRequired
             self.RootManager = rootManager
+            self.sessionManager = sessionManager
             self.windowRoot = rootManager.createTopLevel()
             self.windowRoot.config(relief="solid", highlightbackground="black",
                 highlightcolor="black", highlightthickness=1, bd=0)
@@ -46,7 +49,7 @@ class AuthenticationPopup:
             self.isAuthenticated = True
 
     def getUser(self):
-        if AuthConfiguration().authenticationEnabled:
+        if AuthConfiguration().getConfig():
             return self.username.get()
         else:
             return ""
@@ -116,7 +119,9 @@ class AuthenticationPopup:
             text_notification.setText("Signing in...")
             self.disablePopup()
             self.checkAuthentication()
-            text_notification.setText(f"Successfully signed in to {self.username.get()}")
+            if self.sessionManager:
+                self.sessionManager.login(self.username.get(), self.password.get())
+            text_notification.setText(f"Welcome, {self.username.get()}!")
             self.windowRoot.destroy()
         except PasswordExpired:
             text_notification.setText(f"Authentication successful.\nPassword expired, please reset to avoid lockout.")

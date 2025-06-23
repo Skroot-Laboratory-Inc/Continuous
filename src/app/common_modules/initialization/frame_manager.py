@@ -1,5 +1,5 @@
 from src.app.properties.gui_properties import GuiProperties
-from src.app.theme.colors import Colors
+from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 
 

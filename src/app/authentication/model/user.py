@@ -13,10 +13,10 @@ class User:
     def __init__(self, username, isAdmin: bool = False):
         self.username = username
         self.role = UserRole.ADMIN if isAdmin else UserRole.USER
-        self.last_changed = None
-        self.password_expires = None
-        self.password_inactive = None
-        self.account_expires = None
+        self.last_changed = "-"
+        self.password_expires = "-"
+        self.password_inactive = "-"
+        self.account_expires = "-"
         self.last_login = "Never"
         if platform.system() == "Linux":
             self._fetch_password_info()

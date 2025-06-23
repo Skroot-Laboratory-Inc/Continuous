@@ -1,4 +1,3 @@
-import csv
 import glob
 import json
 import logging
@@ -16,7 +15,7 @@ if platform.system() == "Linux":
 from src.app.authentication.helpers.constants import AuthenticationConstants
 
 
-def logAuthAction(category, action, username, result=None, authorizer=None, extra=None):
+def logAuthAction(category: str, action: str, username: str, result: str = None, authorizer: str = None, extra: str = None):
     try:
         if platform.system() == "Linux":
             """Log user authentication actions in JSON format for Ubuntu kiosk_auth.log"""
@@ -63,39 +62,55 @@ def parseGrepRecords(grepCommand: str):
     return records
 
 
-def extractAuthLogs(search_term, output_csv, output_pdf, adminUser):
+def getTimerangeFilter(startDate: datetime.date, endDate: datetime.date):
+    """
+    If both are None: no timestamp filtering
+    If only min_timestamp: filters for records >= min_timestamp
+    If only max_timestamp: filters for records <= max_timestamp
+    If both provided: filters for records in the range
+
+    :param startDate: The timestamp for the minimum date range searched
+    :param endDate: The timestamp for the maximum date range searched
+    :return: The string to append to a grep command to filter by dates
+    """
+    awkConditions = []
+    if startDate is not None:
+        awkConditions.append(f'substr($1,1,10) >= "{startDate.isoformat()}"')
+    if endDate is not None:
+        awkConditions.append(f'substr($1,1,10) <= "{endDate.isoformat()}"')
+
+    if awkConditions:
+        # sed was required before but causing issues now. It is required if the logs are filename:timestamp
+        # return f" | sed 's/^[^:]*://' | awk '{' && '.join(awkConditions)}'"
+        return f" | awk '{' && '.join(awkConditions)}'"
+    else:
+        return ""
+
+
+def extractAuthLogs(search_term: str, output_pdf: str, adminUser: str, startDate: datetime.date, endDate: datetime.date):
     logAuthAction("Auth Log Export", "Initiated", adminUser)
     if platform.system() == "Linux":
+        filterCmd = getTimerangeFilter(startDate, endDate)
         # Run grep command to extract relevant logs
-        grepCommand = f"sudo grep \"{search_term}\" /var/log/kiosk_auth.log* | sort -r"
+        grepCommand = f"sudo grep \"{search_term}\" /var/log/kiosk_auth.log*{filterCmd} |  sort -r"
+        logging.info(grepCommand, extra={"id": "grep"})
         records = parseGrepRecords(grepCommand)
-        try:
-            grep_command = f"sudo zgrep \"{search_term}\" /var/log/kiosk_auth.log.*.gz | sort -r"
-            compressedRecords = parseGrepRecords(grep_command)
-        except FileNotFoundError:
-            compressedRecords = []
+        zgrepCommand = f"sudo zgrep \"{search_term}\" /var/log/kiosk_auth.log.*.gz{filterCmd} | sort -r"
+        logging.info(zgrepCommand, extra={"id": "grep"})
+        compressedRecords = parseGrepRecords(zgrepCommand)
+
         allRecords = records + compressedRecords
-        # Write to CSV
         if allRecords:
-            # Create ordered fieldnames with username first
             fieldnames = ["Timestamp", "Username", "Authorizer", "Category", "Action", "Result", "Extra"]
-            data = []
-
-            with open(output_csv, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
-                writer.writeheader()
-                writer.writerows(allRecords)
-
-            with open(output_csv, 'r') as file:
-                csv_reader = csv.reader(file)
-                for row in csv_reader:
-                    data.append(row)
+            data = [fieldnames]
+            for record in allRecords:
+                row = [record.get(field, '-') for field in fieldnames]
+                data.append(row)
 
             createPdf(data,
                       output_pdf,
-                      "Authorization Logs",
+                      f"Authorization Logs: {startDate} through {endDate}",
                       adminUser,
-                      isLandscape=True,
                       )
 
             logAuthAction("Auth Log Export", "Successful", adminUser, extra=f"{len(records)} records found.")
@@ -104,7 +119,7 @@ def extractAuthLogs(search_term, output_csv, output_pdf, adminUser):
             raise AuthLogsNotFound()
 
 
-def extractAideLogs(outputDir, adminUser):
+def extractAideLogs(outputDir: str, adminUser: str):
     logAuthAction("AIDE Log Export", "Initiated", adminUser)
     if platform.system() == "Linux":
         aideLogs = glob.glob(f'{AuthenticationConstants().aideLogsDir}/aide-weekly-summary-*.log')
@@ -117,5 +132,4 @@ def extractAideLogs(outputDir, adminUser):
                     raise AideLogsNotFound()
             logAuthAction("AIDE Log Export", "Successful", adminUser, extra=f"{len(aideLogs)} weeks of logs found.")
         else:
-            logAuthAction("AIDE Log Export", "Failed", adminUser)
-            raise AideLogsNotFound()
+            logAuthAction("AIDE Log Export", "Successful", adminUser, extra=f"No logs found.")

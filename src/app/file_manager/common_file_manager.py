@@ -6,10 +6,14 @@ class CommonFileManager:
         srcDir = f"{os.path.dirname(os.path.dirname(getCwd()))}"
         resourcesDir = f"{srcDir}/src/resources"
         self.helpIconPng = rf"{resourcesDir}/media/help.png"
+        self.profileIcon = rf"{resourcesDir}/media/profile.jpg"
+        self.skrootLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.addIcon = rf"{resourcesDir}/media/plus.png"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
-        self.squareLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.localDesktopFile = rf'{resourcesDir}/ubuntu_settings/desktopApp.desktop'
+        self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
+        self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
+        self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
         self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
         self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
         self.updateScript = rf'{resourcesDir}/scripts/update-script.sh'
@@ -17,10 +21,7 @@ class CommonFileManager:
         self.tempReleaseNotes = fr'{os.path.dirname(srcDir)}'
         self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
-        self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
-        self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
-        self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
-        self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
+        self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev/Benchtop'
 
     def getHelpIcon(self):
         return self.helpIconPng
@@ -53,13 +54,18 @@ class CommonFileManager:
         return self.experimentLog
 
     def getDataSavePath(self):
+        if not os.path.exists(self.dataSavePath):
+            os.mkdir(self.dataSavePath)
         return self.dataSavePath
-
-    def getSkrootLogo(self):
-        return self.squareLogo
 
     def getDevBaseFolder(self):
         return self.devBaseFolder
+
+    def getSkrootLogo(self):
+        return self.skrootLogo
+
+    def getProfileIcon(self):
+        return self.profileIcon
 
 
 def getCwd():
@@ -73,4 +79,3 @@ def getDesktopLocation():
         return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
     except KeyError:
         return os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-

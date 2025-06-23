@@ -1,24 +1,30 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from src.app.buttons.help_button import HelpButton
-from src.app.buttons.power_button import PowerButton
+from PIL import Image, ImageTk
+
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.frame_manager import FrameManager
 from src.app.common_modules.service.dev_software_update import DevSoftwareUpdate
 from src.app.common_modules.service.software_update import SoftwareUpdate
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.gui_properties import GuiProperties
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.help_button import HelpButton
+from src.app.ui_manager.buttons.power_button import PowerButton
+from src.app.ui_manager.buttons.profile_button import ProfileButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.sidebar import Sidebar
 
 
 class SetupBaseUi:
-    def __init__(self, rootManager: RootManager, major_version, minor_version):
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, major_version, minor_version):
         self.Colors = Colors()
         self.RootManager = rootManager
+        self.SessionManager = sessionManager
         self.isDevMode = DevProperties().isDevMode
         if self.isDevMode:
             self.SoftwareUpdate = DevSoftwareUpdate(self.RootManager, major_version, minor_version)
@@ -28,6 +34,7 @@ class SetupBaseUi:
         self.RootManager.createWhiteFrame()
         self.GuiProperties = GuiProperties()
         self.version = f'{major_version}.{minor_version}'
+        self.isDevMode = DevProperties().isDevMode
         self.bodyFrame, self.sidebar = self.createFrames()
         self.createTheme()
 
@@ -45,13 +52,16 @@ class SetupBaseUi:
         self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=0)
         self.FrameManager.bannerFrame.grid_columnconfigure(1, weight=1)
         self.FrameManager.bannerFrame.grid_columnconfigure(2, weight=0)
+        self.FrameManager.bannerFrame.grid_columnconfigure(3, weight=0)
         widget = text_notification.createWidget(self.FrameManager.bannerFrame)
-        text_notification.setText("Skroot Laboratory - Follow the prompts to get started. ")
+        text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
         widget.grid(row=0, column=1, sticky='nsew')
-        powerButton = PowerButton(self.FrameManager.bannerFrame, self.RootManager).button
-        powerButton.grid(row=0, column=2, sticky='ne')
-        sidebar = Sidebar(self.RootManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate)
-        sidebar.menu_button.grid(row=0, column=0, sticky='nsw')
+        profileButton = ProfileButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
+        profileButton.grid(row=0, column=2, sticky='nsew')
+        powerButton = PowerButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
+        powerButton.grid(row=0, column=3, sticky='ne')
+        sidebar = Sidebar(self.RootManager, self.SessionManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate)
+        sidebar.getHamburger.grid(row=0, column=0, sticky='nsw')
         return self.FrameManager.bodyFrame, sidebar
 
     def createTheme(self):
@@ -59,6 +69,10 @@ class SetupBaseUi:
         style = ttk.Style()
         style.theme_use('clam')
         self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
+
+        image = Image.open(CommonFileManager().getProfileIcon())
+        resizedImage = image.resize((25, 25), Image.Resampling.LANCZOS)
+        self.profileIcon = ImageTk.PhotoImage(resizedImage)
         style.configure(
             'Default.TButton',
             font=FontTheme().buttons,
@@ -76,6 +90,15 @@ class SetupBaseUi:
             font=('Helvetica', 9),
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)
+        style.configure(
+            'Profile.TButton',
+            focuscolor="none",
+            highlightthickness=0,
+            borderwidth=0,
+            font=('Helvetica', 16),
+            foreground=self.Colors.secondaryColor,
+            disabledforeground=self.Colors.secondaryColor,
+            background=self.Colors.primaryColor)
         style.map(
             'Default.TButton',
             background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
@@ -85,4 +108,8 @@ class SetupBaseUi:
         style.map(
             'Help.TButton',
             background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
+        style.map(
+            'Profile.TButton',
+            background=[("disabled", self.Colors.primaryColor), ("active", self.Colors.primaryColor)],
+            foreground=[("disabled", self.Colors.secondaryColor), ("active", self.Colors.secondaryColor)])
 

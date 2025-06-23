@@ -12,7 +12,7 @@ sudo cp ../kiosk_settings/kiosk.conf /etc/gdm3/custom.conf
 sudo dos2unix ../kiosk_settings/lcd_firmware_config.txt
 sudo cp ../kiosk_settings/lcd_firmware_config.txt /boot/firmware/config.txt
 sudo dos2unix ../kiosk_settings/kiosk-auto-login.conf
-sudo5 cp ../kiosk_settings/kiosk-auto-login.conf /etc/gdm3/custom.conf
+sudo cp ../kiosk_settings/kiosk-auto-login.conf /etc/gdm3/custom.conf
 sudo cp ../kiosk_settings/kiosk-auto-login.conf /etc/systemd/sleep.conf
 sudo dos2unix ../kiosk_settings/10-noblank.conf
 sudo cp ../kiosk_settings/10-noblank.conf /etc/X11/xorg.conf.d

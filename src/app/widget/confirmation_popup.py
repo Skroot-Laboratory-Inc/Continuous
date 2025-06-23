@@ -2,11 +2,11 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.buttons.generic_button import GenericButton
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 
 

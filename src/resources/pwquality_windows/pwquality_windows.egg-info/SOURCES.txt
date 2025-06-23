@@ -1,0 +1,15 @@
+LICENSE
+MANIFEST.in
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+pwquality_windows/__init__.py
+pwquality_windows/core.py
+pwquality_windows.egg-info/PKG-INFO
+pwquality_windows.egg-info/SOURCES.txt
+pwquality_windows.egg-info/dependency_links.txt
+pwquality_windows.egg-info/not-zip-safe
+pwquality_windows.egg-info/requires.txt
+pwquality_windows.egg-info/top_level.txt
+tests/__init__.py

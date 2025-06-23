@@ -15,7 +15,6 @@ python3-psutil
 python3-progress
 python3-pwquality
 python3-reportlab
-python3-rx
 python3-s3transfer
 python3-scipy
 python3-serial
@@ -24,4 +23,5 @@ python3-sklearn
 python3-threadpoolctl
 python3-tk
 python3-urllib3
+tkcalendar
 whois

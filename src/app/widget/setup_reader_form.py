@@ -4,13 +4,13 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
-from src.app.buttons.generic_button import GenericButton
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.ui_helpers import launchKeyboard
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 
 
@@ -48,7 +48,7 @@ class SetupReaderForm:
             highlightthickness=0,
             justify="center")
 
-        entriesMap['Lot ID'] = tk.Entry(
+        entriesMap['Run ID'] = tk.Entry(
             self.window,
             textvariable=self.lotIdEntry,
             borderwidth=0,
@@ -69,7 +69,7 @@ class SetupReaderForm:
                                                                                                        column=0,
                                                                                                        sticky='w')
             entry.grid(row=row, column=1, sticky="ew", ipady=10)
-            if entryLabelText == "Lot ID":
+            if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot()))
             if entryLabelText == "Incubator":
                 entry['state'] = "disabled"

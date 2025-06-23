@@ -1,7 +1,7 @@
 import tkinter as tk
 
-from src.app.buttons.generic_button import GenericButton
-from src.app.buttons.plus_icon_button import PlusIconButton
+from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer

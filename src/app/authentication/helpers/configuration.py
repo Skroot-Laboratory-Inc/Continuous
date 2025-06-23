@@ -13,6 +13,9 @@ class AuthConfiguration:
         else:
             self.authenticationEnabled = DevProperties().authEnabled
 
-    def setAuthConfiguration(self, newSetting: bool):
+    def setConfig(self, newSetting: bool):
         self.authenticationEnabled = newSetting
         setBoolEnvFlag(AuthenticationConstants().authConfiguration, newSetting)
+
+    def getConfig(self):
+        return self.authenticationEnabled

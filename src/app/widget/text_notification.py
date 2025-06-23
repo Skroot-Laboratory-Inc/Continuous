@@ -1,12 +1,12 @@
 import tkinter as tk
 
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 
 
 def createWidget(frame):
     global widget
-    widget = tk.Label(frame, text="", wraplength=600)
+    widget = tk.Label(frame, text="", wraplength=550)
     return widget
 
 

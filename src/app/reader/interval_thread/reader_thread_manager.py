@@ -17,7 +17,7 @@ from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.issue_properties import IssueProperties
 from src.app.reader.reader import Reader
-from src.app.theme.colors import Colors
+from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
 from src.resources.sibcontrol.sibcontrol import SIBException, SIBConnectionError

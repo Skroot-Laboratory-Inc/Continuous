@@ -1,7 +1,7 @@
 import datetime
 import tkinter as tk
 
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget.keyboard import Keyboard
 
 

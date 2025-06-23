@@ -1,6 +1,12 @@
 # Allows the kiosk user to add/lock/unlock users without a password prompt
 kiosk ALL=(ALL) NOPASSWD: /usr/sbin/useradd, /usr/sbin/usermod -L *, /usr/sbin/usermod -U *
 
+# Allows the kiosk user to remove users from groups and add users to kiosk_users
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/gpasswd -d * kiosk_users, /usr/bin/gpasswd -a * kiosk_users
+
+# Allows the kiosk user to remove users from groups and add users to kiosk_users
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/gpasswd -d * kiosk_administrators, /usr/bin/gpasswd -a * kiosk_administrators
+
 # Allows the kiosk user to change password requirements
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/chage
 
@@ -9,9 +15,6 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_check.py
 
 # Allows the kiosk user to run the kiosk_auth_password_reset python file without a password
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/python3 /usr/local/bin/kiosk_auth_password_reset.py
-
-# Allows the kiosk user to update software without the password prompt
-kiosk ALL=(ALL) NOPASSWD: /bin/sh */update_script.sh
 
 # Allows the kiosk user to transfer ownership of files they own without a password verification
 kiosk ALL=(ALL) NOPASSWD: /bin/sh /usr/local/bin/safe_chown.sh * *
@@ -26,7 +29,8 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/chvt 1
 kiosk ALL=(root) NOPASSWD: /bin/mount -o umask=000 /dev/sd*, /bin/umount /media/usb
 
 # Allows the kiosk user to update password requirements.
-kiosk ALL=(root) NOPASSWD: /usr/local/bin/kiosk_update_password_policy.py *
+kiosk ALL=(root) NOPASSWD: /usr/local/bin/kiosk_update_password_rotation.py *
+kiosk ALL=(root) NOPASSWD: /usr/local/bin/kiosk_update_password_requirements.py *
 
 # Allows the kiosk user to export auth audit trails.
 kiosk ALL=(ALL) NOPASSWD: /bin/grep * /var/log/kiosk_auth.log*

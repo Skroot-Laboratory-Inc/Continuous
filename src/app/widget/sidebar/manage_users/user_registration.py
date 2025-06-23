@@ -7,18 +7,17 @@ from src.app.authentication.helpers.exceptions import PasswordMismatchException,
     BadPasswordException
 from src.app.authentication.helpers.functions import createKioskAdmin, createKioskUser, check_password_quality
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.buttons.generic_button import GenericButton
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, createDropdown
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 
 
 class UserRegistration:
-    def __init__(self, rootManager: RootManager, adminUser: str, adminPass: str):
+    def __init__(self, rootManager: RootManager, adminUser: str):
         self.adminUser = adminUser
-        self.adminPass = adminPass
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.config(relief="solid", highlightbackground="black",
@@ -228,7 +227,7 @@ class UserRegistration:
                 )
                 text_notification.setText(f"Error creating user: {self.username.get()}")
                 logging.info(
-                    f"Failed to create user {self.username.get()} by {self.adminUser}. Return code: {returnCode}",
+                    f"Failed to create `{self.username.get()}` by {self.adminUser}. Return code: {returnCode}",
                     extra={"id": "auth"})
         except UserExistsException as e:
             logAuthAction(
@@ -239,7 +238,7 @@ class UserRegistration:
                 extra="User Already Exists",
             )
             text_notification.setText(f"Username already exists: {self.username.get()}")
-            logging.info(f"Failed to create user {self.username.get()} by {self.adminUser}.", extra={"id": "auth"})
+            logging.exception(f"Failed to create `{self.username.get()}` by {self.adminUser}.", extra={"id": "auth"})
             raise e
         except BadPasswordException as e:
             logAuthAction(
@@ -249,10 +248,11 @@ class UserRegistration:
                 authorizer=self.adminUser,
                 extra="Bad Password",
             )
-            text_notification.setText(f"Bad Password")
-            logging.info(f"Failed to create user {self.username.get()} by {self.adminUser}.", extra={"id": "auth"})
+            text_notification.setText("Bad Password")
+            logging.exception(f"Failed to create `{self.username.get()}` by {self.adminUser}.", extra={"id": "auth"})
             raise e
         except Exception as e:
             logAuthAction("User Registration", "Failed", self.username.get(), authorizer=self.adminUser)
             text_notification.setText(f"Error creating user: {self.username.get()}")
+            logging.exception(f"Failed to create `{self.username.get()}` by {self.adminUser}.", extra={"id": "auth"})
             raise

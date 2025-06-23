@@ -5,11 +5,14 @@ from tkinter import ttk
 import fitz
 from PIL import Image, ImageTk
 
-from src.app.theme.colors import Colors
-from src.app.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 
 
 class ShowPdf:
+    """
+    Embeds a PDF into a tkinter frame. By default, trims off 0.8 inches from all sides of the page.
+    """
     img_object_li = []
     tkimg_object_li = []
     open_pdf = None  # Store the currently opened PDF
@@ -22,7 +25,22 @@ class ShowPdf:
             self.tkimg_object_li.clear()
             self.frame.destroy()
 
-    def pdf_view(self, master, width=1200, height=600, pdf_location="", bar=False, load="after", dpi=100):
+    def pdf_view(self, master, width=1200, height=600, pdf_location="", bar=False, load="after", dpi=100,
+                 # New margin parameters
+                 crop_margins=True, crop_left=80, crop_right=80, crop_top=80, crop_bottom=80,
+                 add_padding=False, pad_left=20, pad_right=20, pad_top=20, pad_bottom=20,
+                 page_margin=0):
+        """
+        PDF Viewer with manual margin control
+
+        Parameters:
+        - crop_margins: Whether to crop existing margins from PDF
+        - crop_left/right/top/bottom: Pixels to crop from each side
+        - add_padding: Whether to add custom padding around pages
+        - pad_left/right/top/bottom: Pixels of padding to add
+        - page_margin: Margin between pages
+        """
+
         self.frame = tk.Frame(master, width=width, height=height, bg="white")
         header_frame = tk.Frame(self.frame, bg=Colors().secondaryColor)
         header_frame.pack(side=tk.TOP, fill=tk.X)
@@ -92,6 +110,39 @@ class ShowPdf:
         self.text.bind("<B1-Motion>", on_drag)
         self.text.bind("<ButtonRelease-1>", on_release)
 
+        # Method to process image margins
+        def process_image_margins(img):
+            """Apply cropping and padding to the image"""
+            processed_img = img
+
+            # Step 1: Crop margins if requested
+            if crop_margins:
+                width, height = processed_img.size
+                left = max(0, crop_left)
+                top = max(0, crop_top)
+                right = max(left + 1, width - crop_right)
+                bottom = max(top + 1, height - crop_bottom)
+
+                # Ensure we don't crop more than the image size
+                right = min(right, width)
+                bottom = min(bottom, height)
+
+                if left < right and top < bottom:
+                    processed_img = processed_img.crop((left, top, right, bottom))
+
+            # Step 2: Add padding if requested
+            if add_padding:
+                old_width, old_height = processed_img.size
+                new_width = old_width + pad_left + pad_right
+                new_height = old_height + pad_top + pad_bottom
+
+                # Create new image with padding
+                padded_img = Image.new(processed_img.mode, (new_width, new_height), "white")
+                padded_img.paste(processed_img, (pad_left, pad_top))
+                processed_img = padded_img
+
+            return processed_img
+
         # Method to add media from the PDF
         def add_img():
             percentage_view = 0
@@ -103,8 +154,12 @@ class ShowPdf:
                 pix = page.get_pixmap(dpi=dpi)
                 mode = "RGBA" if pix.alpha else "RGB"
                 img = Image.frombytes(mode, [pix.width, pix.height], pix.samples)
-                self.img_object_li.append(img)
-                self.tkimg_object_li.append(ImageTk.PhotoImage(img))
+
+                # Process margins
+                processed_img = process_image_margins(img)
+
+                self.img_object_li.append(processed_img)
+                self.tkimg_object_li.append(ImageTk.PhotoImage(processed_img))
 
                 if bar and load == "after":
                     percentage_view += 1
@@ -116,24 +171,15 @@ class ShowPdf:
                 loading.pack_forget()
                 self.display_msg.pack_forget()
 
-            # Insert all images with minimal spacing
+            # Insert all images with custom spacing
             for i, im in enumerate(self.tkimg_object_li):
                 self.text.image_create(tk.END, image=im)
 
-                # Only add a very small space between pages, not at the end
+                # Add custom margin between pages
                 if i < len(self.tkimg_object_li) - 1:
-                    # Create a thin separator line instead of a full line break
-                    self.text.insert(tk.END, "\n")
-
-                    # Calculate appropriate line length based on widget width
-                    # Get current width in pixels and convert to approximate characters
-                    widget_width = self.text.winfo_width()
-                    # Use a divisor that approximates the width of the "─" character
-                    # Typical char width is around 7-10 pixels depending on font
-                    char_count = max(50, widget_width // 8)  # Minimum 50 chars, adjust divisor as needed
-
-                    self.text.insert(tk.END, "─" * char_count)  # Dynamic horizontal line
-                    self.text.insert(tk.END, "\n")
+                    # Add specified number of newlines for page margin
+                    margin_lines = max(1, page_margin // 10)  # Convert pixels to approximate lines
+                    self.text.insert(tk.END, "\n" * margin_lines)
 
             self.text.configure(state="disabled")
 
