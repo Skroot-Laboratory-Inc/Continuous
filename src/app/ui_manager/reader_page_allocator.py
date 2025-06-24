@@ -1,24 +1,26 @@
 import threading
 import tkinter as tk
 
-from src.app.authentication.authentication_popup import AuthenticationPopup
-from src.app.ui_manager.buttons.generic_button import GenericButton
-from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
+from src.app.authentication.helpers.decorators import requireUser
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.gui_properties import GuiProperties
-from src.app.ui_manager.theme.colors import Colors
-from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
 class ReaderPageAllocator:
-    def __init__(self, rootManager: RootManager, readerPage: tk.Frame, readerNumber, connectFn, calibrateFn, startFn, stopFn):
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber, connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
-        self.RootManager = rootManager
+        self.rootManager = rootManager
+        self.sessionManager = sessionManager
         self.readerNumber = readerNumber
         self.calibrateFn = calibrateFn
         self.startFn = startFn
@@ -79,24 +81,23 @@ class ReaderPageAllocator:
             readerFrame.startButton.enable()
             readerFrame.showPlotFrame()
 
+    @requireUser
     def startReader(self, readerNumber):
-        auth = AuthenticationPopup(self.RootManager)
-        if auth.isAuthenticated:
-            self.startFn(readerNumber, auth.getUser())
-            readerFrame = self.getReaderFrame()
-            readerFrame.startButton.disable()
-            readerFrame.stopButton.enable()
-            readerFrame.timer.resetTimer()
+        self.startFn(readerNumber, self.sessionManager.user.username)
+        readerFrame = self.getReaderFrame()
+        readerFrame.startButton.disable()
+        readerFrame.stopButton.enable()
+        readerFrame.timer.resetTimer()
 
+    @requireUser
     def stopReader(self, readerNumber):
-        if AuthenticationPopup(self.RootManager).isAuthenticated:
-            stopReaderThread = threading.Thread(target=self.stopFn, args=(readerNumber,), daemon=True)
-            stopReaderThread.start()
+        stopReaderThread = threading.Thread(target=self.stopFn, args=(readerNumber,), daemon=True)
+        stopReaderThread.start()
 
+    @requireUser
     def calibrateReader(self, readerNumber):
-        if AuthenticationPopup(self.RootManager).isAuthenticated:
-            calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
-            calibrateReaderThread.start()
+        calibrateReaderThread = threading.Thread(target=self.calibrateFn, args=(readerNumber,), daemon=True)
+        calibrateReaderThread.start()
 
     def getIndicator(self):
         return self.getReaderFrame().indicatorCanvas, self.getReaderFrame().indicator
@@ -122,14 +123,14 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        kpiForm = KpiForm(kpiFrame, self.RootManager)
+        kpiForm = KpiForm(kpiFrame, self.rootManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        setupReaderForm = SetupReaderForm(self.RootManager, SetupReaderFormInput(), setupFrame, submitFn)
+        setupReaderForm = SetupReaderForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn)
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

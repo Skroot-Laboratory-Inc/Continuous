@@ -3,22 +3,17 @@ import os
 
 class ReaderFileManager:
     def __init__(self, globalSavePath, readerNumber):
-        self.globalSavePath = globalSavePath
-        self.readerSavePath = rf'{globalSavePath}/Reader {readerNumber}'
+        self.readerSavePath = globalSavePath
         self.analyzed = rf"{self.readerSavePath}/Analyzed.csv"
         self.smoothAnalyzed = rf"{self.readerSavePath}/smoothAnalyzed.csv"
         self.calibrationLocalLocation = f'{self.readerSavePath}/Calibration.csv'
         self.calibrationGlobalLocation = f'{getDesktopLocation()}/Backend/Calibration/{readerNumber}/Calibration.csv'
-        self.summaryPdf = f'{self.globalSavePath}/Summary.pdf'
-        self.readerPlotJpg = f'{self.globalSavePath}/Reader {readerNumber}.jpg'
+        self.readerPlotJpg = f'{self.readerSavePath}/Result Figure.jpg'
         self.accelerationCsv = f'{self.readerSavePath}/Acceleration.csv'
         self.scanNumber = 100001
 
     def getReaderSavePath(self):
         return self.readerSavePath
-
-    def getGlobalSavePath(self):
-        return self.globalSavePath
 
     def getAnalyzed(self):
         return self.analyzed
@@ -32,14 +27,8 @@ class ReaderFileManager:
     def getCalibrationGlobalLocation(self):
         return self.calibrationGlobalLocation
 
-    def getSummaryPdf(self):
-        return self.summaryPdf
-
     def getReaderPlotJpg(self):
         return self.readerPlotJpg
-
-    def getAccelerationCsv(self):
-        return self.accelerationCsv
 
     def getCurrentScanNumber(self):
         return self.scanNumber

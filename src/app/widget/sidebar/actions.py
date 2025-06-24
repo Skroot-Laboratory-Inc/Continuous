@@ -1,3 +1,4 @@
+import glob
 import logging
 import tempfile
 from datetime import datetime
@@ -11,11 +12,13 @@ from src.app.authentication.helpers.logging import logAuthAction
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.service.software_update import SoftwareUpdate
 from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException, UserConfirmationException
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.helper_functions import getUsbDrive, unmountUSBDrive
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
-from src.app.widget.sidebar.helpers.functions import createAuditTrail, createUserInfoPdf, zipTempDir
+from src.app.widget.sidebar.helpers.functions import createAuditTrail, createUserInfoPdf, zipTempDir, copyRunFile
+from src.app.widget.sidebar.helpers.run_exporter import RunExporter
 from src.app.widget.sidebar.manage_users.modify_user_group import ModifyUserGroup
 from src.app.widget.sidebar.manage_users.password_reset_screen import PasswordResetScreen
 from src.app.widget.sidebar.manage_users.restore_user_screen import RestoreUserScreen
@@ -116,6 +119,13 @@ class SideBarActions:
             unmountUSBDrive()
 
     @requireUser
+    def exportRun(self):
+        if AuthConfiguration().getConfig():
+            RunExporter(self.rootManager, self.sessionManager.user.username)
+        else:
+            RunExporter(self.rootManager)
+
+    @requireUser
     def exportAll(self):
         username = self.sessionManager.user.username
         try:
@@ -124,6 +134,10 @@ class SideBarActions:
                 logAuthAction("Export All", "Initiated", username)
                 createUserInfoPdf(username, outputDir)
                 createAuditTrail(username, outputDir, datetime.today().date() - relativedelta(years=1), datetime.today().date())
+                runDirectories = glob.glob(f"{CommonFileManager().getDataSavePath()}/*")
+                for directory in runDirectories:
+                    runId = directory.split("/")[-1]
+                    copyRunFile(username, outputDir, runId)
                 zipTempDir(
                     outputDir,
                     f"{driveLocation}/System Snapshot_{datetimeToMillis(datetime.now())}.zip",

@@ -1,5 +1,6 @@
 import logging
 
+from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.reader.interval_thread.reader_thread_manager import ReaderThreadManager
 from src.app.reader.reader import Reader
@@ -12,9 +13,10 @@ from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
 class ReaderPageThreadManager:
-    def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager):
+    def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager, sessionManager: SessionManager):
         self.readerAllocator = ReaderPageAllocator(
             rootManager,
+            sessionManager,
             readerPage,
             startingReaderNumber,
             self.connectReader,
@@ -25,6 +27,7 @@ class ReaderPageThreadManager:
         self.readerThreads = {}
         self.Readers = {}
         self.RootManager = rootManager
+        self.sessionManager = sessionManager
         self.SibFinder = SibFinder()
 
     def connectReader(self, readerNumber):

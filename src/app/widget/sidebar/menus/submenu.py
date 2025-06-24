@@ -20,6 +20,7 @@ class SubMenu(BaseMenu):
             "Export Data": [
                 MenuItem("Export Audit Trail", lambda: self.exportAuditTrail()),
                 MenuItem("Export Users", lambda: self.exportUserInfo()),
+                MenuItem("Export Run", lambda: self.exportRun()),
                 MenuItem("Export All", lambda: self.exportAll()),
             ],
             "Manage Users": [

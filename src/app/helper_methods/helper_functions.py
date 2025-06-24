@@ -37,15 +37,6 @@ def restartPc():
         subprocess.Popen(['systemctl', "reboot", '-i'], stdin=subprocess.PIPE)
 
 
-def createScanFile(outputFileName: str, sweepData: SweepData, user: str):
-    volts = convertListToPercent(sweepData.getMagnitude())
-    with open(outputFileName, 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['Frequency (MHz)', SibProperties().yAxisLabel])
-        writer.writerows(zip(sweepData.getFrequency(), volts))
-    setFileOwner(outputFileName, user)
-
-
 def getUsbDrive():
     """Find USB drives attached and mounts them to a temporary drive location. """
     if platform.system() == "Linux":

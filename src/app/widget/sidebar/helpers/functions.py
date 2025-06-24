@@ -1,3 +1,4 @@
+import glob
 import logging
 import os
 import shutil
@@ -7,6 +8,7 @@ from src.app.authentication.helpers.constants import AuthenticationConstants
 from src.app.authentication.helpers.exceptions import AideLogsNotFound, AuthLogsNotFound
 from src.app.authentication.helpers.functions import getAdmins, getUsers
 from src.app.authentication.helpers.logging import extractAuthLogs, extractAideLogs, logAuthAction
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
@@ -86,4 +88,15 @@ def createAideLogs(driveLocation: str, user: str):
 
 def zipTempDir(tempDir, outputZipFile):
     shutil.make_archive(outputZipFile.replace('.zip', ''), 'zip', tempDir)
+
+
+def copyRunFile(user: str, driveLocation: str, runId: str):
+    if not os.path.exists(f"{driveLocation}/Run Results"):
+        os.mkdir(f"{driveLocation}/Run Results")
+    runFiles = glob.glob(f"{CommonFileManager().getDataSavePath()}/*_{runId}/smoothAnalyzed.csv")
+    for file in runFiles:
+        shutil.copyfile(
+            file,
+            f"{driveLocation}/{os.path.basename(os.path.dirname(file))}.csv",
+        )
 

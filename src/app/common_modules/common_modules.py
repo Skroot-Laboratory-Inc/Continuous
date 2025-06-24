@@ -47,5 +47,6 @@ class CommonModules:
                 readerPage,
                 startingReaderNumber,
                 self.RootManager,
+                self.sessionManager,
             )
             self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))
