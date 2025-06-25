@@ -4,7 +4,7 @@ sudo apt install dos2unix
 sudo rm /home/kiosk/.local/DesktopApp/src -R
 sudo mkdir /home/kiosk/.local/DesktopApp
 sudo cp ../../../src /home/kiosk/.local/DesktopApp/ -R
-chmod -R 711 /home/kiosk/.local/DesktopApp
+sudo chmod -R 755 /home/kiosk/.local/DesktopApp
 sudo chown -R root:root /home/kiosk/.local/DesktopApp
 sudo dos2unix ./apt_requirements.txt
 sudo dos2unix ./install-script.sh

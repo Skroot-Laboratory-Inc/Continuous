@@ -1,15 +1,12 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from PIL import Image, ImageTk
-
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.frame_manager import FrameManager
 from src.app.common_modules.service.dev_software_update import DevSoftwareUpdate
 from src.app.common_modules.service.software_update import SoftwareUpdate
-from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
-from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.buttons.help_button import HelpButton
 from src.app.ui_manager.buttons.power_button import PowerButton
 from src.app.ui_manager.buttons.profile_button import ProfileButton
@@ -70,12 +67,10 @@ class SetupBaseUi:
         style.theme_use('clam')
         self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
 
-        image = Image.open(CommonFileManager().getProfileIcon())
-        resizedImage = image.resize((25, 25), Image.Resampling.LANCZOS)
-        self.profileIcon = ImageTk.PhotoImage(resizedImage)
         style.configure(
             'Default.TButton',
             font=FontTheme().buttons,
+            padding=(20, 20),  # (horizontal, vertical) padding
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)
         style.configure(
@@ -87,7 +82,7 @@ class SetupBaseUi:
             background=self.Colors.primaryColor)
         style.configure(
             'Help.TButton',
-            font=('Helvetica', 9),
+            font=FontTheme().helpButton,
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)
         style.configure(
@@ -95,7 +90,7 @@ class SetupBaseUi:
             focuscolor="none",
             highlightthickness=0,
             borderwidth=0,
-            font=('Helvetica', 16),
+            font=FontTheme().profileButton,
             foreground=self.Colors.secondaryColor,
             disabledforeground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)

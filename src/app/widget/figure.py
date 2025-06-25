@@ -1,5 +1,6 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib.ticker import MaxNLocator
 from matplotlib.widgets import Button
 from reactivex.subject import BehaviorSubject
 import tkinter as tk
@@ -27,7 +28,9 @@ class FigureCanvas:
         self.reachedEquilibration = False
 
     def createToggle(self):
-        button_ax = self.frequencyFigure.add_axes([0.79, 0.89, 0.2, 0.1])
+        button_ax = self.frequencyFigure.add_axes([0.15, 0.80, 0.2, 0.1])
+        button_ax.set_zorder(1000)
+        button_ax.patch.set_alpha(0.5)
         toggle_button = Button(button_ax, 'Toggle', color=Colors().primaryColor, hovercolor=Colors().primaryColor)
         toggle_button.on_clicked(self.toggle_view)
         toggle_button.label.set_color(Colors().secondaryColor)
@@ -46,6 +49,8 @@ class FigureCanvas:
         self.currentPlot.set_xlabel(self.xAxisLabel, fontsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='minor', labelsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='major', labelsize=self.labelSize)
+        self.currentPlot.xaxis.set_major_locator(MaxNLocator(nbins=6, prune=None))
+        self.currentPlot.yaxis.set_major_locator(MaxNLocator(nbins=6, prune=None))
 
     def drawCanvas(self, frame):
         if self.frequencyCanvas is None:

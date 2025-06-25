@@ -6,7 +6,7 @@ from src.app.ui_manager.theme.font_theme import FontTheme
 
 def createWidget(frame):
     global widget
-    widget = tk.Label(frame, text="", wraplength=550)
+    widget = tk.Label(frame, text="", wraplength=900)
     return widget
 
 

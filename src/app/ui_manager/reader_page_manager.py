@@ -1,7 +1,7 @@
 import logging
 import tkinter as tk
 
-from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.colors import Colors
 
 

@@ -4,20 +4,22 @@ import tkinter as tk
 from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
-from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
 class ReaderPageAllocator:
-    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber, connectFn, calibrateFn, startFn, stopFn):
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber,
+                 connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
         self.rootManager = rootManager
         self.sessionManager = sessionManager
@@ -41,7 +43,8 @@ class ReaderPageAllocator:
         readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
         readerFrame.pack(fill=tk.BOTH, expand=True)
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
-        setupReaderForm, setupFrame = self.createSetupFrame(readerFrame, lambda: self.connectNewReader(self.readerNumber))
+        setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
+                                                            lambda: self.connectNewReader(self.readerNumber))
         header = self.createHeader(readerFrame, self.readerNumber, setupReaderForm.lotIdEntry.get())
         mainPlottingFrame, plottingFrame, kpiForm = self.createPlotFrame(readerFrame)
         thisReaderFrame = ReaderFrame(
@@ -83,7 +86,10 @@ class ReaderPageAllocator:
 
     @requireUser
     def startReader(self, readerNumber):
-        self.startFn(readerNumber, self.sessionManager.user.username)
+        if self.sessionManager.user:
+            self.startFn(readerNumber, self.sessionManager.user.username)
+        else:
+            self.startFn(readerNumber, "")
         readerFrame = self.getReaderFrame()
         readerFrame.startButton.disable()
         readerFrame.stopButton.enable()
@@ -123,7 +129,7 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        kpiForm = KpiForm(kpiFrame, self.rootManager)
+        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm
@@ -144,15 +150,22 @@ class ReaderPageAllocator:
 
     @staticmethod
     def createIndicator(readerFrame, defaultIndicatorColor):
+        indicatorSize = ImageTheme().indicatorSize
+        indicatorBorder = ImageTheme().indicatorBorder
         indicatorCanvas = tk.Canvas(
             readerFrame,
-            height=34,
-            width=34,
+            height=indicatorSize * 2,
+            width=indicatorSize * 2,
             bg="white",
             highlightbackground="white",
             bd=0)
         indicator = indicatorCanvas.create_circle(
-                x=17, y=17, r=15, fill=defaultIndicatorColor, outline="black", width=2)
+            x=indicatorSize,
+            y=indicatorSize,
+            r=indicatorSize - indicatorBorder,
+            fill=defaultIndicatorColor,
+            outline="black",
+            width=indicatorBorder)
         indicatorCanvas.grid(row=0, column=2, sticky='ne')
         return indicatorCanvas, indicator
 
@@ -164,7 +177,8 @@ class ReaderPageAllocator:
 
     @staticmethod
     def createHeader(readerFrame, readerNumber, lotId):
-        header = tk.Label(readerFrame, text=f"Reader {readerNumber}: {lotId}", font=FontTheme().header3, background=Colors().secondaryColor, foreground=Colors().primaryColor)
+        header = tk.Label(readerFrame, text=f"Reader {readerNumber}: {lotId}", font=FontTheme().header3,
+                          background=Colors().secondaryColor, foreground=Colors().primaryColor)
         header.grid(row=0, column=1, sticky='n')
         return header
 
