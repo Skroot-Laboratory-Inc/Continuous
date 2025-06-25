@@ -8,6 +8,7 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.custom_dropdown import CustomDropdownMenu
 
 
@@ -17,7 +18,7 @@ class ProfileButton:
         self.sessionManager = sessionManager
         self.rootManager = rootManager
         image = Image.open(CommonFileManager().getProfileIcon())
-        resizedImage = image.resize((25, 25), Image.Resampling.LANCZOS)
+        resizedImage = image.resize(ImageTheme().profileSize, Image.Resampling.LANCZOS)
         self.profileIcon = ImageTk.PhotoImage(resizedImage)
         self.button = ttk.Button(
             master,

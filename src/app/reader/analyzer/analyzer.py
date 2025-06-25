@@ -104,8 +104,11 @@ class Analyzer(AnalyzerInterface):
             rowData = []
             rowHeaders.append('Timestamp')
             rowData.append(timestamps)
+            rowData.append(self.ResultSet.getFilenames())
+            rowHeaders.append('Time (hours)')
+            rowData.append(self.ResultSet.getDenoiseTimeSmooth())
             rowHeaders.append('Skroot Growth Index (SGI)')
-            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
+            rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth()))
             rowHeaders.append('Derivative')
             rowData.append(self.ResultSet.getDerivativeMean())
             rowHeaders.append('Estimated Harvest Time (hrs)')

@@ -6,7 +6,7 @@ from src.app.common_modules.initialization.setup_base_ui import SetupBaseUi
 from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
-from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import logger

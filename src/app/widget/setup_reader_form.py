@@ -7,7 +7,7 @@ from typing import Callable
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.helper_methods.ui_helpers import launchKeyboard
+from src.app.helper_methods.ui_helpers import launchKeyboard, createDropdown
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
@@ -34,7 +34,7 @@ class SetupReaderForm:
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=2)
-        self.window.pack(fill=tk.BOTH, expand=True)
+        self.window.pack(fill="x", expand=True)
 
         ''' Normal entries '''
         entriesMap = {}
@@ -147,17 +147,3 @@ class SetupReaderForm:
                     f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"):
                 incrementalNumber += 1
             return f"{baseSavePath}/{date}_{self.lotIdEntry.get()} ({incrementalNumber})"
-
-
-def createDropdown(root, entryVariable, options, addSpace):
-    if addSpace:
-        options = [f"{option.center(65)}" for option in options]
-    scanRateValue = entryVariable.get()
-    optionMenu = tk.OptionMenu(root, entryVariable, *options)
-    dropdownOptions = root.nametowidget(optionMenu.menuname)
-    dropdownOptions.config(font=FontTheme().setupFormText)
-    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False,
-                      font=FontTheme().setupFormText)
-    optionMenu["menu"].config(bg="white")
-    entryVariable.set(scanRateValue)
-    return optionMenu

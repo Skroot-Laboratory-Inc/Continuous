@@ -6,7 +6,6 @@ class GenericButton:
         self.invokeFn = invokeFn
         self.button = ttk.Button(
             master,
-            padding=10,
             text=text,
             style='Default.TButton',
             command=lambda: invokeFn(),

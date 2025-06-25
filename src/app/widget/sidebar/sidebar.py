@@ -16,9 +16,9 @@ class Sidebar:
         self.bodyFrame = bodyFrame
         self.toolbar = toolbar
 
-        self.menuWidth = 266
-        self.submenuWidth = 266
-        self.tertiary_menu_width = 266
+        self.menuWidth = 350
+        self.submenuWidth = 350
+        self.tertiary_menu_width = 350
 
         self.mainMenu = MainMenu(
             parent_frame=self.bodyFrame,

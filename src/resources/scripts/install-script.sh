@@ -11,6 +11,11 @@ sudo dos2unix ../ubuntu_settings/aide_config
 sudo cp ../ubuntu_settings/aide_config /etc/cron.d
 sudo dos2unix ../ubuntu_settings/desktopApp.desktop
 sudo cp ../ubuntu_settings/desktopApp.desktop /home/kiosk/.local/share/applications
+sudo dos2unix ../ubuntu_settings/.xprofile
+sudo cp ../ubuntu_settings/.xprofile /home/kiosk
+sudo dos2unix ../ubuntu_settings/touchscreen-setup.sh
+sudo cp ../ubuntu_settings/touchscreen-setup.sh /home/kiosk
+sudo chmod +x /home/kiosk/touschreen-setup.sh
 sudo dos2unix ../ubuntu_settings/52-usb.rules
 sudo cp ../ubuntu_settings/52-usb.rules /etc/udev/rules.d/52-usb.rules
 sudo dos2unix ../ubuntu_settings/92-usb-input-no-powersave.rules

@@ -9,13 +9,14 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import restartPc
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
 class PowerButton:
     def __init__(self, master, rootManager: RootManager, sessionManager: SessionManager):
         image = Image.open(CommonFileManager().getPowerIcon())
-        resizedImage = image.resize((75, 75), Image.Resampling.LANCZOS)
+        resizedImage = image.resize(ImageTheme().powerSize, Image.Resampling.LANCZOS)
         self.powerIcon = ImageTk.PhotoImage(resizedImage)
         self.rootManager = rootManager
         self.sessionManager = sessionManager

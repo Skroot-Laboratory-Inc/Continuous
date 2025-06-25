@@ -28,10 +28,13 @@ def styleDropdownOption(option):
 
 def createDropdown(root, entryVariable, options, addSpace):
     if addSpace:
-        options = [styleDropdownOption(option) for option in options]
+        options = [f"{option.center(65)}" for option in options]
     scanRateValue = entryVariable.get()
     optionMenu = tk.OptionMenu(root, entryVariable, *options)
-    optionMenu.config(bg="white", highlightthickness=0, indicatoron=False, font=FontTheme().dropdown)
+    dropdownOptions = root.nametowidget(optionMenu.menuname)
+    dropdownOptions.config(font=FontTheme().setupFormText)
+    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False,
+                      font=FontTheme().setupFormText)
     optionMenu["menu"].config(bg="white")
     entryVariable.set(scanRateValue)
     return optionMenu

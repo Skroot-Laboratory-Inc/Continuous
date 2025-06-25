@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from src.app.properties.gui_properties import GuiProperties
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
@@ -65,7 +65,7 @@ class RootManager:
 
     def setWindowSize(self):
         self.root.overrideredirect(True)
-        self.root.geometry(f"800x480+480+0")
+        self.root.geometry(f"1280x720+0+0")
 
     def setProtocol(self, protocol, invokeFn):
         self.root.protocol(protocol, invokeFn)

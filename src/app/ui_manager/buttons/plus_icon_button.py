@@ -5,13 +5,14 @@ from PIL import Image, ImageTk
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.image_theme import ImageTheme
 
 
 class PlusIconButton:
     def __init__(self, master, invokeFn: Callable):
         commonFileManager = CommonFileManager()
         image = Image.open(commonFileManager.getAddIcon())
-        resizedImage = image.resize((175, 175), Image.Resampling.LANCZOS)
+        resizedImage = image.resize(ImageTheme().plusSize, Image.Resampling.LANCZOS)
         self.createIcon = ImageTk.PhotoImage(resizedImage)
         self.invokeFn = invokeFn
 

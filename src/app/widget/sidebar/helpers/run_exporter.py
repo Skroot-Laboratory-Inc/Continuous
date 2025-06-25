@@ -79,7 +79,7 @@ class RunExporter:
             copyRunFile(self.exportedBy, "H:\\", vesselId)
             self.windowRoot.destroy()
         except:
-            text_notification.setText(f"Failed to copy batch log for {vesselId}.")
+            text_notification.setText(f"Failed to copy run data for {vesselId}.")
             logging.exception("Failed to create batch log on drive.", extra={"id": "Batch Log"})
 
     def download(self):
@@ -99,7 +99,7 @@ class RunExporter:
             logging.exception("USB Drive not found.", extra={"id": "Batch Log"})
         except:
             logAuthAction("Experiment Data Export", "Failed", self.exportedBy, extra=runId)
-            text_notification.setText(f"Failed to copy batch log for {runId}.")
+            text_notification.setText(f"Failed to copy run data for {runId}.")
             logging.exception("Failed to create batch log on drive.", extra={"id": "Batch Log"})
         finally:
             unmountUSBDrive()
