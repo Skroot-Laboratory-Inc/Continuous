@@ -14,6 +14,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 
 
@@ -82,7 +83,7 @@ class PasswordRequirementsScreen:
             textvariable=self.lockoutMinutes,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5))
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
         ttk.Label(
             frame,
             text=" minute(s) on lockout.",
@@ -112,7 +113,7 @@ class PasswordRequirementsScreen:
             textvariable=self.lockoutRetries,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5))
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
 
         ttk.Label(
             frame,
@@ -144,7 +145,7 @@ class PasswordRequirementsScreen:
             textvariable=self.minPasswordLength,
             width=8,
         )
-        entry.grid(row=0, column=1, padx=(0, 5))
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
 
         ttk.Label(
             frame,

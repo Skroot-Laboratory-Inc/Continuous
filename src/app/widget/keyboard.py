@@ -19,24 +19,28 @@ class Keyboard:
         screen_height = root.winfo_screenheight()
 
         # Set the keyboard to take up the bottom half of the screen
-        keyboard_height = 3 * screen_height // 4
+        keyboard_height = 7 * screen_height // 8
         self.keyboard_window.geometry(f"{screen_width}x{keyboard_height}+0+{screen_height - keyboard_height}")
         self.keyboard_window.resizable(False, False)
         self.width = screen_width
         self.height = keyboard_height
         self.keyboard_window.withdraw()
 
-        # Key layout - standard QWERTY keyboard
+        # Key layout - standard QWERTY keyboard with special characters row
         self.keys = [
-            # Row 1
             ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "Backspace"],
-            # Row 2
-            ["Caps", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "\\"],
-            # Row 3
-            ["Clear", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Enter"],
-            # Row 4
-            ["Shift", "Z", "X", "C", "V", "B", "N", "M", "."]
+            ["Caps", "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "\\"],
+            ["Clear", "a", "s", "d", "f", "g", "h", "j", "k", "l", "Enter"],
+            ["Shift", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]
         ]
+
+        # Map of shift combinations for special characters
+        self.shift_map = {
+            "!": "1", "@": "2", "#": "3", "$": "4", "%": "5",
+            "^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
+            "-": "_", "=": "+", "[": "{", "]": "}",
+            ",": "<", ".": ">", "/": "?"
+        }
 
         # Special key widths (as multipliers of standard key width)
         self.special_keys = {
@@ -61,9 +65,9 @@ class Keyboard:
         self.key_widgets = {}
 
         # Setup fonts
-        self.regular_font = font.Font(family="Ubuntu", size=10)
-        self.large_font = font.Font(family="Ubuntu", size=12, weight="bold")
-        self.entry_font = font.Font(family="Ubuntu", size=16)
+        self.regular_font = font.Font(family="Ubuntu", size=12)
+        self.large_font = font.Font(family="Ubuntu", size=16, weight="bold")
+        self.entry_font = font.Font(family="Ubuntu", size=20)
 
         # Calculate dimensions for upper and lower sections
         self.upper_half_height = self.height // 8
@@ -74,7 +78,7 @@ class Keyboard:
             self.keyboard_window,
             bg=self.bg_color,
             width=self.width - 100,
-            height=30  # Taller entry field
+            height=60  # Taller entry field
         )
         entry_y_position = (self.upper_half_height - 30) // 2  # Center in upper half
         self.entry_frame.place(x=50, y=entry_y_position)
@@ -90,7 +94,7 @@ class Keyboard:
             )
             self.entry.pack(fill=tk.BOTH, expand=True, side="left")
             self.showPasswordButton = ttk.Button(self.entry_frame, text="Show", command=self.togglePassword,
-                                            style='Entry.TButton')
+                                                 style='Entry.TButton')
             self.showPasswordButton.pack(side="left", padx=10)
         else:
             self.entry = tk.Entry(
@@ -115,6 +119,34 @@ class Keyboard:
 
     def toggle_shift(self):
         self.shift_pressed = not self.shift_pressed
+        self.update_key_visuals()
+
+    def update_key_visuals(self):
+        """Update the visual display of keys based on shift/caps state"""
+        for key in self.key_widgets:
+            if key in ["Backspace", "Enter", "Clear", "Caps", "Shift"]:
+                continue  # Skip special function keys
+
+            label_widget = self.key_widgets[key]['label']
+
+            if key.isalpha():
+                # Handle letter keys
+                if (self.caps_on and not self.shift_pressed) or (self.shift_pressed and not self.caps_on):
+                    label_widget.config(text=key.upper())
+                else:
+                    label_widget.config(text=key.lower())
+            elif key in self.shift_map and self.shift_pressed:
+                # Show special character when shift is pressed
+                label_widget.config(text=self.shift_map[key])
+            elif key in self.shift_map.values() and self.shift_pressed:
+                # Show the special character for number keys
+                for special, number in self.shift_map.items():
+                    if number == key:
+                        label_widget.config(text=special)
+                        break
+            else:
+                # Default display
+                label_widget.config(text=key)
 
     def togglePassword(self):
         if self.entry.cget('show') == "*":
@@ -129,10 +161,11 @@ class Keyboard:
         kb_width = self.width - 40
         kb_height = self.lower_half_height - 20
 
-        # Calculate key dimensions based on available space
+        # Calculate key dimensions based on available space (now 5 rows instead of 4)
+        # Use 16 as the base since the top row has 13 keys but some are wider
         standard_key_width = kb_width // 14  # Divide by approximate number of keys in widest row
-        key_height = kb_height // 5  # 4 rows plus margins
-        key_margin = 4.5
+        key_margin = 3  # Reduced margin to save space
+        key_height = kb_height // 4 - key_margin * 4  # 4 rows plus margins
 
         # Starting position
         base_x, base_y = 5, 5
@@ -142,12 +175,12 @@ class Keyboard:
             x = base_x  # Reset x position for each row
 
             # Adjust row starting positions for staggered layout
-            if row_index == 1:  # Tab row
-                x += standard_key_width * 0.25
-            elif row_index == 2:  # Caps row
-                x += standard_key_width * 0.5
-            elif row_index == 3:  # Left Shift row
-                x += standard_key_width * 0.75
+            if row_index == 2:  # Caps row (was row 1)
+                x += standard_key_width * 0.2  # Reduced offset
+            elif row_index == 3:  # Clear row (was row 2)
+                x += standard_key_width * 0.4  # Reduced offset
+            elif row_index == 4:  # Shift row (was row 3)
+                x += standard_key_width * 0.6  # Reduced offset
 
             y = base_y + row_index * (key_height + key_margin)
 
@@ -204,6 +237,27 @@ class Keyboard:
                 # Move to next key position
                 x += key_width + key_margin
 
+    def get_key_output(self, key):
+        """Determine what character should be output for a given key based on shift/caps state"""
+        # Handle special characters that have shift variants
+        if key in self.shift_map and self.shift_pressed:
+            return self.shift_map[key]
+        elif key in self.shift_map.values() and self.shift_pressed:
+            # Find the special character for this number
+            for special, number in self.shift_map.items():
+                if number == key:
+                    return special
+
+        # Handle letter case
+        if key.isalpha():
+            if (self.caps_on and not self.shift_pressed) or (self.shift_pressed and not self.caps_on):
+                return key.upper()
+            else:
+                return key.lower()
+
+        # For other characters, return as-is
+        return key
+
     def virtual_key_press(self, key):
         # Handle virtual key press (when clicking on keyboard)
         if key == "Backspace":
@@ -225,14 +279,18 @@ class Keyboard:
             else:
                 self.key_widgets["Caps"]['frame'].config(bg=self.normal_key_color)
                 self.key_widgets["Caps"]['label'].config(bg=self.normal_key_color)
+            # Update visuals for all keys when caps changes
+            self.update_key_visuals()
         else:
             # For regular keys, insert the character
-            if (self.caps_on and not self.shift_pressed) or (self.shift_pressed and not self.caps_on):
-                self.entry.insert(tk.INSERT, key)
-            else:
-                self.entry.insert(tk.INSERT, key.lower())
+            output_char = self.get_key_output(key)
+            self.entry.insert(tk.INSERT, output_char)
+
+        # Reset shift after key press (except for Shift and Caps keys)
         if self.shift_pressed and key != "Shift" and key != "Caps":
             self.toggle_shift()
+
+        # Update shift key appearance
         if self.shift_pressed:
             self.key_widgets["Shift"]['frame'].config(bg=self.highlight_color)
             self.key_widgets["Shift"]['label'].config(bg=self.highlight_color)
@@ -287,6 +345,20 @@ class Keyboard:
             key_name = "\\"
         elif key_sym == "Shift_L" or key_sym == "Shift_R":
             key_name = "Shift"
+        elif key_sym == "comma":
+            key_name = ","
+        elif key_sym == "period":
+            key_name = "."
+        elif key_sym == "slash":
+            key_name = "/"
+        elif key_sym == "bracketleft":
+            key_name = "["
+        elif key_sym == "bracketright":
+            key_name = "]"
+        elif key_sym == "minus":
+            key_name = "-"
+        elif key_sym == "equal":
+            key_name = "="
         elif len(key_char) == 1:
             key_name = key_char
 
@@ -321,6 +393,20 @@ class Keyboard:
             key_name = "\\"
         elif key_sym == "Shift_L" or key_sym == "Shift_R":
             key_name = "Shift"
+        elif key_sym == "comma":
+            key_name = ","
+        elif key_sym == "period":
+            key_name = "."
+        elif key_sym == "slash":
+            key_name = "/"
+        elif key_sym == "bracketleft":
+            key_name = "["
+        elif key_sym == "bracketright":
+            key_name = "]"
+        elif key_sym == "minus":
+            key_name = "-"
+        elif key_sym == "equal":
+            key_name = "="
         elif len(key_char) == 1:
             key_name = key_char
 
@@ -328,7 +414,8 @@ class Keyboard:
             self.shift_pressed = False
 
         # Return key to normal state, except Caps Lock if it's on
-        if (key_name in self.key_widgets and key_name != "Caps" or (key_name == "Caps" and not self.caps_on)) and (key_name != "Shift" or (key_name == "Shift" and not self.shift_pressed)):
+        if (key_name in self.key_widgets and key_name != "Caps" or (key_name == "Caps" and not self.caps_on)) and (
+                key_name != "Shift" or (key_name == "Shift" and not self.shift_pressed)):
             key_frame = self.key_widgets[key_name]['frame']
             key_label = self.key_widgets[key_name]['label']
             key_frame.config(bg=self.normal_key_color, relief=tk.RAISED)

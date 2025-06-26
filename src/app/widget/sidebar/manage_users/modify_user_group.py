@@ -11,6 +11,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 
 
@@ -55,7 +56,7 @@ class ModifyUserGroup:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10, sticky="ew")
+        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
         return usernameEntry
 
     def createGroupDropdown(self):

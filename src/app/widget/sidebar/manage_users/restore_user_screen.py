@@ -11,6 +11,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 from src.app.widget.confirmation_popup import ConfirmationPopup
 
@@ -54,7 +55,7 @@ class RestoreUserScreen:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10)
+        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
         return usernameEntry
 
     def createSubmitButton(self):

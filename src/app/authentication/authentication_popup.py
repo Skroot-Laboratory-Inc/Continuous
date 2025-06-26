@@ -14,6 +14,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.manage_users.password_reset_screen import PasswordResetScreen
 
@@ -77,7 +78,7 @@ class AuthenticationPopup:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", textvariable=self.username, font=FontTheme().primary)
         usernameEntry['state'] = tk.DISABLED
-        usernameEntry.grid(row=2, column=1, padx=10, pady=10)
+        usernameEntry.grid(row=2, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
         return usernameEntry
 
     def createPassword(self):
@@ -88,9 +89,9 @@ class AuthenticationPopup:
             background=Colors().secondaryColor).grid(row=3, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, background="white", textvariable=self.password, font=FontTheme().primary)
-        passwordEntry.grid(row=3, column=1, padx=10)
+        passwordEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
 
-        showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword, style='Entry.TButton', padding=5)
+        showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword, style='Entry.TButton')
         showPasswordButton.grid(row=3, column=2)
         return passwordEntry, showPasswordButton
 
