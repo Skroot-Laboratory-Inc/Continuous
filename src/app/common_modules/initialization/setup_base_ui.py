@@ -76,7 +76,7 @@ class SetupBaseUi:
         style.configure(
             'Entry.TButton',
             font=FontTheme().buttons,
-            padding=(0, 0),
+            padding=(15, 15),
             width=5,
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)

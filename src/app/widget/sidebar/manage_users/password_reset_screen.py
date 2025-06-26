@@ -10,6 +10,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 
 
@@ -69,7 +70,7 @@ class PasswordResetScreen:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10)
+        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
         return usernameEntry
 
     def createPassword(self):
@@ -81,7 +82,7 @@ class PasswordResetScreen:
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, justify="center", background="white",
                                   textvariable=self.password, font=FontTheme().primary)
-        passwordEntry.grid(row=4, column=1, padx=10, pady=10)
+        passwordEntry.grid(row=4, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
 
         showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword,
                                         style='Entry.TButton')
@@ -106,7 +107,7 @@ class PasswordResetScreen:
 
         confirmPasswordEntry = ttk.Entry(self.windowRoot, show="*", justify="center", width=25, background="white",
                                          textvariable=self.confirmPassword, font=FontTheme().primary)
-        confirmPasswordEntry.grid(row=6, column=1, padx=10)
+        confirmPasswordEntry.grid(row=6, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
 
         showConfirmPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.toggleConfirmPassword,
                                                style='Entry.TButton')

@@ -13,6 +13,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.helpers.functions import copyRunFile
 
@@ -54,7 +55,7 @@ class RunExporter:
 
         vesselIdEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.runIdVar, font=FontTheme().primary)
-        vesselIdEntry.grid(row=3, column=1, padx=10, pady=10)
+        vesselIdEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
         return vesselIdEntry
 
     def createDownloadButton(self):

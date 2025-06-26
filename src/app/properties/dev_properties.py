@@ -7,7 +7,7 @@ class DevProperties:
     def __init__(self):
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
         self.tryDevMode = True
-        self.authEnabled = False
+        self.authEnabled = True
         self.disableAws = False
         self.enforceScanRate = True
         self.sibShouldError = False
