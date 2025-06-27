@@ -16,7 +16,7 @@ class UseCase(Enum):
 class Version:
     def __init__(self):
         self.majorVersion = 1.2
-        self.minorVersion = 0
+        self.minorVersion = 1
         self.useCase = UseCase.Manufacturing
         self.developmentVersion = DevelopmentVersion.Test
 
