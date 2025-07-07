@@ -11,8 +11,14 @@ class Keyboard:
         self.normal_text_color = "#000000"  # Black
         self.caps_on = False
         self.shift_pressed = False
-        self.keyboard_window = tk.Toplevel(root, background=self.bg_color)
         self.hidePassword = hidePassword
+
+        # Create keyboard window but keep it withdrawn initially
+        self.keyboard_window = tk.Toplevel(root, background=self.bg_color)
+        self.keyboard_window.withdraw()  # Hide immediately
+
+        # Prevent window from showing during any updates
+        self.keyboard_window.overrideredirect(True)
 
         # Get the screen width and height
         screen_width = root.winfo_screenwidth()
@@ -24,7 +30,6 @@ class Keyboard:
         self.keyboard_window.resizable(False, False)
         self.width = screen_width
         self.height = keyboard_height
-        self.keyboard_window.withdraw()
 
         # Key layout - standard QWERTY keyboard with special characters row
         self.keys = [
@@ -69,19 +74,27 @@ class Keyboard:
         self.large_font = font.Font(family="Ubuntu", size=16, weight="bold")
         self.entry_font = font.Font(family="Ubuntu", size=20)
 
-        # Calculate dimensions for upper and lower sections
-        self.upper_half_height = self.height // 8
-        self.lower_half_height = 7 * self.height // 8
+        # Initialize the keyboard layout
+        self._create_keyboard_layout()
 
-        # Create the text entry widget
+        # Bind events
+        self.keyboard_window.bind("<KeyPress>", self.highlight_key_pressed)
+        self.keyboard_window.bind("<KeyRelease>", self.physical_key_release)
+
+    def _create_keyboard_layout(self):
+        """Create the complete keyboard layout while window is hidden"""
+        # Use full window space - entry gets proportional space at top
+        entry_height = 80  # Fixed height for entry
+        entry_margin = 20
+
+        # Create the text entry widget to fill width with margins
         self.entry_frame = tk.Frame(
             self.keyboard_window,
             bg=self.bg_color,
-            width=self.width - 100,
-            height=60  # Taller entry field
+            width=self.width - (entry_margin * 2),
+            height=entry_height
         )
-        entry_y_position = (self.upper_half_height - 30) // 2  # Center in upper half
-        self.entry_frame.place(x=50, y=entry_y_position)
+        self.entry_frame.place(x=entry_margin, y=entry_margin)
         self.entry_frame.pack_propagate(False)
 
         if self.hidePassword:
@@ -95,7 +108,7 @@ class Keyboard:
             self.entry.pack(fill=tk.BOTH, expand=True, side="left")
             self.showPasswordButton = ttk.Button(self.entry_frame, text="Show", command=self.togglePassword,
                                                  style='Entry.TButton')
-            self.showPasswordButton.pack(side="left", padx=10)
+            self.showPasswordButton.pack(side="left", padx=10, fill=tk.Y)
         else:
             self.entry = tk.Entry(
                 self.entry_frame,
@@ -105,17 +118,121 @@ class Keyboard:
             )
             self.entry.pack(fill=tk.BOTH, expand=True, side="left")
 
-        # Create keyboard frame
+        # Create keyboard frame - use remaining space below entry
+        keyboard_margin = 20
+        keyboard_y = entry_margin + entry_height + entry_margin  # Below entry with margin
+        keyboard_width = self.width - (keyboard_margin * 2)
+        keyboard_height = self.height - keyboard_y - keyboard_margin  # Fill remaining space
+
         self.keyboard_frame = tk.Frame(
             self.keyboard_window,
             bg=self.bg_color,
-            width=self.width - 40,
-            height=self.lower_half_height - 20
+            width=keyboard_width,
+            height=keyboard_height
         )
-        self.keyboard_frame.place(x=20, y=self.upper_half_height + 10)
-        self.draw_keyboard()
-        self.keyboard_window.bind("<KeyPress>", self.highlight_key_pressed)
-        self.keyboard_window.bind("<KeyRelease>", self.physical_key_release)
+        self.keyboard_frame.place(x=keyboard_margin, y=keyboard_y)
+
+        # Store keyboard dimensions for use in key creation
+        self.keyboard_width = keyboard_width
+        self.keyboard_height = keyboard_height
+
+        # Create all keyboard keys
+        self._create_all_keys()
+
+    def _create_all_keys(self):
+        """Create all keyboard keys at once with performance optimizations"""
+        # Use the stored keyboard dimensions
+        kb_width = self.keyboard_width
+        kb_height = self.keyboard_height
+
+        # Calculate key dimensions to fill available space
+        key_margin = 5
+
+        # Calculate the total width units for each row (accounting for special key widths)
+        row_widths = []
+        for row in self.keys:
+            total_width_units = sum(self.special_keys.get(key, 1) for key in row)
+            row_widths.append(total_width_units)
+
+        # Use the widest row to determine base key width
+        max_width_units = max(row_widths)
+        available_width = kb_width - (key_margin * 2)  # Account for margins
+
+        # Calculate standard key width to fill available space
+        total_margin_space = key_margin * (len(self.keys[0]) - 1)  # Approximate
+        standard_key_width = (available_width - total_margin_space) // max_width_units
+
+        # Calculate key height to fill available vertical space
+        num_rows = len(self.keys)
+        available_height = kb_height - (key_margin * 2)  # Account for top/bottom margins
+        total_vertical_margins = key_margin * (num_rows - 1)  # Margins between rows
+        key_height = (available_height - total_vertical_margins) // num_rows
+
+        # Starting position with margins
+        base_x, base_y = key_margin, key_margin
+
+        # Collect widgets to place at the end for better performance
+        widgets_to_place = []
+
+        for row_index, row in enumerate(self.keys):
+            # Calculate total width units for this row
+            row_width_units = sum(self.special_keys.get(key, 1) for key in row)
+
+            # Calculate spacing to center this row
+            total_row_width = row_width_units * standard_key_width + (len(row) - 1) * key_margin
+            row_start_x = base_x + (available_width - total_row_width) // 2
+
+            x = row_start_x
+            y = base_y + row_index * (key_height + key_margin)
+
+            for key in row:
+                # Get key properties
+                width_multiplier = self.special_keys.get(key, 1)
+                key_width = int(standard_key_width * width_multiplier)
+                key_color = self.special_keys_color.get(key, self.normal_key_color)
+                font_color = self.special_keys_font_color.get(key, self.normal_text_color)
+
+                # Choose font based on key length
+                key_font = self.regular_font if len(key) > 1 else self.large_font
+
+                # Create single button widget instead of frame+label
+                key_button = tk.Button(
+                    self.keyboard_frame,
+                    text=key,
+                    width=key_width//10,  # Button width is in characters
+                    height=key_height//25,  # Button height is in text lines
+                    bg=key_color,
+                    fg=font_color,
+                    font=key_font,
+                    relief=tk.RAISED,
+                    bd=2,
+                    activebackground=self.highlight_color,
+                    command=lambda k=key: self.virtual_key_press(k)
+                )
+
+                # Add to placement queue instead of placing immediately
+                widgets_to_place.append((key_button, x, y, key_width, key_height))
+
+                # Store widget reference
+                self.key_widgets[key] = key_button
+
+                # Move to next key position
+                x += key_width + key_margin
+
+        # Place all widgets at once for better performance
+        for button, x, y, width, height in widgets_to_place:
+            button.place(x=x, y=y, width=width, height=height)
+
+    def show_keyboard(self):
+        """Show the keyboard after it's fully loaded"""
+        # Ensure all layout is complete
+        self.keyboard_window.update_idletasks()
+
+        # Restore normal window behavior and show
+        self.keyboard_window.overrideredirect(False)
+        self.keyboard_window.deiconify()
+        self.keyboard_window.focus_set()
+        self.entry.focus_set()
 
     def toggle_shift(self):
         self.shift_pressed = not self.shift_pressed
@@ -123,30 +240,37 @@ class Keyboard:
 
     def update_key_visuals(self):
         """Update the visual display of keys based on shift/caps state"""
+        # Batch update to minimize redraws
+        updates = []
+
         for key in self.key_widgets:
             if key in ["Backspace", "Enter", "Clear", "Caps", "Shift"]:
                 continue  # Skip special function keys
 
-            label_widget = self.key_widgets[key]['label']
+            button = self.key_widgets[key]
+            new_text = key  # default
 
             if key.isalpha():
                 # Handle letter keys
                 if (self.caps_on and not self.shift_pressed) or (self.shift_pressed and not self.caps_on):
-                    label_widget.config(text=key.upper())
+                    new_text = key.upper()
                 else:
-                    label_widget.config(text=key.lower())
+                    new_text = key.lower()
             elif key in self.shift_map and self.shift_pressed:
                 # Show special character when shift is pressed
-                label_widget.config(text=self.shift_map[key])
+                new_text = self.shift_map[key]
             elif key in self.shift_map.values() and self.shift_pressed:
                 # Show the special character for number keys
                 for special, number in self.shift_map.items():
                     if number == key:
-                        label_widget.config(text=special)
+                        new_text = special
                         break
-            else:
-                # Default display
-                label_widget.config(text=key)
+
+            updates.append((button, new_text))
+
+        # Apply all updates at once
+        for button, text in updates:
+            button.config(text=text)
 
     def togglePassword(self):
         if self.entry.cget('show') == "*":
@@ -155,87 +279,6 @@ class Keyboard:
         else:
             self.entry.config(show="*")
             self.showPasswordButton.config(text="Show")
-
-    def draw_keyboard(self):
-        # Get keyboard frame dimensions
-        kb_width = self.width - 40
-        kb_height = self.lower_half_height - 20
-
-        # Calculate key dimensions based on available space (now 5 rows instead of 4)
-        # Use 16 as the base since the top row has 13 keys but some are wider
-        standard_key_width = kb_width // 14  # Divide by approximate number of keys in widest row
-        key_margin = 3  # Reduced margin to save space
-        key_height = kb_height // 4 - key_margin * 4  # 4 rows plus margins
-
-        # Starting position
-        base_x, base_y = 5, 5
-
-        # Draw rows of keys
-        for row_index, row in enumerate(self.keys):
-            x = base_x  # Reset x position for each row
-
-            # Adjust row starting positions for staggered layout
-            if row_index == 2:  # Caps row (was row 1)
-                x += standard_key_width * 0.2  # Reduced offset
-            elif row_index == 3:  # Clear row (was row 2)
-                x += standard_key_width * 0.4  # Reduced offset
-            elif row_index == 4:  # Shift row (was row 3)
-                x += standard_key_width * 0.6  # Reduced offset
-
-            y = base_y + row_index * (key_height + key_margin)
-
-            for key in row:
-                # Get key width
-                width_multiplier = self.special_keys.get(key, 1)
-                key_width = int(standard_key_width * width_multiplier)
-                key_color = self.special_keys_color.get(key, self.normal_key_color)
-                font_color = self.special_keys_font_color.get(key, self.normal_text_color)
-                # Create key frame with 3D effect
-                key_frame = tk.Frame(
-                    self.keyboard_frame,
-                    width=key_width,
-                    height=key_height,
-                    bg=key_color,
-                    relief=tk.RAISED,
-                    bd=2
-                )
-                key_frame.place(x=x, y=y)
-
-                # Keep key frame from resizing
-                key_frame.pack_propagate(False)
-
-                # Add key label
-                if len(key) > 1:  # Special key
-                    key_label = tk.Label(
-                        key_frame,
-                        text=key,
-                        bg=key_color,
-                        fg=font_color,
-                        font=self.regular_font
-                    )
-                else:  # Regular key
-                    key_label = tk.Label(
-                        key_frame,
-                        text=key,
-                        bg=key_color,
-                        fg=font_color,
-                        font=self.large_font
-                    )
-
-                key_label.pack(expand=True)
-
-                # Bind click events to virtual key press
-                key_frame.bind("<Button-1>", lambda e, k=key: self.virtual_key_press(k))
-                key_label.bind("<Button-1>", lambda e, k=key: self.virtual_key_press(k))
-
-                # Store reference to key widgets
-                self.key_widgets[key] = {
-                    'frame': key_frame,
-                    'label': key_label
-                }
-
-                # Move to next key position
-                x += key_width + key_margin
 
     def get_key_output(self, key):
         """Determine what character should be output for a given key based on shift/caps state"""
@@ -273,12 +316,11 @@ class Keyboard:
         elif key == "Caps":
             self.caps_on = not self.caps_on
             # Highlight Caps key if on
+            caps_button = self.key_widgets["Caps"]
             if self.caps_on:
-                self.key_widgets["Caps"]['frame'].config(bg=self.highlight_color)
-                self.key_widgets["Caps"]['label'].config(bg=self.highlight_color)
+                caps_button.config(bg=self.highlight_color)
             else:
-                self.key_widgets["Caps"]['frame'].config(bg=self.normal_key_color)
-                self.key_widgets["Caps"]['label'].config(bg=self.normal_key_color)
+                caps_button.config(bg=self.normal_key_color)
             # Update visuals for all keys when caps changes
             self.update_key_visuals()
         else:
@@ -291,41 +333,45 @@ class Keyboard:
             self.toggle_shift()
 
         # Update shift key appearance
+        shift_button = self.key_widgets["Shift"]
         if self.shift_pressed:
-            self.key_widgets["Shift"]['frame'].config(bg=self.highlight_color)
-            self.key_widgets["Shift"]['label'].config(bg=self.highlight_color)
+            shift_button.config(bg=self.highlight_color)
         else:
-            self.key_widgets["Shift"]['frame'].config(bg=self.normal_key_color)
-            self.key_widgets["Shift"]['label'].config(bg=self.normal_key_color)
+            shift_button.config(bg=self.normal_key_color)
 
         # Flash the key to show it's been pressed
-        if key in self.key_widgets:
-            key_frame = self.key_widgets[key]['frame']
-            key_label = self.key_widgets[key]['label']
+        self.flash_key(key)
 
-            # Skip if it's the Caps key and it's already highlighted
-            if key == "Caps" and self.caps_on:
-                return
+    def flash_key(self, key):
+        """Simplified key flash animation"""
+        if key not in self.key_widgets:
+            return
 
-            # Highlight the key
-            original_bg = key_frame.cget("bg")
-            key_frame.config(bg=self.highlight_color, relief=tk.SUNKEN)
-            key_label.config(bg=self.highlight_color)
+        button = self.key_widgets[key]
 
-            # Schedule return to normal state after a delay
-            if key != "Caps" or not self.caps_on and key != "Shift" or not self.shift_pressed:
-                self.keyboard_window.after(100, lambda: self.restore_key(key, original_bg))
-
-    def restore_key(self, key, original_bg):
-        # Skip if it's the Caps key and it's toggled on
+        # Skip if it's the Caps key and it's already highlighted
         if key == "Caps" and self.caps_on:
             return
 
+        # Store original color
+        original_bg = button.cget("bg")
+
+        # Highlight the key
+        button.config(bg=self.highlight_color, relief=tk.SUNKEN)
+
+        # Schedule return to normal state after a delay
+        if not ((key == "Caps" and self.caps_on) or (key == "Shift" and self.shift_pressed)):
+            self.keyboard_window.after(100, lambda: self.restore_key(key, original_bg))
+
+    def restore_key(self, key, original_bg):
+        """Restore key to original appearance"""
+        # Skip if it's the Caps key and it's toggled on, or Shift and it's pressed
+        if (key == "Caps" and self.caps_on) or (key == "Shift" and self.shift_pressed):
+            return
+
         if key in self.key_widgets:
-            key_frame = self.key_widgets[key]['frame']
-            key_label = self.key_widgets[key]['label']
-            key_frame.config(bg=original_bg, relief=tk.RAISED)
-            key_label.config(bg=original_bg)
+            button = self.key_widgets[key]
+            button.config(bg=original_bg, relief=tk.RAISED)
 
     def highlight_key_pressed(self, event):
         # Map key events to our key names
@@ -364,10 +410,8 @@ class Keyboard:
 
         # Highlight the pressed key
         if key_name in self.key_widgets:
-            key_frame = self.key_widgets[key_name]['frame']
-            key_label = self.key_widgets[key_name]['label']
-            key_frame.config(bg=self.highlight_color, relief=tk.SUNKEN)
-            key_label.config(bg=self.highlight_color)
+            button = self.key_widgets[key_name]
+            button.config(bg=self.highlight_color, relief=tk.SUNKEN)
 
     def physical_key_release(self, event):
         # Map key events to our key names (same as in key_press)
@@ -414,12 +458,15 @@ class Keyboard:
             self.shift_pressed = False
 
         # Return key to normal state, except Caps Lock if it's on
-        if (key_name in self.key_widgets and key_name != "Caps" or (key_name == "Caps" and not self.caps_on)) and (
-                key_name != "Shift" or (key_name == "Shift" and not self.shift_pressed)):
-            key_frame = self.key_widgets[key_name]['frame']
-            key_label = self.key_widgets[key_name]['label']
-            key_frame.config(bg=self.normal_key_color, relief=tk.RAISED)
-            key_label.config(bg=self.normal_key_color)
+        valid_conditions = (
+                key_name in self.key_widgets and
+                (key_name != "Caps" or not self.caps_on) and
+                (key_name != "Shift" or not self.shift_pressed)
+        )
+
+        if valid_conditions:
+            button = self.key_widgets[key_name]
+            button.config(bg=self.normal_key_color, relief=tk.RAISED)
 
     def close_keyboard(self):
         """Closes the on-screen keyboard."""
@@ -432,7 +479,10 @@ class Keyboard:
         """Sets the entry widget where the keyboard will type."""
         self.final_entry = entry_widget
         self.final_entry.config(state='disabled')
+
+        # Clear and populate entry field
+        self.entry.delete(0, tk.END)
         self.entry.insert(tk.END, entry_widget.get())
-        self.root.focus()
-        self.entry.focus_set()
-        self.keyboard_window.deiconify()
+
+        # Show the keyboard now that everything is ready
+        self.show_keyboard()

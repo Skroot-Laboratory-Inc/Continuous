@@ -1,7 +1,5 @@
 [Desktop Entry]
-Name=kiosk
-Comment=My-Kiosk-App
-Exec=gnome-session --session kiosk
+Name=Kiosk Mode
+Comment=Full Screen Kiosk Application
+Exec=/home/kiosk/start-kiosk.sh
 Type=Application
-DesktopNames=kiosk:GNOME
-X-Ubuntu-Gettext-Domain=gnome-session-3.0

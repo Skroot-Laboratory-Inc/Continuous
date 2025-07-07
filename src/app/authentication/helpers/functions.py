@@ -14,7 +14,8 @@ from typing import List
 from src.app.authentication.helpers.constants import AuthenticationConstants
 from src.app.authentication.helpers.exceptions import UserExistsException, UserDoesntExistException, \
     BadPasswordException, PamException, IncorrectPasswordException, PasswordExpired, SystemAdminException, \
-    InsufficientPermissions, ResetPasswordException, RetireUserException, ModifyUserRoleException
+    InsufficientPermissions, ResetPasswordException, RetireUserException, ModifyUserRoleException, RestoreUserException, \
+    UserNotRetiredException
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.authentication.model.user import User
 from src.app.authentication.model.user_role import UserRole
@@ -406,6 +407,8 @@ def modifyRole(authorizer: str, modifyUser: str, newRole: UserRole):
 def restoreUser(adminUsername: str, username: str) -> (bool, str):
     if not user_exists(username):
         raise UserDoesntExistException()
+    if not isUserRetired(username):
+        raise UserNotRetiredException()
     logAuthAction("Restore User", "Initiated", username, authorizer=adminUsername)
     process = subprocess.Popen(["sudo", "usermod", "-U", username])
     process.wait()
@@ -424,6 +427,22 @@ def restoreUser(adminUsername: str, username: str) -> (bool, str):
                      extra={"id": "auth"})
         text_notification.setText(f"Error restoring `{username}`")
         return False, f"`{username}` not restored."
+
+
+def isUserRetired(username: str):
+    result = subprocess.run(
+        ['sudo', 'passwd', '-S', username],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    output_parts = result.stdout.strip().split()
+    if len(output_parts) >= 2:
+        status = output_parts[1]
+        return status == 'L'
+    else:
+        return False
 
 
 def addLockedOutUser(username: str):

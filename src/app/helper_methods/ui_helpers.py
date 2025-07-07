@@ -1,6 +1,7 @@
 import datetime
 import tkinter as tk
 
+from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget.keyboard import Keyboard
 
@@ -10,31 +11,41 @@ def launchKeyboard(outputEntry: tk.Entry, master, hidePassword: bool = False):
     Keyboard(master, hidePassword).set_entry(outputEntry)
 
 
-def centerWindowOnFrame(window, frame):
+def centerWindowOnFrame(window: tk.Toplevel, frame):
     """ Centers a window on a tkinter frame."""
-    window.update()
+    window.update_idletasks()
+    if window.state() == 'withdrawn':
+        window_width = window.winfo_reqwidth()
+        window_height = window.winfo_reqheight()
+    else:
+        window.update()  # Only update if not withdrawn
+        window_width = window.winfo_width()
+        window_height = window.winfo_height()
     frame_x = frame.winfo_x()
     frame_y = frame.winfo_y()
     center_x = frame_x + (frame.winfo_width() // 2)
     center_y = frame_y + (frame.winfo_height() // 2)
-    x = center_x - (window.winfo_width() // 2)
-    y = center_y - (window.winfo_height() // 2)
+    x = center_x - (window_width // 2)
+    y = center_y - (window_height // 2)
     window.geometry('+%d+%d' % (x, y))
 
 
 def styleDropdownOption(option):
-    return f"             {option}             "
+    return f"{option}".center(45)
 
 
-def createDropdown(root, entryVariable, options, addSpace):
+def createDropdown(root, entryVariable, options, addSpace, outline=False):
     if addSpace:
-        options = [f"{option.center(65)}" for option in options]
+        options = [styleDropdownOption(option) for option in options]
     scanRateValue = entryVariable.get()
     optionMenu = tk.OptionMenu(root, entryVariable, *options)
     dropdownOptions = root.nametowidget(optionMenu.menuname)
     dropdownOptions.config(font=FontTheme().setupFormText)
     optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False,
                       font=FontTheme().setupFormText)
+    if outline:
+        optionMenu.config(bg="white", borderwidth=1, highlightthickness=1, indicatoron=False,
+                          font=FontTheme().setupFormText)
     optionMenu["menu"].config(bg="white")
     entryVariable.set(scanRateValue)
     return optionMenu
@@ -42,14 +53,14 @@ def createDropdown(root, entryVariable, options, addSpace):
 
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     """ Makes a tkinter toplevel into a scrollable window with fixed height and width"""
-    windowRoot.minsize(width=800, height=475)
-    windowRoot.maxsize(width=800, height=475)
+    windowRoot.minsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
+    windowRoot.maxsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
     windowCanvas = tk.Canvas(
         windowRoot, bg='white', borderwidth=0,
         highlightthickness=0
     )
     window = tk.Frame(windowRoot, bg='white', borderwidth=0)
-    windowCanvas.create_window(0, 0, anchor="nw", window=window)
+    windowCanvas.create_window(ScreenProperties().resolution['width']/2, 0, anchor="n", window=window)
 
     # Linux uses Button-5 for scroll down and Button-4 for scroll up
     window.bind_all('<Button-4>', lambda e: windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
@@ -92,7 +103,8 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
         y_fraction = windowCanvas.yview()
 
         # Calculate new positions - adjust multiplier to control sensitivity
-        new_y_fraction = y_fraction[0] + (delta_y * 0.001)
+        # Lower fraction to reduce scroll speed
+        new_y_fraction = y_fraction[0] + (delta_y * 0.0006)
 
         # Keep within bounds
         new_y_fraction = max(0.0, min(1.0, new_y_fraction))

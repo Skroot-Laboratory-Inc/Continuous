@@ -11,7 +11,7 @@ from src.app.aws.aws import AwsBoto3
 from src.app.aws.helpers.exceptions import DownloadFailedException
 from src.app.aws.helpers.helpers import runShScript
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.file_manager.common_file_manager import CommonFileManager, getCwd
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import restartPc
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import release_notes, text_notification
@@ -74,6 +74,8 @@ class SoftwareUpdate(AwsBoto3):
             most_recent_version = (self.newestMajorVersion, self.newestMinorVersion)
             for item in allReleases['Contents']:
                 filename = item['Key']
+                majorVersion = 0.0
+                minorVersion = 0
                 if filename[-1] == '/':
                     continue  # Don't try to get tags of the folder itself
                 try:
@@ -84,10 +86,7 @@ class SoftwareUpdate(AwsBoto3):
                                 majorVersion = float(tags['Value'])
                             elif tags['Key'] == 'minor_version':
                                 minorVersion = int(tags['Value'])
-                    else:
-                        # We are looking at an untagged item, likely a folder.
-                        majorVersion = 0.0
-                        minorVersion = 0
+
                 except botocore.exceptions.ClientError as e:
                     continue  # This means it's an R&D update, and we are not using an R&D profile
                 except:
@@ -108,6 +107,8 @@ class SoftwareUpdate(AwsBoto3):
             text_notification.setText(
                 f"Newer software available v{newestVersion}.\nConsider upgrading to use new features",
             )
+        else:
+            text_notification.setText("Software is up to date.")
 
     def updateNewestVersion(self, majorVersion, minorVersion, filename):
         self.newestMajorVersion = majorVersion

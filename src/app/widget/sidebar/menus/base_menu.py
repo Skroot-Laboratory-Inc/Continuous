@@ -101,37 +101,13 @@ class BaseMenu(SideBarActions):
         for i in range(20):  # Clear potential row configurations
             self.panel.grid_rowconfigure(i, weight=0)
 
-    def slideIn(self, start_x, end_x):
-        """Animate the panel sliding in from start_x to end_x"""
-        self.panel.place(x=start_x, y=0, relheight=1, width=self.width)
+    def slideIn(self, end_x):
+        """Show the panel instantly at the end position"""
+        self.panel.place(x=end_x, y=0, relheight=1, width=self.width)
         self.panel.lift()
 
-        for i in range(0, abs(end_x - start_x) + 1, 10):
-            if start_x < end_x:  # Sliding right
-                current_x = start_x + i
-            else:  # Sliding left
-                current_x = start_x - i
-
-            self.panel.place(x=current_x, y=0, relheight=1, width=self.width)
-            self.panel.update()
-
-            if (start_x < end_x <= current_x) or (start_x > end_x >= current_x):
-                break
-
-        # Ensure final position is exact
-        self.panel.place(x=end_x, y=0, relheight=1, width=self.width)
-
     def slideOut(self, start_x, end_x):
-        """Animate the panel sliding out from start_x to end_x"""
-        for i in range(0, abs(end_x - start_x) + 1, 10):
-            if start_x < end_x:  # Sliding right
-                current_x = start_x + i
-            else:  # Sliding left
-                current_x = start_x - i
-
-            self.panel.place(x=current_x, y=0, relheight=1, width=self.width)
-            self.panel.update()
-
+        """Hide the panel instantly"""
         self.panel.place_forget()
 
     def menuItemClicked(self, item):

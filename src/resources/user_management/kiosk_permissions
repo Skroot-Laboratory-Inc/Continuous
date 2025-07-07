@@ -1,5 +1,5 @@
 # Allows the kiosk user to add/lock/unlock users without a password prompt
-kiosk ALL=(ALL) NOPASSWD: /usr/sbin/useradd, /usr/sbin/usermod -L *, /usr/sbin/usermod -U *
+kiosk ALL=(ALL) NOPASSWD: /usr/sbin/useradd, /usr/sbin/usermod -L *, /usr/sbin/usermod -U *, /usr/sbin/reboot
 
 # Allows the kiosk user to remove users from groups and add users to kiosk_users
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/gpasswd -d * kiosk_users, /usr/bin/gpasswd -a * kiosk_users
@@ -41,3 +41,6 @@ kiosk ALL=(ALL) NOPASSWD: /bin/cp /var/log/aide/aide-weekly-summary-*.log /media
 kiosk ALL=(ALL) NOPASSWD: /bin/grep * /etc/environment
 kiosk ALL=(ALL) NOPASSWD: /bin/sed -i * /etc/environment
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/tee -a /etc/environment
+
+# Allows the kiosk users to determine whether a user is retired or not.
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/passwd -S *

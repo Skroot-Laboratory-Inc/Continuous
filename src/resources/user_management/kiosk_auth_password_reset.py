@@ -27,7 +27,8 @@ def change_user_password(admin_username, username, new_password):
 
         if process.returncode != 0:
             logAuthAction("Password Reset", "Failed", username, admin_username)
-            return {"success": False, "message": f"{stderr.split('\n')[0] if stderr else ""}"}
+            newLineChar = '\n'
+            return {"success": False, "message": stderr.split(newLineChar)[0] if stderr else ""}
 
         logAuthAction(
             "Password Reset",

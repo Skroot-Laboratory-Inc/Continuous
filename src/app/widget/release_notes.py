@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from distutils.version import StrictVersion
+from packaging.version import Version
 
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.helper_methods.ui_helpers import makeToplevelScrollable
@@ -19,7 +19,7 @@ class ReleaseNotes(PopupInterface):
         self.windowRoot.transient(rootManager.getRoot())
         self.fonts = FontTheme()
         windowRoot, windowCanvas = makeToplevelScrollable(self.windowRoot, self.fillOutWindowFn)
-        rootManager.waitForWindow(windowCanvas)
+        rootManager.waitForWindow(self.windowRoot)
 
     def fillOutWindowFn(self, window):
         row = self.fillInVersions(window)
@@ -102,6 +102,6 @@ class ReleaseNotes(PopupInterface):
 def sortNotes(releaseNotes):
     keys = list(releaseNotes.keys())
     keysWithoutV = [k[1:] for k in keys]
-    keysWithoutV.sort(key=StrictVersion)
+    keysWithoutV.sort(key=Version)
     keys = keysWithoutV[::-1]
     return {f'v{i}': releaseNotes[f'v{i}'] for i in keys}

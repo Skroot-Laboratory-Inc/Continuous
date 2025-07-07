@@ -162,10 +162,6 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Failed to take scan {reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
                         extra={"id": f"Reader {reader.readerNumber}"})
-                    logging.info(
-                        f'SIB currently in the state: {reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {reader.readerNumber}"}
-                    )
                     text_notification.setText(
                         f"Sweep failed for reader {reader.readerNumber}, SIB reconnection was successful.")
                 except SIBException:
@@ -184,10 +180,6 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Hardware Problem: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
-                    logging.info(
-                        f'SIB currently in the state: {reader.SibInterface.getPowerStatus()}',
-                        extra={"id": f"Reader {reader.readerNumber}"}
-                    )
                     text_notification.setText(
                         f"Sweep Failed With Hardware Cause for reader {reader.readerNumber}, contact a Skroot representative if the issue persists.")
                 except AnalysisException:
@@ -210,8 +202,6 @@ class ReaderThreadManager:
                 finally:
                     self.Timer.updateTime()
                     reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
-                if not self.issueOccurredFn():
-                    text_notification.setText("All readers successfully recorded data.")
             except:
                 logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:

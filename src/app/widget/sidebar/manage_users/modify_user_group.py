@@ -67,8 +67,8 @@ class ModifyUserGroup:
             background=Colors().secondaryColor).grid(row=4, column=0)
 
         options = ["User", "Administrator"]
-        dropdown = createDropdown(self.windowRoot, self.group, options, addSpace=True)
-        dropdown.grid(row=4, column=1, padx=10, pady=10, sticky="ew")
+        dropdown = createDropdown(self.windowRoot, self.group, options, addSpace=True, outline=True)
+        dropdown.grid(row=4, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
         return dropdown
 
     def createSubmitButton(self):

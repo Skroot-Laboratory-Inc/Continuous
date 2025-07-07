@@ -56,7 +56,7 @@ class MainMenu(BaseMenu):
     def openMenu(self):
         """Open the main menu with animation"""
         if not self.isOpen:
-            self.slideIn(-self.width, 0)
+            self.slideIn(0)
             self.isOpen = True
 
     def closeMenu(self):

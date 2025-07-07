@@ -38,8 +38,7 @@ class TertiaryMenu(BaseMenu):
 
         # Calculate position and animate in
         final_x = mainMenuWidth + submenuWidth
-        start_x = final_x + self.width
-        self.slideIn(start_x, final_x)
+        self.slideIn(final_x)
         self.isOpen = True
 
     def hideMenu(self):

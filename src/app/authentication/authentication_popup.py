@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.exceptions import IncorrectPasswordException, NotAdministratorException, \
-    NotSystemAdmin, PamException, PasswordExpired
+    NotSystemAdmin, PamException, PasswordExpired, UserDoesntExistException
 from src.app.authentication.helpers.functions import validateUserCredentials, getLockedOutUsers, getRole
 from src.app.authentication.lockout_notification import LockoutNotification
 from src.app.authentication.model.user_role import UserRole
@@ -136,6 +136,8 @@ class AuthenticationPopup:
             text_notification.setText("Authentication failed.\nIncorrect username/password combination.")
         except PamException as e:
             text_notification.setText(f"Authentication failed.\n{e.message}")
+        except UserDoesntExistException:
+            text_notification.setText(f"Authentication failed.\n`{self.username.get()}` does not exist.")
         finally:
             if self.windowRoot.winfo_exists() == 1:
                 self.enablePopup()
