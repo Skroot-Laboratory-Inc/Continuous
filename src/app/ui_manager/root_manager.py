@@ -51,6 +51,8 @@ class RootManager:
         self.root.tkraise()
 
     def waitForWindow(self, window):
+        window.update_idletasks()
+        window.update()
         window.deiconify()
         self.root.wait_window(window)
         self.whiteFrame.place_forget()
