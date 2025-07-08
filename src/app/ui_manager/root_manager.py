@@ -1,5 +1,6 @@
 import tkinter as tk
 
+from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
@@ -30,7 +31,9 @@ class RootManager:
                               rely=GuiProperties().bodyRelY,
                               relwidth=1,
                               relheight=GuiProperties().bodyHeight)
-        return tk.Toplevel(self.root, bg='white', padx=25, pady=25)
+        topLevel = tk.Toplevel(self.root, bg='white', padx=25, pady=25)
+        topLevel.withdraw()
+        return topLevel
 
     def createFrame(self, backgroundColor) -> tk.Frame:
         return tk.Frame(self.root, bg=backgroundColor)
@@ -48,6 +51,7 @@ class RootManager:
         self.root.tkraise()
 
     def waitForWindow(self, window):
+        window.deiconify()
         self.root.wait_window(window)
         self.whiteFrame.place_forget()
 
@@ -65,7 +69,7 @@ class RootManager:
 
     def setWindowSize(self):
         self.root.overrideredirect(True)
-        self.root.geometry(f"1280x720+0+0")
+        self.root.geometry(f"{ScreenProperties().resolution['width']}x{ScreenProperties().resolution['height']}+0+0")
 
     def setProtocol(self, protocol, invokeFn):
         self.root.protocol(protocol, invokeFn)
@@ -84,6 +88,10 @@ class RootManager:
 
     def createWhiteFrame(self):
         self.whiteFrame = self.createFrame(Colors().secondaryColor)
+
+    def updateIdleTasks(self):
+        # Do not remove, used for software update.
+        self.root.update_idletasks()
 
 
 def isMenuOptionPresent(menu_bar, menu_label):

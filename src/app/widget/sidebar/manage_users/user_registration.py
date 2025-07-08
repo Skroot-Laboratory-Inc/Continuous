@@ -67,8 +67,8 @@ class UserRegistration:
             font=FontTheme().primary,
             background=Colors().secondaryColor).grid(row=2, column=0)
         options = ["Administrator", "User"]
-        dropdown = createDropdown(self.windowRoot, self.role, options, addSpace=True)
-        dropdown.grid(row=2, column=1, padx=10, sticky="ew")
+        dropdown = createDropdown(self.windowRoot, self.role, options, addSpace=True, outline=True)
+        dropdown.grid(row=2, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
 
     def createUsername(self):
         ttk.Label(

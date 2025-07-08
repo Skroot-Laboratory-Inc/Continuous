@@ -37,7 +37,7 @@ class SubMenu(BaseMenu):
                 MenuItem("Configuration", lambda: self.systemConfiguration()),
                 MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
                 MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
-                # MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)),
+                MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)),
             ],
         }
 
@@ -61,8 +61,7 @@ class SubMenu(BaseMenu):
 
         # Calculate position and animate in
         final_x = main_menu_width
-        start_x = final_x + self.width
-        self.slideIn(start_x, final_x)
+        self.slideIn(final_x)
         self.isOpen = True
 
     def hideMenu(self):

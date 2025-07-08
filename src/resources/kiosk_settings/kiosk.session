@@ -1,3 +1,0 @@
-[GNOME Session]
-Name=kiosk
-RequiredComponents=org.gnome.SettingsDaemon.Keyboard;desktopApp;kiosk-shell;

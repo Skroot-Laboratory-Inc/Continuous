@@ -50,6 +50,8 @@ class CustomDropdownMenu:
 
         # Create dropdown frame with proper border
         self.dropdown_frame = tk.Toplevel(self.root)
+        self.dropdown_frame.withdraw()
+
         self.dropdown_frame.overrideredirect(True)
         self.dropdown_frame.configure(
             bg=self.border_color,
@@ -76,7 +78,7 @@ class CustomDropdownMenu:
                 anchor = tk.W if self.item_justify == tk.LEFT else tk.CENTER
 
                 btn = tk.Button(
-                    container,  # Pack directly to container, not btn_frame
+                    container,
                     text=item['label'],
                     font=self.font,
                     bg=self.bg,
@@ -122,6 +124,7 @@ class CustomDropdownMenu:
 
         # Position and show
         self.dropdown_frame.geometry(f"{width}x{height}+{x}+{y}")
+        self.dropdown_frame.deiconify()
 
         # Close on click outside
         self.root.bind('<Button-1>', self._on_click, add='+')

@@ -46,6 +46,10 @@ class RestoreUserException(AuthenticationException):
         self.message = message
 
 
+class UserNotRetiredException(AuthenticationException):
+    """ Exception thrown when attempting to restore a retired user. """
+
+
 class BadPasswordException(AuthenticationException):
     """ Exception thrown when an error occurs while resetting password. """
     def __init__(self, message):

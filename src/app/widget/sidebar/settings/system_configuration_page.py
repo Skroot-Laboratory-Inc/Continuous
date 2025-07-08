@@ -51,7 +51,7 @@ class SystemConfigurationPage:
             background=Colors().secondaryColor).grid(row=3, column=0)
 
         options = ["True", "False"]
-        dropdown = createDropdown(self.windowRoot, self.authEnabled, options, addSpace=True)
+        dropdown = createDropdown(self.windowRoot, self.authEnabled, options, addSpace=True, outline=True)
         dropdown.grid(row=3, column=1, padx=10, pady=10)
         return dropdown
 

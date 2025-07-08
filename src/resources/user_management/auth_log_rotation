@@ -5,7 +5,7 @@
     notifempty
     compress
     delaycompress
-    create 640 syslog adm
+    create 640 root adm
     postrotate
         /usr/lib/rsyslog/rsyslog-rotate
     endscript

@@ -34,7 +34,7 @@ def getSibPort() -> ListPortInfo:
 
 def restartPc():
     if platform.system() == "Linux":
-        subprocess.Popen(['systemctl', "reboot", '-i'], stdin=subprocess.PIPE)
+        subprocess.Popen(['sudo', "reboot"], stdin=subprocess.PIPE)
 
 
 def getUsbDrive():

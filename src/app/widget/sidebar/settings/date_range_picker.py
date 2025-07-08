@@ -22,6 +22,7 @@ class DateRangePicker:
         self.cancelled = False
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
+        self.windowRoot.withdraw()
         self.windowRoot.config(relief="solid", highlightbackground="black",
                                highlightcolor="black", highlightthickness=1, bd=0)
         self.windowRoot.transient(rootManager.getRoot())
@@ -32,10 +33,12 @@ class DateRangePicker:
         self.downloadButton = self.createSubmitButton()
         self.cancelButton = self.createCancelButton()
 
+        self.windowRoot.update_idletasks()
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
             self.windowRoot.overrideredirect(True)
             self.windowRoot.attributes('-topmost', True)
+        self.windowRoot.deiconify()
         rootManager.waitForWindow(self.windowRoot)
         if self.cancelled:
             raise UserConfirmationException
@@ -68,6 +71,7 @@ class DateRangePicker:
                                      showweeknumbers=False,
                                      showothermonthdays=False,
                                      )
+        startDateCalendar.update_idletasks()
         startDateCalendar.grid(row=4, column=0, padx=5, pady=5, sticky="nsew")
         prev_month_btn = ttk.Button(self.windowRoot,
                                     text="◀ Previous Month",
@@ -101,6 +105,7 @@ class DateRangePicker:
                                    showweeknumbers=False,
                                    showothermonthdays=False,
                                    )
+        endDateCalendar.update_idletasks()
         endDateCalendar.grid(row=4, column=1, padx=5, pady=5, sticky="nsew")
         prev_month_btn = ttk.Button(self.windowRoot,
                                     text="◀ Previous Month",

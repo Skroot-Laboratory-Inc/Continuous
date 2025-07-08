@@ -1,7 +1,5 @@
 [User]
-Session=kiosk
 XSession=kiosk
-Icon=/var/lib/AccountsService/icons/kiosk
 SystemAccount=false
 
 [InputSource0]

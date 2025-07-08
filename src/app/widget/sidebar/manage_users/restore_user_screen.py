@@ -2,9 +2,9 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import RetireUserException, \
-    UserDoesntExistException, RestoreUserException
-from src.app.authentication.helpers.functions import retireUser, restoreUser
+from src.app.authentication.helpers.exceptions import UserDoesntExistException, RestoreUserException, \
+    UserNotRetiredException
+from src.app.authentication.helpers.functions import restoreUser
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
 from src.app.ui_manager.buttons.generic_button import GenericButton
@@ -74,6 +74,8 @@ class RestoreUserScreen:
             self.windowRoot.destroy()
         except UserConfirmationException as e:
             pass
+        except UserNotRetiredException:
+            text_notification.setText(f"{self.username.get()} is not retired. Cannot restore an active user.")
         except RestoreUserException as e:
             text_notification.setText(f"Failed to restore user. \n{e.message}")
         except UserDoesntExistException:
