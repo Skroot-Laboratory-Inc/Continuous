@@ -6,13 +6,12 @@ from src.app.common_modules.initialization.frame_manager import FrameManager
 from src.app.common_modules.service.dev_software_update import DevSoftwareUpdate
 from src.app.common_modules.service.software_update import SoftwareUpdate
 from src.app.properties.dev_properties import DevProperties
-from src.app.ui_manager.theme.gui_properties import GuiProperties
-from src.app.ui_manager.buttons.help_button import HelpButton
 from src.app.ui_manager.buttons.power_button import PowerButton
 from src.app.ui_manager.buttons.profile_button import ProfileButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.widget import text_notification
 from src.app.widget.sidebar.sidebar import Sidebar
 
@@ -43,8 +42,6 @@ class SetupBaseUi:
             text='\u00A9 Skroot Laboratory, Inc 2018-2025. All rights reserved.',
             bg='white')
         copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
-        helpButton = HelpButton(self.FrameManager.footerFrame, self.RootManager)
-        helpButton.helpButton.place(relx=1, rely=1.0, anchor='se')
 
         self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=0)
         self.FrameManager.bannerFrame.grid_columnconfigure(1, weight=1)
