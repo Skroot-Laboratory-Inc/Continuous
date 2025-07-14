@@ -65,6 +65,7 @@ class ReaderPageAllocator:
         )
         return thisReaderFrame
 
+    @requireUser
     def createGuidedSetup(self):
         self.getReaderFrame().setupFrame.tkraise()
         self.getReaderFrame().showSetupFrame()
