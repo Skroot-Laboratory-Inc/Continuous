@@ -97,6 +97,6 @@ def copyRunFile(user: str, driveLocation: str, runId: str):
     for file in runFiles:
         shutil.copyfile(
             file,
-            f"{driveLocation}/{os.path.basename(os.path.dirname(file))}.csv",
+            f"{driveLocation}/Run Results/{os.path.basename(os.path.dirname(file))}.csv",
         )
 
