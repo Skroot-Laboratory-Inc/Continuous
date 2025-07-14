@@ -136,7 +136,7 @@ class SideBarActions:
                 createAuditTrail(username, outputDir, datetime.today().date() - relativedelta(years=1), datetime.today().date())
                 runDirectories = glob.glob(f"{CommonFileManager().getDataSavePath()}/*")
                 for directory in runDirectories:
-                    runId = directory.split("/")[-1]
+                    runId = directory.split("/")[-1].split("_")[-1]
                     copyRunFile(username, outputDir, runId)
                 zipTempDir(
                     outputDir,
