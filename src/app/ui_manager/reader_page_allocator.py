@@ -199,14 +199,14 @@ class ReaderPageAllocator:
 
     @staticmethod
     def createStartButton(readerFrame, invokeFn):
-        startButton = GenericButton("Start", readerFrame, invokeFn)
+        startButton = GenericButton("Start", readerFrame, invokeFn, style="Start.TButton")
         startButton.button.grid(row=2, column=0, sticky='sw')
         startButton.disable()
         return startButton
 
     @staticmethod
     def createStopButton(readerFrame, invokeFn):
-        stopButton = GenericButton("Stop", readerFrame, invokeFn)
+        stopButton = GenericButton("Stop", readerFrame, invokeFn, style="Stop.TButton")
         stopButton.button.grid(row=2, column=2, sticky='se')
         stopButton.disable()
         return stopButton

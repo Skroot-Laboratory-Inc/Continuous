@@ -12,6 +12,7 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.gui_properties import GuiProperties
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.sidebar import Sidebar
 
@@ -67,9 +68,24 @@ class SetupBaseUi:
         style.configure(
             'Default.TButton',
             font=FontTheme().buttons,
-            padding=(20, 20),  # (horizontal, vertical) padding
+            padding=WidgetTheme().defaultButtonPadding,
             foreground=self.Colors.secondaryColor,
             background=self.Colors.primaryColor)
+
+        style.configure(
+            'Start.TButton',
+            font=FontTheme().buttons,
+            padding=WidgetTheme().defaultButtonPadding,
+            foreground=self.Colors.secondaryColor,
+            background=self.Colors.green)
+
+        style.configure(
+            'Stop.TButton',
+            font=FontTheme().buttons,
+            padding=WidgetTheme().defaultButtonPadding,
+            foreground=self.Colors.secondaryColor,
+            background=self.Colors.lightRed)
+
         style.configure(
             'Entry.TButton',
             font=FontTheme().buttons,
@@ -94,6 +110,12 @@ class SetupBaseUi:
         style.map(
             'Default.TButton',
             background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
+        style.map(
+            'Start.TButton',
+            background=[("disabled", "gray23"), ("active", self.Colors.green)])
+        style.map(
+            'Stop.TButton',
+            background=[("disabled", "gray23"), ("active", self.Colors.lightRed)])
         style.map(
             'Entry.TButton',
             background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])

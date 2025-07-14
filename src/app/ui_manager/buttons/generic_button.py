@@ -2,12 +2,12 @@ from tkinter import ttk
 
 
 class GenericButton:
-    def __init__(self, text: str, master, invokeFn):
+    def __init__(self, text: str, master, invokeFn, style='Default.TButton'):
         self.invokeFn = invokeFn
         self.button = ttk.Button(
             master,
             text=text,
-            style='Default.TButton',
+            style=style,
             command=lambda: invokeFn(),
         )
 
