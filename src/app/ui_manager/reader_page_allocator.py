@@ -45,7 +45,7 @@ class ReaderPageAllocator:
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
                                                             lambda: self.connectNewReader(self.readerNumber))
-        header = self.createHeader(readerFrame, self.readerNumber, setupReaderForm.lotIdEntry.get())
+        header = self.createHeader(readerFrame, self.readerNumber)
         mainPlottingFrame, plottingFrame, kpiForm = self.createPlotFrame(readerFrame)
         thisReaderFrame = ReaderFrame(
             readerFrame,
@@ -177,8 +177,8 @@ class ReaderPageAllocator:
         return timer
 
     @staticmethod
-    def createHeader(readerFrame, readerNumber, lotId):
-        header = tk.Label(readerFrame, text=f"Reader {readerNumber}: {lotId}", font=FontTheme().header3,
+    def createHeader(readerFrame, readerNumber):
+        header = tk.Label(readerFrame, text=f"Reader {readerNumber}", font=FontTheme().header3,
                           background=Colors().secondaryColor, foreground=Colors().primaryColor)
         header.grid(row=0, column=1, sticky='n')
         return header
