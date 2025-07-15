@@ -44,3 +44,9 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/tee -a /etc/environment
 
 # Allows the kiosk users to determine whether a user is retired or not.
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/passwd -S *
+
+# Allows the kiosk user to change the hostname (Device ID) for the system.
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/hostnamectl set-hostname *
+
+# Allows the kiosk user to perform software updates
+kiosk ALL=(ALL) NOPASSWD: /bin/sh update-script.sh

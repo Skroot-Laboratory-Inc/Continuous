@@ -3,6 +3,8 @@ import tkinter as tk
 
 from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.custom_dropdown import CustomDropdownMenu
 from src.app.widget.keyboard import Keyboard
 
 
@@ -34,21 +36,60 @@ def styleDropdownOption(option):
     return f"{option}".center(45)
 
 
-def createDropdown(root, entryVariable, options, addSpace, outline=False):
-    if addSpace:
-        options = [styleDropdownOption(option) for option in options]
-    scanRateValue = entryVariable.get()
-    optionMenu = tk.OptionMenu(root, entryVariable, *options)
-    dropdownOptions = root.nametowidget(optionMenu.menuname)
-    dropdownOptions.config(font=FontTheme().setupFormText)
-    optionMenu.config(bg="white", borderwidth=0, highlightthickness=0, indicatoron=False,
-                      font=FontTheme().setupFormText)
-    if outline:
-        optionMenu.config(bg="white", borderwidth=1, highlightthickness=1, indicatoron=False,
-                          font=FontTheme().setupFormText)
-    optionMenu["menu"].config(bg="white")
-    entryVariable.set(scanRateValue)
-    return optionMenu
+def createDropdown(root, entryVariable, options, outline=False):
+    entryValue = entryVariable.get()
+
+    dropdown_button = tk.Button(
+        root,
+        text=entryValue if entryValue else options[0],
+        bg="white",
+        borderwidth=1 if outline else 0,
+        highlightthickness=1 if outline else 0,
+        font=FontTheme().primary,
+        relief="raised",
+        anchor="center",
+        padx=10
+    )
+
+    custom_menu = CustomDropdownMenu(
+        root,
+        item_justify = "center",
+        bg="white",
+        fg="black",
+        font=FontTheme().primary,
+        # item_padding_x=200,
+        item_padding_y=WidgetTheme().entryYPadding,
+        borderwidth=1 if outline else 2,
+        border_color="black",
+        min_width=400,
+    )
+
+    for option in options:
+        custom_menu.add_command(
+            label=option,
+            command=lambda opt=option: select_option(opt)
+        )
+        if option != options[-1]:
+            custom_menu.add_separator()
+
+    def select_option(option):
+        entryVariable.set(option)
+        dropdown_button.config(text=option)
+
+    def show_dropdown():
+        # Update the button to get its actual size
+        dropdown_button.update_idletasks()
+        button_width = dropdown_button.winfo_width()
+
+        # Update the custom menu's min_width
+        custom_menu.min_width = button_width
+
+        x = dropdown_button.winfo_rootx()
+        y = dropdown_button.winfo_rooty() + dropdown_button.winfo_height()
+        custom_menu.tk_popup(x, y)
+
+    dropdown_button.config(command=show_dropdown)
+    return dropdown_button
 
 
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):

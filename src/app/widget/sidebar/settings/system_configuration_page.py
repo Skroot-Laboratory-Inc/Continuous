@@ -1,14 +1,17 @@
 import platform
+import socket
 import tkinter as tk
 from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption, launchKeyboard
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.sidebar.helpers.functions import setHostname
 
 
 class SystemConfigurationPage:
@@ -24,10 +27,13 @@ class SystemConfigurationPage:
 
         self.createHeader()
         self.warningLabel = self.createCfrWarning()
+        self.deviceId = tk.StringVar(value=socket.gethostname())
         self.authEnabled.trace_add("write", self.toggleWarning)
-        self.authDropdown = self.createAuthDropdown()
-        self.submitButton = self.createSubmitButton()
-        self.cancelButton = self.createCancelButton()
+        self.authDropdown = self.createAuthDropdown(3)
+        self.deviceIdEntry = self.createDeviceId(5)
+        self.deviceIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.submitButton = self.createSubmitButton(6)
+        self.cancelButton = self.createCancelButton(6)
 
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
@@ -43,16 +49,16 @@ class SystemConfigurationPage:
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
 
-    def createAuthDropdown(self):
+    def createAuthDropdown(self, row: int):
         ttk.Label(
             self.windowRoot,
-            text="Authentication Enabled",
+            text="Authentication Enabled: ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().secondaryColor).grid(row=row, column=0)
 
         options = ["True", "False"]
-        dropdown = createDropdown(self.windowRoot, self.authEnabled, options, addSpace=True, outline=True)
-        dropdown.grid(row=3, column=1, padx=10, pady=10)
+        dropdown = createDropdown(self.windowRoot, self.authEnabled, options, outline=True)
+        dropdown.grid(row=row, column=1, padx=10, pady=10, sticky="ew")
         return dropdown
 
     def createCfrWarning(self) -> ttk.Label:
@@ -69,15 +75,28 @@ class SystemConfigurationPage:
         else:
             self.warningLabel.grid_forget()
 
-    def createSubmitButton(self):
+    def createDeviceId(self, row: int):
+        ttk.Label(
+            self.windowRoot,
+            text="Device ID:",
+            font=FontTheme().primary,
+            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+
+        deviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.deviceId, font=FontTheme().primary)
+        deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10, sticky="ew")
+        return deviceIdEntry
+
+    def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
-        submitButton.grid(row=6, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=row, column=1, pady=10, columnspan=2, sticky="e")
         return submitButton
 
     def submitConfig(self):
         newAuthSetting = self.authEnabled.get().strip() == "True"
         if self.AuthConfiguration.getConfig() != newAuthSetting:
             self.submitAuthChanges(self.AuthConfiguration.getConfig(), newAuthSetting)
+        if self.deviceId.get() != socket.gethostname():
+            self.updateHostname(socket.gethostname(), self.deviceId.get())
         self.windowRoot.destroy()
 
     def submitAuthChanges(self, oldSetting: bool, newSetting: bool):
@@ -92,9 +111,20 @@ class SystemConfigurationPage:
             result=f"`{oldSetting}` to `{newSetting}`"
         )
 
-    def createCancelButton(self):
+    def updateHostname(self, oldSetting: str, newSetting: str):
+        if platform.system() == "Linux":
+            successful = setHostname(newSetting)
+            if successful:
+                logAuthAction(
+                    "Hostname",
+                    "Changed",
+                    self.authorizer,
+                    result=f"`{oldSetting}` to `{newSetting}`"
+                )
+
+    def createCancelButton(self, row: int):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=6, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=row, column=0, pady=10, sticky="w")
         return cancelButton
 
     def cancel(self):

@@ -15,7 +15,7 @@ from src.app.widget import logger
 class CommonModules:
     def __init__(self, rootManager: RootManager, version, major_version, minor_version):
         self.CommonFileManager = CommonFileManager()
-        logger.loggerSetup(self.CommonFileManager.getExperimentLog(), version)
+        logger.loggerSetup(f"{self.CommonFileManager.getExperimentLogDir()}/log.txt", version)
         self.RootManager = rootManager
         self.sessionManager = SessionManager()
         self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager, major_version, minor_version).bodyFrame
