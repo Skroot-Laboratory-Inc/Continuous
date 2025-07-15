@@ -16,7 +16,7 @@ class SetupReaderFormInput:
         self.scanRate = setupReaderFormDefaults.scanRate
         self.calibrate = setupReaderFormDefaults.calibrate
         self.lotId = generateLotId()
-        self.incubator = socket.gethostname()
+        self.deviceId = socket.gethostname()
         self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
 
@@ -45,8 +45,8 @@ class SetupReaderFormInput:
     def getLotId(self) -> str:
         return self.lotId
 
-    def getIncubator(self) -> str:
-        return self.incubator
+    def getDeviceId(self) -> str:
+        return self.deviceId
 
     def getEquilibrationTime(self) -> float:
         return float(self.equilibrationTime)

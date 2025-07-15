@@ -12,6 +12,7 @@ from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 
 
 class DateRangePicker:
@@ -49,8 +50,8 @@ class DateRangePicker:
             text="Export Date Range",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew',
-                                                                 pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createStartDate(self):
         ttk.Label(
@@ -122,12 +123,12 @@ class DateRangePicker:
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.confirmDates).button
-        submitButton.grid(row=6, column=1, pady=20, columnspan=2, sticky="e")
+        submitButton.grid(row=6, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=6, column=0, pady=20, sticky="w")
+        cancelButton.grid(row=6, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def cancel(self):

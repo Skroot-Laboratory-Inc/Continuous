@@ -99,8 +99,4 @@ class KpiForm:
         self.sgi.set("-")
         self.saturationTime.set("No Estimate")
 
-    def separateEntries(self, row):
-        ttk.Separator(self.parentFrame, orient="horizontal").grid(row=row, column=0, pady=(0, 10))
-        return row + 1
-
 

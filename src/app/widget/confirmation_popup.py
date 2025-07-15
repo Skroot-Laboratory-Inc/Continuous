@@ -8,6 +8,7 @@ from src.app.helper_methods.ui_helpers import centerWindowOnFrame
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 
 
 class ConfirmationPopup:
@@ -48,24 +49,24 @@ class ConfirmationPopup:
             text=header,
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew',
-                                                                     pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createConfirmationMessage(self, message: str):
         ttk.Label(
             self.windowRoot,
             text=message,
             font=FontTheme().primary2,
-            background=Colors().secondaryColor).grid(row=3, column=0, columnspan=3, pady=20)
+            background=Colors().secondaryColor).grid(row=3, column=0, columnspan=3, pady=WidgetTheme().externalPadding)
 
     def createConfirmButton(self, text: str):
         confirmButton = GenericButton(text, self.windowRoot, self.confirm).button
-        confirmButton.grid(row=6, column=1, pady=10, columnspan=2, sticky="e")
+        confirmButton.grid(row=6, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return confirmButton
 
     def createCancelButton(self, text: str):
         cancelButton = GenericButton(text, self.windowRoot, self.cancel).button
-        cancelButton.grid(row=6, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=6, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def confirm(self):
