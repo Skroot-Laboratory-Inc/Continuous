@@ -28,9 +28,9 @@ class RootManager:
 
     def createTopLevel(self):
         self.whiteFrame.place(relx=0,
-                              rely=GuiProperties().bodyRelY,
+                              rely=0,
                               relwidth=1,
-                              relheight=GuiProperties().bodyHeight)
+                              relheight=1)
         topLevel = tk.Toplevel(self.root, bg='white', padx=25, pady=25)
         topLevel.withdraw()
         return topLevel
