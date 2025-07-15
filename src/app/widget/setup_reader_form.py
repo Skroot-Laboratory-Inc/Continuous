@@ -12,6 +12,7 @@ from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 
 
 class SetupReaderForm:
@@ -27,7 +28,7 @@ class SetupReaderForm:
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
-        self.incubatorEntry = tk.StringVar(value=guidedSetupInputs.getIncubator())
+        self.deviceIdEntry = tk.StringVar(value=guidedSetupInputs.getDeviceId())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
@@ -40,11 +41,11 @@ class SetupReaderForm:
         entriesMap = {}
         row = 0
 
-        entriesMap['Incubator'] = tk.Entry(
+        entriesMap['Device ID'] = tk.Entry(
             self.window,
-            textvariable=self.incubatorEntry,
+            textvariable=self.deviceIdEntry,
             borderwidth=0,
-            font=self.Fonts.setupFormText,
+            font=self.Fonts.primary,
             highlightthickness=0,
             justify="center")
 
@@ -52,7 +53,7 @@ class SetupReaderForm:
             self.window,
             textvariable=self.lotIdEntry,
             borderwidth=0,
-            font=self.Fonts.setupFormText,
+            font=self.Fonts.primary,
             highlightthickness=0,
             justify="center")
 
@@ -65,13 +66,13 @@ class SetupReaderForm:
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
 
-            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.setupFormText).grid(row=row,
+            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.primary).grid(row=row,
                                                                                                        column=0,
                                                                                                        sticky='w')
-            entry.grid(row=row, column=1, sticky="ew", ipady=10)
+            entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot()))
-            if entryLabelText == "Incubator":
+            if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().secondaryColor
             row += 1
@@ -81,10 +82,10 @@ class SetupReaderForm:
         calibrateCheck = tk.Checkbutton(self.window,
                                         text="Calibration Required",
                                         variable=self.calibrateRequired,
-                                        font=self.Fonts.setupFormText,
+                                        font=self.Fonts.primary,
                                         onvalue=1,
                                         offvalue=0,
-                                        pady=10,
+                                        pady=WidgetTheme().externalPadding,
                                         command=self.setCalibrate,
                                         bg='white', borderwidth=0, highlightthickness=0)
         calibrateCheck.grid(row=row, column=1, sticky="w")
@@ -123,7 +124,7 @@ class SetupReaderForm:
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.lotId = self.lotIdEntry.get()
-            self.guidedSetupResults.incubator = self.incubatorEntry.get()
+            self.guidedSetupResults.deviceId = self.deviceIdEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()

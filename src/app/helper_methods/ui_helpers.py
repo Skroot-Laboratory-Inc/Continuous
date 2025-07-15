@@ -46,7 +46,6 @@ def createDropdown(root, entryVariable, options, outline=False):
         borderwidth=1 if outline else 0,
         highlightthickness=1 if outline else 0,
         font=FontTheme().primary,
-        relief="raised",
         anchor="center",
         padx=10
     )
@@ -57,8 +56,7 @@ def createDropdown(root, entryVariable, options, outline=False):
         bg="white",
         fg="black",
         font=FontTheme().primary,
-        # item_padding_x=200,
-        item_padding_y=WidgetTheme().entryYPadding,
+        item_padding_y=WidgetTheme().internalPadding,
         borderwidth=1 if outline else 2,
         border_color="black",
         min_width=400,

@@ -44,7 +44,8 @@ class RestoreUserScreen:
             text="Restore a User",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createUsername(self):
         ttk.Label(
@@ -55,17 +56,17 @@ class RestoreUserScreen:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
+        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding)
         return usernameEntry
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitRetireUser).button
-        submitButton.grid(row=6, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=6, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancelReset).button
-        cancelButton.grid(row=6, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=6, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def submitRetireUser(self):

@@ -32,7 +32,7 @@ class AwsService(AwsServiceInterface):
                                    guidedSetupForm.getDateMillis(),
                                    saturationDate,
                                    guidedSetupForm.getLotId(),
-                                   guidedSetupForm.getIncubator(),
+                                   guidedSetupForm.getDeviceId(),
                                    flagged)
         self.uploadReaderCsvOnInterval(scanNumber, newConfig)
         self.uploadRawDataOnInterval(scanNumber)
@@ -62,7 +62,7 @@ class AwsService(AwsServiceInterface):
                                    guidedSetupForm.getDateMillis(),
                                    saturationDate,
                                    guidedSetupForm.getLotId(),
-                                   guidedSetupForm.getIncubator(),
+                                   guidedSetupForm.getDeviceId(),
                                    False)
         self.uploadReaderAnalyzed(newConfig)
         self.AwsBoto3Service.pushExperimentRow(newConfig)

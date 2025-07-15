@@ -59,11 +59,12 @@ class PasswordRotationScreen:
             text="Password Rotation",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createMaxPasswordAge(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
@@ -82,7 +83,7 @@ class PasswordRotationScreen:
             textvariable=self.maxPasswordAge,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
 
         ttk.Label(
             frame,
@@ -95,7 +96,7 @@ class PasswordRotationScreen:
 
     def createInactiveDays(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
@@ -114,7 +115,7 @@ class PasswordRotationScreen:
             textvariable=self.inactiveDays,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
 
         ttk.Label(
             frame,
@@ -127,7 +128,7 @@ class PasswordRotationScreen:
 
     def createHistoricPasswords(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
@@ -146,7 +147,7 @@ class PasswordRotationScreen:
             textvariable=self.historicPasswords,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
 
         ttk.Label(
             frame,
@@ -159,7 +160,7 @@ class PasswordRotationScreen:
 
     def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
-        submitButton.grid(row=row, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=row, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def submitConfig(self):
@@ -204,7 +205,7 @@ class PasswordRotationScreen:
 
     def createCancelButton(self, row: int):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=row, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=row, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def cancel(self):

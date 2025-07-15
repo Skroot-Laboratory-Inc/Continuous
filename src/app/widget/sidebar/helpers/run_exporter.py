@@ -44,7 +44,8 @@ class RunExporter:
             text="Export Run Data",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createRunID(self):
         ttk.Label(
@@ -55,7 +56,7 @@ class RunExporter:
 
         vesselIdEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.runIdVar, font=FontTheme().primary)
-        vesselIdEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
+        vesselIdEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
         return vesselIdEntry
 
     def createDownloadButton(self):
@@ -63,12 +64,12 @@ class RunExporter:
             downloadButton = GenericButton("Download", self.windowRoot, self.download).button
         else:
             downloadButton = GenericButton("Download", self.windowRoot, self.downloadWindows).button
-        downloadButton.grid(row=6, column=1, pady=10, columnspan=2, sticky="e")
+        downloadButton.grid(row=6, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return downloadButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=6, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=6, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def cancel(self):

@@ -61,11 +61,11 @@ class PasswordRequirementsScreen:
             text="Password Requirements",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createLockoutMinutes(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
@@ -83,7 +83,7 @@ class PasswordRequirementsScreen:
             textvariable=self.lockoutMinutes,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
         ttk.Label(
             frame,
             text=" minute(s) on lockout.",
@@ -95,7 +95,7 @@ class PasswordRequirementsScreen:
 
     def createLockoutRetries(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
         ttk.Label(
             frame,
             text="User is allowed ",
@@ -113,7 +113,7 @@ class PasswordRequirementsScreen:
             textvariable=self.lockoutRetries,
             width=8
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
 
         ttk.Label(
             frame,
@@ -126,7 +126,7 @@ class PasswordRequirementsScreen:
 
     def createMinPasswordLength(self, row: int):
         frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
-        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=10)
+        frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
@@ -145,7 +145,7 @@ class PasswordRequirementsScreen:
             textvariable=self.minPasswordLength,
             width=8,
         )
-        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().entryYPadding)
+        entry.grid(row=0, column=1, padx=(0, 5), ipady=WidgetTheme().internalPadding)
 
         ttk.Label(
             frame,
@@ -158,7 +158,7 @@ class PasswordRequirementsScreen:
 
     def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
-        submitButton.grid(row=row, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=row, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def submitConfig(self):
@@ -203,7 +203,7 @@ class PasswordRequirementsScreen:
 
     def createCancelButton(self, row: int):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=row, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=row, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def cancel(self):

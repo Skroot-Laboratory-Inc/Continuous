@@ -58,7 +58,7 @@ class UserRegistration:
             text="User Registration",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createRole(self):
         ttk.Label(
@@ -68,7 +68,7 @@ class UserRegistration:
             background=Colors().secondaryColor).grid(row=2, column=0)
         options = ["Administrator", "User"]
         dropdown = createDropdown(self.windowRoot, self.role, options, outline=True)
-        dropdown.grid(row=2, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
+        dropdown.grid(row=2, column=1, padx=10, ipady=WidgetTheme().internalPadding, sticky="ew", pady=WidgetTheme().externalPadding)
 
     def createUsername(self):
         ttk.Label(
@@ -79,7 +79,7 @@ class UserRegistration:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
+        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
         return usernameEntry
 
     def createPassword(self):
@@ -91,7 +91,7 @@ class UserRegistration:
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, justify="center", background="white",
                                   textvariable=self.password, font=FontTheme().primary)
-        passwordEntry.grid(row=4, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
+        passwordEntry.grid(row=4, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
 
         showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword,
                                         style='Entry.TButton')
@@ -138,11 +138,11 @@ class UserRegistration:
 
         confirmPasswordEntry = ttk.Entry(self.windowRoot, show="*", justify="center", width=25, background="white",
                                          textvariable=self.confirmPassword, font=FontTheme().primary)
-        confirmPasswordEntry.grid(row=6, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
+        confirmPasswordEntry.grid(row=6, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
 
         showConfirmPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.toggleConfirmPassword,
                                                style='Entry.TButton')
-        showConfirmPasswordButton.grid(row=6, column=2, pady=10)
+        showConfirmPasswordButton.grid(row=6, column=2, pady=WidgetTheme().externalPadding)
         return confirmPasswordEntry, showConfirmPasswordButton
 
     def createPasswordMismatchWarning(self) -> ttk.Label:
@@ -156,13 +156,13 @@ class UserRegistration:
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitAuthentication).button
-        submitButton.grid(row=8, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=8, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         submitButton.configure(state="disabled")
         return submitButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancelAuthentication).button
-        cancelButton.grid(row=8, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=8, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def submitAuthentication(self):

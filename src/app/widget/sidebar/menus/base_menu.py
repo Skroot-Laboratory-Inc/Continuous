@@ -4,6 +4,7 @@ from tkinter import ttk
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sidebar.actions import SideBarActions
 
 
@@ -44,7 +45,7 @@ class BaseMenu(SideBarActions):
             bg=Colors().primaryColor,
             fg=Colors().secondaryColor
         )
-        title.grid(row=0, column=0, pady=10, sticky="ew")
+        title.grid(row=0, column=0, pady=WidgetTheme().externalPadding, sticky="ew")
 
         separator = ttk.Separator(self.panel, orient='horizontal', style="Primary.TSeparator")
         separator.grid(row=1, column=0, sticky="ew", padx=10)

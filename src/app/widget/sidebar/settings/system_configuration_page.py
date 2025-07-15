@@ -47,7 +47,8 @@ class SystemConfigurationPage:
             text="Configurations",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createAuthDropdown(self, row: int):
         ttk.Label(
@@ -58,7 +59,7 @@ class SystemConfigurationPage:
 
         options = ["True", "False"]
         dropdown = createDropdown(self.windowRoot, self.authEnabled, options, outline=True)
-        dropdown.grid(row=row, column=1, padx=10, pady=10, sticky="ew")
+        dropdown.grid(row=row, column=1, padx=10, pady=WidgetTheme().externalPadding, ipady=WidgetTheme().internalPadding, sticky="ew")
         return dropdown
 
     def createCfrWarning(self) -> ttk.Label:
@@ -83,12 +84,12 @@ class SystemConfigurationPage:
             background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
 
         deviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.deviceId, font=FontTheme().primary)
-        deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10, sticky="ew")
+        deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
         return deviceIdEntry
 
     def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
-        submitButton.grid(row=row, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=row, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def submitConfig(self):
@@ -124,7 +125,7 @@ class SystemConfigurationPage:
 
     def createCancelButton(self, row: int):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button
-        cancelButton.grid(row=row, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=row, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def cancel(self):

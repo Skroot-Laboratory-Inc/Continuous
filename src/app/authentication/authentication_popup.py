@@ -67,7 +67,8 @@ class AuthenticationPopup:
             text=label,
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
-        ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=10)
+        ttk.Separator(self.windowRoot, orient='horizontal').grid(
+            row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createUsername(self):
         ttk.Label(
@@ -78,7 +79,7 @@ class AuthenticationPopup:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", textvariable=self.username, font=FontTheme().primary)
         usernameEntry['state'] = tk.DISABLED
-        usernameEntry.grid(row=2, column=1, padx=10, ipady=WidgetTheme().entryYPadding, pady=10)
+        usernameEntry.grid(row=2, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
         return usernameEntry
 
     def createPassword(self):
@@ -89,7 +90,7 @@ class AuthenticationPopup:
             background=Colors().secondaryColor).grid(row=3, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, background="white", textvariable=self.password, font=FontTheme().primary)
-        passwordEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
+        passwordEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
 
         showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword, style='Entry.TButton')
         showPasswordButton.grid(row=3, column=2)
@@ -97,12 +98,12 @@ class AuthenticationPopup:
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitAuthentication).button
-        submitButton.grid(row=4, column=1, pady=10, columnspan=2, sticky="e")
+        submitButton.grid(row=4, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         return submitButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancelAuthentication).button
-        cancelButton.grid(row=4, column=0, pady=10, sticky="w")
+        cancelButton.grid(row=4, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def disablePopup(self):
