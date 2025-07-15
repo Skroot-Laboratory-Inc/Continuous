@@ -10,11 +10,10 @@ class CommonFileManager:
         self.skrootLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.addIcon = rf"{resourcesDir}/media/plus.png"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
-        self.localDesktopFile = rf'{resourcesDir}/ubuntu_settings/desktopApp.desktop'
         self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
         self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
         self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
-        self.experimentLog = f'{getDesktopLocation()}/Backend/log.txt'
+        self.experimentLogDir = f'{getDesktopLocation()}/Backend'
         self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
         self.updateScript = rf'{resourcesDir}/scripts/update-script.sh'
         self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
@@ -32,14 +31,8 @@ class CommonFileManager:
     def getPowerIcon(self):
         return self.powerIcon
 
-    def getLocalDesktopFile(self):
-        return self.localDesktopFile
-
     def getUpdateScript(self):
         return self.updateScript
-
-    def getRemoteDesktopFile(self):
-        return self.remoteDesktopFile
 
     def getTempUpdateFile(self):
         return self.tempSoftwareUpdate
@@ -50,8 +43,8 @@ class CommonFileManager:
     def getSoftwareUpdatePath(self):
         return self.softwareUpdatePath
 
-    def getExperimentLog(self):
-        return self.experimentLog
+    def getExperimentLogDir(self):
+        return self.experimentLogDir
 
     def getDataSavePath(self):
         if not os.path.exists(self.dataSavePath):

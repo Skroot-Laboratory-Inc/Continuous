@@ -57,10 +57,10 @@ class SetupReaderForm:
             justify="center")
 
         options = ["2", "5", "10"]
-        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, True)
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options)
 
         options = ["0", "0.2", "2", "12", "24"]
-        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, True)
+        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options)
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():

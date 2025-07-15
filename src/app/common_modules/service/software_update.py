@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import platform
-import shutil
 from zipfile import ZipFile
 
 import botocore
@@ -38,17 +37,13 @@ class SoftwareUpdate(AwsBoto3):
                 with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
                     file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
                 if platform.system() == "Linux":
-                    shutil.copyfile(
-                        self.CommonFileManager.getLocalDesktopFile(),
-                        self.CommonFileManager.getRemoteDesktopFile(),
-                    )
                     text_notification.setText(
                         "Installing new dependencies... please wait.\nThis may take up to a minute."
                     )
                     self.RootManager.updateIdleTasks()
                     runShScript(
                         self.CommonFileManager.getUpdateScript(),
-                        self.CommonFileManager.getExperimentLog(),
+                        f"{self.CommonFileManager.getExperimentLogDir()}/v{self.newestMajorVersion}.{self.newestMinorVersion}",
                     )
                 text_notification.setText(
                     f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}"

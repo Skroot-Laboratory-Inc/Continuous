@@ -48,9 +48,16 @@ class CustomDropdownMenu:
 
         self.is_visible = True
 
-        # Create dropdown frame with proper border
+        # Create dropdown frame with proper parent relationship
         self.dropdown_frame = tk.Toplevel(self.root)
         self.dropdown_frame.withdraw()
+
+        if isinstance(self.root, tk.Toplevel):
+            self.dropdown_frame.transient(self.root)
+
+        # Ensure the dropdown appears above the parent
+        self.dropdown_frame.lift()
+        self.dropdown_frame.attributes('-topmost', True)
 
         self.dropdown_frame.overrideredirect(True)
         self.dropdown_frame.configure(

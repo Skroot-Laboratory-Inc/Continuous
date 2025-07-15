@@ -70,7 +70,7 @@ class PasswordResetScreen:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding)
+        usernameEntry.grid(row=3, column=1, padx=10, pady=10, ipady=WidgetTheme().entryYPadding)
         return usernameEntry
 
     def createPassword(self):

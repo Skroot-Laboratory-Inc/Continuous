@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import shutil
+import subprocess
 from datetime import datetime
 
 from src.app.authentication.helpers.constants import AuthenticationConstants
@@ -99,4 +100,16 @@ def copyRunFile(user: str, driveLocation: str, runId: str):
             file,
             f"{driveLocation}/Run Results/{os.path.basename(os.path.dirname(file))}.csv",
         )
+
+
+def setHostname(hostname: str):
+    try:
+        subprocess.run(['sudo', 'hostnamectl', 'set-hostname', hostname],
+                       check=True, capture_output=True, text=True)
+        text_notification.setText(f"Device ID updated to {hostname}.")
+        return True
+    except subprocess.CalledProcessError as e:
+        text_notification.setText("Failed to update Device ID.")
+        logging.exception("Failed to update machine hostname", extra={"id": "Hostname"})
+        return False
 

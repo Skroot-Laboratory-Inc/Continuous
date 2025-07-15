@@ -56,7 +56,7 @@ class ModifyUserGroup:
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
-        usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
+        usernameEntry.grid(row=3, column=1, padx=10, pady=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
         return usernameEntry
 
     def createGroupDropdown(self):
@@ -67,7 +67,7 @@ class ModifyUserGroup:
             background=Colors().secondaryColor).grid(row=4, column=0)
 
         options = ["User", "Administrator"]
-        dropdown = createDropdown(self.windowRoot, self.group, options, addSpace=True, outline=True)
+        dropdown = createDropdown(self.windowRoot, self.group, options, outline=True)
         dropdown.grid(row=4, column=1, padx=10, ipady=WidgetTheme().entryYPadding, sticky="ew")
         return dropdown
 
