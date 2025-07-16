@@ -2,6 +2,9 @@
   "v2.0.3": {
     "features": {
       "1": "Updated to work with updated manufacturing dashboard foldering"
+    },
+    "bugfixes": {
+      "1": "Fixed smoothAnalyzed file columns"
     }
   },
   "v2.0.2": {
