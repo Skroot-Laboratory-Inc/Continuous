@@ -104,7 +104,6 @@ class Analyzer(AnalyzerInterface):
             rowData = []
             rowHeaders.append('Timestamp')
             rowData.append(timestamps)
-            rowData.append(self.ResultSet.getFilenames())
             rowHeaders.append('Time (hours)')
             rowData.append(self.ResultSet.getDenoiseTimeSmooth())
             rowHeaders.append('Skroot Growth Index (SGI)')
