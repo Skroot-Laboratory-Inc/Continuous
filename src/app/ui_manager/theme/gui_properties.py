@@ -6,7 +6,7 @@ class GuiProperties:
         self.bannerRelY = 0
         self.bannerHeight = 0.15
 
-        self.footerHeight = 0.02
+        self.footerHeight = 0.03
 
         self.bodyRelY = self.bannerHeight
         self.bodyHeight = 1 - self.bannerHeight - self.footerHeight
