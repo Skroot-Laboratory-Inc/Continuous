@@ -10,6 +10,7 @@ from botocore.client import Config
 from src.app.aws.helpers.exceptions import DownloadFailedException
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.dynamodbConfig import DynamodbConfig
+from src.resources.version.version import Version
 
 
 class AwsBoto3:
@@ -20,6 +21,7 @@ class AwsBoto3:
         self.disabled = False
         self.bucket = 'skroot-data'
         self.dataPrefix = 'experiments/'
+        self.useCase = Version().getUseCase()
         self.runFolder = None
         self.customerId = None
         try:
@@ -40,11 +42,11 @@ class AwsBoto3:
                     self.s3.upload_file(
                         fileLocation,
                         self.bucket,
-                        f'{folder["Prefix"]}{self.runUid}/{os.path.basename(fileLocation)}',
+                        f'{folder["Prefix"]}{self.useCase}/{self.runUid}/{os.path.basename(fileLocation)}',
                         ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
                                    "CacheControl": "no-cache"})
                     self.customerId = str(folder["Prefix"]).split('/')[-2]
-                    self.runFolder = f'{folder["Prefix"]}{self.runUid}'
+                    self.runFolder = f'{folder["Prefix"]}{self.useCase}/{self.runUid}'
                     break
                 except Exception as e:
                     if type(e.__context__) is botocore.exceptions.ClientError:
@@ -52,15 +54,13 @@ class AwsBoto3:
                     else:
                         raise
 
-    def uploadFile(self, fileLocation, fileType, tags={}, subDir=None) -> bool:
+    def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
         if not self.disabled:
             try:
                 if not self.runFolder:
                     self.findFolderAndUploadFile(fileLocation, fileType, tags)
                 else:
                     destination = f'{self.runFolder}/{os.path.basename(fileLocation)}'
-                    if subDir:
-                        destination = f'{destination}/{subDir}'
                     self.s3.upload_file(
                         fileLocation, self.bucket, destination,
                         ExtraArgs={'ContentType': fileType,

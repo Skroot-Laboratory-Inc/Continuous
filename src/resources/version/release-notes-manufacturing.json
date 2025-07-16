@@ -1,4 +1,9 @@
 {
+  "v2.0.3": {
+    "features": {
+      "1": "Updated to work with updated manufacturing dashboard foldering"
+    }
+  },
   "v2.0.2": {
     "features": {
       "1": "Added back message when readers successfully sweep",
