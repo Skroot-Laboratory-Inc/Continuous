@@ -2,6 +2,7 @@ import datetime
 import tkinter as tk
 
 from src.app.properties.screen_properties import ScreenProperties
+from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.custom_dropdown import CustomDropdownMenu
@@ -11,6 +12,14 @@ from src.app.widget.keyboard import Keyboard
 def launchKeyboard(outputEntry: tk.Entry, master, hidePassword: bool = False):
     """Launch the on-screen keyboard when an Entry widget is clicked."""
     Keyboard(master, hidePassword).set_entry(outputEntry)
+
+
+def datetimeToDisplay(dt: datetime.datetime):
+    """ Converts a datetime to a string. i.e. Mon Jan 3rd 5:50 PM """
+    if dt is not None:
+        return dt.strftime('%a %b %d %I:%M %p')
+    else:
+        return None
 
 
 def centerWindowOnFrame(window: tk.Toplevel, frame):
@@ -90,16 +99,56 @@ def createDropdown(root, entryVariable, options, outline=False):
     return dropdown_button
 
 
+import tkinter as tk
+
+
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     """ Makes a tkinter toplevel into a scrollable window with fixed height and width"""
     windowRoot.minsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
     windowRoot.maxsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
+
+    # Create main container frame
+    main_frame = tk.Frame(windowRoot, bg='white')
+    main_frame.grid(row=0, column=0, sticky="nsew")
+
     windowCanvas = tk.Canvas(
-        windowRoot, bg='white', borderwidth=0,
+        main_frame, bg='white', borderwidth=0,
         highlightthickness=0
     )
+
+    # Create scroll buttons frame (positioned at the right)
+    scroll_buttons_frame = tk.Frame(main_frame, bg='white', width=50)
+    scroll_buttons_frame.grid(row=0, column=1, sticky="ns", padx=2)
+    scroll_buttons_frame.grid_propagate(False)  # Maintain fixed width
+
+    # Create scroll to top button
+    scroll_top_btn = tk.Button(
+        scroll_buttons_frame,
+        text="▲",
+        font=("Arial", 32, "bold"),
+        bg=Colors().primaryColor,
+        fg=Colors().secondaryColor,
+        activebackground=Colors().primaryColor,
+        relief='raised',
+        command=lambda: windowCanvas.yview_moveto(0.0)
+    )
+    scroll_top_btn.pack(side="top", fill="x", padx=2, pady=2)
+
+    # Create scroll to bottom button
+    scroll_bottom_btn = tk.Button(
+        scroll_buttons_frame,
+        text="▼",
+        font=("Arial", 32, "bold"),
+        bg=Colors().primaryColor,
+        fg=Colors().secondaryColor,
+        activebackground=Colors().primaryColor,
+        relief='raised',
+        command=lambda: windowCanvas.yview_moveto(1.0)
+    )
+    scroll_bottom_btn.pack(side="bottom", fill="x", padx=2, pady=2)
+
     window = tk.Frame(windowRoot, bg='white', borderwidth=0)
-    windowCanvas.create_window(ScreenProperties().resolution['width']/2, 0, anchor="n", window=window)
+    windowCanvas.create_window(ScreenProperties().resolution['width'] / 2, 0, anchor="n", window=window)
 
     # Linux uses Button-5 for scroll down and Button-4 for scroll up
     window.bind_all('<Button-4>', lambda e: windowCanvas.yview_scroll(int(-1 * e.num), 'units'))
@@ -182,6 +231,8 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     # Configure grid weights to make canvas expandable
     windowRoot.grid_rowconfigure(0, weight=1)
     windowRoot.grid_columnconfigure(0, weight=1)
+    main_frame.grid_rowconfigure(0, weight=1)
+    main_frame.grid_columnconfigure(0, weight=1)
 
     fillOutWindowFn(window)
     windowCanvas.grid(row=0, column=0, sticky="nsew")
@@ -194,12 +245,3 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     bind_recursive(window)
 
     return windowRoot, window
-
-
-def datetimeToDisplay(dt: datetime.datetime):
-    """ Converts a datetime to a string. i.e. Mon Jan 3rd 5:50 PM """
-    if dt is not None:
-        return dt.strftime('%a %b %d %I:%M %p')
-    else:
-        return None
-
