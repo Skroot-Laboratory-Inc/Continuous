@@ -1,4 +1,9 @@
 {
+  "v2.0.4": {
+    "features": {
+      "1": "Added scroll to button/scroll top top buttons to release notes window."
+    }
+  },
   "v2.0.3": {
     "features": {
       "1": "Updated to work with updated manufacturing dashboard foldering"
