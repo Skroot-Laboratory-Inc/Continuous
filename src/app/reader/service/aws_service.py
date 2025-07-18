@@ -1,4 +1,5 @@
 import os
+import socket
 from datetime import datetime
 
 from src.app.aws.aws import AwsBoto3
@@ -32,7 +33,7 @@ class AwsService(AwsServiceInterface):
                                    guidedSetupForm.getDateMillis(),
                                    saturationDate,
                                    guidedSetupForm.getLotId(),
-                                   guidedSetupForm.getDeviceId(),
+                                   socket.gethostname(),
                                    flagged)
         self.uploadReaderCsvOnInterval(scanNumber, newConfig)
         self.uploadRawDataOnInterval(scanNumber)
@@ -62,7 +63,7 @@ class AwsService(AwsServiceInterface):
                                    guidedSetupForm.getDateMillis(),
                                    saturationDate,
                                    guidedSetupForm.getLotId(),
-                                   guidedSetupForm.getDeviceId(),
+                                   socket.gethostname(),
                                    False)
         self.uploadReaderAnalyzed(newConfig)
         self.AwsBoto3Service.pushExperimentRow(newConfig)

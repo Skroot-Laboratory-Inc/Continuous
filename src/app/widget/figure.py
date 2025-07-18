@@ -5,6 +5,9 @@ from matplotlib.widgets import Button
 from reactivex.subject import BehaviorSubject
 import tkinter as tk
 import warnings
+
+from src.app.ui_manager.theme.figure_styles import FigureStyles
+
 warnings.filterwarnings("ignore", category=UserWarning,
                        message="This figure includes Axes that are not compatible with tight_layout")
 
@@ -13,8 +16,7 @@ from src.app.ui_manager.theme.colors import Colors
 
 class FigureCanvas:
     def __init__(self, yAxisLabel, xAxisLabel, backgroundColor, title, tickSize=7, labelSize=9):
-        self.frequencyFigure = Figure(figsize=(3, 2.5))
-        self.frequencyFigure.set_layout_engine("tight")
+        self.frequencyFigure = Figure()
         self.currentPlot = None
         self.tickSize = tickSize
         self.labelSize = labelSize
@@ -26,6 +28,8 @@ class FigureCanvas:
         self.showSgi = BehaviorSubject(False)
         self.toggle_button = self.createToggle()
         self.reachedEquilibration = False
+        self.FigureStyles = FigureStyles()
+        self.FigureStyles.applyGenericStyles()
 
     def createToggle(self):
         button_ax = self.frequencyFigure.add_axes([0.15, 0.80, 0.2, 0.1])
@@ -44,6 +48,15 @@ class FigureCanvas:
         if self.reachedEquilibration:
             self.toggle_button = self.createToggle()
         self.currentPlot = self.frequencyFigure.add_subplot(111)
+        self.currentPlot.grid(
+            self.FigureStyles.applyGridLines,
+            axis=self.FigureStyles.axis,
+            which=self.FigureStyles.which,
+            linestyle=self.FigureStyles.line_style,
+            color=self.FigureStyles.color,
+            alpha=self.FigureStyles.alpha,
+            zorder=self.FigureStyles.z_order,
+        )
         self.currentPlot.set_ylabel(self.yAxisLabel, color=Colors().lightPrimaryColor, fontsize=self.labelSize)
         self.currentPlot.set_title(self.title, fontsize=self.labelSize)
         self.currentPlot.set_xlabel(self.xAxisLabel, fontsize=self.labelSize)

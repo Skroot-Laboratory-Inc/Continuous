@@ -1,4 +1,5 @@
 import os
+import socket
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -28,7 +29,7 @@ class SetupReaderForm:
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
-        self.deviceIdEntry = tk.StringVar(value=guidedSetupInputs.getDeviceId())
+        self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
