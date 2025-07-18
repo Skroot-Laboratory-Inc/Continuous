@@ -62,8 +62,8 @@ class FigureCanvas:
         self.currentPlot.set_xlabel(self.xAxisLabel, fontsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='minor', labelsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='major', labelsize=self.labelSize)
-        self.currentPlot.xaxis.set_major_locator(MaxNLocator(nbins=6, prune=None))
-        self.currentPlot.yaxis.set_major_locator(MaxNLocator(nbins=6, prune=None))
+        self.currentPlot.xaxis.set_major_locator(MaxNLocator(nbins=6, prune=None, integer=True))
+        self.currentPlot.yaxis.set_major_locator(MaxNLocator(nbins=6, prune=None, integer=True))
 
     def drawCanvas(self, frame):
         if self.frequencyCanvas is None:
@@ -90,6 +90,12 @@ class FigureCanvas:
 
     def setXAxisLabel(self, label):
         self.xAxisLabel = label
+
+    def setYAxisLimits(self, bottom=0, top=6):
+        self.currentPlot.set_ylim(bottom=bottom, top=top)
+
+    def setXAxisLimits(self, left=0, right=8):
+        self.currentPlot.set_xlim(left=left, right=right)
 
     def setTitle(self, title):
         self.title = title
