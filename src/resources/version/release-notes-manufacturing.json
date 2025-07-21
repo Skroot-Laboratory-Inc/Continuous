@@ -1,4 +1,12 @@
 {
+  "v2.0.5": {
+    "features": {
+      "1": "Added softmax of 6 for y axis and 8 for x axis.",
+      "2": "Added functionality to hide the software update feature if not available.",
+      "3": "Added gridlines to frequency and signal check figures.",
+      "4": "Set figure ticks to integer values only."
+    }
+  },
   "v2.0.4": {
     "features": {
       "1": "Added scroll to button/scroll top top buttons to release notes window."
@@ -29,52 +37,6 @@
   "v2.0.1": {
     "bugfixes": {
       "1": "Fixed bug with run export destination location."
-    }
-  },
-  "v1.2.2": {
-    "features": {
-      "1": "Added back software update functionality."
-    }
-  },
-  "v1.1.10": {
-    "features": {
-      "1": "Improved visuals on setup form options",
-      "2": "Various fixes for visuals with raspberry pi",
-      "3": "Moved display toggle to a button next to the plot rather than the menubar.",
-      "4": "Fixed software updating and release notes, placed it in the sidebar",
-      "5": "Added raspberry pi configurations for compatibility.",
-      "6": "Added KPI form next to plot with experiment details.",
-      "7": "Updated visuals to work with raspberry pi"
-    },
-    "bugfixes": {
-      "1": "Fixed calibration to work when not calibrating"
-    }
-  },
-  "v1.1.0": {
-    "features": {
-      "1": "Added random number generator for Lot ID",
-      "2": "Embedded reader setup form rather than a popup.",
-      "3": "Added a dialog to the software update dialog to restart the computer.",
-      "4": "Added identifier to title of reader grid with Lot ID.",
-      "5": "Added splash screen while UI loads.",
-      "6": "Increased size of software update dropdown.",
-      "7": "Uploads raw data scans to AWS once every 3 hours",
-      "8": "Implemented harvest algorithm indicator to inform user of saturation time.",
-      "9": "Added functionality to display saturation time on the dashboard.",
-      "10": "Added dynamodb functionality to enhance dashboard experience."
-    },
-    "bugfixes": {
-      "1": "Added support for new hubs by limiting usage to USB2.",
-      "2": "Added touchscreen scrolling support for release notes dialog",
-      "3": "Fixed footer disappearing when software update is available.",
-      "4": "Fixed footer disappearing when there is no software update after equilibration",
-      "5": "Enabled AWS reconnection after internet disruption",
-      "6": "Lot ID and start date now properly reset on new runs from the same square."
-    },
-    "other": {
-      "1": "Removed onscreen keyboard",
-      "2": "Utilized built in system.platform to get OS.",
-      "3": "Updated copyright to 2025"
     }
   }
 }
