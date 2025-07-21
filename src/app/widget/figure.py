@@ -32,7 +32,7 @@ class FigureCanvas:
         self.FigureStyles.applyGenericStyles()
 
     def createToggle(self):
-        button_ax = self.frequencyFigure.add_axes([0.15, 0.80, 0.2, 0.1])
+        button_ax = self.frequencyFigure.add_axes([0.15, 0.75, 0.2, 0.1])
         button_ax.set_zorder(1000)
         button_ax.patch.set_alpha(0.5)
         toggle_button = Button(button_ax, 'Toggle', color=Colors().primaryColor, hovercolor=Colors().primaryColor)

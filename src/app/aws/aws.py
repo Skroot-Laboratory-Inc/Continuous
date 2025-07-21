@@ -6,6 +6,7 @@ from urllib import parse
 import boto3
 import botocore
 from botocore.client import Config
+from botocore.exceptions import ClientError
 
 from src.app.aws.helpers.exceptions import DownloadFailedException
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
@@ -49,7 +50,7 @@ class AwsBoto3:
                     self.runFolder = f'{folder["Prefix"]}{self.useCase}/{self.runUid}'
                     break
                 except Exception as e:
-                    if type(e.__context__) is botocore.exceptions.ClientError:
+                    if type(e.__context__) is ClientError:
                         pass  # This means unauthorized
                     else:
                         raise

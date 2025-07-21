@@ -1,5 +1,8 @@
+from typing import List
+
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.model.menu_item import MenuItem
+from src.app.widget.sidebar.helpers.functions import isAwsConnected
 from src.app.widget.sidebar.manuals.advanced_setting_document import AdvancedSettingsDocument
 from src.app.widget.sidebar.manuals.troubleshooting_page import TroubleshootingPage
 from src.app.widget.sidebar.manuals.user_guide_page import UserGuidePage
@@ -15,6 +18,14 @@ class SubMenu(BaseMenu):
         self.requestMenu = requestMenu
         self.softwareUpdate = softwareUpdate
         self.active_menu = None
+
+        settingsMenu: List[MenuItem] = [
+                MenuItem("Configuration", lambda: self.systemConfiguration()),
+                MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
+                MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
+            ]
+        if isAwsConnected():
+            settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
 
         self.submenus = {
             "Export Data": [
@@ -33,12 +44,7 @@ class SubMenu(BaseMenu):
                 MenuItem("Troubleshooting", lambda: TroubleshootingPage(self.rootManager)),
                 MenuItem("Advanced Use", lambda: AdvancedSettingsDocument(self.rootManager)),
             ],
-            "Settings": [
-                MenuItem("Configuration", lambda: self.systemConfiguration()),
-                MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
-                MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
-                MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)),
-            ],
+            "Settings": settingsMenu
         }
 
     def showMenu(self, menu_label, main_menu_width):

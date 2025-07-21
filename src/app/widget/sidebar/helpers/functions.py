@@ -5,6 +5,9 @@ import shutil
 import subprocess
 from datetime import datetime
 
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError, BotoCoreError
+
 from src.app.authentication.helpers.constants import AuthenticationConstants
 from src.app.authentication.helpers.exceptions import AideLogsNotFound, AuthLogsNotFound
 from src.app.authentication.helpers.functions import getAdmins, getUsers
@@ -113,3 +116,28 @@ def setHostname(hostname: str):
         logging.exception("Failed to update machine hostname", extra={"id": "Hostname"})
         return False
 
+
+def isAwsConnected():
+    """
+    Check if the device is connected to AWS by calling STS get-caller-identity.
+
+    Returns:
+        bool: True if connected to AWS, False otherwise
+    """
+    try:
+        sts_client = boto3.client('sts')
+        response = sts_client.get_caller_identity()
+        logging.info(f"Currently logged in as {response.get('Arn')}")
+        return True
+    except NoCredentialsError:
+        # No AWS credentials configured
+        return False
+    except ClientError:
+        # AWS service error (e.g., invalid credentials, network issues)
+        return False
+    except BotoCoreError:
+        # Other boto3/botocore errors
+        return False
+    except Exception:
+        # Any other unexpected error
+        return False
