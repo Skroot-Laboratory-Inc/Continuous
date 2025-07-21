@@ -1,10 +1,13 @@
 import tkinter
 
+import numpy as np
+
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.data_helpers import frequencyToIndex, convertListToPercent, convertToPercent
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.sweep_data import SweepData
 from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.theme.figure_styles import FigureStyles
 from src.app.widget.figure import FigureCanvas
 
 
@@ -35,6 +38,13 @@ class Plotter:
         self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
         self.ReaderFigureCanvas.redrawPlot()
         yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
+        self.ReaderFigureCanvas.setYAxisLimits(
+            bottom=np.min(yPlot)*1.1,
+            top=max(FigureStyles().y_soft_max, np.max(yPlot) * 1.1),
+        )
+        self.ReaderFigureCanvas.setXAxisLimits(
+            right=max(FigureStyles().x_soft_max, np.max(resultSet.getDenoiseTimeSmooth()) * 1.1),
+        )
         self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().lightPrimaryColor)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())

@@ -203,7 +203,7 @@ class ReaderThreadManager:
                     self.Timer.updateTime()
                     reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
                 if not self.issueOccurredFn():
-                    text_notification.setText(f"Reader {self.Reader.readerNumber} successfully recorded sweep.")
+                    text_notification.setText(f"Reader {self.Reader.readerNumber} successfully recorded a sweep.")
             except:
                 logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:

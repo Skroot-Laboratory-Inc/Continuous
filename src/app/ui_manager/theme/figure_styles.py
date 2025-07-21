@@ -10,6 +10,8 @@ class FigureStyles:
         self.color = "lightgray"
         self.alpha = 0.3
         self.z_order = 0
+        self.y_soft_max = 6
+        self.x_soft_max = 8
 
     @staticmethod
     def applyGenericStyles():
