@@ -29,18 +29,18 @@ class PasswordResetScreen:
 
         self.createHeader()
         self.createUsernameEntry = self.createUsername()
-        self.createUsernameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.createUsernameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Username:  "))
         if self.forcedReset:
             self.username.set(authorizer)
             self.createUsernameEntry['state'] = tk.DISABLED
             self.createUsernameEntry.unbind("<Button-1>")
         self.createPasswordEntry, self.showPasswordButton = self.createPassword()
         self.createPasswordEntry.bind("<Button-1>",
-                                      lambda event: launchKeyboard(event.widget, rootManager.getRoot(), True))
+                                      lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Password:  ", True))
         self.badPasswordLabel = self.createBadPasswordWarning()
         self.confirmPasswordEntry, self.showConfirmPasswordButton = self.createConfirmPassword()
         self.confirmPasswordEntry.bind("<Button-1>",
-                                       lambda event: launchKeyboard(event.widget, rootManager.getRoot(), True))
+                                       lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Confirm Password:  ", True))
         self.passwordMismatchLabel = self.createBadPasswordWarning()
         self.password.trace_add("write", self.togglePasswordWarning)
         self.confirmPassword.trace_add("write", self.togglePasswordWarning)

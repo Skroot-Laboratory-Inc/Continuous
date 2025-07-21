@@ -72,7 +72,7 @@ class SetupReaderForm:
                                                                                                        sticky='w')
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot()))
+                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
             if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().secondaryColor

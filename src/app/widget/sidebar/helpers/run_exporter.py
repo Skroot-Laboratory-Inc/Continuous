@@ -29,7 +29,7 @@ class RunExporter:
         self.windowRoot.transient(rootManager.getRoot())
         self.createHeader()
         self.runIdEntry = self.createRunID()
-        self.runIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.runIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Run ID:  "))
         self.downloadButton = self.createDownloadButton()
         self.cancelButton = self.createCancelButton()
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())

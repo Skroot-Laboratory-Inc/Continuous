@@ -43,9 +43,9 @@ class PasswordRotationScreen:
         self.submitButton = self.createSubmitButton(row=5)
         self.cancelButton = self.createCancelButton(row=5)
 
-        self.maxAgeEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
-        self.inactiveDaysEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
-        self.historicPasswordsEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.maxAgeEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Password Age:  "))
+        self.inactiveDaysEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Inactive Days:  "))
+        self.historicPasswordsEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Remembered Passwords:  "))
 
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
