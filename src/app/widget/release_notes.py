@@ -77,10 +77,10 @@ class ReleaseNotes(PopupInterface):
 
     def createDownloadAndCancelButtons(self, window, row):
         row = self.createSpacer(window, row)
-        downloadButton = GenericButton("Download", window, lambda: self.setDownload(True)).button
-        downloadButton.grid(row=row, column=0, sticky='w')
         cancelButton = GenericButton("Cancel", window, lambda: self.setDownload(False)).button
-        cancelButton.grid(row=row, column=1, sticky='w')
+        cancelButton.grid(row=row, column=0, sticky='w')
+        downloadButton = GenericButton("Download", window, lambda: self.setDownload(True)).button
+        downloadButton.grid(row=row, column=1, sticky='w')
 
     def setDownload(self, value):
         self.download = value

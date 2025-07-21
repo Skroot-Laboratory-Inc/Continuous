@@ -4,7 +4,9 @@
       "1": "Added softmax of 6 for y axis and 8 for x axis.",
       "2": "Added functionality to hide the software update feature if not available.",
       "3": "Added gridlines to frequency and signal check figures.",
-      "4": "Set figure ticks to integer values only."
+      "4": "Set figure ticks to integer values only.",
+      "5": "Added a label to help identify the widget the keyboard is tied to.",
+      "6": "Updated keyboard to contain more symbols, more efficiently."
     }
   },
   "v2.0.4": {

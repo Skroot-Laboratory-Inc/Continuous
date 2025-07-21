@@ -28,7 +28,7 @@ class RestoreUserScreen:
 
         self.createHeader()
         self.createUsernameEntry = self.createUsername()
-        self.createUsernameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.createUsernameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Username:  "))
         self.submitButton = self.createSubmitButton()
         self.cancelButton = self.createCancelButton()
 

@@ -18,7 +18,7 @@ class Version:
         self.majorVersion = 2.0
         self.minorVersion = 5
         self.useCase = UseCase.Manufacturing
-        self.developmentVersion = DevelopmentVersion.Dev
+        self.developmentVersion = DevelopmentVersion.Test
 
     def getMajorVersion(self) -> float:
         return self.majorVersion

@@ -31,7 +31,7 @@ class SystemConfigurationPage:
         self.authEnabled.trace_add("write", self.toggleWarning)
         self.authDropdown = self.createAuthDropdown(3)
         self.deviceIdEntry = self.createDeviceId(5)
-        self.deviceIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.deviceIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Device ID:  "))
         self.submitButton = self.createSubmitButton(6)
         self.cancelButton = self.createCancelButton(6)
 

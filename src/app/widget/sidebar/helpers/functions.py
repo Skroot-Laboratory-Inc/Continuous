@@ -127,7 +127,7 @@ def isAwsConnected():
     try:
         sts_client = boto3.client('sts')
         response = sts_client.get_caller_identity()
-        logging.info(f"Currently logged in as {response.get('Arn')}")
+        logging.info(f"Currently logged in as {response.get('Arn')}", extra={"id": "AWS"})
         return True
     except NoCredentialsError:
         # No AWS credentials configured

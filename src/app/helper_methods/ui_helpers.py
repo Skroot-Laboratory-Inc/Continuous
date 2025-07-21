@@ -9,9 +9,9 @@ from src.app.widget.custom_dropdown import CustomDropdownMenu
 from src.app.widget.keyboard import Keyboard
 
 
-def launchKeyboard(outputEntry: tk.Entry, master, hidePassword: bool = False):
+def launchKeyboard(outputEntry: tk.Entry, master, label: str = "", hidePassword: bool = False):
     """Launch the on-screen keyboard when an Entry widget is clicked."""
-    Keyboard(master, hidePassword).set_entry(outputEntry)
+    Keyboard(master, hidePassword, label).set_entry(outputEntry)
 
 
 def datetimeToDisplay(dt: datetime.datetime):

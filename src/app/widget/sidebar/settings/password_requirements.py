@@ -45,9 +45,9 @@ class PasswordRequirementsScreen:
         self.submitButton = self.createSubmitButton(row=5)
         self.cancelButton = self.createCancelButton(row=5)
 
-        self.lockoutMinutesEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
-        self.lockoutRetriesEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
-        self.minPasswordLengthEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot()))
+        self.lockoutMinutesEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Lockout Minutes:  "))
+        self.lockoutRetriesEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Lockout Retries:  "))
+        self.minPasswordLengthEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Password Length:  "))
 
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
