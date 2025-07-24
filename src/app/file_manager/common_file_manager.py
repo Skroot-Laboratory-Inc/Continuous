@@ -14,13 +14,12 @@ class CommonFileManager:
         self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
         self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
         self.experimentLogDir = f'{getDesktopLocation()}/Backend'
-        self.remoteDesktopFile = rf'{os.path.dirname(srcDir)}/share/applications/desktopApp.desktop'
         self.updateScript = rf'{resourcesDir}/scripts/update-script.sh'
         self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
         self.tempReleaseNotes = fr'{os.path.dirname(srcDir)}'
         self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
-        self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev/Benchtop'
+        self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
 
     def getHelpIcon(self):
         return self.helpIconPng

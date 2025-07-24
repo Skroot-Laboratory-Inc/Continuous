@@ -99,9 +99,6 @@ def createDropdown(root, entryVariable, options, outline=False):
     return dropdown_button
 
 
-import tkinter as tk
-
-
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     """ Makes a tkinter toplevel into a scrollable window with fixed height and width"""
     windowRoot.minsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
