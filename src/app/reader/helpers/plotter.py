@@ -39,11 +39,11 @@ class Plotter:
         self.ReaderFigureCanvas.redrawPlot()
         yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
         self.ReaderFigureCanvas.setYAxisLimits(
-            bottom=np.min(yPlot)*1.1,
-            top=max(FigureStyles().y_soft_max, np.max(yPlot) * 1.1),
+            bottom=np.nanmin(yPlot)*1.1,
+            top=max(FigureStyles().y_soft_max, np.nanmax(yPlot) * 1.1),
         )
         self.ReaderFigureCanvas.setXAxisLimits(
-            right=max(FigureStyles().x_soft_max, np.max(resultSet.getDenoiseTimeSmooth()) * 1.1),
+            right=max(FigureStyles().x_soft_max, np.nanmax(resultSet.getDenoiseTimeSmooth()) * 1.1),
         )
         self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().lightPrimaryColor)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)

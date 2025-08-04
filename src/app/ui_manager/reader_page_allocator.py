@@ -41,7 +41,7 @@ class ReaderPageAllocator:
         readerFrame.grid_rowconfigure(0, weight=1, minsize=30)
         readerFrame.grid_rowconfigure(1, weight=9, minsize=100)
         readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
-        readerFrame.pack(fill=tk.BOTH, expand=True)
+        readerFrame.grid(row=0, column=1, sticky="nsew")
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
                                                             lambda: self.connectNewReader(self.readerNumber))
@@ -121,8 +121,8 @@ class ReaderPageAllocator:
     def createPlotFrame(self, readerFrame):
         mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
         mainFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
-        mainFrame.grid_columnconfigure(0, weight=1, uniform="plot")
-        mainFrame.grid_columnconfigure(1, weight=1, uniform="plot")
+        mainFrame.grid_columnconfigure(0, weight=1)
+        mainFrame.grid_columnconfigure(1, weight=2)
         mainFrame.grid_rowconfigure(0, weight=1)
         kpiFrame = tk.Frame(mainFrame, bg=Colors().secondaryColor)
         kpiFrame.grid(row=0, column=0, sticky='ew')

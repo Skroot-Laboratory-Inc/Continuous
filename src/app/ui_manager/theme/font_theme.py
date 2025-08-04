@@ -11,6 +11,7 @@ class FontTheme:
         self.header2 = font.Font(family='Helvetica', size=22, weight="bold")
         self.header3 = font.Font(family='Helvetica', size=20, weight="bold")
         self.buttons = font.Font(family='Helvetica', size=34, weight="bold")
+        self.toggleButton = font.Font(family='Helvetica', size=40, weight="bold", underline=True)
         self.helpButton = font.Font(family='Helvetica', size=13, weight="bold")
         self.profileButton = font.Font(family='Helvetica', size=16)
         self.closeX = font.Font(family='Helvetica', size=40, weight="bold")

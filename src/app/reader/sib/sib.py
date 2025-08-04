@@ -10,10 +10,10 @@ import pandas
 
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import truncateByX
-from src.app.helper_methods.helper_functions import getSibPort
 from src.app.model.sweep_data import SweepData
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.sib_properties import SibProperties
+from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
 from src.resources.sibcontrol import sibcontrol
@@ -21,7 +21,9 @@ from src.resources.sibcontrol.sibcontrol import SIBDDSConfigError, SIBException,
 
 
 class Sib(SibInterface):
-    def __init__(self, port, calibrationFileName, calibrationRequired=False):
+    def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator, calibrationRequired=False):
+        self.PortAllocator = portAllocator
+        self.readerNumber = readerNumber
         self.calibrationFailed = False
         self.initialize(port.device)
         self.serialNumber = port.serial_number
@@ -128,17 +130,14 @@ class Sib(SibInterface):
 
     def close(self) -> bool:
         try:
+            self.PortAllocator.removePort(self.readerNumber)
             self.sib.close()
             return True
         except:
             return False
 
     def reset(self) -> bool:
-        try:
-            self.sib.close()
-            return True
-        except:
-            return False
+        return self.close()
 
     def initialize(self, port):
         self.port = port
@@ -221,7 +220,7 @@ class Sib(SibInterface):
             self.reset()
             time.sleep(1.0)
         try:
-            port = getSibPort()
+            port = self.PortAllocator.getPortForReader(self.readerNumber)
             self.initialize(port.device)
             self.setStartFrequency(self.startFreqMHz + self.initialSpikeMhz)
             self.setStopFrequency(self.stopFreqMHz)

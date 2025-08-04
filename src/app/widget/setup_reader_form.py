@@ -35,7 +35,7 @@ class SetupReaderForm:
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.window.grid_columnconfigure(0, weight=1)
-        self.window.grid_columnconfigure(1, weight=2)
+        self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(fill="x", expand=True)
 
         ''' Normal entries '''

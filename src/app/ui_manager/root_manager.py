@@ -92,7 +92,6 @@ class RootManager:
         self.whiteFrame = self.createFrame(Colors().secondaryColor)
 
     def updateIdleTasks(self):
-        # Do not remove, used for software update.
         self.root.update_idletasks()
 
 
