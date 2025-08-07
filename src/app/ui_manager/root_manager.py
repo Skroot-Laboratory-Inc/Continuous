@@ -66,11 +66,10 @@ class RootManager:
     def setAttribute(self, attribute, state):
         self.root.attributes(attribute, state)
 
-    def setFullscreen(self):
-        self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
+    def setOverrideRedirect(self):
+        self.root.overrideredirect(True)
 
     def setWindowSize(self):
-        self.root.overrideredirect(True)
         self.root.geometry(f"{ScreenProperties().resolution['width']}x{ScreenProperties().resolution['height']}+0+0")
 
     def setProtocol(self, protocol, invokeFn):

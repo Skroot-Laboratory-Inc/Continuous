@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import font, ttk
 
+from src.app.properties.screen_properties import ScreenProperties
+
 
 class Keyboard:
     def __init__(self, root, hidePassword: bool, label_text: str = ""):
@@ -19,9 +21,8 @@ class Keyboard:
         self.keyboard_window.withdraw()
         self.keyboard_window.overrideredirect(True)
 
-        # Full screen setup
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
+        screen_width = ScreenProperties().resolution['width']
+        screen_height = ScreenProperties().resolution['height']
         self.keyboard_window.geometry(f"{screen_width}x{screen_height}+0+0")
         self.keyboard_window.resizable(False, False)
         self.width = screen_width
@@ -114,6 +115,9 @@ class Keyboard:
         )
         self.entry.pack(fill=tk.BOTH, expand=True, side="left")
 
+        # Bind Enter key to submit action
+        self.entry.bind('<Return>', self._on_enter_key)
+
         # Password toggle button
         if self.hidePassword:
             self.showPasswordButton = ttk.Button(
@@ -141,6 +145,11 @@ class Keyboard:
         self.keyboard_height = keyboard_height
 
         self._create_keys()
+
+    def _on_enter_key(self, event):
+        """Handle physical Enter key press"""
+        self.close_keyboard()
+        return 'break'  # Prevent default Enter key behavior
 
     def _create_keys(self):
         """Create all keyboard keys"""
