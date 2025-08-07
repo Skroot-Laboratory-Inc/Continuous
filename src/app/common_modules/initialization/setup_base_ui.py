@@ -28,7 +28,6 @@ class SetupBaseUi:
         else:
             self.SoftwareUpdate = SoftwareUpdate(self.RootManager, major_version, minor_version)
         self.FrameManager = FrameManager(self.RootManager)
-        self.RootManager.createWhiteFrame()
         self.GuiProperties = GuiProperties()
         self.version = f'{major_version}.{minor_version}'
         self.isDevMode = DevProperties().isDevMode
@@ -44,19 +43,23 @@ class SetupBaseUi:
             bg='white')
         copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
 
+        self.FrameManager.bannerFrame.grid_rowconfigure(0, weight=1)
         self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=0)
         self.FrameManager.bannerFrame.grid_columnconfigure(1, weight=1)
         self.FrameManager.bannerFrame.grid_columnconfigure(2, weight=0)
         self.FrameManager.bannerFrame.grid_columnconfigure(3, weight=0)
-        widget = text_notification.createWidget(self.FrameManager.bannerFrame)
+        text_notification.createWidget(self.FrameManager.bannerFrame)
         text_notification.setText("Skroot Laboratory - Follow the prompts to get started.")
-        widget.grid(row=0, column=1, sticky='nsew')
+        text_notification.getWidget().grid(row=0, column=1, sticky="nsew")
         profileButton = ProfileButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
         profileButton.grid(row=0, column=2, sticky='nsew')
+        self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, profileButton))
         powerButton = PowerButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
-        powerButton.grid(row=0, column=3, sticky='ne')
+        powerButton.grid(row=0, column=3, sticky='nse')
+        self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, powerButton))
         sidebar = Sidebar(self.RootManager, self.SessionManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate)
         sidebar.getHamburger.grid(row=0, column=0, sticky='nsw')
+        self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, sidebar.getHamburger))
         return self.FrameManager.bodyFrame, sidebar
 
     def createTheme(self):
@@ -137,3 +140,6 @@ class SetupBaseUi:
             background=[("disabled", self.Colors.primaryColor), ("active", self.Colors.primaryColor)],
             foreground=[("disabled", self.Colors.secondaryColor), ("active", self.Colors.secondaryColor)])
 
+
+def toggleButton(toggle, button):
+    button.grid_remove() if toggle else button.grid()
