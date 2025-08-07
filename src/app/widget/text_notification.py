@@ -10,6 +10,10 @@ def createWidget(frame):
     return widget
 
 
+def getWidget():
+    return widget
+
+
 def setText(text, font=None, backgroundColor=None, foregroundColor=None):
     if font is None:
         font = FontTheme().textNotification

@@ -1,8 +1,9 @@
 import tkinter as tk
 
+from reactivex.subject import BehaviorSubject
+
 from src.app.properties.screen_properties import ScreenProperties
-from src.app.ui_manager.theme.gui_properties import GuiProperties
-from src.app.ui_manager.theme.colors import Colors
+from src.app.ui_manager.popup_background import PopupBackground
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 
@@ -15,6 +16,8 @@ class RootManager:
         self.validateInteger = (self.root.register(validate_integer), '%P')
         self.validateIntegerError = (self.root.register(show_validation_error))
         self.setMenubar()
+        self.popupDisplayed = BehaviorSubject(False)
+        self.popupBackground = PopupBackground(self)
 
     def instantiateNewMenubarRibbon(self):
         return tk.Menu(self.menubar, tearoff=0, font=self.fonts.primary, border=10)
@@ -27,10 +30,7 @@ class RootManager:
         self.root.config(menu=self.menubar)
 
     def createTopLevel(self):
-        self.whiteFrame.place(relx=0,
-                              rely=0,
-                              relwidth=1,
-                              relheight=1)
+        self.popupDisplayed.on_next(True)
         topLevel = tk.Toplevel(self.root, bg='white', padx=25, pady=25)
         topLevel.withdraw()
         return topLevel
@@ -55,7 +55,7 @@ class RootManager:
         window.update()
         window.deiconify()
         self.root.wait_window(window)
-        self.whiteFrame.place_forget()
+        self.popupDisplayed.on_next(False)
 
     def getRoot(self):
         return self.root
@@ -66,11 +66,10 @@ class RootManager:
     def setAttribute(self, attribute, state):
         self.root.attributes(attribute, state)
 
-    def setFullscreen(self):
-        self.root.geometry(f"{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}")
+    def setOverrideRedirect(self):
+        self.root.overrideredirect(True)
 
     def setWindowSize(self):
-        self.root.overrideredirect(True)
         self.root.geometry(f"{ScreenProperties().resolution['width']}x{ScreenProperties().resolution['height']}+0+0")
 
     def setProtocol(self, protocol, invokeFn):
@@ -87,9 +86,6 @@ class RootManager:
 
     def registerEvent(self, event, eventFn):
         self.root.bind(event, eventFn)
-
-    def createWhiteFrame(self):
-        self.whiteFrame = self.createFrame(Colors().secondaryColor)
 
     def updateIdleTasks(self):
         self.root.update_idletasks()

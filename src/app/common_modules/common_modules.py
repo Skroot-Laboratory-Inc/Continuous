@@ -27,10 +27,10 @@ class CommonModules:
 
     def configureRoot(self):
         if platform.system() == 'Windows':
-            self.RootManager.setWindowSize()
+            self.RootManager.setOverrideRedirect()
         elif platform.system() == 'Linux':
-            self.RootManager.setFullscreen()
             self.RootManager.setAttribute('-zoomed', True)
+        self.RootManager.setWindowSize()
 
         def _create_circle(this, x, y, r, **kwargs):
             return this.create_oval(x - r, y - r, x + r, y + r, **kwargs)

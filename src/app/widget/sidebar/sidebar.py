@@ -49,6 +49,52 @@ class Sidebar:
             onActionExecuted=self.closeAllMenus
         )
 
+        # Set up click-outside-to-close functionality
+        self.setupClickOutsideToClose()
+
+    def setupClickOutsideToClose(self):
+        """Set up event bindings for click-outside-to-close functionality"""
+        root = self.rootManager.getRoot()
+        root.bind("<Button-1>", self.handleRootClick, add="+")
+
+    def handleRootClick(self, event):
+        """Handle clicks anywhere in the application"""
+        if not (self.mainMenu.isOpen or self.subMenu.isOpen or self.tertiaryMenu.isOpen):
+            return
+        if self.isClickInsideMenus(event.widget):
+            return
+        # Click was outside menus, so close them
+        self.closeAllMenus()
+
+    def isClickInsideMenus(self, widget):
+        """Check if the clicked widget is inside any of the menu panels or hamburger button"""
+        # Check if click was on hamburger button
+        if widget == self.mainMenu.hamburgerButton:
+            return True
+
+        menu_panels = [
+            self.mainMenu.panel,
+            self.subMenu.panel,
+            self.tertiaryMenu.panel
+        ]
+
+        for panel in menu_panels:
+            if self.isWidgetInside(widget, panel):
+                return True
+
+        return False
+
+    def isWidgetInside(self, widget, container):
+        """Recursively check if a widget is inside a container"""
+        if widget == container:
+            return True
+
+        parent = widget.master if hasattr(widget, 'master') else None
+        if parent is None:
+            return False
+
+        return self.isWidgetInside(parent, container)
+
     def handleMainMenuClick(self, menu_label):
         """Handle clicks from the main menu"""
         if self.tertiaryMenu.isOpen:

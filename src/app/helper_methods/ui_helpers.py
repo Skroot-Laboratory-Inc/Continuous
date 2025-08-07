@@ -61,7 +61,7 @@ def createDropdown(root, entryVariable, options, outline=False):
 
     custom_menu = CustomDropdownMenu(
         root,
-        item_justify = "center",
+        item_justify="center",
         bg="white",
         fg="black",
         font=FontTheme().primary,
@@ -81,7 +81,7 @@ def createDropdown(root, entryVariable, options, outline=False):
 
     def select_option(option):
         entryVariable.set(option)
-        dropdown_button.config(text=option)
+        dropdown_button.config(text=styleDropdownOption(option))
 
     def show_dropdown():
         # Update the button to get its actual size
