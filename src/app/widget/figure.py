@@ -30,15 +30,19 @@ class FigureCanvas:
         self.reachedEquilibration = False
         self.FigureStyles = FigureStyles()
         self.FigureStyles.applyGenericStyles()
+        self.button_ax = None
 
     def createToggle(self):
-        button_ax = self.frequencyFigure.add_axes([0.15, 0.75, 0.2, 0.1])
-        button_ax.set_zorder(1000)
-        button_ax.patch.set_alpha(0.5)
-        toggle_button = Button(button_ax, 'Toggle', color=Colors().primaryColor, hovercolor=Colors().primaryColor)
-        toggle_button.on_clicked(self.toggle_view)
-        toggle_button.label.set_color(Colors().secondaryColor)
-        return toggle_button
+        # Only create the button if it doesn't exist or if the axes was cleared
+        if not hasattr(self, 'button_ax') or self.button_ax not in self.frequencyFigure.axes:
+            self.button_ax = self.frequencyFigure.add_axes([0.15, 0.75, 0.2, 0.1])
+            self.button_ax.set_zorder(1000)
+            self.button_ax.patch.set_alpha(0.5)
+            self.toggle_button = Button(self.button_ax, 'Toggle', color=Colors().primaryColor,
+                                        hovercolor=Colors().primaryColor)
+            self.toggle_button.on_clicked(self.toggle_view)
+            self.toggle_button.label.set_color(Colors().secondaryColor)
+        return self.toggle_button
 
     def toggle_view(self, event):
         self.showSgi.on_next(not self.showSgi.value)

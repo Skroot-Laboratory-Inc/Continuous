@@ -13,7 +13,7 @@ from src.app.widget.confirmation_popup import ConfirmationPopup
 
 
 class ReaderPageThreadManager:
-    def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager, sessionManager: SessionManager):
+    def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager, sessionManager: SessionManager, sibFinder: SibFinder):
         self.readerAllocator = ReaderPageAllocator(
             rootManager,
             sessionManager,
@@ -28,7 +28,7 @@ class ReaderPageThreadManager:
         self.Readers = {}
         self.RootManager = rootManager
         self.sessionManager = sessionManager
-        self.SibFinder = SibFinder()
+        self.SibFinder = sibFinder
 
     def connectReader(self, readerNumber):
         try:

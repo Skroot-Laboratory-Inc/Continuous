@@ -73,6 +73,16 @@ class SetupBaseUi:
             background=self.Colors.primaryColor)
 
         style.configure(
+            'Toggle.TButton',
+            font=('Helvetica', 60, 'bold'),
+            padding=(0, 0),
+            borderwidth=0,
+            width=2,
+            highlightthickness=0,
+            foreground=self.Colors.primaryColor,
+            background=self.Colors.secondaryColor)
+
+        style.configure(
             'Start.TButton',
             font=FontTheme().buttons,
             padding=WidgetTheme().defaultButtonPadding,

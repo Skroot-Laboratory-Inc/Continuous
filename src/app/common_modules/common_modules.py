@@ -6,6 +6,7 @@ from src.app.common_modules.initialization.setup_base_ui import SetupBaseUi
 from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
+from src.app.reader.sib.sib_finder import SibFinder
 from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
 from src.app.ui_manager.root_manager import RootManager
@@ -19,7 +20,7 @@ class CommonModules:
         self.RootManager = rootManager
         self.sessionManager = SessionManager()
         self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager, major_version, minor_version).bodyFrame
-        self.ReaderPageManager = ReaderPageManager(self.bodyFrame)
+        self.ReaderPageManager = ReaderPageManager(self.bodyFrame, rootManager)
         self.configureRoot()
         self.isDevMode = DevProperties().isDevMode
         self.createReadersUi()
@@ -39,6 +40,7 @@ class CommonModules:
     def createReadersUi(self):
         numScreens = GuiProperties().numScreens
         self.ReaderPageManager.createPages(numScreens)
+        sibFinder = SibFinder()
 
         for screenNumber in range(0, numScreens):
             readerPage = self.ReaderPageManager.getPage(screenNumber)
@@ -48,5 +50,7 @@ class CommonModules:
                 startingReaderNumber,
                 self.RootManager,
                 self.sessionManager,
+                sibFinder,
             )
+            self.ReaderPageManager.createNextAndPreviousFrameButtons()
             self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))
