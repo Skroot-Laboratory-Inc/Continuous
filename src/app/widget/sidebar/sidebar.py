@@ -1,5 +1,8 @@
+from math import floor
+
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.service.software_update import SoftwareUpdate
+from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.sidebar.menus.main_menu import MainMenu
 from src.app.widget.sidebar.menus.submenu import SubMenu
@@ -16,9 +19,10 @@ class Sidebar:
         self.bodyFrame = bodyFrame
         self.toolbar = toolbar
 
-        self.menuWidth = 350
-        self.submenuWidth = 350
-        self.tertiary_menu_width = 350
+        menuWidth = floor(ScreenProperties().resolution['width'] / 3)
+        self.menuWidth = menuWidth
+        self.submenuWidth = menuWidth
+        self.tertiary_menu_width = menuWidth
 
         self.mainMenu = MainMenu(
             parent_frame=self.bodyFrame,

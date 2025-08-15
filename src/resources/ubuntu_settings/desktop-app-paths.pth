@@ -1,6 +1,4 @@
 # This adds paths to the desktop app, allowing it to reference files within itself. Incorrect directories are ignored.
 
-/home/skroot/.local/DesktopApp/src/app
-/home/skroot/.local/DesktopApp
 /home/kiosk/.local/DesktopApp/src/app
 /home/kiosk/.local/DesktopApp
