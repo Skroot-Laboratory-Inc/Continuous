@@ -286,7 +286,7 @@ def getRole(username: str) -> UserRole:
         return UserRole.ADMIN
     elif username in [user.username for user in getUsers()]:
         return UserRole.USER
-    elif username in getSudoers():
+    elif username in getSystemAdmin():
         return UserRole.SYSTEM_ADMIN
     else:
         raise UserDoesntExistException(f"`{username} is not in the system.")
@@ -330,10 +330,9 @@ def getAdmins() -> List[User]:
     return [User(username, True) for username in users]
 
 
-def getSudoers() -> List[str]:
+def getSystemAdmin() -> List[str]:
     if platform.system() == "Linux":
-        import grp
-        users = grp.getgrnam(AuthenticationConstants().sudoersGroup).gr_mem
+        users = [AuthenticationConstants().systemAdminsUser]
     else:
         users = ["Skroot", "test_sudoer2"]
     return users

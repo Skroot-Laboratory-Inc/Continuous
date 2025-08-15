@@ -1,6 +1,6 @@
 class AuthenticationConstants:
     def __init__(self):
-        self.sudoersGroup = "sudo"
+        self.systemAdminsUser = "sys_admin"
         self.adminGroup = "kiosk_administrators"
         self.userGroup = "kiosk_users"
         self.loggingGroup = "kiosk_users"
