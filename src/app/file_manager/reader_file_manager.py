@@ -5,6 +5,7 @@ class ReaderFileManager:
     def __init__(self, globalSavePath, readerNumber):
         self.readerSavePath = globalSavePath
         self.analyzed = rf"{self.readerSavePath}/Analyzed.csv"
+        self.temperatureCsv = rf'{self.readerSavePath}/temperature.csv'
         self.smoothAnalyzed = rf"{self.readerSavePath}/smoothAnalyzed.csv"
         self.calibrationLocalLocation = f'{self.readerSavePath}/Calibration.csv'
         self.calibrationGlobalLocation = f'{getDesktopLocation()}/Backend/Calibration/{readerNumber}/Calibration.csv'
@@ -14,6 +15,9 @@ class ReaderFileManager:
 
     def getReaderSavePath(self):
         return self.readerSavePath
+
+    def getTemperatureCsv(self):
+        return self.temperatureCsv
 
     def getAnalyzed(self):
         return self.analyzed
