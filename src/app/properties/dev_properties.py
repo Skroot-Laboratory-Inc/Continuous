@@ -6,9 +6,9 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 class DevProperties:
     def __init__(self):
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
-        self.tryDevMode = False
+        self.tryDevMode = True
         self.authEnabled = True
-        self.disableAws = False
+        self.disableAws = True
         self.enforceScanRate = True
         self.sibShouldError = False
         self.errorScans = range(5, 200)

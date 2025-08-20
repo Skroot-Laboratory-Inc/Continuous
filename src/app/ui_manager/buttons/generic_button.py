@@ -9,6 +9,8 @@ class GenericButton:
             text=text,
             style=style,
             command=lambda: invokeFn(),
+            cursor='',
+            takefocus=False
         )
 
     def invoke(self):

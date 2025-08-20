@@ -136,6 +136,9 @@ class SetupBaseUi:
             'Help.TButton',
             background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
         style.map(
+            'Toggle.TButton',
+            background=[("disabled", "gray23"), ("active", self.Colors.secondaryColor)])
+        style.map(
             'Profile.TButton',
             background=[("disabled", self.Colors.primaryColor), ("active", self.Colors.primaryColor)],
             foreground=[("disabled", self.Colors.secondaryColor), ("active", self.Colors.secondaryColor)])
