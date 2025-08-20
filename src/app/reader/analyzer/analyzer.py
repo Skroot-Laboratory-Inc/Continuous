@@ -16,6 +16,7 @@ from src.app.helper_methods.data_helpers import frequencyToIndex, gaussian
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.model.result_set.temperature_result_set import TemperatureResultSet
 from src.app.model.sweep_data import SweepData
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
@@ -29,6 +30,7 @@ class Analyzer(AnalyzerInterface):
         self.sweepData = SweepData([], [])
         self.FileManager = FileManager
         self.HarvestAlgorithm = harvestAlgorithm
+        self.TemperatureResultSet = TemperatureResultSet(FileManager)
 
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
@@ -67,6 +69,7 @@ class Analyzer(AnalyzerInterface):
                     frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
                 )
             resultSet.setDerivative(derivative)
+            self.TemperatureResultSet.appendTemp(resultSet.timestamp)
         except:
             raise ScanAnalysisException()
         finally:

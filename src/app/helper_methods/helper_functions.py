@@ -37,6 +37,24 @@ def restartPc():
         subprocess.Popen(['sudo', "reboot"], stdin=subprocess.PIPE)
 
 
+def getCpuTemp():
+    """ Get the Raspberry Pi CPU operating temperature """
+    if platform.system() == "Windows":
+        return np.nan
+    try:
+        result = subprocess.run(
+            ['sudo', 'vcgencmd', 'measure_temp'],
+            capture_output=True, text=True, check=True,
+        )
+        # Parse the output (format: "temp=42.8'C")
+        temp_str = result.stdout.strip()
+        temp_value = float(temp_str.split('=')[1].split("'")[0])
+        return temp_value
+    except (subprocess.CalledProcessError, ValueError, IndexError):
+        logging.exception("Error reading temperature", extra={"id": "Temperature Reading"})
+        return np.nan
+
+
 def getUsbDrive():
     """Find USB drives attached and mounts them to a temporary drive location. """
     if platform.system() == "Linux":

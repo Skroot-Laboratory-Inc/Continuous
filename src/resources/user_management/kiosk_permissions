@@ -50,3 +50,6 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/hostnamectl set-hostname *
 
 # Allows the kiosk user to perform software updates
 kiosk ALL=(ALL) NOPASSWD: /bin/sh update-script.sh
+
+# Allows the kiosk user to poll for cpu temperature
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/vcgencmd measure_temp
