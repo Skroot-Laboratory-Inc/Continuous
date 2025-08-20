@@ -35,7 +35,7 @@ class SetupBaseUi:
         self.createTheme()
 
     def createFrames(self):
-        versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'Version: v{self.version}', bg='white')
+        versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'v{self.version}', bg='white')
         versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
         copyrightLabel = tk.Label(
             self.FrameManager.footerFrame,
