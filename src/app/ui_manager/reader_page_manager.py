@@ -1,5 +1,7 @@
-import logging
 import tkinter as tk
+
+from reactivex import operators
+from reactivex.subject import BehaviorSubject
 
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
@@ -14,6 +16,7 @@ class ReaderPageManager:
         self.Colors = Colors()
         self.GuiProperties = GuiProperties()
         self.rootManager = rootManager
+        self.currentFrame = BehaviorSubject(None)
 
     def createPages(self, numScreens):
         for i in range(numScreens):
@@ -22,15 +25,15 @@ class ReaderPageManager:
             readerPage.grid_columnconfigure(0, weight=0)
             readerPage.grid_columnconfigure(1, weight=1)
             readerPage.grid_columnconfigure(2, weight=0)
-            readerPage.place(relx=0, rely=0, relwidth=1, relheight=1)
             self.readerPages.append(readerPage)
+        self.currentFrame.pipe(
+            operators.pairwise()
+        ).subscribe(lambda frames: self.showPage(frames[0], frames[1]))
 
-    def showPage(self, frame):
-        try:
-            frame.tkraise()
-            self.rootManager.updateIdleTasks()
-        except:
-            logging.exception(f'Failed to update reader screen.', extra={"id": "readerPageManager"})
+    def showPage(self, previousFrame: tk.Frame, currentFrame: tk.Frame):
+        currentFrame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        if currentFrame != previousFrame and previousFrame:
+            previousFrame.place_forget()
 
     def getPage(self, screenNumber):
         return self.readerPages[screenNumber]
@@ -55,12 +58,12 @@ class ReaderPageManager:
         previousButton = GenericButton(
             "⟨",
             currentPage,
-            lambda: self.showPage(previousPage),
+            lambda: self.currentFrame.on_next(previousPage),
             "Toggle.TButton").button
         previousButton.grid(row=0, column=0, sticky='nsew')
         nextButton = GenericButton(
             "⟩",
             currentPage,
-            lambda: self.showPage(nextPage),
+            lambda: self.currentFrame.on_next(nextPage),
             "Toggle.TButton").button
         nextButton.grid(row=0, column=2, sticky='nsew')

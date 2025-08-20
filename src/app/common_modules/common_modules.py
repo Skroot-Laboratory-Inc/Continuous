@@ -53,4 +53,4 @@ class CommonModules:
                 sibFinder,
             )
             self.ReaderPageManager.createNextAndPreviousFrameButtons()
-            self.ReaderPageManager.showPage(self.ReaderPageManager.getPage(0))
+            self.ReaderPageManager.currentFrame.on_next(self.ReaderPageManager.getPage(0))
