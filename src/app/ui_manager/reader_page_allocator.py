@@ -41,7 +41,7 @@ class ReaderPageAllocator:
         readerFrame.grid_rowconfigure(0, weight=1, minsize=30)
         readerFrame.grid_rowconfigure(1, weight=9, minsize=100)
         readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
-        readerFrame.grid(row=0, column=1, sticky="nsew")
+        readerFrame.place(x=0, y=0, relheight=1, relwidth=1)
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
                                                             lambda: self.connectNewReader(self.readerNumber))
