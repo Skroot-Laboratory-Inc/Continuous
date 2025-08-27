@@ -115,7 +115,7 @@ class ReaderThreadManager:
                 reader.AwsService.uploadExperimentFilesOnInterval(
                     reader.FileManager.getCurrentScanNumber(),
                     self.guidedSetupForm,
-                    reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime,
+                    reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime.get(),
                     reader.AutomatedIssueManager.hasOpenIssues()
                 )
 

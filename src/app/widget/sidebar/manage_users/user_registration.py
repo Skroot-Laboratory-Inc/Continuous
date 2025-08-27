@@ -26,7 +26,7 @@ class UserRegistration:
         self.username = tk.StringVar()
         self.password = tk.StringVar()
         self.confirmPassword = tk.StringVar()
-        self.role = tk.StringVar()
+        self.role = tk.StringVar(value="Administrator")
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()

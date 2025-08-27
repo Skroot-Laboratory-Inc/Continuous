@@ -32,17 +32,17 @@ class SoftwareUpdate(AwsBoto3):
 
     def downloadSoftwareUpdate(self):
         try:
-            downloadUpdate = self.downloadUpdate(self.CommonFileManager.getTempUpdateFile())
+            downloadUpdate = self.downloadUpdate(self.CommonFileManager.getTempUpdateZip())
             if downloadUpdate:
-                with ZipFile(self.CommonFileManager.getTempUpdateFile(), 'r') as file:
-                    file.extractall(path=self.CommonFileManager.getSoftwareUpdatePath())
+                with ZipFile(self.CommonFileManager.getTempUpdateZip(), 'r') as file:
+                    file.extractall(path=self.CommonFileManager.getTempSoftwareUpdatePath())
                 if platform.system() == "Linux":
                     text_notification.setText(
                         "Installing new dependencies... please wait.\nThis may take up to a minute."
                     )
                     self.RootManager.updateIdleTasks()
                     runShScript(
-                        self.CommonFileManager.getUpdateScript(),
+                        self.CommonFileManager.getTempUpdateScript(),
                         f"{self.CommonFileManager.getExperimentLogDir()}/v{self.newestMajorVersion}.{self.newestMinorVersion}",
                     )
                 text_notification.setText(

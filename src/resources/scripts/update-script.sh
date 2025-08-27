@@ -6,6 +6,7 @@ sudo apt install dos2unix
 
 # Create .local directory structure for kiosk user
 sudo mkdir -p /home/kiosk/.local/DesktopApp
+sudo mkdir -p /home/kiosk/.local/temp
 sudo mkdir -p /home/kiosk/.local/share/applications
 
 # Remove old application files and copy new ones

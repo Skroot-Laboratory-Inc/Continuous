@@ -14,10 +14,10 @@ class CommonFileManager:
         self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
         self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
         self.experimentLogDir = f'{getDesktopLocation()}/Backend'
-        self.updateScript = rf'{resourcesDir}/scripts/update-script.sh'
-        self.tempSoftwareUpdate = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
-        self.tempReleaseNotes = fr'{os.path.dirname(srcDir)}'
-        self.softwareUpdatePath = fr'{os.path.dirname(srcDir)}/DesktopApp'
+        self.tempSoftwareUpdateZip = fr'{os.path.dirname(srcDir)}/DesktopApp.zip'
+        self.tempReleaseNotes = fr'{os.path.dirname(srcDir)}/temp'
+        self.tempUpdateDirectory = fr'{os.path.dirname(srcDir)}/temp'
+        self.tempUpdateScript = rf'{self.tempUpdateDirectory}/src/resources/scripts/update-script.sh'
         self.dataSavePath = f'{getDesktopLocation()}/Experiment Data'
         self.devBaseFolder = f'{getDesktopLocation()}/Backend/dev'
 
@@ -30,17 +30,17 @@ class CommonFileManager:
     def getPowerIcon(self):
         return self.powerIcon
 
-    def getUpdateScript(self):
-        return self.updateScript
+    def getTempUpdateScript(self):
+        return self.tempUpdateScript
 
-    def getTempUpdateFile(self):
-        return self.tempSoftwareUpdate
+    def getTempUpdateZip(self):
+        return self.tempSoftwareUpdateZip
 
     def getTempNotes(self):
         return self.tempReleaseNotes
 
-    def getSoftwareUpdatePath(self):
-        return self.softwareUpdatePath
+    def getTempSoftwareUpdatePath(self):
+        return self.tempUpdateDirectory
 
     def getExperimentLogDir(self):
         return self.experimentLogDir
