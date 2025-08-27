@@ -9,7 +9,7 @@ def runShScript(shScriptFilename, experimentLog):
     os.chmod(shScriptFilename, st.st_mode | stat.S_IEXEC)
     logFile = open(experimentLog, 'w+')
     process = subprocess.Popen(
-        ["sudo", "-H", "sh", shScriptFilename],
+        ["sudo", "-nH", "sh", os.path.basename(shScriptFilename)],
         stdout=logFile,
         stderr=logFile,
         cwd=os.path.dirname(shScriptFilename),

@@ -1,4 +1,9 @@
 {
+  "v2.0.7": {
+    "features": {
+      "1": "Updated theme to be Wilson Wolf colors and logo."
+    }
+  },
   "v2.0.5": {
     "features": {
       "1": "Added softmax of 6 for y axis and 8 for x axis.",
