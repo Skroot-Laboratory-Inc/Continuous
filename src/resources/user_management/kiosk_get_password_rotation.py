@@ -45,23 +45,33 @@ def get_password_policy():
     except Exception as e:
         sys.stderr.write(f"Warning: Could not read INACTIVE setting: {e}\n")
 
-    # Get historic passwords setting from /etc/security/pwhistory.conf
+    # Get historic passwords setting from /etc/pam.d/common-password
     try:
-        config_file = '/etc/security/pwhistory.conf'
-        if os.path.exists(config_file):
-            with open(config_file, 'r') as f:
+        pam_file = '/etc/pam.d/common-password'
+        if os.path.exists(pam_file):
+            with open(pam_file, 'r') as f:
                 content = f.read()
 
-            # Use regex to find remember setting (handles both "remember = X" and "remember=X")
-            pattern = re.compile(r'^remember\s*=\s*(\d+)', re.MULTILINE)
+            # Look for pam_pwhistory.so line with remember parameter
+            # Pattern matches both "remember=X" and "remember X"
+            pattern = re.compile(r'^password\s+.*pam_pwhistory\.so.*?remember[=\s](\d+)', re.MULTILINE)
             match = pattern.search(content)
             if match:
                 policy['HISTORIC_PASSWORDS'] = int(match.group(1))
+            else:
+                # Check if pam_pwhistory.so is present but without remember parameter
+                pwhistory_pattern = re.compile(r'^password\s+.*pam_pwhistory\.so', re.MULTILINE)
+                if pwhistory_pattern.search(content):
+                    # Module is present but no remember parameter found
+                    policy['HISTORIC_PASSWORDS'] = 0
+                else:
+                    # Module not present
+                    policy['HISTORIC_PASSWORDS'] = None
         else:
-            # File doesn't exist, historic passwords is not configured
+            sys.stderr.write(f"Warning: {pam_file} does not exist\n")
             policy['HISTORIC_PASSWORDS'] = None
     except Exception as e:
-        sys.stderr.write(f"Warning: Could not read historic passwords setting: {e}\n")
+        sys.stderr.write(f"Warning: Could not read historic passwords setting from PAM: {e}\n")
 
     return policy
 
