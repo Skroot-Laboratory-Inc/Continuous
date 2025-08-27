@@ -29,8 +29,6 @@ sudo dos2unix ../user_management/common-auth
 sudo cp ../user_management/common-auth /etc/pam.d
 sudo dos2unix ../user_management/common-password
 sudo cp ../user_management/common-password /etc/pam.d
-sudo dos2unix ../user_management/pwhistory.conf
-sudo cp ../user_management/pwhistory.conf /etc/security
 sudo dos2unix ../user_management/faillock.conf
 sudo cp ../user_management/faillock.conf /etc/security
 sudo dos2unix ../user_management/pwquality.conf

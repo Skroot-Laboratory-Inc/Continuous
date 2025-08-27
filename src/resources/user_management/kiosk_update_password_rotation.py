@@ -8,7 +8,7 @@ import sys
 
 def update_password_policy(policy_data):
     """
-    Update the password policy in /etc/login.defs, /etc/default/useradd, and /etc/security/pwhistory.conf.
+    Update the password policy in /etc/login.defs, /etc/default/useradd, and /etc/pam.d/common-password.
     Returns True if successful, False otherwise.
     """
     # Extract policy values
@@ -38,7 +38,7 @@ def update_password_policy(policy_data):
         inactive_success = update_inactive_days(inactive_days)
         success = success and inactive_success
 
-    # Update /etc/security/pwhistory.conf if we have historic passwords
+    # Update /etc/pam.d/common-password if we have historic passwords
     if historic_passwords is not None:
         historic_success = update_historic_passwords(historic_passwords)
         success = success and historic_success
@@ -138,63 +138,69 @@ def update_inactive_days(inactive_days):
 
 def update_historic_passwords(historic_passwords):
     """
-    Update the remember setting in /etc/security/pwhistory.conf.
+    Update the remember setting in /etc/pam.d/common-password by modifying pam_pwhistory.so line.
     Returns True if successful, False otherwise.
     """
-    config_file = '/etc/security/pwhistory.conf'
+    pam_file = '/etc/pam.d/common-password'
     try:
-
-        # Check if file exists, create if it doesn't
-        if not os.path.exists(config_file):
-            default_content = [
-                "enforce_for_root\n",
-                f"remember = {historic_passwords}\n",
-                "file = /etc/security/opasswd\n"
-            ]
-            with open(config_file, 'w') as f:
-                f.writelines(default_content)
-            return True
-
         # Read the current file
-        with open(config_file, 'r') as f:
+        with open(pam_file, 'r') as f:
             lines = f.readlines()
 
         # Create a backup
-        with open(f'{config_file}.bak', 'w') as f:
+        with open(f'{pam_file}.bak', 'w') as f:
             f.writelines(lines)
 
-        # Check if remember setting exists
-        remember_exists = False
+        # Process each line to find and update pam_pwhistory.so
         new_lines = []
 
         for line in lines:
             stripped_line = line.strip()
-            if stripped_line.startswith('remember =') or stripped_line.startswith('remember='):
-                # Replace the line
-                new_lines.append(f"remember = {historic_passwords}\n")
-                remember_exists = True
+
+            # Check if this is a pam_pwhistory.so line
+            if (stripped_line.startswith('password') and
+                    'pam_pwhistory.so' in stripped_line and
+                    not stripped_line.startswith('#')):
+
+                # Parse the existing line to preserve other parameters
+                parts = stripped_line.split()
+                new_parts = []
+                remember_added = False
+
+                for part in parts:
+                    if part.startswith('remember='):
+                        # Replace existing remember parameter
+                        new_parts.append(f'remember={historic_passwords}')
+                        remember_added = True
+                    else:
+                        new_parts.append(part)
+
+                # Add remember parameter if it wasn't already present
+                if not remember_added:
+                    new_parts.append(f'remember={historic_passwords}')
+
+                # Reconstruct the line
+                new_line = ' '.join(new_parts) + '\n'
+                new_lines.append(new_line)
+
             else:
                 new_lines.append(line)
 
-        # If remember setting doesn't exist, add it
-        if not remember_exists:
-            new_lines.append(f"remember = {historic_passwords}\n")
-
         # Write the updated file
-        with open(config_file, 'w') as f:
+        with open(pam_file, 'w') as f:
             f.writelines(new_lines)
 
-        print(f"Successfully updated remember to {historic_passwords} in {config_file}")
+        print(f"Successfully updated remember to {historic_passwords} in {pam_file}")
         return True
 
     except Exception as e:
         sys.stderr.write(f"Error updating historic passwords: {e}\n")
         # Try to restore from backup if something went wrong
         try:
-            subprocess.run(['cp', f'{config_file}.bak', config_file])
-            sys.stderr.write(f"Restored {config_file} from backup after error.\n")
+            subprocess.run(['cp', f'{pam_file}.bak', pam_file])
+            sys.stderr.write(f"Restored {pam_file} from backup after error.\n")
         except:
-            sys.stderr.write(f"Failed to restore from backup. Please check {config_file}.bak\n")
+            sys.stderr.write(f"Failed to restore from backup. Please check {pam_file}.bak\n")
 
         return False
 
