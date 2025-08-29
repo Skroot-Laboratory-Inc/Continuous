@@ -9,22 +9,22 @@ sudo apt remove brltty unattended-upgrades -y
 sudo usermod -a -G dialout kiosk
 
 # Copy cron and system configuration files
-sudo dos2unix ../ubuntu_settings/delete_old_files
+sudo dos2unix -q ../ubuntu_settings/delete_old_files
 sudo cp ../ubuntu_settings/delete_old_files /etc/cron.d
-sudo dos2unix ../ubuntu_settings/aide_config
+sudo dos2unix -q ../ubuntu_settings/aide_config
 sudo cp ../ubuntu_settings/aide_config /etc/cron.d
 
 # Copy udev rules
-sudo dos2unix ../ubuntu_settings/52-usb.rules
+sudo dos2unix -q ../ubuntu_settings/52-usb.rules
 sudo cp ../ubuntu_settings/52-usb.rules /etc/udev/rules.d/
-sudo dos2unix ../ubuntu_settings/92-usb-input-no-powersave.rules
+sudo dos2unix -q ../ubuntu_settings/92-usb-input-no-powersave.rules
 sudo cp ../ubuntu_settings/92-usb-input-no-powersave.rules /etc/udev/rules.d/
 
 # Copy Python path configuration (check Python version)
 PYTHON_VERSION=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 PYTHON_PATH="/usr/local/lib/python${PYTHON_VERSION}/dist-packages"
 if [ -d "$PYTHON_PATH" ]; then
-    sudo dos2unix ../ubuntu_settings/desktop-app-paths.pth
+    sudo dos2unix -q ../ubuntu_settings/desktop-app-paths.pth
     sudo cp ../ubuntu_settings/desktop-app-paths.pth "$PYTHON_PATH/"
     echo "Python path configured for version $PYTHON_VERSION"
 else
@@ -41,8 +41,8 @@ echo "Setting up Plymouth boot splash..."
 sudo apt install plymouth plymouth-themes -y
 
 # Copy theme files
-sudo dos2unix ../ubuntu_settings/skroot/skroot.plymouth
-sudo dos2unix ../ubuntu_settings/skroot/skroot.script
+sudo dos2unix -q ../ubuntu_settings/skroot/skroot.plymouth
+sudo dos2unix -q ../ubuntu_settings/skroot/skroot.script
 sudo cp ../ubuntu_settings/skroot /usr/share/plymouth/themes/ -R
 
 # Set theme using Plymouth commands
@@ -63,7 +63,7 @@ Wants=plymouth-quit-wait.service
 ExecStartPre=/bin/sleep 2
 EOF
 sudo mkdir -p /etc/systemd/system/plymouth-quit-wait.service.d
-sudo dos2unix ../ubuntu_settings/plymouth-timeout.conf
+sudo dos2unix -q ../ubuntu_settings/plymouth-timeout.conf
 sudo cp ../ubuntu_settings/plymouth-timeout.conf /etc/systemd/system/plymouth-quit-wait.service.d
 
 

@@ -19,14 +19,18 @@ sudo chown -R kiosk:kiosk /home/kiosk/.local
 
 # Convert line endings and run setup scripts
 sudo dos2unix ./apt_requirements.txt
-sudo dos2unix ./install-script.sh
+sudo dos2unix -q ./install-script.sh
 sh install-script.sh
 
-sudo dos2unix ./kiosk-mode.sh
+sudo dos2unix -q ./kiosk-mode.sh
 sh kiosk-mode.sh
 
-sudo dos2unix ./user-creation.sh
+sudo dos2unix -q ./user-creation.sh
 sh user-creation.sh
 
-sudo dos2unix ./aide-configuration.sh
+sudo dos2unix -q ./aide-configuration.sh
 sh aide-configuration.sh
+
+if ! sudo grep -q "dtparam=rtc_bbat_vchg" /boot/firmware/config.txt; then
+    echo "dtparam=rtc_bbat_vchg=3000000" | sudo tee -a /boot/firmware/config.txt > /dev/null
+fi

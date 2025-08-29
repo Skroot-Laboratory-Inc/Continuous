@@ -109,6 +109,9 @@ def setHostname(hostname: str):
     try:
         subprocess.run(['sudo', 'hostnamectl', 'set-hostname', hostname],
                        check=True, capture_output=True, text=True)
+        subprocess.run(["sudo", "sed" "-i", '"s/127.0.1.1.*/127.0.1.1', f"{hostname}/", "/etc/hosts"],
+                       check=True, capture_output=True, text=True)
+
         text_notification.setText(f"Device ID updated to {hostname}.")
         return True
     except subprocess.CalledProcessError as e:

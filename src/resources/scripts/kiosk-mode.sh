@@ -3,19 +3,8 @@
 # Pi OS LightDM Kiosk Mode Setup Script
 
 echo "Setting up kiosk mode for Raspberry Pi OS with LightDM..."
-sudo tee /etc/X11/xorg.conf.d/99-touchscreen-rotation.conf > /dev/null << 'EOF'
-Section "Monitor"
-    Identifier "DSI-2"
-    Option "Rotate" "right"
-EndSection
-
-Section "InputClass"
-    Identifier "Touch rotation 90"
-    MatchIsTouchscreen "on"
-    # Transformation matrix for 90-degree rotation
-    Option "TransformationMatrix" "0 1 0 -1 0 1 0 0 1"
-EndSection
-EOF
+sudo dos2unix -q ../ubuntu_settings/99-touchscreen-rotation.conf
+sudo cp ../ubuntu_settings/99-touchscreen-rotation.conf /etc/X11/xorg.conf.d/
 add_boot_param() {
     local param="$1"
     if ! grep -q "$param" "/boot/firmware/cmdline.txt"; then
@@ -35,7 +24,7 @@ add_boot_param "plymouth.ignore-serial-consoles"
 sudo apt install lightdm unclutter xdotool -y
 
 # Create kiosk startup script
-sudo dos2unix ../kiosk_settings/start-kiosk.sh
+sudo dos2unix -q ../kiosk_settings/start-kiosk.sh
 sudo cp ../kiosk_settings/start-kiosk.sh /home/kiosk/
 sudo chmod +x /home/kiosk/start-kiosk.sh
 sudo chown kiosk:kiosk /home/kiosk/start-kiosk.sh
@@ -44,20 +33,20 @@ sudo chown kiosk:kiosk /home/kiosk/start-kiosk.sh
 sudo adduser kiosk sudo
 
 # Create X session file for kiosk mode
-sudo dos2unix ../kiosk_settings/kiosk.desktop
+sudo dos2unix -q ../kiosk_settings/kiosk.desktop
 sudo cp ../kiosk_settings/kiosk.desktop /usr/share/xsessions/
 
 # Configure LightDM for autologin
-sudo dos2unix ../kiosk_settings/lightdm.conf
+sudo dos2unix -q ../kiosk_settings/lightdm.conf
 sudo cp ../kiosk_settings/lightdm.conf /etc/lightdm/
 
 # Create AccountsService user file
 sudo mkdir -p /var/lib/AccountsService/users
-sudo dos2unix ../kiosk_settings/kiosk
+sudo dos2unix -q ../kiosk_settings/kiosk
 sudo cp ../kiosk_settings/kiosk /var/lib/AccountsService/users/
 
 # Copy X11 configuration for screen blanking
-sudo dos2unix ../kiosk_settings/10-noblank.conf
+sudo dos2unix -q ../kiosk_settings/10-noblank.conf
 sudo cp ../kiosk_settings/10-noblank.conf /etc/X11/xorg.conf.d/
 
 # Create directories and set permissions

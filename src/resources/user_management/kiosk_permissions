@@ -47,9 +47,13 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/passwd -S *
 
 # Allows the kiosk user to change the hostname (Device ID) for the system.
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/hostnamectl set-hostname *
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/sed -i s/127.0.1.1.*/127.0.1.1* /etc/hosts
 
 # Allows the kiosk user to perform software updates
 kiosk ALL=(ALL) NOPASSWD: /bin/sh update-script.sh
 
 # Allows the kiosk user to poll for cpu temperature
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/vcgencmd measure_temp
+
+# Allows the kiosk user to edit the config.txt file
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/grep /boot/firmware/config.txt, /usr/bin/tee -a /boot/firmware/config.txt
