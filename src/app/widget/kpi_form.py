@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.reader.pump.pump_controller import PumpController
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
@@ -23,6 +24,8 @@ class KpiForm:
         self.parentFrame.grid_rowconfigure(1, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(3, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(5, weight=1, minsize=50)
+        self.parentFrame.grid_rowconfigure(7, weight=1, minsize=50)
+        self.PumpController = PumpController(self.parentFrame)
         row = self.addLabels(0)
 
     def addLabels(self, row):
@@ -60,6 +63,9 @@ class KpiForm:
             ttk.Separator(self.parentFrame, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
+        self.PumpController.getToggle().grid(row=row, column=1, sticky="nsew")
+        row += 1
+
         button = GenericButton(
             "Export Run",
             self.parentFrame,
@@ -82,9 +88,10 @@ class KpiForm:
                 runId=self.runId.get(),
             )
 
-    def setConstants(self, lotId: str, user: str):
+    def setConstants(self, lotId: str, user: str, pumpRpm: float):
         self.runId.set(lotId)
         self.user.set(user)
+        self.PumpController.setSpeed(pumpRpm)
         self.parentFrame.grid()
 
     def setSaturation(self, saturationTime: str):

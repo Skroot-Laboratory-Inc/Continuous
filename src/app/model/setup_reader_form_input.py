@@ -3,6 +3,7 @@ from datetime import datetime
 
 from src.app.helper_methods.datetime_helpers import datetimeToMillis, formatDate
 from src.app.helper_methods.helper_functions import generateLotId
+from src.app.properties.pump_properties import PumpProperties
 from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
 
 
@@ -15,12 +16,16 @@ class SetupReaderFormInput:
         self.year = self.date.year
         self.scanRate = setupReaderFormDefaults.scanRate
         self.calibrate = setupReaderFormDefaults.calibrate
+        self.pumpRpm = PumpProperties().defaultRpm
         self.lotId = generateLotId()
         self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
 
     def getMonth(self) -> int:
         return self.month
+
+    def getPumpRpm(self) -> float:
+        return self.pumpRpm
 
     def getDay(self) -> int:
         return self.day

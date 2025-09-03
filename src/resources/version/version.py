@@ -11,13 +11,14 @@ class UseCase(Enum):
     RnD = "R&D"
     Manufacturing = "Manufacturing"
     BenchTop = "BenchTop"
+    FlowCell = "FlowCell"
 
 
 class Version:
     def __init__(self):
-        self.majorVersion = 2.0
-        self.minorVersion = 9
-        self.useCase = UseCase.Manufacturing
+        self.majorVersion = 1.0
+        self.minorVersion = 2
+        self.useCase = UseCase.FlowCell
         self.developmentVersion = DevelopmentVersion.Dev
 
     def getMajorVersion(self) -> float:
