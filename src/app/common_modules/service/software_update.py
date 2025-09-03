@@ -26,7 +26,7 @@ class SoftwareUpdate(AwsBoto3):
         self.RootManager = rootManager
         self.newestZipVersion = ''
         self.releaseNotesPrefix = f'release-notes/{Version().getUseCase()}'
-        with open('../resources/version/release-notes-manufacturing.json') as f:
+        with open('../resources/version/release-notes.json') as f:
             self.releaseNotes = json.load(f)
         self.CommonFileManager = CommonFileManager()
 
@@ -117,7 +117,7 @@ class SoftwareUpdate(AwsBoto3):
                 dictionary = json.load(f)
             self.releaseNotes.update(dictionary)
             os.remove(localFilename)
-            with open(f"../resources/version/release-notes-manufacturing.json", "w") as outfile:
+            with open(f"../resources/version/release-notes.json", "w") as outfile:
                 outfile.write(json.dumps(self.releaseNotes))
 
     def getCurrentReleaseNotes(self):

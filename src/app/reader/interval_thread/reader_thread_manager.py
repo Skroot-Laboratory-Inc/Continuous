@@ -49,6 +49,7 @@ class ReaderThreadManager:
         self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm.setConstants(
             self.guidedSetupForm.getLotId(),
             user,
+            self.guidedSetupForm.getPumpRpm(),
         )
         self.thread.start()
 

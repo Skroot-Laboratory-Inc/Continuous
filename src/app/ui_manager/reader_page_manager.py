@@ -69,13 +69,13 @@ def createReaderPageToggle(parent, previousPageFunc, nextPageFunc):
         parent,
         lambda: previousPageFunc,
         "Toggle.TButton").button
-    previousButton.grid(row=0, column=0, sticky='nsew')
+    # previousButton.grid(row=0, column=0, sticky='nsew')
     nextButton = GenericButton(
         "⟩",
         parent,
         lambda: nextPageFunc,
         "Toggle.TButton").button
-    nextButton.grid(row=0, column=2, sticky='nsew')
+    # nextButton.grid(row=0, column=2, sticky='nsew')
     return previousButton, nextButton
 
 

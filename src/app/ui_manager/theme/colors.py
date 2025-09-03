@@ -5,6 +5,6 @@ class Colors:
         self.green = '#5CA904'  # leaf green
         self.lightRed = '#FF474C'  # light red
         self.secondaryColor = '#FFFFFF'  # white
-        self.primaryColor = '#008876'
-        self.lightPrimaryColor = '#0a6b5d'
+        self.primaryColor = '#203864'  # royal blue 4
+        self.lightPrimaryColor = '#3B537F'  # YlnMn Blue
 
