@@ -35,13 +35,21 @@ class SetupBaseUi:
         self.createTheme()
 
     def createFrames(self):
+        self.FrameManager.footerFrame.grid_columnconfigure(0, weight=0)
+        self.FrameManager.footerFrame.grid_columnconfigure(1, weight=1)
+        self.FrameManager.footerFrame.grid_columnconfigure(2, weight=0)
         versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'v{self.version}', bg='white')
-        versionLabel.place(relx=0.0, rely=1.0, anchor='sw')
+        versionLabel.grid(row=0, column=0, sticky="sw")
         copyrightLabel = tk.Label(
             self.FrameManager.footerFrame,
             text='\u00A9 Skroot Laboratory, Inc 2018-2025. All rights reserved.',
             bg='white')
-        copyrightLabel.place(relx=0.5, rely=1.0, anchor='s')
+        copyrightLabel.grid(row=0, column=1, sticky="s")
+        poweredByLabel = tk.Label(
+            self.FrameManager.footerFrame,
+            text='Powered by Skroot',
+            bg='white')
+        poweredByLabel.grid(row=0, column=2, sticky="se")
 
         self.FrameManager.bannerFrame.grid_rowconfigure(0, weight=1)
         self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=0)

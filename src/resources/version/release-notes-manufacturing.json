@@ -1,6 +1,13 @@
 {
+  "v2.0.9": {
+    "features": {
+      "1": "Added Powered by Skroot"
+    }
+  },
   "v2.0.8": {
-    "bugfixes": "Fixed historic password configuration"
+    "bugfixes": {
+      "1": "Fixed historic password configuration"
+    }
   },
   "v2.0.7": {
     "features": {
