@@ -50,12 +50,12 @@ class ReaderFrame:
     def showSetupFrame(self):
         self.setupFrame.grid()
 
-    def updateHeader(self, readerNumber):
+    def updateHeader(self):
         formResults, _ = self.setupReaderForm.getConfiguration()
-        self.header.configure(text=f"Reader {readerNumber}: {formResults.getLotId()}")
+        self.header.configure(text=f"{formResults.getLotId()}")
 
-    def resetSetupForm(self, readerNumber):
+    def resetSetupForm(self):
         configuration = self.setupReaderForm.updateConfiguration()
-        self.header.configure(text=f"Reader {readerNumber}: {configuration.getLotId()}")
+        self.header.configure(text=f"{configuration.getLotId()}")
 
 
