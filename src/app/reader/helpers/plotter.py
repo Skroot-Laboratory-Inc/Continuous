@@ -17,10 +17,10 @@ class Plotter:
         self.readerNumber = readerNumber
         self.frequencyFrame = frequencyFrame
         self.ReaderFigureCanvas = FigureCanvas(
-            f'Signal Check Reader {self.readerNumber}',
+            f'Signal Check',
             'Frequency (MHz)',
             None,
-            f'Signal Check Reader {self.readerNumber}'
+            f'Signal Check'
         )
 
     def plotFrequencies(self, resultSet: ResultSet, zeroPoint, sweepData: SweepData):
@@ -35,7 +35,7 @@ class Plotter:
     def plotGrowthIndex(self, resultSet: ResultSet, zeroPoint):
         self.ReaderFigureCanvas.setYAxisLabel('Skroot Growth Index (SGI)')
         self.ReaderFigureCanvas.setXAxisLabel('Time (hours)')
-        self.ReaderFigureCanvas.setTitle(f'SGI Reader {self.readerNumber}')
+        self.ReaderFigureCanvas.setTitle(f'SGI')
         self.ReaderFigureCanvas.redrawPlot()
         yPlot = frequencyToIndex(zeroPoint, resultSet.getDenoiseFrequencySmooth())
         self.ReaderFigureCanvas.setYAxisLimits(
@@ -52,7 +52,7 @@ class Plotter:
     def plotSignal(self, resultSet: ResultSet, sweepData: SweepData):
         self.ReaderFigureCanvas.setYAxisLabel('Signal Check')
         self.ReaderFigureCanvas.setXAxisLabel('Frequency (MHz)')
-        self.ReaderFigureCanvas.setTitle(f'Signal Check Reader {self.readerNumber}')
+        self.ReaderFigureCanvas.setTitle(f'Signal Check')
         self.ReaderFigureCanvas.redrawPlot()
         self.ReaderFigureCanvas.scatter(sweepData.getFrequency(), convertListToPercent(sweepData.getMagnitude()), 20, 'black')
         self.ReaderFigureCanvas.scatter(

@@ -45,7 +45,7 @@ class ReaderPageAllocator:
         indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
                                                             lambda: self.connectNewReader(self.readerNumber))
-        header = self.createHeader(readerFrame, self.readerNumber)
+        header = self.createHeader(readerFrame)
         mainPlottingFrame, plottingFrame, kpiForm = self.createPlotFrame(readerFrame)
         thisReaderFrame = ReaderFrame(
             readerFrame,
@@ -73,7 +73,7 @@ class ReaderPageAllocator:
     def connectNewReader(self, readerNumber):
         shouldCalibrate = self.connectFn(readerNumber)
         readerFrame = self.getReaderFrame()
-        readerFrame.updateHeader(readerNumber)
+        readerFrame.updateHeader()
         if shouldCalibrate is None:
             pass  # This means that it failed to find the reader.
         elif shouldCalibrate:
@@ -177,8 +177,8 @@ class ReaderPageAllocator:
         return timer
 
     @staticmethod
-    def createHeader(readerFrame, readerNumber):
-        header = tk.Label(readerFrame, text=f"Reader {readerNumber}", font=FontTheme().header3,
+    def createHeader(readerFrame):
+        header = tk.Label(readerFrame, text="", font=FontTheme().header3,
                           background=Colors().secondaryColor, foreground=Colors().primaryColor)
         header.grid(row=0, column=1, sticky='n')
         return header

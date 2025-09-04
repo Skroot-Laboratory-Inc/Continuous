@@ -109,7 +109,7 @@ class ReaderPageThreadManager:
             self.readerThreads[readerNumber].thread.join()
             readerFrame.hidePlotFrame()
             readerFrame.createButton.show()
-            readerFrame.resetSetupForm(readerNumber)
+            readerFrame.resetSetupForm()
             readerFrame.timer.resetTimer()
             readerFrame.kpiForm.resetForm()
         except UserConfirmationException:
