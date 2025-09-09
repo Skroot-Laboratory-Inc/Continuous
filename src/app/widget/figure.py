@@ -61,7 +61,7 @@ class FigureCanvas:
             alpha=self.FigureStyles.alpha,
             zorder=self.FigureStyles.z_order,
         )
-        self.currentPlot.set_ylabel(self.yAxisLabel, color=Colors().lightPrimaryColor, fontsize=self.labelSize)
+        self.currentPlot.set_ylabel(self.yAxisLabel, fontsize=self.labelSize)
         self.currentPlot.set_title(self.title, fontsize=self.labelSize)
         self.currentPlot.set_xlabel(self.xAxisLabel, fontsize=self.labelSize)
         self.currentPlot.tick_params(axis='both', which='minor', labelsize=self.labelSize)

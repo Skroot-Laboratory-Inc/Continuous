@@ -49,7 +49,7 @@ class ReaderThreadManager:
         self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm.setConstants(
             self.guidedSetupForm.getLotId(),
             user,
-            self.guidedSetupForm.getPumpRpm(),
+            self.guidedSetupForm.getPumpFlowRate(),
         )
         self.thread.start()
 
@@ -164,7 +164,7 @@ class ReaderThreadManager:
                         f'Failed to take scan {reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
-                        f"Sweep failed for reader {reader.readerNumber}, SIB reconnection was successful.")
+                        f"Sweep failed for reader {reader.readerNumber}, reconnection successful.")
                 except SIBException:
                     if reader.readerNumber in self.currentIssues:
                         if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:

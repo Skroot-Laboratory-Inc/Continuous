@@ -88,10 +88,10 @@ class KpiForm:
                 runId=self.runId.get(),
             )
 
-    def setConstants(self, lotId: str, user: str, pumpRpm: float):
+    def setConstants(self, lotId: str, user: str, pumpFlowRate: float):
         self.runId.set(lotId)
         self.user.set(user)
-        self.PumpController.setSpeed(pumpRpm)
+        self.PumpController.setFlowRate(pumpFlowRate)
         self.parentFrame.grid()
 
     def setSaturation(self, saturationTime: str):
