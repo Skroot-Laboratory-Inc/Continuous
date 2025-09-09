@@ -28,7 +28,7 @@ class SetupReaderForm:
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.pumpRpmEntry = tk.StringVar(value=f'{guidedSetupInputs.getPumpRpm():g}')
+        self.pumpFlowRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getPumpFlowRate():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
@@ -59,9 +59,9 @@ class SetupReaderForm:
             highlightthickness=0,
             justify="center")
 
-        entriesMap['Pump RPM'] = tk.Entry(
+        entriesMap['Pump Flow Rate (mL/min)'] = tk.Entry(
             self.window,
-            textvariable=self.pumpRpmEntry,
+            textvariable=self.pumpFlowRateEntry,
             borderwidth=0,
             font=self.Fonts.primary,
             highlightthickness=0,
@@ -82,8 +82,8 @@ class SetupReaderForm:
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            if entryLabelText == "Pump RPM":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Pump RPM:  "))
+            if entryLabelText == "Pump Flow Rate (mL/min)":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Flow Rate:  "))
             if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().secondaryColor
@@ -132,7 +132,7 @@ class SetupReaderForm:
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
-            self.guidedSetupResults.pumpRpm = float(self.pumpRpmEntry.get())
+            self.guidedSetupResults.pumpFlowRate = float(self.pumpFlowRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()

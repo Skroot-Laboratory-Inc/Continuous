@@ -16,7 +16,7 @@ class SetupReaderFormInput:
         self.year = self.date.year
         self.scanRate = setupReaderFormDefaults.scanRate
         self.calibrate = setupReaderFormDefaults.calibrate
-        self.pumpRpm = PumpProperties().defaultRpm
+        self.pumpFlowRate = PumpProperties().defaultFlowRate
         self.lotId = generateLotId()
         self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
@@ -24,8 +24,8 @@ class SetupReaderFormInput:
     def getMonth(self) -> int:
         return self.month
 
-    def getPumpRpm(self) -> float:
-        return self.pumpRpm
+    def getPumpFlowRate(self) -> float:
+        return self.pumpFlowRate
 
     def getDay(self) -> int:
         return self.day

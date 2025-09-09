@@ -65,9 +65,9 @@ class PumpController:
         """Stop the pump"""
         return self.pump.stop()
 
-    def setSpeed(self, speed: float):
+    def setFlowRate(self, speed: float):
         """Set pump speed"""
-        return self.pump.setSpeed(speed)
+        return self.pump.setFlowRate(speed)
 
     def set_toggle_state(self, state: bool):
         """Programmatically set the toggle state"""
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         resolution=0.0001,
         orient=tk.HORIZONTAL,
         length=200,
-        command=lambda v: controller.setSpeed(float(v))
+        command=lambda v: controller.setFlowRate(float(v))
     )
     speed_scale.pack(pady=5)
 

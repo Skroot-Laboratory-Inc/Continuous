@@ -33,15 +33,15 @@ def instantiateReader(port, portAllocator, calibrationRequired, readerNumber) ->
         )
         success = sib.performHandshake()
         if success:
-            text_notification.setText("SIB connection successful.")
+            text_notification.setText("Reader hardware connected successfully.")
             return sib
         else:
             logging.info(f"Failed to handshake SIB  on port {port}", extra={"id": "Sib"})
-            text_notification.setText("Failed to connect to SiB")
+            text_notification.setText("Failed to connect to the reader hardware")
             portAllocator.removePort(port)
             sib.close()
     except:
-        logging.exception(f"Failed to instantiate reader.", extra={"id": "Sib"})
+        logging.exception(f"Failed to connect to reader hardware.", extra={"id": "Sib"})
 
 
 def getDesktopLocation():
