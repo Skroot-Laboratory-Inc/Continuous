@@ -1,3 +1,6 @@
+from reportlab.lib import colors
+
+
 class Colors:
     def __init__(self):
         self.red = '#CD0000'  # red
@@ -7,4 +10,6 @@ class Colors:
         self.secondaryColor = '#FFFFFF'  # white
         self.primaryColor = '#0073A1'
         self.lightPrimaryColor = '#00AEEF'
+        self.reportLabPrimary = colors.Color(0.2, 0.3, 0.6)
+        self.reportLabLightPrimary = colors.Color(0.85, 0.9, 1)
 
