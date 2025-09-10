@@ -81,7 +81,7 @@ class ReaderPageThreadManager:
         text_notification.setText("Reader Port calibration started.")
         self.startProgressBar(self.Readers[readerNumber].SibInterface.estimateDuration())
         self.Readers[readerNumber].SibInterface.calibrateIfRequired()
-        text_notification.setText("Reader Port calibration Complete.")
+        text_notification.setText("Reader Port calibration complete.")
         readerFrame.calibrateButton.hide()
         readerFrame.startButton.enable()
         readerFrame.showPlotFrame()
