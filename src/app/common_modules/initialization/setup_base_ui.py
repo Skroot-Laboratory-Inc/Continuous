@@ -76,6 +76,11 @@ class SetupBaseUi:
         style.theme_use('clam')
         self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
 
+        style.configure("Custom.Horizontal.TProgressbar",
+                        background=Colors().primaryColor,
+                        troughground=Colors().secondaryColor,
+                        )
+
         style.configure(
             'Default.TButton',
             font=FontTheme().buttons,

@@ -12,6 +12,7 @@ class DevProperties:
         self.enforceScanRate = True
         self.sibShouldError = False
         self.errorScans = range(5, 200)
+        self.devScanTime = 5
         if os.path.exists(self.devBaseFolder) and self.tryDevMode:
             self.isDevMode = True
         else:

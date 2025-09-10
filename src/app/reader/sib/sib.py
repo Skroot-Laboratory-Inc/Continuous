@@ -67,6 +67,10 @@ class Sib(SibInterface):
         except SIBException:
             raise
 
+    def estimateDuration(self) -> float:
+        # Assume that the SIB can return 235 points per second or a 100-160 MHz sweep in 26s.
+        return self.sib.num_pts / 235
+
     def calibrateIfRequired(self):
         if self.calibrationRequired:
             calibrationSuccessful = self.takeCalibrationScan()
