@@ -8,6 +8,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import formatDatetime
+from src.app.ui_manager.theme.colors import Colors
 
 
 def createPdf(raw_data, pdfFilename, header: str, exportedBy: str, isLandscape: bool = False):
@@ -35,9 +36,9 @@ def createPdf(raw_data, pdfFilename, header: str, exportedBy: str, isLandscape: 
 
     table = Table(data)
 
-    header_color = colors.Color(0.2, 0.3, 0.6)
+    header_color = Colors().reportLabPrimary
     even_row_color = colors.white
-    odd_row_color = colors.Color(0.85, 0.9, 1)
+    odd_row_color = Colors().reportLabLightPrimary
 
     # Style the table
     style = TableStyle([

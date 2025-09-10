@@ -92,10 +92,10 @@ def extractAuthLogs(search_term: str, output_pdf: str, adminUser: str, startDate
     if platform.system() == "Linux":
         filterCmd = getTimerangeFilter(startDate, endDate)
         # Run grep command to extract relevant logs
-        grepCommand = f"sudo grep \"{search_term}\" /var/log/kiosk_auth.log*{filterCmd} |  sort -r"
+        grepCommand = f"sudo grep -h \"{search_term}\" /var/log/kiosk_auth.log*{filterCmd} |  sort -r"
         logging.info(grepCommand, extra={"id": "grep"})
         records = parseGrepRecords(grepCommand)
-        zgrepCommand = f"sudo zgrep \"{search_term}\" /var/log/kiosk_auth.log.*.gz{filterCmd} | sort -r"
+        zgrepCommand = f"sudo zgrep -h \"{search_term}\" /var/log/kiosk_auth.log.*.gz{filterCmd} | sort -r"
         logging.info(zgrepCommand, extra={"id": "grep"})
         compressedRecords = parseGrepRecords(zgrepCommand)
 

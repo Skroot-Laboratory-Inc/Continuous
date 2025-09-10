@@ -25,7 +25,7 @@ class ShowPdf:
             self.tkimg_object_li.clear()
             self.frame.destroy()
 
-    def pdf_view(self, master, width=1200, height=600, pdf_location="", bar=False, load="after", dpi=100,
+    def pdf_view(self, master, width=1200, height=600, pdf_location="", bar=False, load="after", dpi=170,
                  # New margin parameters
                  crop_margins=True, crop_left=80, crop_right=80, crop_top=80, crop_bottom=80,
                  add_padding=False, pad_left=20, pad_right=20, pad_top=20, pad_bottom=20,
