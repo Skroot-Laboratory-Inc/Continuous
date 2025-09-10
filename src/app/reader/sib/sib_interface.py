@@ -9,6 +9,8 @@ class SibInterfaceMetaClass(type):
     def __subclasscheck__(cls, subclass):
         return (hasattr(subclass, 'takeScan') and
                 callable(subclass.takeScan) and
+                hasattr(subclass, 'estimateDuration') and
+                callable(subclass.estimateDuration) and
                 hasattr(subclass, 'takeCalibrationScan') and
                 callable(subclass.takeCalibrationScan) and
                 hasattr(subclass, 'calibrateIfRequired') and
@@ -29,6 +31,9 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
+
+    def estimateDuration(self) -> float:
+        """Estimates the amount of time that a scan will take given its number of points. """
 
     def calibrateIfRequired(self):
         """The reader performs a calibration if needed."""

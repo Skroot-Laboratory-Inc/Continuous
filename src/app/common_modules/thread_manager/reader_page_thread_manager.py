@@ -1,12 +1,15 @@
 import logging
 from typing import Callable
 
+from reactivex.subject import BehaviorSubject
+
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.reader.interval_thread.reader_thread_manager import ReaderThreadManager
 from src.app.reader.reader import Reader
 from src.app.reader.sib.sib_finder import SibFinder
 from src.app.ui_manager.model.reader_frame import ReaderFrame
+from src.app.ui_manager.progress_bar_background import ProgressBarBackground
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
@@ -26,12 +29,18 @@ class ReaderPageThreadManager:
             self.stopReaderThread,
         )
         self.readerPage = readerPage
+        self.progressBarDisplayed = BehaviorSubject(False)
+        self.progressbar = ProgressBarBackground(self.readerPage, self.progressBarDisplayed)
         self.appendReaderFunc = appendReaderFunc
         self.readerThreads = {}
         self.Readers = {}
         self.RootManager = rootManager
         self.sessionManager = sessionManager
         self.SibFinder = sibFinder
+
+    def startProgressBar(self, duration):
+        self.progressBarDisplayed.on_next(True)
+        self.progressbar.progressbar.start(duration, lambda: self.progressBarDisplayed.on_next(False))
 
     def connectReader(self, readerNumber):
         try:
@@ -69,9 +78,10 @@ class ReaderPageThreadManager:
     def calibrateReader(self, readerNumber):
         readerFrame = self.readerAllocator.getReaderFrame()
         readerFrame.calibrateButton.disable()
-        text_notification.setText(f"Calibration started for Vessel {readerNumber}")
+        text_notification.setText("Reader Port calibration started.")
+        self.startProgressBar(self.Readers[readerNumber].SibInterface.estimateDuration())
         self.Readers[readerNumber].SibInterface.calibrateIfRequired()
-        text_notification.setText(f"Calibration Complete for Vessel {readerNumber}")
+        text_notification.setText("Reader Port calibration Complete.")
         readerFrame.calibrateButton.hide()
         readerFrame.startButton.enable()
         readerFrame.showPlotFrame()

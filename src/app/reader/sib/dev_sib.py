@@ -36,6 +36,9 @@ class DevSib(SibInterface):
     def getYAxisLabel(self) -> str:
         return self.yAxisLabel
 
+    def estimateDuration(self) -> float:
+        return DevProperties().devScanTime
+
     def loadCalibrationFile(self):
         return True
 
