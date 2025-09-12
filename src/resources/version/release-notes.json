@@ -2,7 +2,8 @@
   "v1.0.1": {
     "features": {
       "1": "Updated text notifications to use better terminology.",
-      "2": "Updated default flow rate to 5 mL/hr"
+      "2": "Updated default flow rate to 5 mL/hr",
+      "3": "Updated calibration range to be 100-160 MHz."
     }
   },
   "v1.0.0": {
