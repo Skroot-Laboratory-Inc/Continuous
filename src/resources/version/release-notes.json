@@ -1,4 +1,10 @@
 {
+  "v1.0.1": {
+    "features": {
+      "1": "Updated text notifications to use better terminology.",
+      "2": "Updated default flow rate to 5 mL/hr"
+    }
+  },
   "v1.0.0": {
     "features": {
       "1": "Branched off of continuous reader."
