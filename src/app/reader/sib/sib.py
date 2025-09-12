@@ -95,7 +95,7 @@ class Sib(SibInterface):
             return True
         except:
             self.calibrationFailed = True
-            text_notification.setText(f"Failed to perform calibration.")
+            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             logging.exception("Failed to perform calibration.", extra={"id": "Calibration"})
             return False
 
@@ -107,7 +107,7 @@ class Sib(SibInterface):
                 self.setNumberOfPoints()
             return True
         except:
-            text_notification.setText("Failed to set start frequency.")
+            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             logging.exception("Failed to set start frequency.", extra={"id": f"Sib"})
             return False
 
@@ -119,7 +119,7 @@ class Sib(SibInterface):
                 self.setNumberOfPoints()
             return True
         except:
-            text_notification.setText("Failed to set stop frequency.")
+            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             logging.exception("Failed to set stop frequency.", extra={"id": f"Sib"})
             return False
 

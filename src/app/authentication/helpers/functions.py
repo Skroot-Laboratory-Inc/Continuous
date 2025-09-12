@@ -424,7 +424,7 @@ def restoreUser(adminUsername: str, username: str) -> (bool, str):
         logAuthAction("Restore User", "Failed", username, authorizer=adminUsername)
         logging.info(f"Failed to restore `{username}` by {adminUsername}. Return code: {process.returncode}",
                      extra={"id": "auth"})
-        text_notification.setText(f"Error restoring `{username}`")
+        text_notification.setText(f"Failed to restore system user `{username}`.")
         return False, f"`{username}` not restored."
 
 

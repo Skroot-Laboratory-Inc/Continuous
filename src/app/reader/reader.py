@@ -96,6 +96,6 @@ class Reader(ReaderInterface):
                 shutil.copy(self.FileManager.getCalibrationGlobalLocation(),
                             self.FileManager.getCalibrationLocalLocation())
             else:
-                text_notification.setText(f"No calibration found for Reader {self.readerNumber}",
+                text_notification.setText("No calibration found.",
                                           ('Courier', 12, 'bold'), self.Colors.primaryColor, 'red')
                 logging.info(f"No calibration found.", extra={"id": f"Reader {self.readerNumber}"})

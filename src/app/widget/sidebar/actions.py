@@ -95,7 +95,7 @@ class SideBarActions:
                 driveLocation = getUsbDrive()
                 createUserInfoPdf(self.sessionManager.user.username, driveLocation)
             except USBDriveNotFoundException:
-                text_notification.setText(f"USB drive not found. Plug in a USB and try again.")
+                text_notification.setText(f"USB drive not found. \nPlease plug in USB drive and try again.")
                 logging.exception("USB Drive not found.", extra={"id": "User Management"})
             finally:
                 unmountUSBDrive()
@@ -110,10 +110,10 @@ class SideBarActions:
             driveLocation = getUsbDrive()
             createAuditTrail(username, driveLocation, dateRangePicker.startDate, dateRangePicker.endDate)
         except USBDriveNotFoundException:
-            text_notification.setText(f"USB drive not found. Plug in a USB and try again.")
+            text_notification.setText(f"USB drive not found. \nPlease plug in USB drive and try again.")
             logging.exception("USB Drive not found.", extra={"id": "Audit Trail"})
         except UserConfirmationException:
-            text_notification.setText("Authentication Log Export Cancelled.")
+            text_notification.setText("Audit trail export cancelled.")
             logging.exception("Authentication Log Export Cancelled by user.", extra={"id": "Audit Trail"})
         finally:
             unmountUSBDrive()
@@ -143,9 +143,9 @@ class SideBarActions:
                     f"{driveLocation}/System Snapshot_{datetimeToMillis(datetime.now())}.zip",
                 )
             logAuthAction("Export All", "Successful", username)
-            text_notification.setText("Exported all system information.")
+            text_notification.setText("System information exported to USB drive.")
         except USBDriveNotFoundException:
-            text_notification.setText(f"USB drive not found. Plug in a USB and try again.")
+            text_notification.setText(f"USB drive not found. \nPlease plug in USB drive and try again.")
             logging.exception("USB Drive not found.", extra={"id": "Audit Trail"})
         except:
             logAuthAction("Export All", "Failed", username)

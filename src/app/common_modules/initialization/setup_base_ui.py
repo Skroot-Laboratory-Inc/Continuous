@@ -57,7 +57,7 @@ class SetupBaseUi:
         self.FrameManager.bannerFrame.grid_columnconfigure(2, weight=0)
         self.FrameManager.bannerFrame.grid_columnconfigure(3, weight=0)
         text_notification.createWidget(self.FrameManager.bannerFrame)
-        text_notification.setText("Press the + button to begin.")
+        text_notification.setText("Press the '+' icon to start a run.")
         text_notification.getWidget().grid(row=0, column=1, sticky="nsew")
         profileButton = ProfileButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
         profileButton.grid(row=0, column=2, sticky='nsew')

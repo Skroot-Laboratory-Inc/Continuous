@@ -65,7 +65,7 @@ class ReaderPageThreadManager:
             return None
         except:
             logging.exception("Failed to connect new reader.", extra={"id": f"Reader {readerNumber}"})
-            text_notification.setText(f"Failed to connect reader for vessel {readerNumber}")
+            text_notification.setText("Failed to connect reader hardware.\nPlease try again. ")
             return None
 
     def issueOccurred(self):
@@ -78,10 +78,10 @@ class ReaderPageThreadManager:
     def calibrateReader(self, readerNumber):
         readerFrame = self.readerAllocator.getReaderFrame()
         readerFrame.calibrateButton.disable()
-        text_notification.setText("Reader Port calibration started.")
+        text_notification.setText("Calibration started.")
         self.startProgressBar(self.Readers[readerNumber].SibInterface.estimateDuration())
         self.Readers[readerNumber].SibInterface.calibrateIfRequired()
-        text_notification.setText("Reader Port calibration complete.")
+        text_notification.setText("Calibration complete.")
         readerFrame.calibrateButton.hide()
         readerFrame.startButton.enable()
         readerFrame.showPlotFrame()
@@ -113,7 +113,7 @@ class ReaderPageThreadManager:
             readerFrame = self.readerAllocator.getReaderFrame()
             readerFrame.stopButton.disable()
             text_notification.setText(
-                f"Stopped scanning for vessel {readerNumber}. Please wait for current sweep to complete to reset it."
+                f"Stopped scanning. Please wait for current sweep to complete to reset it."
             )
             self.readerThreads[readerNumber].thread.shutdown_flag.set()
             self.readerThreads[readerNumber].thread.join()
