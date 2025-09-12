@@ -65,7 +65,7 @@ class ReaderPageThreadManager:
             return None
         except:
             logging.exception("Failed to connect new reader.", extra={"id": f"Reader {readerNumber}"})
-            text_notification.setText("Failed to connect reader hardware.\nPlease try again. ")
+            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             return None
 
     def issueOccurred(self):
