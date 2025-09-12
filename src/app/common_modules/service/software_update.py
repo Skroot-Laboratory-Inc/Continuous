@@ -45,10 +45,6 @@ class SoftwareUpdate(AwsBoto3):
                         self.CommonFileManager.getTempUpdateScript(),
                         f"{self.CommonFileManager.getExperimentLogDir()}/v{self.newestMajorVersion}.{self.newestMinorVersion}",
                     )
-                text_notification.setText(
-                    f"New software version updated v{self.newestMajorVersion}.{self.newestMinorVersion}"
-                )
-                self.RootManager.updateIdleTasks()
                 restartPc()
             else:
                 text_notification.setText("Software update aborted.")
@@ -95,14 +91,9 @@ class SoftwareUpdate(AwsBoto3):
                          most_recent_version[1]):
                     updateRequired = True
                     self.updateNewestVersion(majorVersion, minorVersion, filename)
-            newestVersion = f"{most_recent_version[0]}.{most_recent_version[1]}"
         else:
             return newestVersion, updateRequired
-        if updateRequired:
-            text_notification.setText(
-                f"Newer software available v{newestVersion}.\nConsider upgrading to use new features",
-            )
-        else:
+        if not updateRequired:
             text_notification.setText("Software is up to date.")
 
     def updateNewestVersion(self, majorVersion, minorVersion, filename):

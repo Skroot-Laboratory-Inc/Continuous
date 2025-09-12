@@ -62,8 +62,7 @@ class ReaderThreadManager:
                         self.equilibrationTime,
                         self.Reader.getResultSet().getMaxFrequencySmooth())
                     if zeroPoint == np.nan:
-                        text_notification.setText(
-                            f"Failed to set zero point for {self.Reader.readerNumber}. SGI values unreliable.")
+                        text_notification.setText("Failed to set zero point. SGI values unreliable.")
                         logging.info(f"Failed to set zero point, SGI values unreliable.",
                                      extra={"id": f"Reader {self.Reader.readerNumber}"})
                         zeroPoint = 1
@@ -146,7 +145,7 @@ class ReaderThreadManager:
                     logging.exception(
                         f'Connection Error: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
-                    text_notification.setText(f"Sweep Failed, check reader {reader.readerNumber} connection.")
+                    text_notification.setText(f"Reader hardware disconnected.\nPlease contact your system administrator.  ")
                 except SIBReconnectException:
                     if reader.readerNumber in self.currentIssues:
                         if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
@@ -164,7 +163,8 @@ class ReaderThreadManager:
                         f'Failed to take scan {reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
-                        f"Sweep failed for reader {reader.readerNumber}, reconnection successful.")
+                        'Sweep failed, but connection re-established. No further action is necessary.',
+                    )
                 except SIBException:
                     if reader.readerNumber in self.currentIssues:
                         if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
@@ -182,7 +182,7 @@ class ReaderThreadManager:
                         f'Hardware Problem: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
-                        f"Sweep Failed With Hardware Cause for reader {reader.readerNumber}, contact a Skroot representative if the issue persists.")
+                        f"Reader hardware disconnected.\nPlease contact your system administrator. ")
                 except AnalysisException:
                     if reader.readerNumber in self.currentIssues:
                         if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
@@ -199,12 +199,12 @@ class ReaderThreadManager:
                         f'Error Analyzing Data, failed to analyze scan {reader.FileManager.getCurrentScanNumber()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
-                        f"Sweep Analysis Failed, check sensor placement on reader {reader.readerNumber}.")
+                        f"Sweep analysis failed, check vessel placement.")
                 finally:
                     self.Timer.updateTime()
                     reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
                 if not self.issueOccurredFn():
-                    text_notification.setText(f"Reader {self.Reader.readerNumber} successfully recorded a sweep.")
+                    text_notification.setText("Reader has recorded a sweep.")
             except:
                 logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:
@@ -214,7 +214,7 @@ class ReaderThreadManager:
                 else:
                     self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
-        text_notification.setText(f"Reader {reader.readerNumber} finished run.")
+        text_notification.setText("Run Finished.")
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
                 self.guidedSetupForm,
@@ -226,7 +226,7 @@ class ReaderThreadManager:
     def checkIfScanTookTooLong(self, timeTaken):
         if timeTaken > self.scanRate * 60:
             self.scanRate = math.ceil(timeTaken / 60)
-            text_notification.setText(f"Took too long to take scans. Scan rate now {self.scanRate}.")
+            text_notification.setText(f"Current scan rate is infeasible, updated to {self.scanRate}.")
             logging.info(f'{timeTaken} seconds to take scan. Scan rate now {self.scanRate}.',
                          extra={"id": f"Reader {self.Reader.readerNumber}"})
 

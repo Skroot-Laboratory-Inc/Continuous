@@ -14,7 +14,7 @@ class Pump(PumpInterface):
     A simple class to control a stepper motor pump with on/off and speed control.
     """
 
-    def __init__(self, step_pin: int = 21, dir_pin: int = 20, enable_pin: int = 16,
+    def __init__(self, step_pin: int = 21, dir_pin: int = 20,
                  chip_name: str = 'gpiochip0', direction: int = 1):
         """
         Initialize the stepper motor pump controller.
@@ -22,7 +22,6 @@ class Pump(PumpInterface):
         Args:
             step_pin: GPIO pin for step control
             dir_pin: GPIO pin for direction control
-            enable_pin: GPIO pin for enable control (active low)
             chip_name: GPIO chip name (usually 'gpiochip0' for Raspberry Pi)
             direction: Pump direction (1 for forward, 0 for reverse)
         """
@@ -37,17 +36,14 @@ class Pump(PumpInterface):
         self.chip = gpiod.Chip(chip_name)
         self.step_line = self.chip.get_line(step_pin)
         self.dir_line = self.chip.get_line(dir_pin)
-        self.en_line = self.chip.get_line(enable_pin)
 
         # Configure as outputs
         self.step_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
         self.dir_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
-        self.en_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
 
         # Initialize pins
         self.step_line.set_value(0)
         self.dir_line.set_value(direction)
-        self.en_line.set_value(1)  # Disabled initially (active low)
 
     def start(self):
         if self.isRunning:
@@ -55,8 +51,6 @@ class Pump(PumpInterface):
 
         self.isRunning = True
         self._stop_event.clear()
-
-        self.en_line.set_value(0)  # Active low
 
         self._pump_thread = threading.Thread(target=self._pump_continuously, daemon=True)
         self._pump_thread.start()
@@ -71,8 +65,6 @@ class Pump(PumpInterface):
         # Wait for thread to finish
         if self._pump_thread and self._pump_thread.is_alive():
             self._pump_thread.join(timeout=1.0)
-
-        self.en_line.set_value(1)  # Disable motor driver
 
     def setFlowRate(self, flowRate: float):
         self.stepPeriod = flowRateToStepPeriod(flowRate)
@@ -102,7 +94,6 @@ class Pump(PumpInterface):
         try:
             self.step_line.release()
             self.dir_line.release()
-            self.en_line.release()
         except:
             pass
 

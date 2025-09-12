@@ -23,7 +23,7 @@ def createAuditTrail(user: str, driveLocation: str, startDate: datetime.date, en
         logAuthAction("Audit Trail Export", "Initiated", username=user)
         createAuthLogs(driveLocation, user, startDate, endDate)
         createAideLogs(driveLocation, user)
-        text_notification.setText(f"Successfully exported Auth Trail.")
+        text_notification.setText("Audit trail exported to USB drive.")
     except AuthLogsNotFound:
         logAuthAction("Audit Trail Export", "Failed", username=user)
         text_notification.setText("Failed to extract authentication logs.")
@@ -59,7 +59,7 @@ def createUserInfoPdf(username: str, driveLocation: str):
             username,
         )
         logAuthAction("User Export", "Successful", username=username)
-        text_notification.setText("User information exported successfully.")
+        text_notification.setText("User information exported to USB drive.")
     except:
         logAuthAction("User Export", "Failed", username=username)
         text_notification.setText("Failed to export user information.")
@@ -86,7 +86,7 @@ def createAideLogs(driveLocation: str, user: str):
     try:
         extractAideLogs(f"{driveLocation}/Audit Trail/System Logs", user)
     except AideLogsNotFound:
-        text_notification.setText("Error extracting file integrity logs.")
+        text_notification.setText("Failed to extract file integrity logs.")
         logging.exception("Failed to extract file integrity logs.", extra={"id": "Audit Trail"})
 
 

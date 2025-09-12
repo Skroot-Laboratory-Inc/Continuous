@@ -37,7 +37,7 @@ def instantiateReader(port, portAllocator, calibrationRequired, readerNumber) ->
             return sib
         else:
             logging.info(f"Failed to handshake SIB  on port {port}", extra={"id": "Sib"})
-            text_notification.setText("Failed to connect to the reader hardware")
+            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             portAllocator.removePort(port)
             sib.close()
     except:

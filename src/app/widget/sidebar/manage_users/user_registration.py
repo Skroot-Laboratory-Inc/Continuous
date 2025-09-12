@@ -226,7 +226,7 @@ class UserRegistration:
                     self.username.get(),
                     authorizer=self.adminUser,
                 )
-                text_notification.setText(f"Error creating user: {self.username.get()}")
+                text_notification.setText(f"Failed to create system user {self.username.get()}.")
                 logging.info(
                     f"Failed to create `{self.username.get()}` by {self.adminUser}. Return code: {returnCode}",
                     extra={"id": "auth"})
@@ -238,7 +238,7 @@ class UserRegistration:
                 authorizer=self.adminUser,
                 extra="User Already Exists",
             )
-            text_notification.setText(f"Username already exists: {self.username.get()}")
+            text_notification.setText(f"System user `{self.username.get()}` already exists.")
             logging.exception(f"Failed to create `{self.username.get()}` by {self.adminUser}.", extra={"id": "auth"})
             raise e
         except BadPasswordException as e:
@@ -254,6 +254,6 @@ class UserRegistration:
             raise e
         except Exception as e:
             logAuthAction("User Registration", "Failed", self.username.get(), authorizer=self.adminUser)
-            text_notification.setText(f"Error creating user: {self.username.get()}")
+            text_notification.setText(f"Failed to create system user {self.username.get()}.")
             logging.exception(f"Failed to create `{self.username.get()}` by {self.adminUser}.", extra={"id": "auth"})
             raise

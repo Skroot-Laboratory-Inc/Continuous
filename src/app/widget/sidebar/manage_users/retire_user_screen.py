@@ -81,7 +81,7 @@ class RetireUserScreen:
     def submitRetireUser(self):
         try:
             self.retireUser()
-            text_notification.setText(f"'{self.username.get()}' has been retired.")
+            text_notification.setText(f"System user '{self.username.get()}' has been retired.")
             self.windowRoot.destroy()
         except UserConfirmationException:
             pass

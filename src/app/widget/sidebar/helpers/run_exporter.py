@@ -76,12 +76,12 @@ class RunExporter:
         self.windowRoot.destroy()
 
     def downloadWindows(self):
-        vesselId = self.runIdEntry.get()
+        runId = self.runIdEntry.get()
         try:
-            copyRunFile(self.exportedBy, "H:\\", vesselId)
+            copyRunFile(self.exportedBy, "H:\\", runId)
             self.windowRoot.destroy()
         except:
-            text_notification.setText(f"Failed to copy run data for {vesselId}.")
+            text_notification.setText(f"Failed to copy run data for {runId}.")
             logging.exception("Failed to create batch log on drive.", extra={"id": "Batch Log"})
 
     def download(self):
@@ -97,7 +97,7 @@ class RunExporter:
             else:
                 text_notification.setText(f"No data found for {runId}")
         except USBDriveNotFoundException:
-            text_notification.setText(f"USB drive not found. Plug in a USB and try again.")
+            text_notification.setText(f"USB drive not found. \nPlease plug in USB drive and try again.")
             logging.exception("USB Drive not found.", extra={"id": "Batch Log"})
         except:
             logAuthAction("Experiment Data Export", "Failed", self.exportedBy, extra=runId)

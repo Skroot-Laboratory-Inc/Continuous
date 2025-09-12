@@ -76,7 +76,7 @@ class RestoreUserScreen:
         except UserConfirmationException as e:
             pass
         except UserNotRetiredException:
-            text_notification.setText(f"{self.username.get()} is not retired. Cannot restore an active user.")
+            text_notification.setText(f"System user {self.username.get()} is not retired.\nCannot restore an active user.")
         except RestoreUserException as e:
             text_notification.setText(f"Failed to restore user. \n{e.message}")
         except UserDoesntExistException:
@@ -91,7 +91,7 @@ class RestoreUserScreen:
         )
         success, message = restoreUser(self.systemAdminUser, self.username.get())
         if success:
-            text_notification.setText(f"User '{self.username.get()}' restoration was successful.")
+            text_notification.setText(f"System user '{self.username.get()}' restored successfully.")
         else:
             raise RestoreUserException(message)
 

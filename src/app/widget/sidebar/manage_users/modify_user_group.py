@@ -88,10 +88,10 @@ class ModifyUserGroup:
             if currentRole == UserRole.SYSTEM_ADMIN:
                 raise SystemAdminException("Cannot change the role of the system administrator.")
             if currentRole == newRole:
-                text_notification.setText(f"`{self.username.get()}` is already {newRole.prefixed_display_name}")
+                text_notification.setText(f"System user `{self.username.get()}` is already {newRole.prefixed_display_name}")
             else:
                 modifyRole(self.systemAdminUser, self.username.get(), newRole)
-                text_notification.setText(f"'{self.username.get()}' is now {newRole.prefixed_display_name}.")
+                text_notification.setText(f"System user `{self.username.get()}` is now {newRole.prefixed_display_name}.")
                 self.windowRoot.destroy()
         except SystemAdminException as e:
             text_notification.setText(f"Failed to modify role. \n{e.message}")
