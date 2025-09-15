@@ -67,7 +67,7 @@ def getUsbDrive():
                     unmountUSBDrive()
         raise USBDriveNotFoundException()
     else:
-        return "H:\\"
+        return "D:\\"
 
 
 def unmountUSBDrive():

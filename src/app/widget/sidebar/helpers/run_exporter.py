@@ -78,7 +78,7 @@ class RunExporter:
     def downloadWindows(self):
         runId = self.runIdEntry.get()
         try:
-            copyRunFile(self.exportedBy, "H:\\", runId)
+            copyRunFile(self.exportedBy, "D:\\", runId)
             self.windowRoot.destroy()
         except:
             text_notification.setText(f"Failed to copy run data for {runId}.")

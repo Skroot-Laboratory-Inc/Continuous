@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
+from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.reader.pump.pump_controller import PumpController
 from src.app.ui_manager.buttons.generic_button import GenericButton
@@ -75,6 +76,7 @@ class KpiForm:
         row += 1
         return row
 
+    @requireUser
     def export(self):
         if AuthConfiguration().getConfig():
             RunExporter(
