@@ -4,7 +4,8 @@
       "1": "Added ability to manually configure time, date and timezone from the app."
     },
     "bugfixes": {
-      "1": "Fixed data export from run screen when signed out."
+      "1": "Fixed data export from run screen when signed out.",
+      "2": "Fixed issue with progress bar disappearing early during scans, and not disappearing after scans error."
     }
   },
   "v1.0.1": {

@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
+from reactivex import operators as ops, Subject
+
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
@@ -39,15 +41,20 @@ class TimedProgressBar:
         self.percent_label = tk.Label(self.container_frame, text="0%", font=FontTheme().primary, background=Colors().secondaryColor)
         self.percent_label.pack()
 
-    def start(self, duration_seconds, callback=None):
+    def start(self, duration_seconds, stillScanning: Subject, callback=None):
         """
         Start the progress bar.
 
         Args:
             duration_seconds: Duration in seconds (float or int)
+            stillScanning: Subject indicating if the device is scanning. The progress bar will not stop until this is False.
             callback: Optional function to call when progress completes
         """
         if not self.is_running:
+            stillScanning.pipe(
+                ops.filter(lambda scanning: not scanning),
+                ops.take(1)
+            ).subscribe(lambda _: self.finishScanning())
             self.duration_ms = int(duration_seconds * 1000)
             self.completion_callback = callback
             self.current_time = 0
@@ -69,7 +76,7 @@ class TimedProgressBar:
 
     def _update(self):
         """Internal method to update progress."""
-        if self.is_running and self.current_time < self.duration_ms:
+        if self.is_running:
             self.current_time += self.update_interval
 
             # Calculate percentage
@@ -81,12 +88,10 @@ class TimedProgressBar:
 
             # Schedule next update
             self.parent.after(self.update_interval, self._update)
-        elif self.current_time >= self.duration_ms:
-            # Complete
-            self.progress['value'] = 100
-            self.percent_label.config(text="100%")
-            self.is_running = False
 
-            # Call completion callback if provided
-            if self.completion_callback:
-                self.completion_callback()
+    def finishScanning(self):
+        self.reset()
+
+        # Call completion callback if provided
+        if self.completion_callback:
+            self.completion_callback()

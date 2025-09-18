@@ -1,3 +1,5 @@
+from reactivex import Subject
+
 from src.app.model.sweep_data import SweepData
 
 
@@ -13,8 +15,8 @@ class SibInterfaceMetaClass(type):
                 callable(subclass.estimateDuration) and
                 hasattr(subclass, 'takeCalibrationScan') and
                 callable(subclass.takeCalibrationScan) and
-                hasattr(subclass, 'calibrateIfRequired') and
-                callable(subclass.calibrateIfRequired) and
+                hasattr(subclass, 'performCalibration') and
+                callable(subclass.performCalibration) and
                 hasattr(subclass, 'loadCalibrationFile') and
                 callable(subclass.loadCalibrationFile) and
                 hasattr(subclass, 'setStartFrequency') and
@@ -23,11 +25,16 @@ class SibInterfaceMetaClass(type):
                 callable(subclass.setStopFrequency) and
                 hasattr(subclass, 'getYAxisLabel') and
                 callable(subclass.getYAxisLabel) and
+                hasattr(subclass, 'getCurrentlyScanning') and
+                callable(subclass.getCurrentlyScanning) and
                 hasattr(subclass, 'close') and
                 callable(subclass.close))
 
 
 class SibInterface(metaclass=SibInterfaceMetaClass):
+
+    def getCurrentlyScanning(self) -> Subject:
+        """Returns whether the reader is currently scanning or not."""
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
@@ -35,8 +42,8 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
     def estimateDuration(self) -> float:
         """Estimates the amount of time that a scan will take given its number of points. """
 
-    def calibrateIfRequired(self):
-        """The reader performs a calibration if needed."""
+    def performCalibration(self):
+        """The reader performs a calibration."""
 
     def loadCalibrationFile(self):
         """The reader loads in the calibration scan values."""

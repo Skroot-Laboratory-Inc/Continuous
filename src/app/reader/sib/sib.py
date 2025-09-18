@@ -7,6 +7,7 @@ from typing import List
 
 import numpy as np
 import pandas
+from reactivex import Subject
 
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import truncateByX
@@ -21,7 +22,7 @@ from src.resources.sibcontrol.sibcontrol import SIBDDSConfigError, SIBException,
 
 
 class Sib(SibInterface):
-    def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator, calibrationRequired=False):
+    def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator):
         self.PortAllocator = portAllocator
         self.readerNumber = readerNumber
         self.calibrationFailed = False
@@ -33,11 +34,10 @@ class Sib(SibInterface):
         self.stepSize = Properties.stepSize
         self.initialSpikeMhz = Properties.initialSpikeMhz
         self.calibrationFilename = calibrationFileName
-        self.calibrationRequired = calibrationRequired
         self.stopFreqMHz = None
         self.startFreqMHz = None
-        if not calibrationRequired:
-            self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
+        self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
+        self.currentlyScanning = Subject()
 
     def getYAxisLabel(self) -> str:
         return SibProperties().yAxisLabel
@@ -71,17 +71,15 @@ class Sib(SibInterface):
         # Assume that the SIB can return 235 points per second or a 100-160 MHz sweep in 26s.
         return self.sib.num_pts / 235
 
-    def calibrateIfRequired(self):
-        if self.calibrationRequired:
-            calibrationSuccessful = self.takeCalibrationScan()
-        else:
-            calibrationSuccessful = True
+    def performCalibration(self):
+        calibrationSuccessful = self.takeCalibrationScan()
         if calibrationSuccessful:
             self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
         return calibrationSuccessful
 
     def takeCalibrationScan(self) -> bool:
         try:
+            self.currentlyScanning.on_next(True)
             createCalibrationDirectoryIfNotExists(self.calibrationFilename)
             self.sib.start_MHz = self.calibrationStartFreq - self.initialSpikeMhz
             self.sib.stop_MHz = self.calibrationStopFreq
@@ -98,6 +96,8 @@ class Sib(SibInterface):
             text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             logging.exception("Failed to perform calibration.", extra={"id": "Calibration"})
             return False
+        finally:
+            self.currentlyScanning.on_next(False)
 
     def setStartFrequency(self, startFreqMHz) -> bool:
         try:
@@ -122,6 +122,9 @@ class Sib(SibInterface):
             text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             logging.exception("Failed to set stop frequency.", extra={"id": f"Sib"})
             return False
+
+    def getCurrentlyScanning(self) -> Subject:
+        return self.currentlyScanning
 
     """ End of required implementations, SIB specific below"""
 

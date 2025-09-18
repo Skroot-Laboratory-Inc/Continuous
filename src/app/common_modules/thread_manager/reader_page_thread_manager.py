@@ -1,6 +1,7 @@
 import logging
 from typing import Callable
 
+from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
 from src.app.authentication.session_manager.session_manager import SessionManager
@@ -38,15 +39,14 @@ class ReaderPageThreadManager:
         self.sessionManager = sessionManager
         self.SibFinder = sibFinder
 
-    def startProgressBar(self, duration):
+    def startProgressBar(self, duration, hideBar: Subject):
         self.progressBarDisplayed.on_next(True)
-        self.progressbar.progressbar.start(duration, lambda: self.progressBarDisplayed.on_next(False))
+        self.progressbar.progressbar.start(duration, hideBar, lambda: self.progressBarDisplayed.on_next(False))
 
     def connectReader(self, readerNumber):
         try:
             guidedSetupForm, globalFileManager = self.readerAllocator.getReaderFrame().setupReaderForm.getConfiguration()
-            shouldCalibrate = guidedSetupForm.getCalibrate()
-            sib = self.SibFinder.connectSib(readerNumber, shouldCalibrate)
+            sib = self.SibFinder.connectSib(readerNumber)
             self.Readers[readerNumber] = Reader(
                 globalFileManager,
                 readerNumber,
@@ -60,7 +60,7 @@ class ReaderPageThreadManager:
                 self.resetReader,
                 self.issueOccurred,
             )
-            return shouldCalibrate
+            return guidedSetupForm.getCalibrate()
         except UserConfirmationException:
             return None
         except:
@@ -76,11 +76,12 @@ class ReaderPageThreadManager:
         return False
 
     def calibrateReader(self, readerNumber):
+        sib = self.Readers[readerNumber].SibInterface
         readerFrame = self.readerAllocator.getReaderFrame()
         readerFrame.calibrateButton.disable()
         text_notification.setText("Calibration started.")
-        self.startProgressBar(self.Readers[readerNumber].SibInterface.estimateDuration())
-        self.Readers[readerNumber].SibInterface.calibrateIfRequired()
+        self.startProgressBar(sib.estimateDuration(), sib.getCurrentlyScanning())
+        sib.performCalibration()
         text_notification.setText("Calibration complete.")
         readerFrame.calibrateButton.hide()
         readerFrame.startButton.enable()
