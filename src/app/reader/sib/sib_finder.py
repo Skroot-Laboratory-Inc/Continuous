@@ -14,22 +14,21 @@ class SibFinder:
     def __init__(self):
         self.PortAllocator = PortAllocator()
 
-    def connectSib(self, readerNumber: int, calibrationRequired):
+    def connectSib(self, readerNumber: int):
         if not DevProperties().isDevMode:
             port = self.PortAllocator.getPortForReader(readerNumber)
-            return instantiateReader(port, self.PortAllocator, calibrationRequired, readerNumber)
+            return instantiateReader(port, self.PortAllocator, readerNumber)
         else:
             return DevSib(readerNumber)
 
 
-def instantiateReader(port, portAllocator, calibrationRequired, readerNumber) -> SibInterface:
+def instantiateReader(port, portAllocator, readerNumber) -> SibInterface:
     try:
         sib = Sib(
             port,
             getReaderCalibrationFile(),
             readerNumber,
             portAllocator,
-            calibrationRequired,
         )
         success = sib.performHandshake()
         if success:
