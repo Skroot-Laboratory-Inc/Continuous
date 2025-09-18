@@ -28,6 +28,7 @@ from src.app.widget.sidebar.settings.date_range_picker import DateRangePicker
 from src.app.widget.sidebar.settings.password_requirements import PasswordRequirementsScreen
 from src.app.widget.sidebar.settings.password_rotation import PasswordRotationScreen
 from src.app.widget.sidebar.settings.system_configuration_page import SystemConfigurationPage
+from src.app.widget.sidebar.settings.system_time_manager import SystemTimeManager
 
 
 class SideBarActions:
@@ -37,54 +38,58 @@ class SideBarActions:
 
     @forceRequireSystemAdmin
     def systemConfiguration(self):
-        SystemConfigurationPage(self.rootManager, self.sessionManager.user.username)
+        SystemConfigurationPage(self.rootManager, self.sessionManager.getUser())
 
     @requireSystemAdmin
     def passwordRequirementsScreen(self):
         if AuthConfiguration().getConfig():
-            PasswordRequirementsScreen(self.rootManager, self.sessionManager.user.username)
+            PasswordRequirementsScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot change password requirements, authentication is disabled.")
 
     @requireSystemAdmin
     def passwordConfigurationsScreen(self):
         if AuthConfiguration().getConfig():
-            PasswordRotationScreen(self.rootManager, self.sessionManager.user.username)
+            PasswordRotationScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot change password configurations, authentication is disabled.")
+
+    @requireUser
+    def setSystemTime(self):
+        SystemTimeManager(self.rootManager, self.sessionManager.getUser())
 
     @requireAdmin
     def registerNewUser(self):
         if AuthConfiguration().getConfig():
-            UserRegistration(self.rootManager, self.sessionManager.user.username)
+            UserRegistration(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot register a user, authentication is disabled.")
 
     @requireAdmin
     def modifyGroup(self):
         if AuthConfiguration().getConfig():
-            ModifyUserGroup(self.rootManager, self.sessionManager.user.username)
+            ModifyUserGroup(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot modify a user's role, authentication is disabled.")
 
     @requireAdmin
     def restoreRetiredUser(self):
         if AuthConfiguration().getConfig():
-            RestoreUserScreen(self.rootManager, self.sessionManager.user.username)
+            RestoreUserScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot restore a user, authentication is disabled.")
 
     @requireUser
     def resetUserPassword(self):
         if AuthConfiguration().getConfig():
-            PasswordResetScreen(self.rootManager, self.sessionManager.user.username)
+            PasswordResetScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot reset user passwords, authentication is disabled.")
 
     @requireUser
     def retireUser(self):
         if AuthConfiguration().getConfig():
-            RetireUserScreen(self.rootManager, self.sessionManager.user.username)
+            RetireUserScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot retire a user, authentication is disabled.")
 
@@ -93,7 +98,7 @@ class SideBarActions:
         if AuthConfiguration().getConfig():
             try:
                 driveLocation = getUsbDrive()
-                createUserInfoPdf(self.sessionManager.user.username, driveLocation)
+                createUserInfoPdf(self.sessionManager.getUser(), driveLocation)
             except USBDriveNotFoundException:
                 text_notification.setText(f"USB drive not found. \nPlease plug in USB drive and try again.")
                 logging.exception("USB Drive not found.", extra={"id": "User Management"})
@@ -105,7 +110,7 @@ class SideBarActions:
     @requireUser
     def exportAuditTrail(self):
         try:
-            username = self.sessionManager.user.username
+            username = self.sessionManager.getUser()
             dateRangePicker = DateRangePicker(self.rootManager)
             driveLocation = getUsbDrive()
             createAuditTrail(username, driveLocation, dateRangePicker.startDate, dateRangePicker.endDate)
@@ -121,13 +126,13 @@ class SideBarActions:
     @requireUser
     def exportRun(self):
         if AuthConfiguration().getConfig():
-            RunExporter(self.rootManager, self.sessionManager.user.username)
+            RunExporter(self.rootManager, self.sessionManager.getUser())
         else:
             RunExporter(self.rootManager)
 
     @requireUser
     def exportAll(self):
-        username = self.sessionManager.user.username
+        username = self.sessionManager.getUser()
         try:
             driveLocation = getUsbDrive()
             with tempfile.TemporaryDirectory() as outputDir:

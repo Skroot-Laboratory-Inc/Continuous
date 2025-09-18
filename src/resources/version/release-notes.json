@@ -1,5 +1,8 @@
 {
   "v1.0.2": {
+    "features": {
+      "1": "Added ability to manually configure time, date and timezone from the app."
+    },
     "bugfixes": {
       "1": "Fixed data export from run screen when signed out."
     }
