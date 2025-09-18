@@ -81,7 +81,7 @@ class KpiForm:
         if AuthConfiguration().getConfig():
             RunExporter(
                 self.rootManager,
-                exportedBy=self.sessionManager.user.username,
+                exportedBy=self.sessionManager.getUser(),
                 runId=self.runId.get(),
             )
         else:

@@ -15,6 +15,14 @@ class TertiaryMenu(BaseMenu):
                 MenuItem("Reset Password", lambda: self.resetUserPassword()),
                 MenuItem("Retire User", lambda: self.retireUser()),
                 MenuItem("Edit User Role", lambda: self.modifyGroup()),
+            ],
+            "Manage Passwords": [
+                MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
+                MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
+            ],
+            "System Configurations": [
+                MenuItem("Configuration", lambda: self.systemConfiguration()),
+                MenuItem("System Time", lambda: self.setSystemTime()),
             ]
         }
 

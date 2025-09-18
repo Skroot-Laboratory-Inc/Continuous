@@ -45,7 +45,7 @@ def styleDropdownOption(option):
     return f"{option}".center(45)
 
 
-def createDropdown(root, entryVariable, options, outline=False):
+def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
     entryValue = entryVariable.get()
 
     dropdown_button = tk.Button(
@@ -81,7 +81,10 @@ def createDropdown(root, entryVariable, options, outline=False):
 
     def select_option(option):
         entryVariable.set(option)
-        dropdown_button.config(text=styleDropdownOption(option))
+        if addSpace:
+            dropdown_button.config(text=styleDropdownOption(option))
+        else:
+            dropdown_button.config(text=option)
 
     def show_dropdown():
         # Update the button to get its actual size

@@ -20,18 +20,17 @@ class SubMenu(BaseMenu):
         self.active_menu = None
 
         settingsMenu: List[MenuItem] = [
-                MenuItem("Configuration", lambda: self.systemConfiguration()),
-                MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
-                MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
+                MenuItem("System\nConfigurations", lambda: self.requestMenu("System Configurations")),
+                MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
             ]
         if isAwsConnected():
             settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
 
         self.submenus = {
             "Export Data": [
+                MenuItem("Export Run", lambda: self.exportRun()),
                 MenuItem("Export Audit Trail", lambda: self.exportAuditTrail()),
                 MenuItem("Export Users", lambda: self.exportUserInfo()),
-                MenuItem("Export Run", lambda: self.exportRun()),
                 MenuItem("Export All", lambda: self.exportAll()),
             ],
             "Manage Users": [
@@ -90,7 +89,7 @@ class SubMenu(BaseMenu):
 
     def menuItemClicked(self, item):
         """Handle submenu item clicks"""
-        if item.label in ["Modify User"]:  # Items with tertiary menus
+        if item.label in ["Modify User", "Manage Passwords", "System\nConfigurations"]:  # Items with tertiary menus
             # Don't close sidebar, just execute the function
             item.invokeFn()
         else:

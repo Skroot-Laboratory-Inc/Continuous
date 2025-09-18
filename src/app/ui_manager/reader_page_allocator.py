@@ -88,7 +88,7 @@ class ReaderPageAllocator:
     @requireUser
     def startReader(self, readerNumber):
         if self.sessionManager.user:
-            self.startFn(readerNumber, self.sessionManager.user.username)
+            self.startFn(readerNumber, self.sessionManager.getUser())
         else:
             self.startFn(readerNumber, "")
         readerFrame = self.getReaderFrame()

@@ -57,3 +57,6 @@ kiosk ALL=(ALL) NOPASSWD: /usr/bin/vcgencmd measure_temp
 
 # Allows the kiosk user to edit the config.txt file
 kiosk ALL=(ALL) NOPASSWD: /usr/bin/grep /boot/firmware/config.txt, /usr/bin/tee -a /boot/firmware/config.txt
+
+# Allows the kiosk user to set the date, time and timezone
+kiosk ALL=(ALL) NOPASSWD: /usr/bin/timedatectl set-timezone *, /usr/bin/date -s *, /usr/sbin/hwclock --systohc

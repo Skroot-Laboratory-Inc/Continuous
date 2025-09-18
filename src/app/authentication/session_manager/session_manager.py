@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.functions import validateUserCredentials
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.authentication.helpers.sign_out_timer import SignOutTimer
@@ -46,3 +47,9 @@ class SessionManager:
 
         self.activityTimer.refresh()
         return True
+
+    def getUser(self) -> str:
+        if AuthConfiguration().getConfig():
+            return self.user.username
+        else:
+            return ""

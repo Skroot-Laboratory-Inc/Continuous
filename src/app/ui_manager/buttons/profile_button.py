@@ -72,7 +72,7 @@ class ProfileButton:
         self.dropdown.delete(0, 'end')
 
         if self.sessionManager.isValidSession():
-            username = self.sessionManager.user.username
+            username = self.sessionManager.getUser()
             self.dropdown.add_command(label=f"User: {username}", state="disabled")
             self.dropdown.add_separator()
             self.dropdown.add_command(label="Sign Out", command=lambda: self.sessionManager.logout())

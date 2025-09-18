@@ -1,16 +1,19 @@
 import csv
+import datetime
 import logging
 import os
 import platform
 import random
 import string
 import subprocess
+import time
 
 import numpy as np
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
 from src.app.authentication.helpers.functions import setFileOwner
+from src.app.authentication.helpers.logging import logAuthAction
 from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException
 from src.app.custom_exceptions.sib_exception import NoSibFound
 from src.app.helper_methods.data_helpers import convertListToPercent
@@ -19,6 +22,7 @@ from src.app.properties.common_properties import CommonProperties
 from src.app.properties.hardware_properties import HardwareProperties
 from src.app.properties.sib_properties import SibProperties
 from src.app.properties.usb_properties import USBProperties
+from src.app.widget import text_notification
 
 
 def getSibPort() -> ListPortInfo:
@@ -146,3 +150,73 @@ def generateLotId() -> str:
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choices(characters, k=CommonProperties().lotIdLength))
 
+
+def setDatetimeTimezone(newDatetime, timezone, user: str):
+    """
+    Set date, time, and timezone on Ubuntu
+    Args:
+        newDatetime: datetime object or string in format 'YYYY-MM-DD HH:MM:SS'
+        timezone: timezone string like 'America/New_York' or 'UTC'
+        user: the user that initiated the reset
+    """
+    currentDatetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        if platform.system() != "Linux":
+            print("Date/time setting is only supported on Linux systems.")
+            return
+        logAuthAction(
+            "System Time Change",
+            "Initiated",
+            user,
+        )
+        currentTimezone = getTimezone()
+        subprocess.run(['sudo', 'timedatectl', 'set-timezone', timezone], check=True)
+        time.tzset()
+
+        time_str = newDatetime.strftime('%Y-%m-%d %H:%M:%S')
+        subprocess.run(['sudo', 'date', '-s', time_str], check=True)
+        subprocess.run(['sudo', 'hwclock', '--systohc'], check=True)
+        text_notification.setText(f"System time changed to {time_str} ({timezone})")
+        logAuthAction(
+            "System Time Change",
+            f"Changed",
+            user,
+            result=f"From {currentDatetime} ({currentTimezone}) to {time_str} ({timezone})"
+        )
+    except subprocess.CalledProcessError as e:
+        text_notification.setText(f"System time change failed.")
+        logging.exception(f"Error setting date/time: {e}", extra={"id": "Time Setting"})
+        logAuthAction(
+            "System Time Change",
+            f"Failed",
+            user,
+            result=f"Time unchanged"
+        )
+
+
+def getTimezone():
+    try:
+        result = subprocess.run(
+            ['timedatectl', 'show', '-p', 'Timezone', '--value'],
+            capture_output=True, text=True, check=True
+        )
+        return result.stdout.strip()  # Returns "US/Arizona"
+    except:
+        return "US/Central"
+
+
+def getTimezoneOptions():
+    return [
+        'US/Hawaii',
+        'US/Alaska',
+        'US/Pacific',
+        'US/Mountain',
+        'US/Central',
+        'US/Eastern',
+        'US/Arizona'
+    ]
+
+
+if __name__ == "__main__":
+    print(getTimezone())
+    print(getTimezoneOptions())

@@ -28,7 +28,6 @@ class ConfirmationPopup:
         self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.config(relief="solid", highlightbackground="black",
                                highlightcolor="black", highlightthickness=1, bd=0)
-        self.username = tk.StringVar()
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader(header)
