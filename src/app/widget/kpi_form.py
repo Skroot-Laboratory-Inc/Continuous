@@ -106,6 +106,7 @@ class KpiForm:
         self.runId.set("")
         self.user.set("")
         self.sgi.set("-")
+        self.PumpController.getPump().getToggleSubject().on_next(False)
         self.saturationTime.set("No Estimate")
 
 
