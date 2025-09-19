@@ -20,8 +20,9 @@ class TertiaryMenu(BaseMenu):
                 MenuItem("Password\nConfiguration", lambda: self.passwordConfigurationsScreen()),
                 MenuItem("Password\nRequirements", lambda: self.passwordRequirementsScreen()),
             ],
-            "System Configurations": [
-                MenuItem("Configuration", lambda: self.systemConfiguration()),
+            "Configuration": [
+                MenuItem("System Configuration", lambda: self.systemConfiguration()),
+                MenuItem("Pump Configuration", lambda: self.pumpConfiguration()),
                 MenuItem("System Time", lambda: self.setSystemTime()),
             ]
         }

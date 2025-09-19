@@ -44,7 +44,7 @@ class SystemConfigurationPage:
     def createHeader(self):
         ttk.Label(
             self.windowRoot,
-            text="Configurations",
+            text="System Configuration",
             font=FontTheme().header1,
             background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(

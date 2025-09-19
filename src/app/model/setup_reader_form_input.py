@@ -1,10 +1,9 @@
-import socket
 from datetime import datetime
 
 from src.app.helper_methods.datetime_helpers import datetimeToMillis, formatDate
 from src.app.helper_methods.helper_functions import generateLotId
-from src.app.properties.pump_properties import PumpProperties
 from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
+from src.app.widget.sidebar.configurations.pump_configuration import PumpConfiguration
 
 
 class SetupReaderFormInput:
@@ -16,7 +15,7 @@ class SetupReaderFormInput:
         self.year = self.date.year
         self.scanRate = setupReaderFormDefaults.scanRate
         self.calibrate = setupReaderFormDefaults.calibrate
-        self.pumpFlowRate = PumpProperties().defaultFlowRate
+        self.pumpFlowRate = PumpConfiguration().getConfig()
         self.lotId = generateLotId()
         self.equilibrationTime = setupReaderFormDefaults.equilibrationTime
         self.savePath = ""
@@ -57,9 +56,14 @@ class SetupReaderFormInput:
 
     def resetRun(self):
         self.date = datetime.now()
+        self.pumpFlowRate = PumpConfiguration().getConfig()
         self.month = self.date.month
         self.day = self.date.day
         self.year = self.date.year
         self.lotId = generateLotId()
+        return self
+
+    def resetFlowRate(self):
+        self.pumpFlowRate = PumpConfiguration().getConfig()
         return self
 

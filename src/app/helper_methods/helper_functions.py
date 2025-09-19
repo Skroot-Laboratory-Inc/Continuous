@@ -111,6 +111,44 @@ def setBoolEnvFlag(varName: str, newSetting: bool):
             logging.info(f"Failed to set configuration {varName} to {boolValue}", extra={"id": "configuration"})
 
 
+def getFloatEnvFlag(varName: str, defaultValue: float) -> float:
+    """Read a float value from /etc/environment"""
+    value = defaultValue
+    result = subprocess.run(
+        f"sudo grep '^{varName}=' /etc/environment || echo '{varName}={defaultValue}'",
+        shell=True, text=True, capture_output=True
+    )
+
+    if result.returncode == 0:
+        setting = result.stdout.strip().split('=', 1)[1].strip('"\'')
+        try:
+            value = float(setting)
+        except ValueError:
+            logging.warning(f"Invalid float value for {varName}: '{setting}', using default {defaultValue}",
+                            extra={"id": "configuration"})
+            value = defaultValue
+    else:
+        logging.info(f"Failed to get configuration for {varName}", extra={"id": "configuration"})
+
+    return value
+
+
+def setFloatEnvFlag(varName: str, newSetting: float):
+    """Set a float value in /etc/environment"""
+    if platform.system() == "Linux":
+        floatValue = str(newSetting)
+        varExists = subprocess.run(f"sudo grep -q '^{varName}=' /etc/environment", shell=True).returncode == 0
+        if varExists:
+            process = f'sudo sed -i "s/^{varName}=.*/{varName}=\\"{floatValue}\\"/" /etc/environment'
+        else:
+            process = f'echo \'{varName}="{floatValue}"\' | sudo tee -a /etc/environment'
+        result = subprocess.run(process, shell=True, check=True)
+        if result.returncode == 0:
+            logging.info(f"Configuration {varName} set to {floatValue}", extra={"id": "configuration"})
+        else:
+            logging.info(f"Failed to set configuration {varName} to {floatValue}", extra={"id": "configuration"})
+
+
 def isMenuOptionPresent(menu_bar, menu_label):
     """
     Function to check if a menu is already present in the menubar.

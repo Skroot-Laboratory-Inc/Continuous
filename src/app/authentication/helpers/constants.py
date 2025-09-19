@@ -4,7 +4,6 @@ class AuthenticationConstants:
         self.adminGroup = "kiosk_administrators"
         self.userGroup = "kiosk_users"
         self.loggingGroup = "kiosk_users"
-        self.authConfiguration = "auth_enabled"
         self.defaultAuth = "true"
         self.aideLogsDir = "/var/log/aide"
         self.getPasswordPolicies = "/usr/local/bin/kiosk_get_password_rotation.py"

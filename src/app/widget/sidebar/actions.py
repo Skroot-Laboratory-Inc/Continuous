@@ -27,6 +27,7 @@ from src.app.widget.sidebar.manage_users.user_registration import UserRegistrati
 from src.app.widget.sidebar.settings.date_range_picker import DateRangePicker
 from src.app.widget.sidebar.settings.password_requirements import PasswordRequirementsScreen
 from src.app.widget.sidebar.settings.password_rotation import PasswordRotationScreen
+from src.app.widget.sidebar.settings.pump_configuration_page import PumpConfigurationPage
 from src.app.widget.sidebar.settings.system_configuration_page import SystemConfigurationPage
 from src.app.widget.sidebar.settings.system_time_manager import SystemTimeManager
 
@@ -39,6 +40,10 @@ class SideBarActions:
     @forceRequireSystemAdmin
     def systemConfiguration(self):
         SystemConfigurationPage(self.rootManager, self.sessionManager.getUser())
+
+    @requireUser
+    def pumpConfiguration(self):
+        PumpConfigurationPage(self.rootManager, self.sessionManager.getUser())
 
     @requireSystemAdmin
     def passwordRequirementsScreen(self):
