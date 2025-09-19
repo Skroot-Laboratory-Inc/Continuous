@@ -20,7 +20,7 @@ class SubMenu(BaseMenu):
         self.active_menu = None
 
         settingsMenu: List[MenuItem] = [
-                MenuItem("System\nConfigurations", lambda: self.requestMenu("System Configurations")),
+                MenuItem("Configuration", lambda: self.requestMenu("Configuration")),
                 MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
             ]
         if isAwsConnected():
@@ -89,7 +89,7 @@ class SubMenu(BaseMenu):
 
     def menuItemClicked(self, item):
         """Handle submenu item clicks"""
-        if item.label in ["Modify User", "Manage Passwords", "System\nConfigurations"]:  # Items with tertiary menus
+        if item.label in ["Modify User", "Manage Passwords", "Configuration"]:  # Items with tertiary menus
             # Don't close sidebar, just execute the function
             item.invokeFn()
         else:

@@ -27,8 +27,9 @@ class SetupReaderForm:
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
+        self.GlobalFileManager = None
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.pumpFlowRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getPumpFlowRate():g}')
+        self.pumpFlowRateEntry = tk.StringVar(value=f"{guidedSetupInputs.getPumpFlowRate():g}")
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
@@ -126,6 +127,12 @@ class SetupReaderForm:
         self.monthEntry.set(guidedSetupInputs.getMonth())
         self.dayEntry.set(guidedSetupInputs.getDay())
         self.yearEntry.set(guidedSetupInputs.getYear())
+        self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
+        return self.guidedSetupResults
+
+    def resetFlowRate(self):
+        guidedSetupInputs = self.guidedSetupResults.resetFlowRate()
+        self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
         return self.guidedSetupResults
 
     def onSubmit(self):
