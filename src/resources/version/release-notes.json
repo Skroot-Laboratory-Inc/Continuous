@@ -5,7 +5,8 @@
     },
     "bugfixes": {
       "1": "Fixed data export from run screen when signed out.",
-      "2": "Fixed issue with progress bar disappearing early during scans, and not disappearing after scans error."
+      "2": "Fixed issue with progress bar disappearing early during scans, and not disappearing after scans error.",
+      "3": "Pump now properly stops when a run is finished."
     }
   },
   "v1.0.1": {
