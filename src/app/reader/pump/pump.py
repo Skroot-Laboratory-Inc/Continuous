@@ -5,7 +5,7 @@ import gpiod
 from reactivex.subject import BehaviorSubject
 
 from src.app.properties.pump_properties import PumpProperties
-from src.app.reader.pump.pump_helpers import flowRateToStepPeriod
+from src.app.reader.pump.pump_helpers import flowRateToStepPeriod, rpmToStepPeriod
 from src.app.reader.pump.pump_interface import PumpInterface
 
 
@@ -67,7 +67,8 @@ class Pump(PumpInterface):
             self._pump_thread.join(timeout=1.0)
 
     def setFlowRate(self, flowRate: float):
-        self.stepPeriod = flowRateToStepPeriod(flowRate)
+        # Actually setting pump speed, soon to be flow rate.
+        self.stepPeriod = rpmToStepPeriod(flowRate)
 
     def getToggleSubject(self):
         return self.toggleSubject
