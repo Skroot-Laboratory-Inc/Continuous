@@ -48,7 +48,7 @@ class PumpConfigurationPage:
     def createPumpFlowRate(self, row: int):
         ttk.Label(
             self.windowRoot,
-            text="Default Flow Rate (mL/hour):",
+            text="Default Pump Speed (RPM):",
             font=FontTheme().primary,
             background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
 

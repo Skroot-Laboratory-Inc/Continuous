@@ -60,7 +60,7 @@ class SetupReaderForm:
             highlightthickness=0,
             justify="center")
 
-        entriesMap['Pump Flow Rate (mL/hr)'] = tk.Entry(
+        entriesMap['Pump Speed (RPM)'] = tk.Entry(
             self.window,
             textvariable=self.pumpFlowRateEntry,
             borderwidth=0,
@@ -83,8 +83,8 @@ class SetupReaderForm:
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            if entryLabelText == "Pump Flow Rate (mL/hr)":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Flow Rate:  "))
+            if entryLabelText == "Pump Speed (RPM)":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Pump Speed (RPM):  "))
             if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().secondaryColor
