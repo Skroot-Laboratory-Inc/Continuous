@@ -5,6 +5,7 @@ from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.reader.pump.pump_controller import PumpController
+from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
@@ -12,7 +13,7 @@ from src.app.widget.sidebar.helpers.run_exporter import RunExporter
 
 
 class KpiForm:
-    def __init__(self, parent: tk.Frame, rootManager: RootManager, sessionManager: SessionManager):
+    def __init__(self, parent: tk.Frame, rootManager: RootManager, sessionManager: SessionManager, pump: PumpInterface):
         """ Displays all relevant information for a scan to the user by placing them on the provided frame. """
         self.rootManager = rootManager
         self.sessionManager = sessionManager
@@ -26,7 +27,7 @@ class KpiForm:
         self.parentFrame.grid_rowconfigure(3, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(5, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(7, weight=1, minsize=50)
-        self.PumpController = PumpController(self.parentFrame)
+        self.PumpController = PumpController(self.parentFrame, pump)
         row = self.addLabels(0)
 
     def addLabels(self, row):

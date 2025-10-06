@@ -1,3 +1,4 @@
+import platform
 import threading
 import tkinter as tk
 
@@ -15,12 +16,17 @@ from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.kpi_form import KpiForm
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
+if platform.system() == "Windows":
+    from src.app.reader.pump.dev_pump import DevPump as PumpClass
+else:
+    from src.app.reader.pump.pump import Pump as PumpClass
 
 
 class ReaderPageAllocator:
     def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber,
                  connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
+        self.Pump = PumpClass()
         self.rootManager = rootManager
         self.sessionManager = sessionManager
         self.readerNumber = readerNumber
@@ -130,14 +136,14 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager)
+        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager, self.Pump)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
-        setupReaderForm = SetupReaderForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn)
+        setupReaderForm = SetupReaderForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn, self.Pump)
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

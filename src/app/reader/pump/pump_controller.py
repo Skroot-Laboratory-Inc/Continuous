@@ -3,14 +3,10 @@ import tkinter as tk
 # Import the appropriate pump based on environment
 import platform
 
+from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sliding_toggle import ToggleSwitch
-
-if platform.system() == "Windows":
-    from src.app.reader.pump.dev_pump import DevPump as PumpClass
-else:
-    from src.app.reader.pump.pump import Pump as PumpClass
 
 
 class PumpController:
@@ -19,16 +15,15 @@ class PumpController:
     This keeps the pump classes clean and focused on their core functionality.
     """
 
-    def __init__(self, parent_widget, **pump_kwargs):
+    def __init__(self, parent_widget, pump: PumpInterface):
         """
         Initialize the PumpController with a pump and toggle switch.
 
         Args:
             parent_widget: The tkinter parent widget for the toggle switch
-            **pump_kwargs: Additional arguments to pass to the pump constructor
         """
         self.parent_widget = parent_widget
-        self.pump = PumpClass(**pump_kwargs)
+        self.pump = pump
 
         self.control_frame = tk.Frame(parent_widget, bg="white")
         self.control_frame.grid_rowconfigure(0, weight=1)
@@ -59,11 +54,11 @@ class PumpController:
 
     def start(self):
         """Start the pump"""
-        return self.pump.start()
+        self.toggle_switch.set_state(True)
 
     def stop(self):
         """Stop the pump"""
-        return self.pump.stop()
+        self.toggle_switch.set_state(False)
 
     def setFlowRate(self, speed: float):
         """Set pump speed"""
@@ -81,61 +76,3 @@ class PumpController:
         """Clean up resources"""
         if hasattr(self.pump, 'cleanup'):
             self.pump.cleanup()
-
-
-# Example usage showing clean separation
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Clean Pump Controller Example")
-    root.geometry("300x200")
-
-    # Create pump controller - pump stays clean, UI layer handles integration
-    controller = PumpController(root)
-
-    # Build UI
-    main_frame = tk.Frame(root)
-    main_frame.pack(padx=20, pady=20)
-
-    # Title
-    tk.Label(main_frame, text="Pump Control", font=("Arial", 14, "bold")).pack(pady=(0, 20))
-
-    # Toggle from controller
-    toggle_frame = tk.Frame(main_frame)
-    toggle_frame.pack(pady=10)
-
-    tk.Label(toggle_frame, text="Power:").pack(side=tk.LEFT, padx=(0, 10))
-    controller.getToggle().pack(side=tk.LEFT)
-
-    # Speed control
-    speed_frame = tk.Frame(main_frame)
-    speed_frame.pack(pady=20)
-
-    tk.Label(speed_frame, text="Speed:").pack()
-
-    speed_var = tk.DoubleVar(value=0.001)
-    speed_scale = tk.Scale(
-        speed_frame,
-        variable=speed_var,
-        from_=0.0001,
-        to=0.01,
-        resolution=0.0001,
-        orient=tk.HORIZONTAL,
-        length=200,
-        command=lambda v: controller.setFlowRate(float(v))
-    )
-    speed_scale.pack(pady=5)
-
-    # Status display
-    status_label = tk.Label(main_frame, text="Status: OFF", font=("Arial", 12))
-    status_label.pack(pady=10)
-
-    # Cleanup on close
-    def on_closing():
-        controller.cleanup()
-        root.destroy()
-
-
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-
-    print("Clean architecture: Pump handles hardware, Controller handles UI integration")
-    root.mainloop()

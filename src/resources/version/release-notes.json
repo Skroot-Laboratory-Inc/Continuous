@@ -2,7 +2,8 @@
   "v1.0.3": {
     "features": {
       "1": "Reverted back to pump RPM.",
-      "2": "Updated frequency range to be 70-120 MHz."
+      "2": "Updated frequency range to be 70-120 MHz.",
+      "3": "Added priming toggle to setup screen."
     }
   },
   "v1.0.2": {
