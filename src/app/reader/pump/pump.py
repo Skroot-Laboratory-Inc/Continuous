@@ -14,7 +14,7 @@ class Pump(PumpInterface):
     A simple class to control a stepper motor pump with on/off and speed control.
     """
 
-    def __init__(self, step_pin: int = 21, dir_pin: int = 20,
+    def __init__(self, step_pin: int = 21, dir_pin: int = 20, en_pin=16,
                  chip_name: str = 'gpiochip0', direction: int = 1):
         """
         Initialize the stepper motor pump controller.
@@ -22,11 +22,12 @@ class Pump(PumpInterface):
         Args:
             step_pin: GPIO pin for step control
             dir_pin: GPIO pin for direction control
+            en_pin: GPIO pin for enabling/disabling control
             chip_name: GPIO chip name (usually 'gpiochip0' for Raspberry Pi)
             direction: Pump direction (1 for forward, 0 for reverse)
         """
         self.isRunning = False
-        self.stepPeriod = flowRateToStepPeriod(PumpProperties().defaultFlowRate)
+        self.stepPeriod = self.setFlowRate(PumpProperties().defaultFlowRate)
         self._stop_event = threading.Event()
         self._pump_thread = None
         self.toggleSubject = BehaviorSubject(False)  # Start with pump off
@@ -36,14 +37,17 @@ class Pump(PumpInterface):
         self.chip = gpiod.Chip(chip_name)
         self.step_line = self.chip.get_line(step_pin)
         self.dir_line = self.chip.get_line(dir_pin)
+        self.en_line = self.chip.get_line(en_pin)
 
         # Configure as outputs
         self.step_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
         self.dir_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
+        self.en_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
 
         # Initialize pins
         self.step_line.set_value(0)
         self.dir_line.set_value(direction)
+        self.en_line.set_value(1)
 
     def start(self):
         if self.isRunning:
@@ -69,6 +73,7 @@ class Pump(PumpInterface):
     def setFlowRate(self, flowRate: float):
         # Actually setting pump speed, soon to be flow rate.
         self.stepPeriod = rpmToStepPeriod(flowRate)
+        return self.stepPeriod
 
     def getToggleSubject(self):
         return self.toggleSubject
@@ -82,12 +87,14 @@ class Pump(PumpInterface):
 
     def _pump_continuously(self):
         """Internal method to run the pump continuously."""
+        self.en_line.set_value(0)
         while not self._stop_event.is_set():
             # Step pulse
             self.step_line.set_value(1)
             time.sleep(self.stepPeriod / 2)
             self.step_line.set_value(0)
             time.sleep(self.stepPeriod / 2)
+        self.en_line.set_value(1)
 
     def cleanup(self):
         """Clean up GPIO resources."""

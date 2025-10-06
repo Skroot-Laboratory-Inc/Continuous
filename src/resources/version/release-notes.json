@@ -3,7 +3,8 @@
     "features": {
       "1": "Reverted back to pump RPM.",
       "2": "Updated frequency range to be 70-120 MHz.",
-      "3": "Added priming toggle to setup screen."
+      "3": "Added priming toggle to setup screen.",
+      "4": "Update the pump controller to utilize En pin with permanent VDD connection."
     }
   },
   "v1.0.2": {
