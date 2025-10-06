@@ -5,7 +5,8 @@
       "2": "Updated frequency range to be 70-120 MHz.",
       "3": "Added priming toggle to setup screen.",
       "4": "Update the pump controller to utilize En pin with permanent VDD connection.",
-      "5": "Added ability to configure the pump priming flow rate via settings."
+      "5": "Added ability to configure the pump priming flow rate via settings.",
+      "6": "Added controls to keep the pump RPM within 0.1-600."
     }
   },
   "v1.0.2": {

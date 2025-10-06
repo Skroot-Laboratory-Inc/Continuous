@@ -9,6 +9,7 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget import text_notification
 from src.app.widget.sidebar.configurations.pump_configuration import PumpConfiguration
 from src.app.widget.sidebar.configurations.pump_priming_configuration import PumpPrimingConfiguration
 
@@ -20,6 +21,8 @@ class PumpConfigurationPage:
         self.PumpConfiguration = PumpConfiguration()
         self.PumpPrimingConfiguration = PumpPrimingConfiguration()
         self.windowRoot = rootManager.createTopLevel()
+        self.validateRPM = (self.windowRoot.register(validateRPM), '%P')
+        self.validateRPMError = (self.windowRoot.register(showValidationError))
         self.windowRoot.config(
             relief="solid", highlightbackground="black", highlightcolor="black", highlightthickness=1, bd=0,
         )
@@ -32,6 +35,9 @@ class PumpConfigurationPage:
         self.primingFlowRateEntry = self.createPrimingFlowRate(3)
         self.submitButton = self.createSubmitButton(4)
         self.cancelButton = self.createCancelButton(4)
+        self.pumpFlowRate.trace('w', self.checkFields)
+        self.primingFlowRate.trace('w', self.checkFields)
+        self.checkFields()
         self.pumpFlowRateEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Pump RPM:  "))
         self.primingFlowRateEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Priming RPM:  "))
 
@@ -57,8 +63,18 @@ class PumpConfigurationPage:
             font=FontTheme().primary,
             background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
 
-        pumpFlowRateEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.pumpFlowRate, font=FontTheme().primary)
-        pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
+        pumpFlowRateEntry = ttk.Entry(
+            self.windowRoot,
+            background="white",
+            justify="center",
+            textvariable=self.pumpFlowRate,
+            font=FontTheme().primary,
+            validate='all',
+            validatecommand=self.validateRPM,
+            invalidcommand=self.validateRPMError,
+        )
+        pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding,
+                               pady=WidgetTheme().externalPadding, sticky="ew")
         return pumpFlowRateEntry
 
     def createPrimingFlowRate(self, row: int):
@@ -68,8 +84,18 @@ class PumpConfigurationPage:
             font=FontTheme().primary,
             background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
 
-        pumpFlowRateEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.primingFlowRate, font=FontTheme().primary)
-        pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
+        pumpFlowRateEntry = ttk.Entry(
+            self.windowRoot,
+            background="white",
+            justify="center",
+            textvariable=self.primingFlowRate,
+            font=FontTheme().primary,
+            validate='all',
+            validatecommand=self.validateRPM,
+            invalidcommand=self.validateRPMError,
+        )
+        pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding,
+                               pady=WidgetTheme().externalPadding, sticky="ew")
         return pumpFlowRateEntry
 
     def createSubmitButton(self, row: int):
@@ -111,3 +137,23 @@ class PumpConfigurationPage:
 
     def cancel(self):
         self.windowRoot.destroy()
+
+    def checkFields(self, *args):
+        """Enable submit button only if both fields have values"""
+        if self.pumpFlowRate.get() and self.primingFlowRate.get():
+            self.submitButton.config(state='normal')
+        else:
+            self.submitButton.config(state='disabled')
+
+
+def validateRPM(P):
+    if P == "":
+        return True
+    if 0.1 < float(P) < 600:
+        return True
+    else:
+        return False
+
+
+def showValidationError():
+    text_notification.setText("Pump speeds cannot be less than 0.1 or greater than 600 RPM.")
