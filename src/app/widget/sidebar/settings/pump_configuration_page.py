@@ -10,6 +10,7 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sidebar.configurations.pump_configuration import PumpConfiguration
+from src.app.widget.sidebar.configurations.pump_priming_configuration import PumpPrimingConfiguration
 
 
 class PumpConfigurationPage:
@@ -17,6 +18,7 @@ class PumpConfigurationPage:
         self.RootManager = rootManager
         self.user = user
         self.PumpConfiguration = PumpConfiguration()
+        self.PumpPrimingConfiguration = PumpPrimingConfiguration()
         self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.config(
             relief="solid", highlightbackground="black", highlightcolor="black", highlightthickness=1, bd=0,
@@ -25,10 +27,13 @@ class PumpConfigurationPage:
 
         self.createHeader()
         self.pumpFlowRate = tk.StringVar(value=self.PumpConfiguration.getConfig())
+        self.primingFlowRate = tk.StringVar(value=self.PumpPrimingConfiguration.getConfig())
         self.pumpFlowRateEntry = self.createPumpFlowRate(2)
-        self.submitButton = self.createSubmitButton(3)
-        self.cancelButton = self.createCancelButton(3)
-        self.pumpFlowRateEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Pump Flow Rate:  "))
+        self.primingFlowRateEntry = self.createPrimingFlowRate(3)
+        self.submitButton = self.createSubmitButton(4)
+        self.cancelButton = self.createCancelButton(4)
+        self.pumpFlowRateEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Pump RPM:  "))
+        self.primingFlowRateEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Priming RPM:  "))
 
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
@@ -56,6 +61,17 @@ class PumpConfigurationPage:
         pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
         return pumpFlowRateEntry
 
+    def createPrimingFlowRate(self, row: int):
+        ttk.Label(
+            self.windowRoot,
+            text="Default Priming Speed (RPM):",
+            font=FontTheme().primary,
+            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+
+        pumpFlowRateEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.primingFlowRate, font=FontTheme().primary)
+        pumpFlowRateEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
+        return pumpFlowRateEntry
+
     def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
         submitButton.grid(row=row, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
@@ -64,18 +80,29 @@ class PumpConfigurationPage:
     def submitConfig(self):
         if self.pumpFlowRate.get() != self.PumpConfiguration.getConfig():
             self.updateFlowRate(self.PumpConfiguration.getConfig(), float(self.pumpFlowRate.get()))
+        if self.primingFlowRateEntry.get() != self.PumpPrimingConfiguration.getConfig():
+            self.updatePrimingFlowRate(self.PumpPrimingConfiguration.getConfig(), float(self.primingFlowRateEntry.get()))
         self.windowRoot.destroy()
 
     def updateFlowRate(self, oldSetting: float, newSetting: float):
         if platform.system() == "Linux":
-            successful = self.PumpConfiguration.setConfig(newSetting)
-            if successful:
-                logAuthAction(
-                    "Default Pump Flow Rate",
-                    "Changed",
-                    self.user,
-                    result=f"`{oldSetting}` to `{newSetting}`"
-                )
+            self.PumpConfiguration.setConfig(newSetting)
+            logAuthAction(
+                "Default Pump Flow Rate",
+                "Changed",
+                self.user,
+                result=f"`{oldSetting}` to `{newSetting}`"
+            )
+
+    def updatePrimingFlowRate(self, oldSetting: float, newSetting: float):
+        if platform.system() == "Linux":
+            self.PumpPrimingConfiguration.setConfig(newSetting)
+            logAuthAction(
+                "Default Priming Flow Rate",
+                "Changed",
+                self.user,
+                result=f"`{oldSetting}` to `{newSetting}`"
+            )
 
     def createCancelButton(self, row: int):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancel).button

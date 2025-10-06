@@ -1,7 +1,8 @@
 class PumpProperties:
     def __init__(self):
         self.microsteps = 8  # 1/8 microstepping
-        self.stepsPerRevolution = int(360 / (1.8 * self.microsteps))  # 1.8 degrees per step
+        self.stepAngle = 1.8
+        self.stepsPerRevolution = int(360 / self.stepAngle * self.microsteps)
         self.defaultFlowRate = 10
-        self.primingFlowRate = 300
+        self.defaultPrimingFlowRate = 100
         self.millilitersPerRevolution = 0.0803
