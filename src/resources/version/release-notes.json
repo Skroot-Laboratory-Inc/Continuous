@@ -1,4 +1,9 @@
 {
+  "v1.0.4": {
+    "bugfixes": {
+      "1": "Fixed issue with changes to pump priming speed not propagating when the setup screen is open."
+    }
+  },
   "v1.0.3": {
     "features": {
       "1": "Reverted back to pump RPM.",

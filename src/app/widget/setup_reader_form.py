@@ -44,7 +44,6 @@ class SetupReaderForm:
         self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(fill="x", expand=True)
         self.PumpController = PumpController(self.window, pump)
-        self.PumpController.setFlowRate(PumpPrimingConfiguration().getConfig())
 
         ''' Normal entries '''
         entriesMap = {}
@@ -109,9 +108,9 @@ class SetupReaderForm:
                                         command=self.setCalibrate,
                                         bg='white', borderwidth=0, highlightthickness=0)
         calibrateCheck.grid(row=row, column=1, sticky="ns")
+        row += 1
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
-        row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
         self.cancelButton.grid(row=row, column=1, sticky="se")
@@ -140,7 +139,7 @@ class SetupReaderForm:
     def resetFlowRate(self):
         guidedSetupInputs = self.guidedSetupResults.resetFlowRate()
         self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
-        self.PumpController.setFlowRate(PumpPrimingConfiguration().getConfig())
+        self.PumpController.setPriming(True)
         return self.guidedSetupResults
 
     def onSubmit(self):

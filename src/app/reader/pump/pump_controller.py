@@ -3,9 +3,11 @@ import tkinter as tk
 # Import the appropriate pump based on environment
 import platform
 
+from src.app.properties.pump_properties import PumpProperties
 from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.sidebar.configurations.pump_priming_configuration import PumpPrimingConfiguration
 from src.app.widget.sliding_toggle import ToggleSwitch
 
 
@@ -24,6 +26,8 @@ class PumpController:
         """
         self.parent_widget = parent_widget
         self.pump = pump
+        self.primingEnabled = True
+        self.speed = PumpProperties().defaultFlowRate
 
         self.control_frame = tk.Frame(parent_widget, bg="white")
         self.control_frame.grid_rowconfigure(0, weight=1)
@@ -43,34 +47,29 @@ class PumpController:
         return self.control_frame
 
     def onToggleChange(self, state: bool):
+        print(self.primingEnabled, self.speed)
+        if self.primingEnabled:
+            self.pump.setFlowRate(PumpPrimingConfiguration().getConfig())
+        else:
+            self.pump.setFlowRate(self.speed)
         if state:
             self.statusLabel.config(text="Pump ON")
         else:
             self.statusLabel.config(text="Pump OFF")
-            
-    def getPump(self):
-        """Get the underlying pump instance"""
-        return self.pump
 
-    def start(self):
-        """Start the pump"""
-        self.toggle_switch.set_state(True)
+    def setPriming(self, enabled: bool):
+        """Enable or disable priming mode"""
+        print(f"PumpController: Setting priming mode to {enabled}")
+        self.primingEnabled = enabled
 
     def stop(self):
-        """Stop the pump"""
-        self.toggle_switch.set_state(False)
+        """Get the underlying pump instance"""
+        return self.pump.getToggleSubject().on_next(False)
 
     def setFlowRate(self, speed: float):
         """Set pump speed"""
-        return self.pump.setFlowRate(speed)
-
-    def set_toggle_state(self, state: bool):
-        """Programmatically set the toggle state"""
-        self.toggle_switch.set_state(state)
-
-    def get_toggle_state(self):
-        """Get the current toggle state"""
-        return self.toggle_switch.get_state()
+        print(f"PumpController: Setting flow rate to {speed}")
+        self.speed = speed
 
     def cleanup(self):
         """Clean up resources"""
