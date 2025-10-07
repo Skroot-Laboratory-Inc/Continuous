@@ -26,8 +26,6 @@ class DevPump(PumpInterface):
 
     def setFlowRate(self, speed: float):
         """Set pump speed (mock implementation for dev environment)"""
-        if speed <= 0:
-            raise ValueError("Speed must be positive")
         self.speed = speed
         print(f"DevPump: Flow Rate set to {speed}")
 

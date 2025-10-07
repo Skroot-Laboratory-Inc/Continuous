@@ -95,6 +95,7 @@ class KpiForm:
         self.runId.set(lotId)
         self.user.set(user)
         self.PumpController.setFlowRate(pumpFlowRate)
+        self.PumpController.setPriming(False)
         self.parentFrame.grid()
 
     def setSaturation(self, saturationTime: str):
@@ -107,7 +108,8 @@ class KpiForm:
         self.runId.set("")
         self.user.set("")
         self.sgi.set("-")
-        self.PumpController.getPump().getToggleSubject().on_next(False)
+        self.PumpController.stop()
+        self.PumpController.setPriming(True)
         self.saturationTime.set("No Estimate")
 
 
