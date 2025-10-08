@@ -26,7 +26,6 @@ class Sib(SibInterface):
     def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator):
         self.PortAllocator = portAllocator
         self.readerNumber = readerNumber
-        self.calibrationFailed = False
         self.calibrationFrequency, self.calibrationVolts = [], []
         self.initialize(port.device)
         self.serialNumber = port.serial_number
