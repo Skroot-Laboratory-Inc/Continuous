@@ -60,7 +60,11 @@ class ReaderPageThreadManager:
                 self.resetReader,
                 self.issueOccurred,
             )
-            return guidedSetupForm.getCalibrate()
+            if sib.getCalibrationFilePresent().value:
+                return guidedSetupForm.getCalibrate()
+            else:
+                text_notification.setText("No calibration found. Please calibrate the reader.")
+                return True
         except UserConfirmationException:
             return None
         except:
@@ -81,11 +85,15 @@ class ReaderPageThreadManager:
         readerFrame.calibrateButton.disable()
         text_notification.setText("Calibration started.")
         self.startProgressBar(sib.estimateDuration(), sib.getCurrentlyScanning())
-        sib.performCalibration()
-        text_notification.setText("Calibration complete.")
-        readerFrame.calibrateButton.hide()
-        readerFrame.startButton.enable()
-        readerFrame.showPlotFrame()
+        calibrationSuccessful = sib.performCalibration()
+        if calibrationSuccessful:
+            text_notification.setText(f"Calibration complete.")
+            readerFrame.calibrateButton.hide()
+            readerFrame.startButton.enable()
+            readerFrame.showPlotFrame()
+        else:
+            text_notification.setText(f"Failed to perform calibration, Reader hardware disconnected.\nPlease contact your system administrator.")
+            readerFrame.calibrateButton.enable()
 
     def startReaderThread(self, readerNumber, user: str):
         self.appendReaderFunc(self.readerPage)
