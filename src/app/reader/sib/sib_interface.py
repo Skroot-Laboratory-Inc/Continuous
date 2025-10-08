@@ -1,4 +1,5 @@
 from reactivex import Subject
+from reactivex.subject import BehaviorSubject
 
 from src.app.model.sweep_data import SweepData
 
@@ -27,6 +28,8 @@ class SibInterfaceMetaClass(type):
                 callable(subclass.getYAxisLabel) and
                 hasattr(subclass, 'getCurrentlyScanning') and
                 callable(subclass.getCurrentlyScanning) and
+                hasattr(subclass, 'getCalibrationFilePresent') and
+                callable(subclass.getCalibrationFilePresent) and
                 hasattr(subclass, 'close') and
                 callable(subclass.close))
 
@@ -35,6 +38,9 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
 
     def getCurrentlyScanning(self) -> Subject:
         """Returns whether the reader is currently scanning or not."""
+
+    def getCalibrationFilePresent(self) -> BehaviorSubject:
+        """Returns whether the calibration file for the reader is present."""
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         """The reader takes a scan and returns magnitude values."""

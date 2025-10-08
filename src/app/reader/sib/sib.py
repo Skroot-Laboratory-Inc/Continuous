@@ -8,6 +8,7 @@ from typing import List
 import numpy as np
 import pandas
 from reactivex import Subject
+from reactivex.subject import BehaviorSubject
 
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import truncateByX
@@ -26,6 +27,7 @@ class Sib(SibInterface):
         self.PortAllocator = portAllocator
         self.readerNumber = readerNumber
         self.calibrationFailed = False
+        self.calibrationFrequency, self.calibrationVolts = [], []
         self.initialize(port.device)
         self.serialNumber = port.serial_number
         Properties = SibProperties()
@@ -36,17 +38,22 @@ class Sib(SibInterface):
         self.calibrationFilename = calibrationFileName
         self.stopFreqMHz = None
         self.startFreqMHz = None
-        self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
+        self.calibrationFilePresent = BehaviorSubject(self.loadCalibrationFile())
         self.currentlyScanning = Subject()
 
     def getYAxisLabel(self) -> str:
         return SibProperties().yAxisLabel
 
     def loadCalibrationFile(self):
-        frequency, volts = loadCalibrationFile(self.calibrationFilename)
-        selfResonance = findSelfResonantFrequency(frequency, volts, [50, 170], 1.8)
-        logging.info(f'Self resonant frequency is {selfResonance} MHz', extra={"id": f"Reader"})
-        return frequency, volts
+        try:
+            self.calibrationFrequency, self.calibrationVolts = loadCalibrationFile(self.calibrationFilename)
+            if len(self.calibrationFrequency) == 0 or len(self.calibrationVolts) == 0:
+                return False
+            selfResonance = findSelfResonantFrequency(self.calibrationFrequency, self.calibrationVolts, [50, 170], 1.8)
+            logging.info(f'Self resonant frequency is {selfResonance} MHz', extra={"id": f"Reader"})
+            return True
+        except:
+            return False
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         try:
@@ -72,10 +79,13 @@ class Sib(SibInterface):
         return self.sib.num_pts / 235
 
     def performCalibration(self):
-        calibrationSuccessful = self.takeCalibrationScan()
-        if calibrationSuccessful:
-            self.calibrationFrequency, self.calibrationVolts = self.loadCalibrationFile()
-        return calibrationSuccessful
+        try:
+            calibrationSuccessful = self.takeCalibrationScan()
+            if calibrationSuccessful:
+                self.calibrationFilePresent.on_next(self.loadCalibrationFile())
+            return calibrationSuccessful
+        except:
+            return False
 
     def takeCalibrationScan(self) -> bool:
         try:
@@ -91,11 +101,17 @@ class Sib(SibInterface):
             self.setStartFrequency(CommonProperties().defaultStartFrequency)
             self.setStopFrequency(CommonProperties().defaultEndFrequency)
             return True
-        except:
-            self.calibrationFailed = True
-            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
-            logging.exception("Failed to perform calibration.", extra={"id": "Calibration"})
-            return False
+        except SIBConnectionError:
+            self.resetSibConnection()
+            raise SIBConnectionError()
+        except SIBTimeoutError:
+            self.resetSibConnection()
+            raise SIBConnectionError()
+        except SIBDDSConfigError:
+            self.resetDDSConfiguration()
+            raise SIBDDSConfigError()
+        except SIBException:
+            raise
         finally:
             self.currentlyScanning.on_next(False)
 
@@ -125,6 +141,9 @@ class Sib(SibInterface):
 
     def getCurrentlyScanning(self) -> Subject:
         return self.currentlyScanning
+
+    def getCalibrationFilePresent(self) -> BehaviorSubject:
+        return self.calibrationFilePresent
 
     """ End of required implementations, SIB specific below"""
 
@@ -247,8 +266,14 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
         return calibrationFrequency, calibrationVolts
     except KeyError or ValueError:
         logging.exception("Column did not exist", extra={"id": calibrationFilename})
+        return [], []
+    except FileNotFoundError:
+        logging.exception("No previous calibration found.", extra={"id": calibrationFilename})
+        text_notification.setText("No previous calibration found, please calibrate.")
+        return [], []
     except Exception:
         logging.exception("Failed to load in calibration", extra={"id": calibrationFilename})
+        return [], []
 
 
 def createCalibrationFile(outputFileName, frequency, volts):

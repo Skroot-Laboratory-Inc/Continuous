@@ -1,4 +1,10 @@
 {
+  "v1.0.5": {
+    "bugfixes": {
+      "1": "Failed calibrations now properly force the user to retry.",
+      "2": "Missing calibration files now properly force the user to calibrate."
+    }
+  },
   "v1.0.4": {
     "bugfixes": {
       "1": "Fixed issue with changes to pump priming speed not propagating when the setup screen is open."

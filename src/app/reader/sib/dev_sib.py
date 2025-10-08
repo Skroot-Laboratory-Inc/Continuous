@@ -5,6 +5,7 @@ import time
 
 import pandas
 from reactivex import Subject
+from reactivex.subject import BehaviorSubject
 
 from src.app.helper_methods.data_helpers import convertListFromPercent
 from src.app.model.sweep_data import SweepData
@@ -19,11 +20,15 @@ class DevSib(SibInterface):
         self.DevProperties = DevProperties()
         self.yAxisLabel = Properties.yAxisLabel
         self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/1*.csv')
+        self.calibrationFilePresent = BehaviorSubject(True)
         self.currentDevFileIndex, self.currentDevFile = next(
             (x, val) for x, val in enumerate(self.devFiles)
             if float(os.path.basename(val)[0:-4]) > self.DevProperties.startTime + 100000
         )
         self.currentlyScanning = Subject()
+
+    def getCalibrationFilePresent(self) -> BehaviorSubject:
+        return self.calibrationFilePresent
 
     def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
         self.currentDevFileIndex += 1
