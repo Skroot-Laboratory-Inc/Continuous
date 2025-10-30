@@ -111,6 +111,37 @@ def setBoolEnvFlag(varName: str, newSetting: bool):
             logging.info(f"Failed to set configuration {varName} to {boolValue}", extra={"id": "configuration"})
 
 
+def getStringEnvFlag(varName: str, defaultValue: str) -> str:
+    """Read a boolean flag from /etc/environment"""
+    result = subprocess.run(
+        f"sudo grep '^{varName}=' /etc/environment || echo '{varName}={defaultValue}'",
+        shell=True, text=True, capture_output=True
+    )
+
+    if result.returncode == 0:
+        setting = result.stdout.strip().split('=', 1)[1].strip('"\'')
+    else:
+        setting = ""
+        logging.info(f"Failed to get configuration for {varName}", extra={"id": "configuration"})
+    return setting
+
+
+def setStringEnvFlag(varName: str, newSetting: str):
+    """Set a boolean flag in /etc/environment"""
+    if platform.system() == "Linux":
+        varExists = subprocess.run(f"sudo grep -q '^{varName}=' /etc/environment", shell=True).returncode == 0
+        if varExists:
+            escaped_value = re.escape(newSetting)
+            process = f'sudo sed -i "s#^{varName}=.*#{varName}=\\"{escaped_value}\\"#" /etc/environment'
+        else:
+            process = f'echo \'{varName}="{newSetting}"\' | sudo tee -a /etc/environment'
+        result = subprocess.run(process, shell=True, check=True)
+        if result.returncode == 0:
+            logging.info(f"Configuration {varName} set to {newSetting}", extra={"id": "configuration"})
+        else:
+            logging.info(f"Failed to set configuration {varName} to {newSetting}", extra={"id": "configuration"})
+
+
 def getFloatEnvFlag(varName: str, defaultValue: float) -> float:
     """Read a float value from /etc/environment"""
     value = defaultValue

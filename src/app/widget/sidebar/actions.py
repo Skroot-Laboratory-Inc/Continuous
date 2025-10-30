@@ -28,6 +28,7 @@ from src.app.widget.sidebar.settings.date_range_picker import DateRangePicker
 from src.app.widget.sidebar.settings.password_requirements import PasswordRequirementsScreen
 from src.app.widget.sidebar.settings.password_rotation import PasswordRotationScreen
 from src.app.widget.sidebar.settings.pump_configuration_page import PumpConfigurationPage
+from src.app.widget.sidebar.settings.secondary_axis_page import SecondaryAxisPage
 from src.app.widget.sidebar.settings.system_configuration_page import SystemConfigurationPage
 from src.app.widget.sidebar.settings.system_time_manager import SystemTimeManager
 
@@ -58,6 +59,10 @@ class SideBarActions:
             PasswordRotationScreen(self.rootManager, self.sessionManager.getUser())
         else:
             text_notification.setText("Cannot change password configurations, authentication is disabled.")
+
+    @requireUser
+    def setSecondaryAxis(self):
+        SecondaryAxisPage(self.rootManager, self.sessionManager.getUser())
 
     @requireUser
     def setSystemTime(self):

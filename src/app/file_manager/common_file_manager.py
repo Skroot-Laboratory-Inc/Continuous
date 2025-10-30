@@ -11,6 +11,7 @@ class CommonFileManager:
         self.profileIcon = rf"{resourcesDir}/media/profile.jpg"
         self.skrootLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.addIcon = rf"{resourcesDir}/media/plus.png"
+        self.arrowIcon = rf"{resourcesDir}/media/arrow.png"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
         self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
         self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
@@ -34,6 +35,9 @@ class CommonFileManager:
 
     def getAddIcon(self):
         return self.addIcon
+
+    def getArrowIcon(self):
+        return self.arrowIcon
 
     def getPowerIcon(self):
         return self.powerIcon

@@ -12,6 +12,7 @@ from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
+from src.app.reader.analyzer.secondary_axis_tracker import SecondaryAxisTracker
 from src.app.reader.helpers.plotter import Plotter
 from src.app.reader.reader_interface import ReaderInterface
 from src.app.reader.service.aws_service import AwsService
@@ -43,10 +44,12 @@ class Reader(ReaderInterface):
         self.Colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
+        self.SecondaryAxisTracker = SecondaryAxisTracker(self.FileManager.getSecondAxis())
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
             readerPageAllocator.getPlottingFrame(),
+            self.SecondaryAxisTracker,
         )
         self.SibInterface.setStartFrequency(CommonProperties().defaultStartFrequency)
         self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
