@@ -75,6 +75,12 @@ class AwsService(AwsServiceInterface):
             tags=config.asTags(),
         )
 
+    def uploadSecondAxis(self):
+        return self.AwsBoto3Service.uploadFile(
+            self.ReaderFileManager.getSecondAxis(),
+            'text/csv'
+        )
+
     def uploadIssueLog(self):
         return self.AwsBoto3Service.uploadFile(
             self.GlobalFileManager.getIssueLog(),

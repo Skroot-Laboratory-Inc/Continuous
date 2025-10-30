@@ -7,6 +7,8 @@ import tkinter as tk
 import warnings
 
 from src.app.ui_manager.theme.figure_styles import FigureStyles
+from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
+from src.app.widget.sidebar.configurations.secondary_axis_units import SecondaryAxisUnits
 
 warnings.filterwarnings("ignore", category=UserWarning,
                        message="This figure includes Axes that are not compatible with tight_layout")
@@ -46,6 +48,13 @@ class FigureCanvas:
 
     def toggle_view(self, event):
         self.showSgi.on_next(not self.showSgi.value)
+
+    def addSecondAxis(self, times, values):
+        if values:
+            ax2 = self.currentPlot.twinx()
+            ax2.scatter(times, values, s=20, color='k')
+            ax2.set_ylabel(f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()})", color='k')
+        self.frequencyFigure.tight_layout()
 
     def redrawPlot(self):
         self.frequencyFigure.clear()

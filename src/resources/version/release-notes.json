@@ -1,5 +1,10 @@
 {
   "v1.0.5": {
+    "features": {
+      "1": "Added a configurations page to set second axis measurement and units.",
+      "2": "Added functionality to enter second axis measurement during scans.",
+      "3": "Added upload functionality for second axis measurement data to AWS."
+    },
     "bugfixes": {
       "1": "Failed calibrations now properly force the user to retry.",
       "2": "Missing calibration files now properly force the user to calibrate."

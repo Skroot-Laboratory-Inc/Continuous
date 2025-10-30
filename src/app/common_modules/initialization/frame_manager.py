@@ -13,7 +13,7 @@ class FrameManager:
         self.footerFrame = self.createFooterFrame()
 
     def createBannerFrame(self):
-        bannerFrame = self.RootManager.createFrame(self.Colors.secondaryColor)
+        bannerFrame = self.RootManager.createFrame(self.Colors.primaryColor)
         bannerFrame.place(relx=0,
                           rely=0,
                           relwidth=1,

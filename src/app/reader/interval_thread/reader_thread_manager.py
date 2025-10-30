@@ -20,6 +20,8 @@ from src.app.reader.reader import Reader
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
+from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
+from src.app.widget.sidebar.configurations.secondary_axis_units import SecondaryAxisUnits
 from src.resources.sibcontrol.sibcontrol import SIBException, SIBConnectionError
 
 
@@ -35,6 +37,11 @@ class ReaderThreadManager:
         self.isDevMode = DevProperties().isDevMode
         self.RootManager = rootManager
         self.Reader = reader
+        self.kpiForm = self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm
+        self.kpiForm.lastSecondAxisEntry.subscribe(lambda value: threading.Thread(
+            target=self.addSecondaryAxisValue,
+            args=(float(value),)
+        ).start())
         # Current Issues is supposed to be a dict of all issues used for updating text_notification on successful runs.
         # Needs fixing.
         self.currentIssues = {}
@@ -45,8 +52,13 @@ class ReaderThreadManager:
         self.Colors = Colors()
         self.resetRunFunc = resetRunFunc
 
+    def addSecondaryAxisValue(self, value: float):
+        self.Reader.SecondaryAxisTracker.addValue(value)
+        self.Reader.AwsService.uploadSecondAxis()
+        text_notification.setText(f"Added {SecondaryAxisType().getConfig()} of {value} {SecondaryAxisUnits().getConfig()}")
+
     def startReaderLoop(self, user: str):
-        self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm.setConstants(
+        self.kpiForm.setConstants(
             self.guidedSetupForm.getLotId(),
             user,
             self.guidedSetupForm.getPumpFlowRate(),
@@ -91,15 +103,11 @@ class ReaderThreadManager:
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
             reader.HarvestAlgorithm.check(reader.getResultSet())
             if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSaturation(
-                    reader.HarvestAlgorithm.currentHarvestPrediction,
-                )
+                self.kpiForm.setSaturation(reader.HarvestAlgorithm.currentHarvestPrediction)
             else:
-                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSaturation(
-                    "No Estimate",
-                )
+                self.kpiForm.setSaturation("No Estimate")
             if reader.finishedEquilibrationPeriod:
-                reader.ReaderPageAllocator.getReaderFrame().kpiForm.setSgi(
+                self.kpiForm.setSgi(
                     frequencyToIndex(self.Reader.Analyzer.zeroPoint,
                                      self.Reader.Analyzer.ResultSet.getDenoiseFrequencySmooth())[-1],
                 )
@@ -115,7 +123,7 @@ class ReaderThreadManager:
                 reader.AwsService.uploadExperimentFilesOnInterval(
                     reader.FileManager.getCurrentScanNumber(),
                     self.guidedSetupForm,
-                    reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime.get(),
+                    self.kpiForm.saturationTime.get(),
                     reader.AutomatedIssueManager.hasOpenIssues()
                 )
 
@@ -218,7 +226,7 @@ class ReaderThreadManager:
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
                 self.guidedSetupForm,
-                reader.ReaderPageAllocator.getReaderFrame().kpiForm.saturationTime.get(),
+                self.kpiForm.saturationTime.get(),
             )
         self.resetRunFunc(reader.readerNumber)
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
