@@ -5,6 +5,7 @@ import numpy as np
 import pandas
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
@@ -25,7 +26,7 @@ class DevAnalyzer(Analyzer):
         devRunAnalyzed = pandas.read_csv(rf'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/smoothAnalyzed.csv')
         self.devTime = self.columnFromCsvOrZero(devRunAnalyzed, 'Time (hours)', len(self.devFiles))
         self.devTimestamps = self.columnFromCsvOrZero(devRunAnalyzed, 'Timestamp', len(self.devFiles))
-        self.devFilenames = self.columnFromCsvOrZero(devRunAnalyzed, 'Filename', len(self.devFiles))
+        self.devFilenames = self.columnFromCsv(devRunAnalyzed, 'Filename', len(self.devFiles))
         self.devFrequency = self.columnFromCsvOrZero(
             devRunAnalyzed,
             'Frequency (MHz)',
@@ -72,30 +73,31 @@ class DevAnalyzer(Analyzer):
         self.ResultSet.denoiseFrequencySmooth = self.devFrequency[0:self.currentDevFileIndex]
 
     def analyzeDevScan(self):
-        self.ResultSet.time.append(self.devTime[self.currentDevFileIndex])
-        self.ResultSet.denoiseTimeSmooth.append(self.devTime[self.currentDevFileIndex])
-        self.ResultSet.timestamps.append(self.devTimestamps[self.currentDevFileIndex])
-        self.ResultSet.filenames.append(self.devFilenames[self.currentDevFileIndex])
-
-        self.ResultSet.maxVoltsSmooth.append(self.devDb[self.currentDevFileIndex])
-
-        self.ResultSet.maxFrequency.append(self.devFrequency[self.currentDevFileIndex])
-        self.ResultSet.denoiseFrequency.append(self.devFrequency[self.currentDevFileIndex])
-        self.ResultSet.maxFrequencySmooth.append(self.devFrequency[self.currentDevFileIndex])
-        self.ResultSet.denoiseFrequencySmooth.append(self.devFrequency[self.currentDevFileIndex])
+        newPoint = ResultSetDataPoint(self.ResultSet)
+        newPoint.setTime(self.devTime[self.currentDevFileIndex])
+        newPoint.setDenoiseTimeSmooth(self.ResultSet.getTime() + [self.devTime[self.currentDevFileIndex]])
+        newPoint.setDenoiseTime(self.ResultSet.getTime() + [self.devTime[self.currentDevFileIndex]])
+        newPoint.setDenoiseFrequency(self.ResultSet.getDenoiseFrequency() + [self.devFrequency[self.currentDevFileIndex]])
+        newPoint.setDenoiseFrequencySmooth(self.ResultSet.getDenoiseFrequencySmooth() + [self.devFrequency[self.currentDevFileIndex]])
+        newPoint.setMaxFrequency(self.devFrequency[self.currentDevFileIndex])
+        newPoint.setMaxVoltsSmooth(self.devDb[self.currentDevFileIndex])
+        newPoint.setMaxFrequencySmooth(self.devFrequency[self.currentDevFileIndex])
+        newPoint.setFilename(self.devFilenames[self.currentDevFileIndex])
+        newPoint.setTimestamp(self.devTimestamps[self.currentDevFileIndex])
+        newPoint.setDerivative(self.devFrequency[self.currentDevFileIndex])
+        self.ResultSet.setValues(newPoint)
 
     def analyzeActualScan(self, sweepData, shouldDenoise):
         super().analyzeScan(sweepData, shouldDenoise)
 
     def setZeroPoint(self, zeroPoint):
-        # TODO When using mode "GUI" SGI calculations are taken on the already SGI values. Needs fixing
         if self.DevProperties.mode == "Analysis":
             super().setZeroPoint(zeroPoint)
         else:
             self.zeroPoint = 1
 
     @staticmethod
-    def columnFromCsvOrZero(csv, columnHeader, vectorLen, secondaryColumnHeader=""):
+    def columnFromCsvOrZero(csv, columnHeader, vectorLen, secondaryColumnHeader="", defaultValue=0):
         try:
             return csv[columnHeader].values.tolist()
         except:
@@ -104,5 +106,17 @@ class DevAnalyzer(Analyzer):
                     return csv[secondaryColumnHeader].values.tolist()
                 except:
                     pass
-            return [0] * vectorLen
+            return [defaultValue] * vectorLen
+
+    @staticmethod
+    def columnFromCsv(csv, columnHeader, vectorLen, secondaryColumnHeader=""):
+        try:
+            return csv[columnHeader].values.tolist()
+        except:
+            if secondaryColumnHeader != "":
+                try:
+                    return csv[secondaryColumnHeader].values.tolist()
+                except:
+                    pass
+            return [""] * vectorLen
 

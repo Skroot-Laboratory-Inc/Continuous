@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 
@@ -17,38 +19,38 @@ class ResultSetDataPoint:
         self.denoiseFrequencySmooth = previousResultSet.denoiseFrequencySmooth + [np.nan]
         self.denoiseFrequency = previousResultSet.denoiseFrequency + [np.nan]
 
-    def setTime(self, time):
+    def setTime(self, time: float):
         self.time = time
 
-    def setDenoiseTime(self, time):
+    def setDenoiseTime(self, time: List[float]):
         self.denoiseTime = time
 
-    def setDenoiseTimeSmooth(self, time):
+    def setDenoiseTimeSmooth(self, time: List[float]):
         self.denoiseTimeSmooth = time
 
-    def setDenoiseFrequency(self, frequency):
+    def setDenoiseFrequency(self, frequency: List[float]):
         self.denoiseFrequency = frequency
 
-    def setDenoiseFrequencySmooth(self, frequency):
+    def setDenoiseFrequencySmooth(self, frequency: List[float]):
         self.denoiseFrequencySmooth = frequency
 
-    def setMaxFrequency(self, maxFrequency):
+    def setMaxFrequency(self, maxFrequency: float):
         self.maxFrequency = maxFrequency
 
-    def setMaxVoltsSmooth(self, maxVolts):
+    def setMaxVoltsSmooth(self, maxVolts: float):
         self.maxVoltsSmooth = maxVolts
 
-    def setMaxFrequencySmooth(self, maxFrequencySmoothed):
+    def setMaxFrequencySmooth(self, maxFrequencySmoothed: float):
         self.maxFrequencySmooth = maxFrequencySmoothed
 
-    def setPeakWidthSmooth(self, peakWidthSmooth):
+    def setPeakWidthSmooth(self, peakWidthSmooth: float):
         self.peakWidthSmooth = peakWidthSmooth
 
-    def setFilename(self, filename):
+    def setFilename(self, filename: str):
         self.filename = filename
 
-    def setTimestamp(self, timestamp):
+    def setTimestamp(self, timestamp: int):
         self.timestamp = timestamp
 
-    def setDerivative(self, derivative):
+    def setDerivative(self, derivative: float):
         self.derivative = derivative

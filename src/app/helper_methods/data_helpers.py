@@ -1,13 +1,14 @@
 import csv
-from typing import List
 
 import numpy as np
 
-from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.properties.dev_properties import DevProperties
 
 
 def frequencyToIndex(zeroPoint, frequencyVector):
     """ This converts a frequency vector into SGI """
+    if DevProperties().isDevMode and DevProperties().mode == "GUI":
+        return [100 * (1 - val/frequencyVector[0]) for val in frequencyVector]
     return [100 * (1 - val / zeroPoint) for val in frequencyVector]
 
 
