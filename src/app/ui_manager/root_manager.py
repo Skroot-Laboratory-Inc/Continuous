@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter.scrolledtext import ScrolledText
 
 from reactivex.subject import BehaviorSubject
 
@@ -89,6 +90,20 @@ class RootManager:
 
     def updateIdleTasks(self):
         self.root.update_idletasks()
+
+    def showErrorPage(self, title="Error", message="An error occurred"):
+        for w in self.root.winfo_children():
+            w.destroy()
+
+        frm = tk.Frame(self.root, padx=16, pady=12)
+        frm.pack(fill="both", expand=True)
+        tk.Label(frm, text=title, font=("TkDefaultFont", 14, "bold")).pack(anchor="w")
+        st = ScrolledText(frm, height=15, wrap="word")
+        st.insert("1.0", message)
+        st.configure(state="disabled")
+        st.pack(fill="both", expand=True, pady=(8, 8))
+
+        tk.Button(frm, text="Quit", command=self.root.destroy).pack(anchor="e")
 
 
 def isMenuOptionPresent(menu_bar, menu_label):

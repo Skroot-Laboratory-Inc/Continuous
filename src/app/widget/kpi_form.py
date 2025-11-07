@@ -1,11 +1,14 @@
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk
+from typing import Optional
 
 from reactivex import Subject
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.datetime_helpers import formatDatetime, millisToDatetime
 from src.app.helper_methods.ui_helpers import launchKeyboard
 from src.app.reader.pump.pump_controller import PumpController
 from src.app.reader.pump.pump_interface import PumpInterface
@@ -26,7 +29,8 @@ class KpiForm:
         self.sessionManager = sessionManager
         self.sgi = tk.StringVar(value="-")
         self.runId = tk.StringVar()
-        self.saturationTime = tk.StringVar(value="No Estimate")
+        self.saturationTime = tk.StringVar(value="")
+        self.saturationDate: Optional[datetime] = None
         self.user = tk.StringVar()
         self.axisLabel = tk.StringVar(value=f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()}):")
         self.secondaryAxisData = tk.StringVar(value="")
@@ -148,8 +152,9 @@ class KpiForm:
         self.PumpController.setPriming(False)
         self.parentFrame.grid()
 
-    def setSaturation(self, saturationTime: str):
-        self.saturationTime.set(saturationTime)
+    def setSaturation(self, saturationDate: int):
+        self.saturationTime.set(formatDatetime(millisToDatetime(saturationDate)))
+        self.saturationDate = saturationDate
 
     def setSgi(self, sgi: float):
         self.sgi.set(f"{round(sgi, 1)}")
@@ -160,5 +165,6 @@ class KpiForm:
         self.sgi.set("-")
         self.PumpController.stop()
         self.PumpController.setPriming(True)
-        self.saturationTime.set("No Estimate")
+        self.saturationTime.set("")
+        self.saturationDate = None
         self.parentFrame.grid_remove()

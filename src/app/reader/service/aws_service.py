@@ -19,29 +19,29 @@ class AwsService(AwsServiceInterface):
         self.currentDynamodbConfig = DynamodbConfig()
         self.CommonFileManager = CommonFileManager()
         self.AwsProperties = AwsProperties()
-        self.csvUploadRate = self.AwsProperties.csvUploadRate
-        self.rawDataUploadRate = self.AwsProperties.rawDataUploadRate
-        self.notesUploadRate = self.AwsProperties.notesUploadRate
+        self.csvUploadRate = self.AwsProperties.csvUploadRate * 60000
+        self.rawDataUploadRate = self.AwsProperties.rawDataUploadRate * 60000
+        self.notesUploadRate = self.AwsProperties.notesUploadRate * 60000
         self.ReaderFileManager = readerFileManager
         self.GlobalFileManager = globalFileManager
-        self.awsLastCsvUploadTime = 100000
-        self.awsLastRawDataUploadTime = 100000
-        self.awsLastNotesUploadTime = 100000
+        self.awsLastCsvUploadMillis = datetimeToMillis(datetime.now())
+        self.awsLastRawDataUploadMillis = datetimeToMillis(datetime.now())
+        self.awsLastNotesUploadMillis = datetimeToMillis(datetime.now())
 
-    def uploadExperimentFilesOnInterval(self, scanNumber, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime, flagged: bool):
+    def uploadExperimentFilesOnInterval(self, scanMillis: int, lotId: str, saturationDate: int, flagged: bool, startDate: int):
         newConfig = DynamodbConfig(None,
-                                   guidedSetupForm.getDateMillis(),
+                                   startDate,
                                    saturationDate,
-                                   guidedSetupForm.getLotId(),
+                                   lotId,
                                    socket.gethostname(),
                                    flagged)
-        self.uploadReaderCsvOnInterval(scanNumber, newConfig)
-        self.uploadRawDataOnInterval(scanNumber)
+        self.uploadReaderCsvOnInterval(scanMillis, newConfig)
+        self.uploadRawDataOnInterval(scanMillis)
 
-    def uploadReaderCsvOnInterval(self, scanNumber, newConfig: DynamodbConfig):
-        if (scanNumber - self.awsLastCsvUploadTime) >= self.csvUploadRate:
+    def uploadReaderCsvOnInterval(self, scanMillis, newConfig: DynamodbConfig):
+        if (scanMillis - self.awsLastCsvUploadMillis) >= self.csvUploadRate:
             self.uploadReaderAnalyzed(newConfig)
-            self.awsLastCsvUploadTime = scanNumber
+            self.awsLastCsvUploadMillis = scanMillis
             if self.currentDynamodbConfig != newConfig:
                 if self.AwsBoto3Service.pushExperimentRow(newConfig):
                     self.currentDynamodbConfig = newConfig
@@ -50,19 +50,19 @@ class AwsService(AwsServiceInterface):
                 if self.AwsBoto3Service.pushExperimentRow(newConfig):
                     self.currentDynamodbConfig = newConfig
 
-    def uploadRawDataOnInterval(self, scanNumber):
-        if (scanNumber - self.awsLastRawDataUploadTime) >= self.rawDataUploadRate:
+    def uploadRawDataOnInterval(self, scanMillis):
+        if (scanMillis - self.awsLastRawDataUploadMillis) >= self.rawDataUploadRate:
             self.AwsBoto3Service.uploadFile(
                 self.ReaderFileManager.getCurrentScan(),
                 "text/csv",
             )
-            self.awsLastRawDataUploadTime = scanNumber
+            self.awsLastRawDataUploadMillis = scanMillis
 
-    def uploadFinalExperimentFiles(self, guidedSetupForm: SetupReaderFormInput, saturationDate: datetime):
+    def uploadFinalExperimentFiles(self, lotId: str, saturationDate: int, startDate: int):
         newConfig = DynamodbConfig(datetimeToMillis(datetime.now()),
-                                   guidedSetupForm.getDateMillis(),
+                                   startDate,
                                    saturationDate,
-                                   guidedSetupForm.getLotId(),
+                                   lotId,
                                    socket.gethostname(),
                                    False)
         self.uploadReaderAnalyzed(newConfig)

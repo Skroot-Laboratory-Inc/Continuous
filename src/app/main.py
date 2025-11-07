@@ -1,7 +1,12 @@
+import logging
+import traceback
+
 import matplotlib as mpl
 
 from src.app.common_modules.common_modules import CommonModules
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
+from src.app.widget import logger
 from src.resources.version.version import Version
 
 
@@ -9,13 +14,25 @@ class Main(CommonModules):
     def __init__(self):
         self.GuiManager = RootManager()
         version = Version()
-        super().__init__(
-            self.GuiManager,
-            f"Version: Cell_v{version.getMajorVersion()}.{version.getMinorVersion()}",
-            version.getMajorVersion(),
-            version.getMinorVersion(),
+        logger.loggerSetup(
+            f"{CommonFileManager().getExperimentLogDir()}/log.txt",
+            f"Tunair_v{version.getMajorVersion()}.{version.getMinorVersion()}",
         )
-        self.GuiManager.callMainLoop()
+        try:
+            super().__init__(
+                self.GuiManager,
+                version.getMajorVersion(),
+                version.getMinorVersion(),
+            )
+        except:
+            logging.exception("Exception in Main Initialization", extra={"id": "System failure"})
+            tb = traceback.format_exc()
+            try:
+                self.GuiManager.showErrorPage("Initialization failed", tb)
+            except Exception:
+                logging.exception("Failed to display error page", extra={"id": "UI failure"})
+        finally:
+            self.GuiManager.callMainLoop()
 
 
 mpl.use('TkAgg')

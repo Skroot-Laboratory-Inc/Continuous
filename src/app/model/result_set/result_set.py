@@ -4,12 +4,14 @@ from typing import List
 import numpy as np
 from scipy.signal import savgol_filter
 
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.properties.harvest_properties import HarvestProperties
 
 
 class ResultSet:
     def __init__(self):
+        self.startTime = datetimeToMillis(datetime.now())
         self.time = []
         self.maxFrequency = []
         self.maxVoltsSmooth = []
@@ -25,6 +27,9 @@ class ResultSet:
         self.denoiseTime = []
         self.denoiseFrequencySmooth = []
         self.denoiseFrequency = []
+
+    def getStartTime(self) -> int:
+        return self.startTime
 
     def getTime(self) -> List[float]:
         return self.time
@@ -47,7 +52,7 @@ class ResultSet:
     def getDerivativeMean(self) -> List[float]:
         return self.smoothDerivativeMean
 
-    def getTimestamps(self) -> List[datetime]:
+    def getTimestamps(self) -> List[int]:
         return self.timestamps
 
     def getDenoiseTime(self) -> List[float]:
