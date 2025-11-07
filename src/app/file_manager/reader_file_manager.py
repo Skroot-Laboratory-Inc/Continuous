@@ -1,4 +1,7 @@
 import os
+from datetime import datetime
+
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
 
 
 class ReaderFileManager:
@@ -12,44 +15,43 @@ class ReaderFileManager:
         self.calibrationGlobalLocation = f'{getDesktopLocation()}/Backend/Calibration/{readerNumber}/Calibration.csv'
         self.readerPlotJpg = f'{self.readerSavePath}/Result Figure.jpg'
         self.accelerationCsv = f'{self.readerSavePath}/Acceleration.csv'
-        self.scanNumber = 100001
+        self.scanDateMillis = datetimeToMillis(datetime.now())
 
-    def getReaderSavePath(self):
+    def getReaderSavePath(self) -> str:
         return self.readerSavePath
 
-    def getTemperatureCsv(self):
+    def getTemperatureCsv(self) -> str:
         return self.temperatureCsv
 
-    def getAnalyzed(self):
+    def getAnalyzed(self) -> str:
         return self.analyzed
 
-    def getSmoothAnalyzed(self):
+    def getSmoothAnalyzed(self) -> str:
         return self.smoothAnalyzed
 
-    def getSecondAxis(self):
+    def getSecondAxis(self) -> str:
         return self.secondAxis
 
-    def getCalibrationLocalLocation(self):
+    def getCalibrationLocalLocation(self) -> str:
         return self.calibrationLocalLocation
 
-    def getCalibrationGlobalLocation(self):
+    def getCalibrationGlobalLocation(self) -> str:
         return self.calibrationGlobalLocation
 
-    def getReaderPlotJpg(self):
+    def getReaderPlotJpg(self) -> str:
         return self.readerPlotJpg
 
-    def getCurrentScanNumber(self):
-        return self.scanNumber
+    def getCurrentScanDate(self) -> int:
+        return self.scanDateMillis
 
-    def incrementScanNumber(self, increment):
-        self.scanNumber += increment
-        return self.scanNumber
+    def updateScanName(self):
+        self.scanDateMillis = datetimeToMillis(datetime.now())
 
-    def getCurrentScan(self):
-        return f"{self.readerSavePath}/{self.scanNumber}.csv"
+    def getCurrentScan(self) -> str:
+        return f"{self.readerSavePath}/{self.scanDateMillis}.csv"
 
 
-def getDesktopLocation():
+def getDesktopLocation() -> str:
     """ This gets the path to the computer's desktop. """
     try:
         return os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')

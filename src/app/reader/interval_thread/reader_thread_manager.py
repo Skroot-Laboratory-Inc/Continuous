@@ -9,7 +9,7 @@ import numpy as np
 from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import frequencyToIndex
-from src.app.helper_methods.helper_functions import getZeroPoint
+from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
@@ -93,19 +93,19 @@ class ReaderThreadManager:
     def takeSweep(self):
         reader = self.Reader
         try:
+            reader.FileManager.updateScanName()
             reader.Indicator.changeIndicatorYellow()
             self.checkZeroPoint()
             sweepData = reader.SibInterface.takeScan(
                 reader.FileManager.getCurrentScan(),
                 self.disableFullSaveFiles,
             )
+            createScanFile(reader.FileManager.getCurrentScan(), sweepData)
             reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
             reader.HarvestAlgorithm.check(reader.getResultSet())
             if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
                 self.kpiForm.setSaturation(reader.HarvestAlgorithm.currentHarvestPrediction)
-            else:
-                self.kpiForm.setSaturation("No Estimate")
             if reader.finishedEquilibrationPeriod:
                 self.kpiForm.setSgi(
                     frequencyToIndex(self.Reader.Analyzer.zeroPoint,
@@ -121,10 +121,11 @@ class ReaderThreadManager:
             reader.Analyzer.createAnalyzedFiles()
             if reader.finishedEquilibrationPeriod:
                 reader.AwsService.uploadExperimentFilesOnInterval(
-                    reader.FileManager.getCurrentScanNumber(),
-                    self.guidedSetupForm,
-                    self.kpiForm.saturationTime.get(),
-                    reader.AutomatedIssueManager.hasOpenIssues()
+                    reader.FileManager.getCurrentScanDate(),
+                    self.guidedSetupForm.getLotId(),
+                    self.kpiForm.saturationDate,
+                    reader.AutomatedIssueManager.hasOpenIssues(),
+                    self.Reader.getAnalyzer().ResultSet.getStartTime(),
                 )
 
     def mainLoop(self, reader):
@@ -151,7 +152,7 @@ class ReaderThreadManager:
                     reader.Indicator.changeIndicatorRed()
                     reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Connection Error: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
+                        f'Connection Error: Failed to take scan {reader.FileManager.getCurrentScanDate()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(f"Reader hardware disconnected.\nPlease contact your system administrator.  ")
                 except SIBReconnectException:
@@ -168,7 +169,7 @@ class ReaderThreadManager:
                     reader.Indicator.changeIndicatorRed()
                     reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Failed to take scan {reader.FileManager.getCurrentScanNumber()}, but reconnected successfully',
+                        f'Failed to take scan {reader.FileManager.getCurrentScanDate()}, but reconnected successfully',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
                         'Sweep failed, but connection re-established. No further action is necessary.',
@@ -187,7 +188,7 @@ class ReaderThreadManager:
                     reader.Indicator.changeIndicatorRed()
                     reader.getAnalyzer().recordFailedScan()
                     logging.exception(
-                        f'Hardware Problem: Failed to take scan {reader.FileManager.getCurrentScanNumber()}',
+                        f'Hardware Problem: Failed to take scan {reader.FileManager.getCurrentScanDate()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
                         f"Reader hardware disconnected.\nPlease contact your system administrator. ")
@@ -204,13 +205,12 @@ class ReaderThreadManager:
                         )
                     reader.Indicator.changeIndicatorRed()
                     logging.exception(
-                        f'Error Analyzing Data, failed to analyze scan {reader.FileManager.getCurrentScanNumber()}',
+                        f'Error Analyzing Data, failed to analyze scan {reader.FileManager.getCurrentScanDate()}',
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
                         f"Sweep analysis failed, check vessel placement.")
                 finally:
                     self.Timer.updateTime()
-                    reader.FileManager.incrementScanNumber(self.guidedSetupForm.getScanRate())
                 if not self.issueOccurredFn():
                     text_notification.setText("Reader has recorded a sweep.")
             except:
@@ -225,8 +225,9 @@ class ReaderThreadManager:
         text_notification.setText("Run Finished.")
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
-                self.guidedSetupForm,
-                self.kpiForm.saturationTime.get(),
+                self.guidedSetupForm.getLotId(),
+                self.kpiForm.saturationDate,
+                self.Reader.getAnalyzer().ResultSet.getStartTime(),
             )
         self.resetRunFunc(reader.readerNumber)
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})

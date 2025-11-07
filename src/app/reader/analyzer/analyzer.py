@@ -35,9 +35,9 @@ class Analyzer(AnalyzerInterface):
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
         resultSet = ResultSetDataPoint(self.ResultSet)
-        resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+        resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
-        resultSet.setTimestamp(datetime.now())
+        resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
         try:
             peakHeight, maxFreq, peakWidth = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
             resultSet.setMaxFrequency(maxFreq)
@@ -78,13 +78,13 @@ class Analyzer(AnalyzerInterface):
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
         resultSet = ResultSetDataPoint(self.ResultSet)
-        resultSet.setTime((self.FileManager.getCurrentScanNumber() - 100000) / 60)
+        resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
-        resultSet.setTimestamp(datetime.now())
+        resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
-        timestamps = [datetimeToMillis(date) for date in self.ResultSet.getTimestamps()]
+        timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             rowHeaders = []
@@ -151,7 +151,7 @@ class Analyzer(AnalyzerInterface):
         return denoiseX, denoiseY
 
     @staticmethod
-    def findMaxGaussian(x, y):
+    def findMaxGaussian(x, y) -> (float, float, float):
         pointsOnEachSide = 500
         if pointsOnEachSide < np.argmax(y) < len(y) - pointsOnEachSide:
             xAroundPeak = x[np.argmax(y) - pointsOnEachSide:np.argmax(y) + pointsOnEachSide]
@@ -175,7 +175,7 @@ class Analyzer(AnalyzerInterface):
         return amplitude, centroid, peakWidth
 
     @staticmethod
-    def calculateDerivativeValues(time, sgi):
+    def calculateDerivativeValues(time, sgi) -> float:
         derivativeValue = np.nan
         try:
             chunk_size = HarvestProperties().derivativePoints

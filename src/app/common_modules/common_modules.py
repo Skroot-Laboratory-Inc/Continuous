@@ -6,13 +6,11 @@ from src.app.common_modules.initialization.setup_base_ui import SetupBaseUi
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
 from src.app.ui_manager.root_manager import RootManager
-from src.app.widget import logger
 
 
 class CommonModules:
-    def __init__(self, rootManager: RootManager, version, major_version, minor_version):
+    def __init__(self, rootManager: RootManager, major_version, minor_version):
         self.CommonFileManager = CommonFileManager()
-        logger.loggerSetup(f"{self.CommonFileManager.getExperimentLogDir()}/log.txt", version)
         self.RootManager = rootManager
         self.sessionManager = SessionManager()
         self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager, major_version, minor_version).bodyFrame

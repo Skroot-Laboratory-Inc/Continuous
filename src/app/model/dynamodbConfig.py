@@ -1,8 +1,10 @@
 from datetime import datetime
 
+from src.app.helper_methods.datetime_helpers import datetimeToMillis
+
 
 class DynamodbConfig:
-    def __init__(self, endDate: int = None, startDate: int = None, saturationDate: datetime = None, lotId: str = "", incubator: str = "", flagged: bool = False):
+    def __init__(self, endDate: int = None, startDate: int = None, saturationDate: int = None, lotId: str = "", incubator: str = "", flagged: bool = False):
         self.endDate = endDate
         self.startDate = startDate
         self.saturationDate = saturationDate

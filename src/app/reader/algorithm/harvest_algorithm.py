@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import numpy as np
@@ -5,6 +6,7 @@ from scipy.optimize import curve_fit
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.data_helpers import gaussian
+from src.app.helper_methods.datetime_helpers import datetimeToMillis, millisToDatetime
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.algorithm_interface import AlgorithmInterface
 
@@ -15,30 +17,15 @@ class HarvestAlgorithm(AlgorithmInterface):
         self.FileManager = fileManager
         self.readyToHarvest = False
         self.harvested = False
-        self.historicalTime = []
-        self.historicalStd = []
-        self.historicalCentroid = []
-        self.historicalRSquared = []
         self.historicalHarvestTime = []
-        self.historicalTimeToHarvest = []
         self.currentHarvestPrediction = np.nan
         self.differentPredictions = []
 
     def check(self, resultSet):
         center, std, rSquared, harvestTime = np.nan, np.nan, np.nan, np.nan
         if len(resultSet.getTime()) > self.derivativePoints:
-            center, std, rSquared, harvestTime = self.harvestAlgorithm(resultSet.getTime(), resultSet.getDerivativeMean())
-        self.historicalTime.append(resultSet.getTime()[-1])
-        self.historicalStd.append(std)
-        self.historicalCentroid.append(center)
-        self.historicalRSquared.append(rSquared)
+            center, std, rSquared, harvestTime = self.harvestAlgorithm(resultSet.getTimestamps(), resultSet.getTime(), resultSet.getDerivativeMean())
         self.historicalHarvestTime.append(harvestTime)
-        if np.isnan(harvestTime) or harvestTime == 0:
-            self.historicalTimeToHarvest.append(0)
-        else:
-            if harvestTime < resultSet.getTime()[-1]:
-                self.harvested = True
-            self.historicalTimeToHarvest.append(harvestTime-resultSet.getTime()[-1])
         return harvestTime
 
     def getStatus(self):
@@ -46,7 +33,7 @@ class HarvestAlgorithm(AlgorithmInterface):
 
     """ End of publicly visible functions required for algorithms. """
 
-    def harvestAlgorithm(self, time, derivative):
+    def harvestAlgorithm(self, timestamps, time, derivative):
         centroid, std, rSquared = self.findGaussianStd(time, derivative)
         if len(time) != len(derivative):
             logging.warning(
@@ -54,18 +41,17 @@ class HarvestAlgorithm(AlgorithmInterface):
                 extra={"id": "harvest algorithm"},
             )
         proposedHarvestTime = centroid + HarvestProperties().standardDeviationsToHarvest * std
-        if self.harvestTrackable(centroid, std, rSquared, time[-1], derivative[-1], proposedHarvestTime):
-            self.differentPredictions.append(proposedHarvestTime)
+        if self.harvestTrackable(centroid, rSquared, time[-1], derivative[-1], proposedHarvestTime):
+            self.differentPredictions.append(datetimeToMillis(timestamps[0] + datetime.timedelta(hours=(proposedHarvestTime - time[0]))))
             if len(self.differentPredictions) > 20:
-                self.currentHarvestPrediction = np.nanmean(self.differentPredictions[-20:])
+                self.currentHarvestPrediction = round(np.nanmean(self.differentPredictions[-20:]))
             else:
-                self.currentHarvestPrediction = np.nanmean(self.differentPredictions)
+                self.currentHarvestPrediction = round(np.nanmean(self.differentPredictions))
         harvestTime = self.currentHarvestPrediction
         return centroid, std, rSquared, harvestTime
 
-    def harvestTrackable(self, centroid, std, rSquared, currentTime, currentDerivative, proposedHarvestTime) -> bool:
+    def harvestTrackable(self, centroid, rSquared, currentTime, currentDerivative, proposedHarvestTime) -> bool:
         trackable = False
-        #  isPastPeak might be better off using std, get Nigel's opinion
         if self.isStableGaussian(rSquared) and self.isPastPeak(currentTime, centroid) and self.isReasonableTime(currentTime, currentDerivative, proposedHarvestTime):
             trackable = True
         return trackable
@@ -80,7 +66,6 @@ class HarvestAlgorithm(AlgorithmInterface):
         isFastGrowth = derivativePoint > HarvestProperties().fastDerivativeThreshold
         isInInitialGrowth = timePoint > HarvestProperties().daysNotToEstimateHarvest * 24
         return isAtLeastXHoursOut and isLessThanXHoursOut and (isFastGrowth or isInInitialGrowth)
-
 
     @staticmethod
     def isStableGaussian(rSquared):

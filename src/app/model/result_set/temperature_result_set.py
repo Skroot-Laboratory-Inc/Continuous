@@ -14,7 +14,7 @@ class TemperatureResultSet:
         self.readerFileManager = readerFileManager
         self.timestamps, self.temperatures = [], []
 
-    def appendTemp(self, timestamp):
+    def appendTemp(self, timestamp: int):
         self.timestamps.append(timestamp)
         self.temperatures.append(getCpuTemp())
         self.writeToFile()
