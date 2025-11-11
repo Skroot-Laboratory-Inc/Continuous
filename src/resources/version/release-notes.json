@@ -1,4 +1,9 @@
 {
+  "v1.0.7": {
+    "features": {
+      "1": "Added support for unitless second axis readings."
+    }
+  },
   "v1.0.6": {
     "features": {
       "1": "Added functionality to push up saturation date and last_updated timestamp to AWS.",

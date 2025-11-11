@@ -53,7 +53,7 @@ class FigureCanvas:
         if values:
             ax2 = self.currentPlot.twinx()
             ax2.scatter(times, values, s=20, color='k')
-            ax2.set_ylabel(f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()})", color='k')
+            ax2.set_ylabel(f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}", color='k')
         self.frequencyFigure.tight_layout()
 
     def redrawPlot(self):
