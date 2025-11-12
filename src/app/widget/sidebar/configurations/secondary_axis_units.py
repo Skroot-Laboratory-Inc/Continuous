@@ -20,3 +20,9 @@ class SecondaryAxisUnits:
 
     def getConfig(self):
         return self.secondaryAxisUnits
+
+    def getAsUnit(self):
+        if self.secondaryAxisUnits:
+            return f"({self.secondaryAxisUnits})"
+        else:
+            return ""

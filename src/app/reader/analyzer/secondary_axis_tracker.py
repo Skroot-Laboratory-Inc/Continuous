@@ -30,5 +30,5 @@ class SecondaryAxisTracker:
             os.mkdir(os.path.dirname(self.outputFile))
         with open(self.outputFile, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Timestamp', f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()})"])
+            writer.writerow(['Timestamp', f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}"])
             writer.writerows(zip(self.axisValues.keys(), self.axisValues.values()))

@@ -55,7 +55,7 @@ class ReaderThreadManager:
     def addSecondaryAxisValue(self, value: float):
         self.Reader.SecondaryAxisTracker.addValue(value)
         self.Reader.AwsService.uploadSecondAxis()
-        text_notification.setText(f"Added {SecondaryAxisType().getConfig()} of {value} {SecondaryAxisUnits().getConfig()}")
+        text_notification.setText(f"Added {SecondaryAxisType().getConfig()} of {value} {SecondaryAxisUnits().getAsUnit()}")
 
     def startReaderLoop(self, user: str):
         self.kpiForm.setConstants(

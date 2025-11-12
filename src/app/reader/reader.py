@@ -12,6 +12,7 @@ from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
+from src.app.reader.analyzer.dev_secondary_axis_tracker import DevSecondaryAxisTracker
 from src.app.reader.analyzer.secondary_axis_tracker import SecondaryAxisTracker
 from src.app.reader.helpers.plotter import Plotter
 from src.app.reader.reader_interface import ReaderInterface
@@ -44,7 +45,10 @@ class Reader(ReaderInterface):
         self.Colors = Colors()
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
-        self.SecondaryAxisTracker = SecondaryAxisTracker(self.FileManager.getSecondAxis())
+        if DevProperties().isDevMode and DevProperties().useMockSecondaryAxis:
+            self.SecondaryAxisTracker = DevSecondaryAxisTracker(self.FileManager.getSecondAxis())
+        else:
+            self.SecondaryAxisTracker = SecondaryAxisTracker(self.FileManager.getSecondAxis())
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,

@@ -49,7 +49,7 @@ class Plotter:
             right=max(FigureStyles().x_soft_max, np.nanmax(resultSet.getDenoiseTimeSmooth()) * 1.1),
         )
         if self.SecondaryAxisTracker.getTimestamps():
-            zeroTime = resultSet.getTimestamps()[0]
+            zeroTime = resultSet.getStartTime()
             self.ReaderFigureCanvas.addSecondAxis(
                 self.SecondaryAxisTracker.getTimes(zeroTime),
                 self.SecondaryAxisTracker.getValues(),

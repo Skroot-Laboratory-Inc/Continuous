@@ -1,5 +1,4 @@
 import tkinter as tk
-from datetime import datetime
 from tkinter import ttk
 from typing import Optional
 
@@ -14,8 +13,8 @@ from src.app.reader.pump.pump_controller import PumpController
 from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.submit_arrow_button import SubmitArrowButton
-from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
+from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
 from src.app.widget.sidebar.configurations.secondary_axis_units import SecondaryAxisUnits
@@ -30,9 +29,9 @@ class KpiForm:
         self.sgi = tk.StringVar(value="-")
         self.runId = tk.StringVar()
         self.saturationTime = tk.StringVar(value="")
-        self.saturationDate: Optional[datetime] = None
+        self.saturationDate: Optional[int] = None
         self.user = tk.StringVar()
-        self.axisLabel = tk.StringVar(value=f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()}):")
+        self.axisLabel = tk.StringVar(value=f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}:")
         self.secondaryAxisData = tk.StringVar(value="")
         self.lastSecondAxisEntry = Subject()
 
@@ -146,7 +145,7 @@ class KpiForm:
     def setConstants(self, lotId: str, user: str, pumpFlowRate: float):
         self.runId.set(lotId)
         self.user.set(user)
-        self.axisLabel.set(f"{SecondaryAxisType().getConfig()} ({SecondaryAxisUnits().getConfig()}):")
+        self.axisLabel.set(f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}:")
         self.secondaryAxisData.set("")
         self.PumpController.setFlowRate(pumpFlowRate)
         self.PumpController.setPriming(False)
