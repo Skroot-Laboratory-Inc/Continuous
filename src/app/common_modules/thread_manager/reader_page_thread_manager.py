@@ -15,6 +15,7 @@ from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
 from src.app.widget.confirmation_popup import ConfirmationPopup
+from src.app.widget.pump_control_popup import PumpControlPopup
 
 
 class ReaderPageThreadManager:
@@ -131,5 +132,13 @@ class ReaderPageThreadManager:
             readerFrame.resetSetupForm()
             readerFrame.timer.resetTimer()
             readerFrame.kpiForm.resetForm()
+            PumpControlPopup(
+                self.RootManager,
+                "Clear Line",
+                "Would you like to clear the line?",
+                self.readerAllocator.PumpManager,
+                altCancelText="Close",
+                requireConfirmation=False
+            )
         except UserConfirmationException:
             return False

@@ -73,6 +73,7 @@ class ToggleSwitch:
 
     def cleanup(self):
         """Clean up the subscription when done"""
+        self.is_on = False
         if hasattr(self, '_subscription'):
             self._subscription.dispose()
 

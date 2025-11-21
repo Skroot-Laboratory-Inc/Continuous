@@ -5,6 +5,7 @@ import tkinter as tk
 from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.reader.pump.pump_manager import PumpManager
 from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
@@ -14,8 +15,10 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.kpi_form import KpiForm
+from src.app.widget.pump_control_popup import PumpControlPopup
 from src.app.widget.setup_reader_form import SetupReaderForm
 from src.app.widget.timer import RunningTimer
+from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 if platform.system() == "Windows":
     from src.app.reader.pump.dev_pump import DevPump as PumpClass
 else:
@@ -27,6 +30,7 @@ class ReaderPageAllocator:
                  connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
         self.Pump = PumpClass()
+        self.PumpManager = PumpManager(self.Pump)
         self.rootManager = rootManager
         self.sessionManager = sessionManager
         self.readerNumber = readerNumber
@@ -93,6 +97,15 @@ class ReaderPageAllocator:
 
     @requireUser
     def startReader(self, readerNumber):
+        try:
+            PumpControlPopup(
+                self.rootManager,
+                "Prime Line",
+                "Would you like to prime the line?",
+                self.PumpManager
+            )
+        except UserConfirmationException:
+            return
         if self.sessionManager.user:
             self.startFn(readerNumber, self.sessionManager.getUser())
         else:
@@ -136,7 +149,7 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="form")
         plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager, self.Pump)
+        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm

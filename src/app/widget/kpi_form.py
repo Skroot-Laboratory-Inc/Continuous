@@ -9,9 +9,9 @@ from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.helper_methods.datetime_helpers import formatDatetime, millisToDatetime
 from src.app.helper_methods.ui_helpers import launchKeyboard
-from src.app.reader.pump.pump_controller import PumpController
-from src.app.reader.pump.pump_interface import PumpInterface
+from src.app.reader.pump.pump_manager import PumpManager
 from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.widget.pump_toggle_widget import PumpToggleWidget
 from src.app.ui_manager.buttons.submit_arrow_button import SubmitArrowButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.font_theme import FontTheme
@@ -22,10 +22,11 @@ from src.app.widget.sidebar.helpers.run_exporter import RunExporter
 
 
 class KpiForm:
-    def __init__(self, parent: tk.Frame, rootManager: RootManager, sessionManager: SessionManager, pump: PumpInterface):
+    def __init__(self, parent: tk.Frame, rootManager: RootManager, sessionManager: SessionManager, pumpManager: PumpManager):
         """ Displays all relevant information for a scan to the user by placing them on the provided frame. """
         self.rootManager = rootManager
         self.sessionManager = sessionManager
+        self.pumpManager = pumpManager
         self.sgi = tk.StringVar(value="-")
         self.runId = tk.StringVar()
         self.saturationTime = tk.StringVar(value="")
@@ -40,7 +41,7 @@ class KpiForm:
         self.parentFrame.grid_rowconfigure(3, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(5, weight=1, minsize=50)
         self.parentFrame.grid_rowconfigure(7, weight=1, minsize=50)
-        self.PumpController = PumpController(self.parentFrame, pump)
+        self.pumpToggleWidget = PumpToggleWidget(self.parentFrame, pumpManager)
         row = self.addLabels(0)
 
     def addLabels(self, row):
@@ -79,7 +80,7 @@ class KpiForm:
             row += 1
         row = self.createSecondaryAxisRow(row)
 
-        self.PumpController.getToggle().grid(row=row, column=1, sticky="nse")
+        self.pumpToggleWidget.getWidget().grid(row=row, column=1, sticky="nse")
 
         button = GenericButton(
             "Export Run",
@@ -147,8 +148,7 @@ class KpiForm:
         self.user.set(user)
         self.axisLabel.set(f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}:")
         self.secondaryAxisData.set("")
-        self.PumpController.setFlowRate(pumpFlowRate)
-        self.PumpController.setPriming(False)
+        self.pumpManager.setFlowRate(pumpFlowRate)
         self.parentFrame.grid()
 
     def setSaturation(self, saturationDate: int):
@@ -162,8 +162,7 @@ class KpiForm:
         self.runId.set("")
         self.user.set("")
         self.sgi.set("-")
-        self.PumpController.stop()
-        self.PumpController.setPriming(True)
+        self.pumpManager.stop()
         self.saturationTime.set("")
         self.saturationDate = None
         self.parentFrame.grid_remove()
