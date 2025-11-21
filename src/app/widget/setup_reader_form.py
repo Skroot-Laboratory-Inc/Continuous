@@ -5,8 +5,6 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
-from src.app.properties.pump_properties import PumpProperties
-from src.app.reader.pump.pump_controller import PumpController
 from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
@@ -17,7 +15,6 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
-from src.app.widget.sidebar.configurations.pump_priming_configuration import PumpPrimingConfiguration
 
 
 class SetupReaderForm:
@@ -43,7 +40,6 @@ class SetupReaderForm:
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(fill="x", expand=True)
-        self.PumpController = PumpController(self.window, pump)
 
         ''' Normal entries '''
         entriesMap = {}
@@ -97,7 +93,6 @@ class SetupReaderForm:
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        self.PumpController.getToggle().grid(row=row, column=0, sticky="ns")
         calibrateCheck = tk.Checkbutton(self.window,
                                         text="Calibration Required",
                                         variable=self.calibrateRequired,
@@ -107,7 +102,7 @@ class SetupReaderForm:
                                         pady=WidgetTheme().externalPadding,
                                         command=self.setCalibrate,
                                         bg='white', borderwidth=0, highlightthickness=0)
-        calibrateCheck.grid(row=row, column=1, sticky="ns")
+        calibrateCheck.grid(row=row, column=0, columnspan=2, sticky="ns")
         row += 1
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
@@ -139,7 +134,6 @@ class SetupReaderForm:
     def resetFlowRate(self):
         guidedSetupInputs = self.guidedSetupResults.resetFlowRate()
         self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
-        self.PumpController.setPriming(True)
         return self.guidedSetupResults
 
     def onSubmit(self):
@@ -155,7 +149,6 @@ class SetupReaderForm:
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()
-            self.PumpController.stop()
             self.submitFn()
         else:
             messagebox.showerror(
