@@ -5,6 +5,7 @@ from matplotlib.widgets import Button
 from reactivex.subject import BehaviorSubject
 import tkinter as tk
 import warnings
+import time
 
 from src.app.ui_manager.theme.figure_styles import FigureStyles
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
@@ -33,8 +34,19 @@ class FigureCanvas:
         self.FigureStyles = FigureStyles()
         self.FigureStyles.applyGenericStyles()
         self.button_ax = None
+        self.last_toggle_time = 0
+        self.toggle_debounce_ms = 300  # Minimum time between clicks in milliseconds
 
     def createToggle(self):
+        """Create or recreate the toggle button with proper cleanup."""
+        # Clean up existing button if it exists
+        if hasattr(self, 'toggle_button') and self.toggle_button is not None:
+            try:
+                # Disconnect any existing event handlers
+                self.toggle_button.disconnect_events()
+            except (AttributeError, RuntimeError):
+                pass  # Button may not have disconnect method or already disconnected
+
         # Only create the button if it doesn't exist or if the axes was cleared
         if not hasattr(self, 'button_ax') or self.button_ax not in self.frequencyFigure.axes:
             self.button_ax = self.frequencyFigure.add_axes([0.15, 0.75, 0.2, 0.1])
@@ -47,7 +59,38 @@ class FigureCanvas:
         return self.toggle_button
 
     def toggle_view(self, event):
-        self.showSgi.on_next(not self.showSgi.value)
+        """Toggle view with debouncing and error handling for mouse grab issues."""
+        current_time = time.time() * 1000  # Convert to milliseconds
+
+        # Debounce: Ignore clicks that are too close together
+        if current_time - self.last_toggle_time < self.toggle_debounce_ms:
+            return
+
+        self.last_toggle_time = current_time
+
+        try:
+            # Release any existing mouse grab before processing
+            if hasattr(event.canvas, 'release_mouse'):
+                try:
+                    event.canvas.release_mouse(self.button_ax)
+                except (RuntimeError, AttributeError):
+                    pass  # No grab to release or already released
+
+            self.showSgi.on_next(not self.showSgi.value)
+
+        except RuntimeError as e:
+            # Handle the "Another Axes already grabs mouse input" error
+            if "grabs mouse input" in str(e):
+                # Try to force release and retry once
+                try:
+                    # Force release by accessing the internal state
+                    event.canvas._button = None
+                    self.showSgi.on_next(not self.showSgi.value)
+                except Exception:
+                    # If still failing, just update the state without the event handling
+                    self.showSgi.on_next(not self.showSgi.value)
+            else:
+                raise  # Re-raise unexpected errors
 
     def addSecondAxis(self, times, values):
         if values:

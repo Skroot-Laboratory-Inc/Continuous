@@ -3,6 +3,9 @@
     "features": {
       "1": "Added support for unitless second axis readings.",
       "2": "Added priming and line clearing pages for pump control"
+    },
+    "bugfixes": {
+      "1": "Fix toggle button freezing the application"
     }
   },
   "v1.0.6": {
