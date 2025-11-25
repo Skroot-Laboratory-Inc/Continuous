@@ -1,8 +1,12 @@
 # Default ignored files
-/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
 /DesktopApp/
-/src/test/unit_tests/__pycache__/
 /build/
 /.idea/
 
 
+*.bak

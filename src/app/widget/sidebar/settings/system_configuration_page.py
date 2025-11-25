@@ -5,7 +5,8 @@ from tkinter import ttk
 
 from src.app.authentication.helpers.configuration import AuthConfiguration
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption, launchKeyboard, \
+    formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -20,8 +21,7 @@ class SystemConfigurationPage:
         self.authorizer = authorizer
         self.AuthConfiguration = AuthConfiguration()
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.authEnabled = tk.StringVar(value=styleDropdownOption(self.AuthConfiguration.getConfig()))
         self.windowRoot.transient(rootManager.getRoot())
 
@@ -46,7 +46,8 @@ class SystemConfigurationPage:
             self.windowRoot,
             text="System Configuration",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -55,7 +56,8 @@ class SystemConfigurationPage:
             self.windowRoot,
             text="Authentication Enabled: ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0)
 
         options = ["True", "False"]
         dropdown = createDropdown(self.windowRoot, self.authEnabled, options, outline=True)
@@ -67,8 +69,8 @@ class SystemConfigurationPage:
             self.windowRoot,
             text="* Warning: Disabling user authentication will result in a system that is not CFR compliant.",
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
 
     def toggleWarning(self, *args):
         if self.authEnabled.get().strip() == "False" and self.AuthConfiguration.getConfig():
@@ -81,7 +83,8 @@ class SystemConfigurationPage:
             self.windowRoot,
             text="Device ID:",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0, sticky="w")
 
         deviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.deviceId, font=FontTheme().primary)
         deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")

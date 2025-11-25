@@ -18,8 +18,8 @@ class HarvestText:
             master,
             text=f"{self.label}: {self.timeFrame}",
             font=FontTheme().primary2,
-            background=Colors().secondaryColor,
-            foreground=Colors().primaryColor)
+            background=Colors().body.background,
+            foreground=Colors().buttons.background)
 
     def isNowSaturated(self, currentTime):
         if not self.isSaturated:

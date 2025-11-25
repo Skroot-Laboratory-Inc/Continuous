@@ -22,8 +22,8 @@ class MainMenu(BaseMenu):
             text="☰",
             font=FontTheme().header1,
             padx=30,
-            bg=Colors().primaryColor,
-            fg=Colors().secondaryColor,
+            bg=Colors().header.background,
+            fg=Colors().header.text,
             bd=0,
             highlightthickness=0,
             command=self.toggleMenu

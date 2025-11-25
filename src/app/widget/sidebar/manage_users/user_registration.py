@@ -7,7 +7,7 @@ from src.app.authentication.helpers.exceptions import PasswordMismatchException,
     BadPasswordException
 from src.app.authentication.helpers.functions import createKioskAdmin, createKioskUser, check_password_quality
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, createDropdown
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, createDropdown, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -21,8 +21,7 @@ class UserRegistration:
         self.adminUser = adminUser
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.username = tk.StringVar()
         self.password = tk.StringVar()
         self.confirmPassword = tk.StringVar()
@@ -57,7 +56,7 @@ class UserRegistration:
             self.windowRoot,
             text="User Registration",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createRole(self):
@@ -65,7 +64,7 @@ class UserRegistration:
             self.windowRoot,
             text="Role",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=2, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=2, column=0)
         options = ["Administrator", "User"]
         dropdown = createDropdown(self.windowRoot, self.role, options, outline=True)
         dropdown.grid(row=2, column=1, padx=10, ipady=WidgetTheme().internalPadding, sticky="ew", pady=WidgetTheme().externalPadding)
@@ -75,7 +74,7 @@ class UserRegistration:
             self.windowRoot,
             text="Username",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
@@ -87,7 +86,7 @@ class UserRegistration:
             self.windowRoot,
             text="Password",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=4, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=4, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, justify="center", background="white",
                                   textvariable=self.password, font=FontTheme().primary)
@@ -104,8 +103,8 @@ class UserRegistration:
             text="",
             wraplength=400,
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
 
     def togglePasswordWarning(self, *args):
         badPassword = False
@@ -134,7 +133,7 @@ class UserRegistration:
             self.windowRoot,
             text="Confirm Password",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=6, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=6, column=0)
 
         confirmPasswordEntry = ttk.Entry(self.windowRoot, show="*", justify="center", width=25, background="white",
                                          textvariable=self.confirmPassword, font=FontTheme().primary)
@@ -151,8 +150,8 @@ class UserRegistration:
             text="",
             wraplength=400,
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitAuthentication).button

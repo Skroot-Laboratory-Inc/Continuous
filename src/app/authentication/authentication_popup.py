@@ -9,7 +9,7 @@ from src.app.authentication.helpers.functions import validateUserCredentials, ge
 from src.app.authentication.lockout_notification import LockoutNotification
 from src.app.authentication.model.user_role import UserRole
 from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -29,8 +29,7 @@ class AuthenticationPopup:
             self.RootManager = rootManager
             self.sessionManager = sessionManager
             self.windowRoot = rootManager.createTopLevel()
-            self.windowRoot.config(relief="solid", highlightbackground="black",
-                highlightcolor="black", highlightthickness=1, bd=0)
+            formatPopup(self.windowRoot)
             self.username = tk.StringVar()
             self.password = tk.StringVar()
             self.windowRoot.transient(rootManager.getRoot())
@@ -66,7 +65,9 @@ class AuthenticationPopup:
             self.windowRoot,
             text=label,
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text,
+        ).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -75,7 +76,9 @@ class AuthenticationPopup:
             self.windowRoot,
             text="Username:",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=2, column=0)
+            background=Colors().body.background,
+            foreground=Colors().body.text,
+        ).grid(row=2, column=0)
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", textvariable=self.username, font=FontTheme().primary)
         usernameEntry['state'] = tk.DISABLED
@@ -87,7 +90,9 @@ class AuthenticationPopup:
             self.windowRoot,
             text="Password:",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background,
+            foreground=Colors().body.text,
+        ).grid(row=3, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, background="white", textvariable=self.password, font=FontTheme().primary)
         passwordEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)

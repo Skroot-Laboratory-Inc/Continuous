@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
@@ -26,8 +26,7 @@ class ConfirmationPopup:
         self.confirmed = False
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader(header)
@@ -47,7 +46,8 @@ class ConfirmationPopup:
             self.windowRoot,
             text=header,
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -56,7 +56,8 @@ class ConfirmationPopup:
             self.windowRoot,
             text=message,
             font=FontTheme().primary2,
-            background=Colors().secondaryColor).grid(row=3, column=0, columnspan=3, pady=WidgetTheme().externalPadding)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=3, column=0, columnspan=3, pady=WidgetTheme().externalPadding)
 
     def createConfirmButton(self, text: str):
         confirmButton = GenericButton(text, self.windowRoot, self.confirm).button

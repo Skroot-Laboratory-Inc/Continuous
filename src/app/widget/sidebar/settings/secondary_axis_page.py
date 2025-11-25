@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -20,8 +20,7 @@ class SecondaryAxisPage:
         self.SecondaryAxisTypeConfig = SecondaryAxisType()
         self.SecondaryAxisUnitsConfig = SecondaryAxisUnits()
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.axisUnits = tk.StringVar(value=self.SecondaryAxisUnitsConfig.getConfig())
         self.axisType = tk.StringVar(value=self.SecondaryAxisTypeConfig.getConfig())
         self.windowRoot.transient(rootManager.getRoot())
@@ -45,7 +44,8 @@ class SecondaryAxisPage:
             self.windowRoot,
             text="Secondary Axis Configuration",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -54,7 +54,8 @@ class SecondaryAxisPage:
             self.windowRoot,
             text="Measurement Type: ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0)
 
         axisTypeEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.axisType, font=FontTheme().primary)
         axisTypeEntry.grid(row=row, column=1, padx=10, pady=WidgetTheme().externalPadding, ipady=WidgetTheme().internalPadding, sticky="ew")
@@ -65,7 +66,8 @@ class SecondaryAxisPage:
             self.windowRoot,
             text="Units:",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0, sticky="w")
 
         deviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.axisUnits, font=FontTheme().primary)
         deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")

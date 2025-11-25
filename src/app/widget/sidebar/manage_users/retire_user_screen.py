@@ -6,7 +6,7 @@ from src.app.authentication.helpers.exceptions import RetireUserException, \
     UserDoesntExistException, SystemAdminException, InsufficientPermissions
 from src.app.authentication.helpers.functions import retireUser
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -21,8 +21,7 @@ class RetireUserScreen:
         self.systemAdminUser = systemAdminUser
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.username = tk.StringVar()
         self.windowRoot.transient(rootManager.getRoot())
 
@@ -44,7 +43,7 @@ class RetireUserScreen:
             self.windowRoot,
             text="Retire a User",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -53,7 +52,7 @@ class RetireUserScreen:
             self.windowRoot,
             text="Username",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
@@ -65,8 +64,8 @@ class RetireUserScreen:
             self.windowRoot,
             text="* Warning: Retiring a user will revoke all access to the system for that user.",
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor).grid(row=4, column=0, columnspan=3, sticky="w")
+            foreground=Colors().status.error,
+            background=Colors().body.background).grid(row=4, column=0, columnspan=3, sticky="w")
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitRetireUser).button

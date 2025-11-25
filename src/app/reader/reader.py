@@ -42,7 +42,7 @@ class Reader(ReaderInterface):
         self.AutomatedIssueManager = AutomatedIssueManager(self.AwsService, globalFileManager)
         self.ReaderPageAllocator = readerPageAllocator
         self.finishedEquilibrationPeriod = False
-        self.Colors = Colors()
+
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
         if DevProperties().isDevMode and DevProperties().useMockSecondaryAxis:
@@ -104,5 +104,5 @@ class Reader(ReaderInterface):
                             self.FileManager.getCalibrationLocalLocation())
             else:
                 text_notification.setText("No calibration found.",
-                                          ('Courier', 12, 'bold'), self.Colors.primaryColor, 'red')
+                                          ('Courier', 12, 'bold'), Colors().buttons.background, 'red')
                 logging.info(f"No calibration found.", extra={"id": f"Reader {self.readerNumber}"})

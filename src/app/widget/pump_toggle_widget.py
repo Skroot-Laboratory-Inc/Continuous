@@ -23,7 +23,7 @@ class PumpToggleWidget:
         self.parent_widget = parent_widget
         self.pump_manager = pump_manager
 
-        self.control_frame = tk.Frame(parent_widget, bg="white")
+        self.control_frame = tk.Frame(parent_widget, bg=Colors().body.background)
         self.control_frame.grid_rowconfigure(0, weight=1)
         self.control_frame.grid_columnconfigure(0, weight=1)
         self.control_frame.grid_columnconfigure(1, weight=0)
@@ -31,7 +31,8 @@ class PumpToggleWidget:
         self.statusLabel = tk.Label(
             self.control_frame,
             text="Pump OFF",
-            bg=Colors().secondaryColor
+            bg=Colors().body.background,
+            foreground=Colors().body.text
         )
         self.statusLabel.grid(row=0, column=1, sticky="ns")
 

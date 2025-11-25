@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from src.app.ui_manager.theme import Colors
+
 
 class CustomDropdownMenu:
     def __init__(self, master, **kwargs):
@@ -7,13 +9,13 @@ class CustomDropdownMenu:
         self.root = master.winfo_toplevel()
 
         # Basic styling
-        self.bg = kwargs.get('bg', 'white')
+        self.bg = kwargs.get('bg', Colors().body.background)
         self.fg = kwargs.get('fg', 'black')
         self.font = kwargs.get('font', ('Arial', 9))
         self.relief = kwargs.get('relief', 'solid')
         self.borderwidth = kwargs.get('borderwidth', 1)
         self.disabledforeground = kwargs.get('disabledforeground', 'gray')
-        self.border_color = kwargs.get('border_color', 'white')
+        self.border_color = kwargs.get('border_color', Colors().body.background)
 
         # Custom options
         self.item_padding_x = kwargs.get('item_padding_x', 10)

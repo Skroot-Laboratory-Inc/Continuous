@@ -7,7 +7,7 @@ from src.app.authentication.helpers.exceptions import ConfigurationException, In
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.authentication.password_policy_manager.dev_password_rotation_manager import DevPasswordRotationManager
 from src.app.authentication.password_policy_manager.password_rotation_manager import PasswordRotationManager
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -29,8 +29,7 @@ class PasswordRotationScreen:
             text_notification.setText(f"Failed to set configuration:\n{e.message}")
             logging.exception("Failed to instantiate PasswordPolicyManager", extra={"id": "Password Configuration"})
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.maxPasswordAge = tk.StringVar(value=str(self.PasswordPolicyManager.max_days))
         self.historicPasswords = tk.StringVar(value=str(self.PasswordPolicyManager.historic_passwords))
         self.inactiveDays = tk.StringVar(value=str(self.PasswordPolicyManager.inactive_days))
@@ -58,19 +57,21 @@ class PasswordRotationScreen:
             self.windowRoot,
             text="Password Rotation",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createMaxPasswordAge(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
             text="Password expires ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
 
         entry = tk.Entry(
@@ -89,20 +90,22 @@ class PasswordRotationScreen:
             frame,
             text=" days after creation.",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry
 
     def createInactiveDays(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
             text="User is locked out ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
 
         entry = tk.Entry(
@@ -121,20 +124,22 @@ class PasswordRotationScreen:
             frame,
             text=" days after expiration.",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry
 
     def createHistoricPasswords(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
             text="User cannot re-use last ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
 
         entry = tk.Entry(
@@ -153,7 +158,8 @@ class PasswordRotationScreen:
             frame,
             text=" password(s).",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry

@@ -18,7 +18,7 @@ def setText(text, font=None, backgroundColor=None, foregroundColor=None):
     if font is None:
         font = FontTheme().textNotification
     if backgroundColor is None:
-        backgroundColor = Colors().primaryColor
+        backgroundColor = Colors().header.background
     if foregroundColor is None:
-        foregroundColor = Colors().secondaryColor
+        foregroundColor = Colors().header.text
     widget.configure(text=text, font=font, background=backgroundColor, foreground=foregroundColor)

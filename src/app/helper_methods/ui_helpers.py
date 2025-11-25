@@ -51,7 +51,8 @@ def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
     dropdown_button = tk.Button(
         root,
         text=entryValue if entryValue else options[0],
-        bg="white",
+        bg=Colors().body.background,
+        fg=Colors().body.text,
         borderwidth=1 if outline else 0,
         highlightthickness=1 if outline else 0,
         font=FontTheme().primary,
@@ -62,12 +63,12 @@ def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
     custom_menu = CustomDropdownMenu(
         root,
         item_justify="center",
-        bg="white",
-        fg="black",
+        bg=Colors().body.background,
+        fg=Colors().body.text,
         font=FontTheme().primary,
         item_padding_y=WidgetTheme().internalPadding,
         borderwidth=1 if outline else 2,
-        border_color="black",
+        border_color=Colors().body.text,
         min_width=400,
     )
 
@@ -102,22 +103,30 @@ def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
     return dropdown_button
 
 
+def formatPopup(windowRoot: tk.Toplevel):
+    windowRoot.config(relief="solid",
+                      highlightbackground=Colors().body.text,
+                      highlightcolor=Colors().body.text,
+                      highlightthickness=1,
+                      bd=0)
+
+
 def makeToplevelScrollable(windowRoot, fillOutWindowFn):
     """ Makes a tkinter toplevel into a scrollable window with fixed height and width"""
     windowRoot.minsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
     windowRoot.maxsize(width=ScreenProperties().resolution['width'], height=ScreenProperties().resolution['height'])
 
     # Create main container frame
-    main_frame = tk.Frame(windowRoot, bg='white')
+    main_frame = tk.Frame(windowRoot, bg=Colors().body.background)
     main_frame.grid(row=0, column=0, sticky="nsew")
 
     windowCanvas = tk.Canvas(
-        main_frame, bg='white', borderwidth=0,
+        main_frame, bg=Colors().body.background, borderwidth=0,
         highlightthickness=0
     )
 
     # Create scroll buttons frame (positioned at the right)
-    scroll_buttons_frame = tk.Frame(main_frame, bg='white', width=50)
+    scroll_buttons_frame = tk.Frame(main_frame, bg=Colors().body.background, width=50)
     scroll_buttons_frame.grid(row=0, column=1, sticky="ns", padx=2)
     scroll_buttons_frame.grid_propagate(False)  # Maintain fixed width
 
@@ -126,9 +135,9 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
         scroll_buttons_frame,
         text="▲",
         font=("Arial", 32, "bold"),
-        bg=Colors().primaryColor,
-        fg=Colors().secondaryColor,
-        activebackground=Colors().primaryColor,
+        bg=Colors().buttons.background,
+        fg=Colors().body.background,
+        activebackground=Colors().buttons.background,
         relief='raised',
         command=lambda: windowCanvas.yview_moveto(0.0)
     )
@@ -139,15 +148,15 @@ def makeToplevelScrollable(windowRoot, fillOutWindowFn):
         scroll_buttons_frame,
         text="▼",
         font=("Arial", 32, "bold"),
-        bg=Colors().primaryColor,
-        fg=Colors().secondaryColor,
-        activebackground=Colors().primaryColor,
+        bg=Colors().buttons.background,
+        fg=Colors().body.background,
+        activebackground=Colors().buttons.background,
         relief='raised',
         command=lambda: windowCanvas.yview_moveto(1.0)
     )
     scroll_bottom_btn.pack(side="bottom", fill="x", padx=2, pady=2)
 
-    window = tk.Frame(windowRoot, bg='white', borderwidth=0)
+    window = tk.Frame(windowRoot, bg=Colors().body.background, borderwidth=0)
     windowCanvas.create_window(ScreenProperties().resolution['width'] / 2, 0, anchor="n", window=window)
 
     # Linux uses Button-5 for scroll down and Button-4 for scroll up

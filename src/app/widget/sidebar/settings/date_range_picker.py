@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 from tkcalendar import Calendar
 
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -24,8 +24,7 @@ class DateRangePicker:
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
         self.windowRoot.withdraw()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()
@@ -49,7 +48,7 @@ class DateRangePicker:
             self.windowRoot,
             text="Export Date Range",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -58,17 +57,17 @@ class DateRangePicker:
             self.windowRoot,
             text="Start Date",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         startDateCalendar = Calendar(self.windowRoot,
-                                     foreground=Colors().secondaryColor,
-                                     background=Colors().primaryColor,
+                                     foreground=Colors().body.background,
+                                     background=Colors().buttons.background,
                                      font="Helvetica 24",
                                      year=self.now.year - 1,
                                      month=self.now.month,
                                      day=self.now.day,
-                                     headersbackground=Colors().lightPrimaryColor,
-                                     headersforeground=Colors().secondaryColor,
+                                     headersbackground=Colors().buttons.hover,
+                                     headersforeground=Colors().body.background,
                                      showweeknumbers=False,
                                      showothermonthdays=False,
                                      )
@@ -92,17 +91,17 @@ class DateRangePicker:
             self.windowRoot,
             text="End Date",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=1)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=1)
 
         endDateCalendar = Calendar(self.windowRoot,
-                                   foreground=Colors().secondaryColor,
-                                   background=Colors().primaryColor,
+                                   foreground=Colors().body.background,
+                                   background=Colors().buttons.background,
                                    font="Helvetica 24",
                                    year=self.now.year,
                                    month=self.now.month,
                                    day=self.now.day,
-                                   headersbackground=Colors().lightPrimaryColor,
-                                   headersforeground=Colors().secondaryColor,
+                                   headersbackground=Colors().buttons.hover,
+                                   headersforeground=Colors().body.background,
                                    showweeknumbers=False,
                                    showothermonthdays=False,
                                    )

@@ -54,7 +54,7 @@ class Plotter:
                 self.SecondaryAxisTracker.getTimes(zeroTime),
                 self.SecondaryAxisTracker.getValues(),
             )
-        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().lightPrimaryColor)
+        self.ReaderFigureCanvas.scatter(resultSet.getDenoiseTimeSmooth(), yPlot, 20, Colors().buttons.hover)
         self.ReaderFigureCanvas.drawCanvas(self.frequencyFrame)
         self.ReaderFigureCanvas.saveAs(self.FileManager.getReaderPlotJpg())
 

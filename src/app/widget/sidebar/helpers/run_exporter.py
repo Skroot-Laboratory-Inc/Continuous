@@ -8,7 +8,7 @@ from src.app.authentication.helpers.logging import logAuthAction
 from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import getUsbDrive, unmountUSBDrive
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -23,8 +23,7 @@ class RunExporter:
         self.RootManager = rootManager
         self.exportedBy = exportedBy
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.runIdVar = tk.StringVar(value=runId)
         self.windowRoot.transient(rootManager.getRoot())
         self.createHeader()
@@ -43,7 +42,7 @@ class RunExporter:
             self.windowRoot,
             text="Export Run Data",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -52,7 +51,7 @@ class RunExporter:
             self.windowRoot,
             text="Run ID",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         vesselIdEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.runIdVar, font=FontTheme().primary)

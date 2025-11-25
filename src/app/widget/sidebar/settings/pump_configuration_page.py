@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from src.app.authentication.helpers.logging import logAuthAction
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -23,9 +23,7 @@ class PumpConfigurationPage:
         self.windowRoot = rootManager.createTopLevel()
         self.validateRPM = (self.windowRoot.register(validateRPM), '%P')
         self.validateRPMError = (self.windowRoot.register(showValidationError))
-        self.windowRoot.config(
-            relief="solid", highlightbackground="black", highlightcolor="black", highlightthickness=1, bd=0,
-        )
+        formatPopup(self.windowRoot)
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()
@@ -52,7 +50,7 @@ class PumpConfigurationPage:
             self.windowRoot,
             text="Pump Configuration",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -61,7 +59,8 @@ class PumpConfigurationPage:
             self.windowRoot,
             text="Default Pump Speed (RPM):",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0, sticky="w")
 
         pumpFlowRateEntry = ttk.Entry(
             self.windowRoot,
@@ -82,7 +81,8 @@ class PumpConfigurationPage:
             self.windowRoot,
             text="Default Priming Speed (RPM):",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=row, column=0, sticky="w")
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0, sticky="w")
 
         pumpFlowRateEntry = ttk.Entry(
             self.windowRoot,

@@ -39,12 +39,12 @@ class ReaderPageAllocator:
         self.stopFn = stopFn
         self.readerPage = readerPage
         self.maxReadersPerScreen = GuiProperties().readersPerScreen
-        self.Colors = Colors()
+
         self.createButtons = []  # This is required for the plus icon to appear. It is removed from memory without it.
         self.readerFrame = self.createReaderFrames()
 
     def createReaderFrames(self):
-        readerFrame = tk.Frame(self.readerPage, bg=self.Colors.secondaryColor, padx=5, pady=5)
+        readerFrame = tk.Frame(self.readerPage, bg=Colors().body.background, padx=5, pady=5)
         readerFrame.grid_columnconfigure(0, weight=1, minsize=30)
         readerFrame.grid_columnconfigure(1, weight=9, minsize=100)
         readerFrame.grid_columnconfigure(2, weight=1, minsize=30)
@@ -138,16 +138,16 @@ class ReaderPageAllocator:
         return self.getReaderFrame().timer
 
     def createPlotFrame(self, readerFrame):
-        mainFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
+        mainFrame = tk.Frame(readerFrame, bg=Colors().body.background, bd=5)
         mainFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
         mainFrame.grid_columnconfigure(0, weight=1, uniform="plot")
         mainFrame.grid_columnconfigure(1, weight=1, uniform="plot")
         mainFrame.grid_rowconfigure(0, weight=1)
-        kpiFrame = tk.Frame(mainFrame, bg=Colors().secondaryColor)
+        kpiFrame = tk.Frame(mainFrame, bg=Colors().body.background)
         kpiFrame.grid(row=0, column=0, sticky='ew')
         kpiFrame.grid_columnconfigure(0, weight=1, uniform="form")
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="form")
-        plottingFrame = tk.Frame(mainFrame, bg=self.Colors.secondaryColor, bd=5)
+        plottingFrame = tk.Frame(mainFrame, bg=Colors().body.background, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
         kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
         kpiFrame.grid_remove()
@@ -155,7 +155,7 @@ class ReaderPageAllocator:
         return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
-        setupFrame = tk.Frame(readerFrame, bg=self.Colors.secondaryColor, bd=5)
+        setupFrame = tk.Frame(readerFrame, bg=Colors().body.background, bd=5)
         setupReaderForm = SetupReaderForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn, self.Pump)
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
@@ -176,15 +176,15 @@ class ReaderPageAllocator:
             readerFrame,
             height=indicatorSize * 2,
             width=indicatorSize * 2,
-            bg="white",
-            highlightbackground="white",
+            bg=Colors().body.background,
+            highlightbackground=Colors().body.background,
             bd=0)
         indicator = indicatorCanvas.create_circle(
             x=indicatorSize,
             y=indicatorSize,
             r=indicatorSize - indicatorBorder,
             fill=defaultIndicatorColor,
-            outline="black",
+            outline=Colors().body.text,
             width=indicatorBorder)
         indicatorCanvas.grid(row=0, column=2, sticky='ne')
         return indicatorCanvas, indicator
@@ -198,7 +198,7 @@ class ReaderPageAllocator:
     @staticmethod
     def createHeader(readerFrame):
         header = tk.Label(readerFrame, text="", font=FontTheme().header3,
-                          background=Colors().secondaryColor, foreground=Colors().primaryColor)
+                          background=Colors().body.background, foreground=Colors().buttons.background)
         header.grid(row=0, column=1, sticky='n')
         return header
 

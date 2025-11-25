@@ -2,22 +2,19 @@ import tkinter as tk
 from tkinter import font, ttk
 
 from src.app.properties.screen_properties import ScreenProperties
+from src.app.ui_manager.theme import Colors
 
 
 class Keyboard:
     def __init__(self, root, hidePassword: bool, label_text: str = ""):
         self.root = root
-        self.bg_color = "#C7C7CC"
-        self.normal_key_color = "#F7F7F7"
-        self.highlight_color = "#4682B4"
-        self.normal_text_color = "#000000"
         self.shift_state = 0  # 0 = normal, 1 = shift, 2 = caps lock
         self.symbols_mode = False
         self.hidePassword = hidePassword
         self.label_text = label_text
 
         # Create keyboard window
-        self.keyboard_window = tk.Toplevel(root, background=self.bg_color)
+        self.keyboard_window = tk.Toplevel(root, background=Colors().keyboard.background)
         self.keyboard_window.withdraw()
         self.keyboard_window.overrideredirect(True)
 
@@ -55,10 +52,10 @@ class Keyboard:
 
         # Special key configurations
         self.special_keys = {
-            "↩": {"width": 1.5, "color": "#99ef6c", "font_color": "#FFFFFF"},
-            "!#1": {"width": 1.5, "color": "#D1D1D6", "font_color": "#000000"},
-            "ABC": {"width": 1.5, "color": "#D1D1D6", "font_color": "#000000"},
-            "Space": {"width": 4.0, "color": "#F7F7F7", "font_color": "#000000"},
+            "↩": {"width": 1.5, "color": Colors().keyboard.enter, "font_color": "#FFFFFF"},
+            "!#1": {"width": 1.5, "color": Colors().keyboard.specialCharacters, "font_color": Colors().keyboard.specialCharactersFont},
+            "ABC": {"width": 1.5, "color": Colors().keyboard.specialCharacters, "font_color": Colors().keyboard.specialCharactersFont},
+            "Space": {"width": 4.0},
         }
 
         # Widget storage
@@ -82,7 +79,7 @@ class Keyboard:
         # Entry container
         entry_container = tk.Frame(
             self.keyboard_window,
-            bg=self.bg_color,
+            bg=Colors().keyboard.background,
             width=self.width - (entry_margin * 2),
             height=entry_height
         )
@@ -95,14 +92,14 @@ class Keyboard:
                 entry_container,
                 text=self.label_text,
                 font=self.label_font,
-                bg=self.bg_color,
-                fg=self.normal_text_color,
+                bg=Colors().keyboard.background,
+                fg=Colors().keyboard.text,
                 anchor="e"
             )
             self.label.pack(side="left", padx=(0, 10), fill=tk.Y)
 
         # Entry frame
-        self.entry_frame = tk.Frame(entry_container, bg=self.bg_color)
+        self.entry_frame = tk.Frame(entry_container, bg=Colors().keyboard.background)
         self.entry_frame.pack(side="left", fill=tk.BOTH, expand=True)
 
         # Entry widget
@@ -135,7 +132,7 @@ class Keyboard:
 
         self.keyboard_frame = tk.Frame(
             self.keyboard_window,
-            bg=self.bg_color,
+            bg=Colors().keyboard.background,
             width=keyboard_width,
             height=keyboard_height
         )
@@ -188,8 +185,8 @@ class Keyboard:
                 # Key properties
                 key_config = self.special_keys.get(key, {})
                 key_width = int(standard_key_width * key_config.get("width", 1))
-                key_color = key_config.get("color", self.normal_key_color)
-                font_color = key_config.get("font_color", self.normal_text_color)
+                key_color = key_config.get("color", Colors().keyboard.key)
+                font_color = key_config.get("font_color", Colors().keyboard.text)
 
                 # Font selection
                 if key in ["↑", "↩", "⌫"]:
@@ -208,7 +205,7 @@ class Keyboard:
                     font=key_font,
                     relief=tk.RAISED,
                     bd=2,
-                    activebackground=self.highlight_color,
+                    activebackground=Colors().keyboard.highlight,
                     command=lambda k=key, p=pos: self._key_press(k, p)
                 )
 
@@ -252,8 +249,8 @@ class Keyboard:
 
                     # Update properties
                     key_config = self.special_keys.get(key, {})
-                    key_color = key_config.get("color", self.normal_key_color)
-                    font_color = key_config.get("font_color", self.normal_text_color)
+                    key_color = key_config.get("color", Colors().keyboard.key)
+                    font_color = key_config.get("font_color", Colors().keyboard.text)
 
                     # Font selection
                     if key in ["↑", "↩", "⌫"]:
@@ -290,11 +287,11 @@ class Keyboard:
         button = self.key_widgets[shift_pos]
 
         if self.shift_state == 2:  # Caps lock
-            button.config(text="⇈", bg=self.highlight_color)
+            button.config(text="⇈", bg=Colors().keyboard.highlight)
         elif self.shift_state == 1:  # Shift
-            button.config(text="↑", bg=self.highlight_color)
+            button.config(text="↑", bg=Colors().keyboard.highlight)
         else:  # Normal
-            button.config(text="↑", bg=self.normal_key_color)
+            button.config(text="↑", bg=Colors().keyboard.key)
 
     def _update_visuals(self):
         """Update key visuals based on shift state"""
@@ -381,7 +378,7 @@ class Keyboard:
             return
 
         original_bg = button.cget("bg")
-        button.config(bg=self.highlight_color, relief=tk.SUNKEN)
+        button.config(bg=Colors().keyboard.highlight, relief=tk.SUNKEN)
 
         # Restore after delay
         if not ((key == "↑" and self.shift_state > 0)):

@@ -4,7 +4,7 @@ from tkinter import ttk
 from typing import List
 
 from src.app.authentication.helpers.functions import clearLockedOutUsers
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -17,8 +17,7 @@ class LockoutNotification:
         self.usersLocked = usersLocked
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-            highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.username = tk.StringVar()
         self.password = tk.StringVar()
         self.windowRoot.transient(rootManager.getRoot())
@@ -39,7 +38,8 @@ class LockoutNotification:
             self.windowRoot,
             text="Warning: Users Locked Out",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -48,7 +48,8 @@ class LockoutNotification:
             self.windowRoot,
             text="".join(self.usersLocked),
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=1, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=1, column=0, columnspan=3)
 
     def createConfirmButton(self):
         submitButton = GenericButton("Confirm", self.windowRoot, self.confirm).button

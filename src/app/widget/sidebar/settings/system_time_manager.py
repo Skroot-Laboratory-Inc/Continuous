@@ -9,7 +9,7 @@ from tkcalendar import Calendar
 
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.helper_functions import setDatetimeTimezone, getTimezone, getTimezoneOptions
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -37,8 +37,7 @@ class SystemTimeManager:
         self.windowRoot.grid_columnconfigure(2, weight=0, minsize=200)
         self.windowRoot.grid_rowconfigure(2, weight=1, minsize=60)
         self.windowRoot.withdraw()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()
@@ -64,12 +63,13 @@ class SystemTimeManager:
             self.windowRoot,
             text="Current Date and Time",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createTime(self, row):
-        timeFrame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        timeFrame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         hours = tk.Entry(
             timeFrame,
             width=3,
@@ -90,7 +90,7 @@ class SystemTimeManager:
         minutes.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Minutes:  "))
         am_pm = createDropdown(timeFrame, self.am_pm, ["AM", "PM"], addSpace=False)
         hours.grid(row=0, column=0, ipadx=WidgetTheme().internalPadding, sticky="nsew")
-        ttk.Label(timeFrame, text=":", font=FontTheme().primary, background=Colors().secondaryColor).grid(row=0, column=1, padx=10)
+        ttk.Label(timeFrame, text=":", font=FontTheme().primary, background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=1, padx=10)
         minutes.grid(row=0, column=2, ipadx=WidgetTheme().internalPadding, sticky="nsew")
         am_pm.grid(row=0, column=3, padx=(5, 0))
         timeFrame.grid(row=row, column=0, columnspan=2, pady=WidgetTheme().externalPadding, sticky="nsew")
@@ -106,21 +106,21 @@ class SystemTimeManager:
             text="Note: Only the timezone can be changed when internet is connected."
                  "\nTime and date are automatically synced.",
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
         note.grid(row=row, column=0, columnspan=3, sticky="nsew")
         return note
 
     def createDate(self, row):
         calendar = Calendar(self.windowRoot,
-                            foreground=Colors().secondaryColor,
-                            background=Colors().primaryColor,
+                            foreground=Colors().body.background,
+                            background=Colors().buttons.background,
                             font="Helvetica 24",
                             year=self.now.year,
                             month=self.now.month,
                             day=self.now.day,
-                            headersbackground=Colors().lightPrimaryColor,
-                            headersforeground=Colors().secondaryColor,
+                            headersbackground=Colors().buttons.hover,
+                            headersforeground=Colors().body.background,
                             showweeknumbers=False,
                             showothermonthdays=False,
                             )

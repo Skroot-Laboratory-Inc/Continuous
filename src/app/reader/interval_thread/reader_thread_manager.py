@@ -49,7 +49,7 @@ class ReaderThreadManager:
         self.finishedEquilibrationPeriod = False
         self.disableFullSaveFiles = CommonProperties().disableSaveFullFiles
         self.denoiseSet = CommonProperties().denoiseSet
-        self.Colors = Colors()
+
         self.resetRunFunc = resetRunFunc
 
     def addSecondaryAxisValue(self, value: float):

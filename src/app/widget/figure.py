@@ -52,10 +52,10 @@ class FigureCanvas:
             self.button_ax = self.frequencyFigure.add_axes([0.15, 0.75, 0.2, 0.1])
             self.button_ax.set_zorder(1000)
             self.button_ax.patch.set_alpha(0.5)
-            self.toggle_button = Button(self.button_ax, 'Toggle', color=Colors().primaryColor,
-                                        hovercolor=Colors().primaryColor)
+            self.toggle_button = Button(self.button_ax, 'Toggle', color=Colors().buttons.background,
+                                        hovercolor=Colors().buttons.background)
             self.toggle_button.on_clicked(self.toggle_view)
-            self.toggle_button.label.set_color(Colors().secondaryColor)
+            self.toggle_button.label.set_color(Colors().body.background)
         return self.toggle_button
 
     def toggle_view(self, event):
