@@ -31,6 +31,11 @@ class Colors:
         return get_current_theme().header
 
     @property
+    def sidebar(self):
+        """Sidebar widget colors"""
+        return get_current_theme().sidebar
+
+    @property
     def keyboard(self):
         """Header widget colors (background, text, border)"""
         return get_current_theme().keyboard

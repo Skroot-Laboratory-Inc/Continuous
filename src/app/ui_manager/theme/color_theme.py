@@ -63,7 +63,7 @@ class PlotColors(WidgetColors):
             gridlines='lightgray',
             axes='#000000',
             primary_line='#0073A1',
-            secondary_line='#00AEEF',
+            secondary_line='#000000',
             background='#FFFFFF',
             points='#0073A1',
             toggle_button='#0073A1',
@@ -137,6 +137,22 @@ class KeyboardColors(WidgetColors):
         self.specialCharactersFont = specialCharactersFont
 
 
+class SidebarColors(WidgetColors):
+    """Colors for keyboard popup """
+
+    def __init__(
+            self,
+            background='#0073A1',
+            text='#FFFFFF',
+            hover='#00AEEF',
+            separator='#FFFFFF',
+    ):
+        self.background = background
+        self.text = text
+        self.hover = hover
+        self.separator = separator
+
+
 class ColorTheme:
     """
     Main color theme class organized by widget type.
@@ -161,6 +177,7 @@ class ColorTheme:
         self.status = StatusColors()
         self.inputs = InputColors()
         self.keyboard = KeyboardColors()
+        self.sidebar = SidebarColors()
         self.reportLabPrimary = reportlab_colors.Color(0.2, 0.3, 0.6)
         self.reportLabLightPrimary = reportlab_colors.Color(0.85, 0.9, 1)
 
@@ -196,11 +213,11 @@ class IBITheme(ColorTheme):
             border='#232323'
         )
         self.plot = PlotColors(
-            gridlines='lightgray',
-            axes='#000000',
+            gridlines='#CCCCCC',
+            axes='#CCCCCC',
             primary_line='#f7941d',
-            secondary_line='#F7A947',
-            background='#000000',
+            secondary_line='#FFFFFF',
+            background='#232323',
             points='#f7941d',
             toggle_button='#f7941d',
             toggle_button_text='#000000'
@@ -225,8 +242,14 @@ class IBITheme(ColorTheme):
             specialCharacters='#575757',
             specialCharactersFont='#FFFFFF'
         )
-        self.reportLabPrimary = reportlab_colors.Color(0.2, 0.3, 0.6)
-        self.reportLabLightPrimary = reportlab_colors.Color(0.85, 0.9, 1)
+        self.sidebar = SidebarColors(
+            background='#232323',
+            text='#f7941d',
+            hover='#464646',
+            separator='#464646'
+        )
+        self.reportLabPrimary = reportlab_colors.HexColor('#f7941d')
+        self.reportLabLightPrimary = reportlab_colors.HexColor('#f7c48b')
 
 
 class SkrootTheme(ColorTheme):
@@ -234,8 +257,6 @@ class SkrootTheme(ColorTheme):
         super().__init__()
         self.header = HeaderColors(
             background='#203864',
-            text='#FFFFFF',
-            border='#000000'
         )
         self.buttons = ButtonColors(
             background='#203864',
@@ -248,7 +269,6 @@ class SkrootTheme(ColorTheme):
             gridlines='lightgray',
             axes='#000000',
             primary_line='#203864',
-            secondary_line='#3B537F',
             background='#FFFFFF',
             points='#203864',
             toggle_button='#203864',
@@ -261,8 +281,8 @@ class SkrootTheme(ColorTheme):
             focus_border='#203864',
             disabled='#F5F5F5'
         )
-        self.reportLabPrimary = reportlab_colors.Color(0.2, 0.3, 0.6)
-        self.reportLabLightPrimary = reportlab_colors.Color(0.85, 0.9, 1)
+        self.reportLabPrimary = reportlab_colors.HexColor('#334c99')
+        self.reportLabLightPrimary = reportlab_colors.HexColor('#d8e5ff')
 
 
 class WilsonWolfTheme(ColorTheme):
@@ -270,8 +290,6 @@ class WilsonWolfTheme(ColorTheme):
         super().__init__()
         self.header = HeaderColors(
             background='#008876',
-            text='#FFFFFF',
-            border='#000000'
         )
         self.buttons = ButtonColors(
             background='#008876',
@@ -284,7 +302,6 @@ class WilsonWolfTheme(ColorTheme):
             gridlines='lightgray',
             axes='#000000',
             primary_line='#008876',
-            secondary_line='#0a6b5d',
             background='#FFFFFF',
             points='#008876',
             toggle_button='#008876',
@@ -297,5 +314,5 @@ class WilsonWolfTheme(ColorTheme):
             focus_border='#008876',
             disabled='#F5F5F5'
         )
-        self.reportLabPrimary = reportlab_colors.Color(0, 0.533, 0.463)
-        self.reportLabLightPrimary = reportlab_colors.Color(0.9, 0.97, 0.95)
+        self.reportLabPrimary = reportlab_colors.HexColor('#008776')
+        self.reportLabLightPrimary = reportlab_colors.HexColor('#e5f7f2')

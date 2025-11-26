@@ -104,5 +104,5 @@ class Reader(ReaderInterface):
                             self.FileManager.getCalibrationLocalLocation())
             else:
                 text_notification.setText("No calibration found.",
-                                          ('Courier', 12, 'bold'), Colors().buttons.background, 'red')
+                                          ('Courier', 12, 'bold'), foregroundColor='red')
                 logging.info(f"No calibration found.", extra={"id": f"Reader {self.readerNumber}"})

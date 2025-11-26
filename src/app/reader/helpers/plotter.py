@@ -22,7 +22,6 @@ class Plotter:
         self.ReaderFigureCanvas = FigureCanvas(
             f'Signal Check',
             'Frequency (MHz)',
-            None,
             f'Signal Check'
         )
 
@@ -63,7 +62,7 @@ class Plotter:
         self.ReaderFigureCanvas.setXAxisLabel('Frequency (MHz)')
         self.ReaderFigureCanvas.setTitle(f'Signal Check')
         self.ReaderFigureCanvas.redrawPlot()
-        self.ReaderFigureCanvas.scatter(sweepData.getFrequency(), convertListToPercent(sweepData.getMagnitude()), 20, 'black')
+        self.ReaderFigureCanvas.scatter(sweepData.getFrequency(), convertListToPercent(sweepData.getMagnitude()), 20, Colors().plot.primary_line)
         self.ReaderFigureCanvas.scatter(
             resultSet.getMaxFrequencySmooth()[-1],
             convertToPercent(resultSet.getMaxVoltsSmooth()[-1]),
