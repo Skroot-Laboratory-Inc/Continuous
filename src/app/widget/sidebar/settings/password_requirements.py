@@ -9,7 +9,7 @@ from src.app.authentication.password_requirements_manager.dev_password_requireme
     DevPasswordRequirementsManager
 from src.app.authentication.password_requirements_manager.password_requirements_manager import \
     PasswordRequirementsManager
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -31,8 +31,7 @@ class PasswordRequirementsScreen:
             text_notification.setText(f"Failed to set configuration:\n{e.message}")
             logging.exception("Failed to instantiate PasswordPolicyManager", extra={"id": "Password Configuration"})
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.lockoutMinutes = tk.StringVar(value=str(self.PasswordRequirementsManager.lockout_minutes))
         self.lockoutRetries = tk.StringVar(value=str(self.PasswordRequirementsManager.lockout_retries))
         self.minPasswordLength = tk.StringVar(value=str(self.PasswordRequirementsManager.minimum_password_length))
@@ -60,18 +59,19 @@ class PasswordRequirementsScreen:
             self.windowRoot,
             text="Password Requirements",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
     def createLockoutMinutes(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
             text="User is disabled for ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
         entry = tk.Entry(
             frame,
@@ -88,19 +88,21 @@ class PasswordRequirementsScreen:
             frame,
             text=" minute(s) on lockout.",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry
 
     def createLockoutRetries(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
         ttk.Label(
             frame,
             text="User is allowed ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
 
         entry = tk.Entry(
@@ -119,20 +121,22 @@ class PasswordRequirementsScreen:
             frame,
             text=" attempt(s) before lockout.",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry
 
     def createMinPasswordLength(self, row: int):
-        frame = tk.Frame(self.windowRoot, bg=Colors().secondaryColor)
+        frame = tk.Frame(self.windowRoot, bg=Colors().body.background)
         frame.grid(row=row, column=0, columnspan=2, sticky='w', padx=10, pady=WidgetTheme().externalPadding)
 
         ttk.Label(
             frame,
             text="Minimum password length is ",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=0, sticky='w')
 
         entry = tk.Entry(
@@ -151,7 +155,8 @@ class PasswordRequirementsScreen:
             frame,
             text=" characters.",
             font=FontTheme().primary,
-            background=Colors().secondaryColor
+            background=Colors().body.background,
+            foreground=Colors().body.text
         ).grid(row=0, column=2, sticky='w')
 
         return entry

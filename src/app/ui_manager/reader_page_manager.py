@@ -17,7 +17,7 @@ class ReaderPageManager:
         self.rootManager = rootManager
         self.sessionManager = sessionManager
         self.readerPages = []
-        self.Colors = Colors()
+
         self.SibFinder = SibFinder()
         self.GuiProperties = GuiProperties()
         self.bodyPage = createBodyPage(bodyFrame)
@@ -30,7 +30,7 @@ class ReaderPageManager:
 
     def appendReader(self, readerPage: tk.Frame = None):
         if not readerPage or readerPage == self.readerPages[-1]:
-            readerPage = tk.Frame(self.bodyPage, bg=Colors().secondaryColor)
+            readerPage = tk.Frame(self.bodyPage, bg=Colors().body.background)
             self.readerPages.append(readerPage)
             ReaderPageThreadManager(
                 readerPage,
@@ -84,6 +84,6 @@ def createBodyPage(bodyFrame):
     bodyFrame.grid_columnconfigure(1, weight=1)
     bodyFrame.grid_columnconfigure(2, weight=0)
     bodyFrame.grid_rowconfigure(0, weight=1)
-    bodyPage = tk.Frame(bodyFrame, bg=Colors().secondaryColor)
+    bodyPage = tk.Frame(bodyFrame, bg=Colors().body.background)
     bodyPage.grid(row=0, column=1, sticky="nsew")
     return bodyPage

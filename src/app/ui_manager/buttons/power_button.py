@@ -23,9 +23,9 @@ class PowerButton:
 
         self.button = tk.Button(
             master,
-            bg=Colors().primaryColor,
+            bg=Colors().header.background,
             highlightthickness=0,
-            activebackground=Colors().primaryColor,
+            activebackground=Colors().header.background,
             borderwidth=0,
             padx=0,
             pady=0,

@@ -19,7 +19,7 @@ from src.app.widget.sidebar.sidebar import Sidebar
 
 class SetupBaseUi:
     def __init__(self, rootManager: RootManager, sessionManager: SessionManager, major_version, minor_version):
-        self.Colors = Colors()
+
         self.RootManager = rootManager
         self.SessionManager = sessionManager
         self.isDevMode = DevProperties().isDevMode
@@ -38,17 +38,17 @@ class SetupBaseUi:
         self.FrameManager.footerFrame.grid_columnconfigure(0, weight=0)
         self.FrameManager.footerFrame.grid_columnconfigure(1, weight=1)
         self.FrameManager.footerFrame.grid_columnconfigure(2, weight=0)
-        versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'v{self.version}', bg='white')
+        versionLabel = tk.Label(self.FrameManager.footerFrame, text=f'v{self.version}', bg=Colors().body.background, fg=Colors().body.text)
         versionLabel.grid(row=0, column=0, sticky="sw")
         copyrightLabel = tk.Label(
             self.FrameManager.footerFrame,
             text='\u00A9 Skroot Laboratory, Inc 2018-2025. All rights reserved.',
-            bg='white')
+            bg=Colors().body.background, fg=Colors().body.text)
         copyrightLabel.grid(row=0, column=1, sticky="s")
         poweredByLabel = tk.Label(
             self.FrameManager.footerFrame,
             text='Powered by Skroot',
-            bg='white')
+            bg=Colors().body.background, fg=Colors().body.text)
         poweredByLabel.grid(row=0, column=2, sticky="se")
 
         self.FrameManager.bannerFrame.grid_rowconfigure(0, weight=1)
@@ -74,19 +74,19 @@ class SetupBaseUi:
         self.RootManager.setTitle("Skroot Reader GUI")
         style = ttk.Style()
         style.theme_use('clam')
-        self.RootManager.setBackgroundColor(self.Colors.secondaryColor)
+        self.RootManager.setBackgroundColor(Colors().body.background)
 
         style.configure("Custom.Horizontal.TProgressbar",
-                        background=Colors().primaryColor,
-                        troughground=Colors().secondaryColor,
+                        background=Colors().buttons.background,
+                        troughground=Colors().body.background,
                         )
 
         style.configure(
             'Default.TButton',
             font=FontTheme().buttons,
             padding=WidgetTheme().defaultButtonPadding,
-            foreground=self.Colors.secondaryColor,
-            background=self.Colors.primaryColor)
+            foreground=Colors().body.background,
+            background=Colors().buttons.background)
 
         style.configure(
             'Toggle.TButton',
@@ -95,66 +95,66 @@ class SetupBaseUi:
             borderwidth=0,
             width=2,
             highlightthickness=0,
-            foreground=self.Colors.primaryColor,
-            background=self.Colors.secondaryColor)
+            foreground=Colors().buttons.background,
+            background=Colors().body.background)
 
         style.configure(
             'Start.TButton',
             font=FontTheme().buttons,
             padding=WidgetTheme().defaultButtonPadding,
-            foreground=self.Colors.secondaryColor,
-            background=self.Colors.green)
+            foreground=Colors().body.background,
+            background=Colors().status.success)
 
         style.configure(
             'Stop.TButton',
             font=FontTheme().buttons,
             padding=WidgetTheme().defaultButtonPadding,
-            foreground=self.Colors.secondaryColor,
-            background=self.Colors.lightRed)
+            foreground=Colors().body.background,
+            background=Colors().status.error)
 
         style.configure(
             'Entry.TButton',
             font=FontTheme().buttons,
             padding=(15, 15),
             width=5,
-            foreground=self.Colors.secondaryColor,
-            background=self.Colors.primaryColor)
+            foreground=Colors().body.background,
+            background=Colors().buttons.background)
         style.configure(
             'Help.TButton',
             font=FontTheme().helpButton,
-            foreground=self.Colors.secondaryColor,
-            background=self.Colors.primaryColor)
+            foreground=Colors().body.background,
+            background=Colors().buttons.background)
         style.configure(
             'Profile.TButton',
             focuscolor="none",
             highlightthickness=0,
             borderwidth=0,
             font=FontTheme().profileButton,
-            foreground=self.Colors.secondaryColor,
-            disabledforeground=self.Colors.secondaryColor,
-            background=self.Colors.primaryColor)
+            foreground=Colors().header.text,
+            disabledforeground=Colors().header.text,
+            background=Colors().header.background)
         style.map(
             'Default.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
+            background=[("disabled", "gray23"), ("active", Colors().buttons.background)])
         style.map(
             'Start.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.green)])
+            background=[("disabled", "gray23"), ("active", Colors().status.success)])
         style.map(
             'Stop.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.lightRed)])
+            background=[("disabled", "gray23"), ("active", Colors().status.error)])
         style.map(
             'Entry.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
+            background=[("disabled", "gray23"), ("active", Colors().buttons.background)])
         style.map(
             'Help.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.primaryColor)])
+            background=[("disabled", "gray23"), ("active", Colors().buttons.background)])
         style.map(
             'Toggle.TButton',
-            background=[("disabled", "gray23"), ("active", self.Colors.secondaryColor)])
+            background=[("disabled", "gray23"), ("active", Colors().body.background)])
         style.map(
             'Profile.TButton',
-            background=[("disabled", self.Colors.primaryColor), ("active", self.Colors.primaryColor)],
-            foreground=[("disabled", self.Colors.secondaryColor), ("active", self.Colors.secondaryColor)])
+            background=[("disabled", Colors().header.background), ("active", Colors().header.background)],
+            foreground=[("disabled", Colors().header.text), ("active", Colors().header.text)])
 
 
 def toggleButton(toggle, button):

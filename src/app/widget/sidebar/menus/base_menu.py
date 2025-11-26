@@ -23,10 +23,10 @@ class BaseMenu(SideBarActions):
         # Create the menu panel
         self.panel = tk.Frame(
             self.parent_frame,
-            bg=Colors().primaryColor,
+            bg=Colors().sidebar.background,
             width=self.width,
             pady=10,
-            highlightbackground=Colors().secondaryColor,
+            highlightbackground=Colors().sidebar.separator,
             borderwidth=2,
             highlightthickness=2
         )
@@ -42,8 +42,8 @@ class BaseMenu(SideBarActions):
             self.panel,
             text=title_text,
             font=FontTheme().header1,
-            bg=Colors().primaryColor,
-            fg=Colors().secondaryColor
+            bg=Colors().sidebar.background,
+            fg=Colors().sidebar.text
         )
         title.grid(row=0, column=0, pady=WidgetTheme().externalPadding, sticky="ew")
 
@@ -64,12 +64,12 @@ class BaseMenu(SideBarActions):
                 self.panel,
                 text=item.label,
                 font=FontTheme().primary,
-                bg=Colors().primaryColor,
-                fg=Colors().secondaryColor,
+                bg=Colors().sidebar.background,
+                fg=Colors().sidebar.text,
                 bd=0,
                 anchor="center",
-                activebackground=Colors().lightPrimaryColor,
-                activeforeground=Colors().secondaryColor,
+                activebackground=Colors().sidebar.hover,
+                activeforeground=Colors().sidebar.text,
                 padx=15,
                 highlightthickness=0,
                 command=lambda i=item: self.menuItemClicked(i)
@@ -81,14 +81,14 @@ class BaseMenu(SideBarActions):
         """Highlight the active button and reset others"""
         for label, btn in self.buttons.items():
             if label == activeButton:
-                btn.configure(bg=Colors().lightPrimaryColor)
+                btn.configure(bg=Colors().sidebar.hover)
             else:
-                btn.configure(bg=Colors().primaryColor)
+                btn.configure(bg=Colors().sidebar.background)
 
     def resetButtonColors(self):
         """Reset all button colors to default"""
         for btn in self.buttons.values():
-            btn.configure(bg=Colors().primaryColor)
+            btn.configure(bg=Colors().sidebar.background)
 
     def clearButtons(self):
         """Clear the buttons dictionary"""

@@ -42,11 +42,11 @@ class ShowPdf:
         """
 
         self.frame = tk.Frame(master, width=width, height=height, bg="white")
-        header_frame = tk.Frame(self.frame, bg=Colors().secondaryColor)
+        header_frame = tk.Frame(self.frame, bg=Colors().body.background)
         header_frame.pack(side=tk.TOP, fill=tk.X)
 
         close_button = tk.Button(header_frame, text="×", font=FontTheme().closeX,
-                                 bg=Colors().secondaryColor, fg="black", bd=0, padx=20, pady=10,
+                                 bg=Colors().body.background, fg="black", bd=0, padx=20, pady=10,
                                  command=lambda: self._close_toplevel(master))
         close_button.pack(side=tk.RIGHT)
         scroll_y = ttk.Scrollbar(self.frame, orient="vertical")

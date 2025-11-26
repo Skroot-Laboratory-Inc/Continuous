@@ -29,8 +29,8 @@ class ToggleSwitch:
             bd=0,
             command=self._switch,
             highlightthickness=0,
-            activebackground=Colors().secondaryColor,
-            bg=Colors().secondaryColor
+            activebackground=Colors().body.background,
+            bg=Colors().body.background
         )
 
         self._subscription = self.behavior_subject.subscribe(self._on_external_state_change)

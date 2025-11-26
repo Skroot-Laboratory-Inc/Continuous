@@ -6,15 +6,15 @@ from src.app.ui_manager.theme.gui_properties import GuiProperties
 
 class PopupBackground:
     def __init__(self, rootManager):
-        self.Colors = Colors()
-        self.backgroundFrame: tk.Frame = rootManager.createFrame(self.Colors.secondaryColor)
+
+        self.backgroundFrame: tk.Frame = rootManager.createFrame(Colors().body.background)
         self.RootManager = rootManager
         self.GuiProperties = GuiProperties()
         self.bodyFrame = self.createBodyFrame()
         self.RootManager.popupDisplayed.subscribe(lambda toggle: self.togglePopupBackground(toggle))
 
     def createBodyFrame(self):
-        bodyFrame = tk.Frame(self.backgroundFrame, bg=self.Colors.secondaryColor)
+        bodyFrame = tk.Frame(self.backgroundFrame, bg=Colors().body.background)
         bodyFrame.place(relx=0, rely=0, relwidth=1, relheight=1)
         return bodyFrame
 

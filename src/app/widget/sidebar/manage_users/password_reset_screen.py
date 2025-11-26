@@ -5,7 +5,7 @@ from tkinter import ttk
 from src.app.authentication.helpers.exceptions import PasswordMismatchException, ResetPasswordException, \
     BadPasswordException, SystemAdminException, InsufficientPermissions
 from src.app.authentication.helpers.functions import resetPassword, check_password_quality
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -20,8 +20,7 @@ class PasswordResetScreen:
         self.RootManager = rootManager
         self.forcedReset = forcedReset
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.username = tk.StringVar()
         self.password = tk.StringVar()
         self.confirmPassword = tk.StringVar()
@@ -58,7 +57,7 @@ class PasswordResetScreen:
             self.windowRoot,
             text="Reset Password",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -67,7 +66,7 @@ class PasswordResetScreen:
             self.windowRoot,
             text="Username",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)
@@ -79,7 +78,7 @@ class PasswordResetScreen:
             self.windowRoot,
             text="New Password",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=4, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=4, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, justify="center", background="white",
                                   textvariable=self.password, font=FontTheme().primary)
@@ -96,15 +95,15 @@ class PasswordResetScreen:
             text="",
             wraplength=400,
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
 
     def createConfirmPassword(self):
         ttk.Label(
             self.windowRoot,
             text="Confirm Password",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=6, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=6, column=0)
 
         confirmPasswordEntry = ttk.Entry(self.windowRoot, show="*", justify="center", width=25, background="white",
                                          textvariable=self.confirmPassword, font=FontTheme().primary)
@@ -121,8 +120,8 @@ class PasswordResetScreen:
             text="",
             wraplength=400,
             font=FontTheme().warning,
-            foreground=Colors().lightRed,
-            background=Colors().secondaryColor)
+            foreground=Colors().status.error,
+            background=Colors().body.background)
 
     def togglePasswordWarning(self, *args):
         badPassword = False

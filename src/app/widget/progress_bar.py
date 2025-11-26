@@ -24,7 +24,7 @@ class TimedProgressBar:
         self.completion_callback = None
 
         # Create a container frame for centering
-        self.container_frame = tk.Frame(parent, background=Colors().secondaryColor)
+        self.container_frame = tk.Frame(parent, background=Colors().body.background)
         self.container_frame.pack(expand=True)
 
         # Create the progress bar inside the container
@@ -38,7 +38,7 @@ class TimedProgressBar:
         self.progress.pack(ipady=WidgetTheme().internalPadding)
 
         # Create percentage label inside the container
-        self.percent_label = tk.Label(self.container_frame, text="0%", font=FontTheme().primary, background=Colors().secondaryColor)
+        self.percent_label = tk.Label(self.container_frame, text="0%", font=FontTheme().primary, background=Colors().body.background, foreground=Colors().body.text)
         self.percent_label.pack()
 
     def start(self, duration_seconds, stillScanning: Subject, callback=None):

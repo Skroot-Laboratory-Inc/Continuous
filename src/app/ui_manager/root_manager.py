@@ -5,6 +5,7 @@ from reactivex.subject import BehaviorSubject
 
 from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.popup_background import PopupBackground
+from src.app.ui_manager.theme import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget import text_notification
 
@@ -32,7 +33,7 @@ class RootManager:
 
     def createTopLevel(self):
         self.popupDisplayed.on_next(True)
-        topLevel = tk.Toplevel(self.root, bg='white', padx=25, pady=25)
+        topLevel = tk.Toplevel(self.root, bg=Colors().body.background, padx=25, pady=25)
         topLevel.withdraw()
         return topLevel
 

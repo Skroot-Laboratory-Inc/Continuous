@@ -31,19 +31,19 @@ class ProfileButton:
 
         self.dropdown = CustomDropdownMenu(
             master,
-            bg=Colors().primaryColor,
-            fg=Colors().secondaryColor,
+            bg=Colors().header.background,
+            fg=Colors().header.text,
             font=FontTheme().dropdown,
             relief="solid",
             borderwidth=1,
             min_width=300,
             min_height=200,
-            disabledforeground=Colors().secondaryColor,
-            border_color="black",
+            disabledforeground=Colors().header.text,
+            border_color=Colors().header.text,
             item_padding_x=25,
             item_padding_y=25,
             item_justify='center',
-            separator_color=Colors().secondaryColor
+            separator_color=Colors().header.text
         )
 
         self.updateDropdownItems()

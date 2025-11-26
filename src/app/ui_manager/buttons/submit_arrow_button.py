@@ -18,7 +18,7 @@ class SubmitArrowButton:
 
         self.button = tk.Button(
             master,
-            bg=Colors().secondaryColor,
+            bg=Colors().body.background,
             highlightthickness=0,
             borderwidth=0,
             image=self.image,

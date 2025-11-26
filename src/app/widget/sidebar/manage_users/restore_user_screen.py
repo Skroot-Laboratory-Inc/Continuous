@@ -6,7 +6,7 @@ from src.app.authentication.helpers.exceptions import UserDoesntExistException, 
     UserNotRetiredException
 from src.app.authentication.helpers.functions import restoreUser
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard
+from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
@@ -21,8 +21,7 @@ class RestoreUserScreen:
         self.systemAdminUser = systemAdminUser
         self.RootManager = rootManager
         self.windowRoot = rootManager.createTopLevel()
-        self.windowRoot.config(relief="solid", highlightbackground="black",
-                               highlightcolor="black", highlightthickness=1, bd=0)
+        formatPopup(self.windowRoot)
         self.username = tk.StringVar()
         self.windowRoot.transient(rootManager.getRoot())
 
@@ -43,7 +42,7 @@ class RestoreUserScreen:
             self.windowRoot,
             text="Restore a User",
             font=FontTheme().header1,
-            background=Colors().secondaryColor).grid(row=0, column=0, columnspan=3)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
 
@@ -52,7 +51,7 @@ class RestoreUserScreen:
             self.windowRoot,
             text="Username",
             font=FontTheme().primary,
-            background=Colors().secondaryColor).grid(row=3, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=3, column=0)
 
         usernameEntry = ttk.Entry(self.windowRoot, width=25, background="white", justify="center",
                                   textvariable=self.username, font=FontTheme().primary)

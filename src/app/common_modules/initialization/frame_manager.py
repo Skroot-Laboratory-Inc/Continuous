@@ -5,7 +5,6 @@ from src.app.ui_manager.root_manager import RootManager
 
 class FrameManager:
     def __init__(self, rootManager: RootManager):
-        self.Colors = Colors()
         self.RootManager = rootManager
         self.GuiProperties = GuiProperties()
         self.bannerFrame = self.createBannerFrame()
@@ -13,15 +12,20 @@ class FrameManager:
         self.footerFrame = self.createFooterFrame()
 
     def createBannerFrame(self):
-        bannerFrame = self.RootManager.createFrame(self.Colors.primaryColor)
+        bannerFrame = self.RootManager.createFrame(Colors().header.background)
         bannerFrame.place(relx=0,
                           rely=0,
                           relwidth=1,
-                          relheight=self.GuiProperties.bannerHeight)
+                          relheight=self.GuiProperties.bannerHeight - 0.001)
+        bottom_border = self.RootManager.createFrame(Colors().body.secondary_background)
+        bottom_border.place(relx=0,
+                            rely=self.GuiProperties.bannerHeight - 0.001,
+                            relwidth=1,
+                            relheight=0.001)
         return bannerFrame
 
     def createBodyFrame(self):
-        bodyFrame = self.RootManager.createFrame(self.Colors.secondaryColor)
+        bodyFrame = self.RootManager.createFrame(Colors().body.background)
         bodyFrame.place(relx=0,
                         rely=self.GuiProperties.bodyRelY,
                         relwidth=1,
@@ -29,7 +33,7 @@ class FrameManager:
         return bodyFrame
 
     def createFooterFrame(self):
-        footerFrame = self.RootManager.createFrame(self.Colors.secondaryColor)
+        footerFrame = self.RootManager.createFrame(Colors().body.background)
         footerFrame.place(
             relx=0,
             rely=1 - self.GuiProperties.footerHeight,

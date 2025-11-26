@@ -11,7 +11,7 @@ class UserGuidePage:
         self.windowRoot.config(pady=0, padx=10)
         self.RootManager = rootManager
         self.Fonts = FontTheme()
-        self.Colors = Colors()
+
         self.windowRoot.geometry(f"{self.RootManager.getRoot().winfo_screenwidth()}x{self.RootManager.getRoot().winfo_screenheight()}")
         # Decrease the dpi to zoom in on the PDF
         ShowPdf().pdf_view(
