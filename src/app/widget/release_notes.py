@@ -27,13 +27,23 @@ class ReleaseNotes(PopupInterface):
 
     def fillInVersions(self, window):
         row = 0
-        tk.Label(window, text="Release Notes", bg=Colors().body.background, font=self.fonts.header1).grid(row=row, column=0,
-                                                                                               sticky='w')
+        tk.Label(
+            window,
+            text="Release Notes",
+            bg=Colors().body.background,
+            fg=Colors().body.text,
+            font=self.fonts.header1,
+        ).grid(row=row, column=0, sticky='w')
         row += 1
         row = self.createSeparatorLine(window, row)
         for version, notes in self.releaseNotes.items():
-            tk.Label(window, text=version, bg=Colors().body.background, font=self.fonts.header2).grid(row=row, column=0,
-                                                                                           sticky='w')
+            tk.Label(
+                window,
+                text=version,
+                bg=Colors().body.background,
+                fg=Colors().body.text,
+                font=self.fonts.header2,
+            ).grid(row=row, column=0, sticky='w')
             row += 1
             row = self.createFeaturesSection(window, notes, row)
             row = self.createBugFixesSection(window, notes, row)
@@ -42,31 +52,45 @@ class ReleaseNotes(PopupInterface):
 
     def createFeaturesSection(self, window, notes, row):
         if "features" in notes:
-            tk.Label(window, text="New Features:", bg=Colors().body.background, font=self.fonts.header3).grid(row=row,
-                                                                                                   column=0,
-                                                                                                   sticky='w')
+            tk.Label(
+                window,
+                text="New Features:",
+                bg=Colors().body.background,
+                fg=Colors().body.text,
+                font=self.fonts.header3,
+            ).grid(row=row,
+                   column=0,
+                   sticky='w')
             row += 1
             for index, feature in notes['features'].items():
-                tk.Label(window,
-                         text=f"- {feature}",
-                         bg=Colors().body.background,
-                         font=self.fonts.primary2,
-                         wraplength=800,
-                         justify="left",
-                         ).grid(row=row, column=0, sticky='w')
+                tk.Label(
+                    window,
+                    text=f"- {feature}",
+                    bg=Colors().body.background,
+                    fg=Colors().body.text,
+                    font=self.fonts.primary2,
+                    wraplength=800,
+                    justify="left",
+                ).grid(row=row, column=0, sticky='w')
                 row += 1
             row = self.createSpacer(window, row)
         return row
 
     def createBugFixesSection(self, window, notes, row):
         if "bugfixes" in notes:
-            tk.Label(window, text="Bug Fixes:", bg=Colors().body.background, font=self.fonts.header3).grid(row=row, column=0,
-                                                                                                sticky='w')
+            tk.Label(
+                window,
+                text="Bug Fixes:",
+                bg=Colors().body.background,
+                fg=Colors().body.text,
+                font=self.fonts.header3,
+            ).grid(row=row, column=0, sticky='w')
             row += 1
             for index, bugfix in notes['bugfixes'].items():
                 tk.Label(window,
                          text=f"- {bugfix}",
                          bg=Colors().body.background,
+                         fg=Colors().body.text,
                          font=self.fonts.primary2,
                          wraplength=800,
                          justify="left",
@@ -88,7 +112,8 @@ class ReleaseNotes(PopupInterface):
 
     @staticmethod
     def createSpacer(window, row):
-        tk.Label(window, text='', bg=Colors().body.background, font=FontTheme().primary).grid(row=row, column=0, sticky='w')
+        tk.Label(window, text='', bg=Colors().body.background, font=FontTheme().primary).grid(row=row, column=0,
+                                                                                              sticky='w')
         row += 1
         return row
 

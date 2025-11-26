@@ -16,6 +16,8 @@ class CommonFileManager:
         self.profileIcon = rf"{resourcesDir}/media/profile.jpg"
         self.skrootLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
+        self.wifiConnectedIcon = rf"{resourcesDir}/media/wifi-connected.png"
+        self.wifiDisconnectedIcon = rf"{resourcesDir}/media/wifi-disconnected.png"
         self.troubleshootingDoc = rf"{resourcesDir}/media/troubleshootingDoc.pdf"
         self.advancedSettingsDoc = rf"{resourcesDir}/media/advancedSettings.pdf"
         self.userGuideDoc = rf"{resourcesDir}/media/userGuideDoc.pdf"
@@ -73,6 +75,12 @@ class CommonFileManager:
 
     def getProfileIcon(self):
         return self.profileIcon
+
+    def getWifiConnectedIcon(self):
+        return self.wifiConnectedIcon
+
+    def getWifiDisconnectedIcon(self):
+        return self.wifiDisconnectedIcon
 
 
 def getCwd():
