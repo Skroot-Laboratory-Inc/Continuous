@@ -1,4 +1,3 @@
-import os
 import socket
 from datetime import datetime
 
@@ -8,9 +7,8 @@ from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.dynamodbConfig import DynamodbConfig
-from src.app.reader.service.aws_service_interface import AwsServiceInterface
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.aws_properties import AwsProperties
+from src.app.reader.service.aws_service_interface import AwsServiceInterface
 
 
 class AwsService(AwsServiceInterface):
@@ -42,9 +40,8 @@ class AwsService(AwsServiceInterface):
         if (scanMillis - self.awsLastCsvUploadMillis) >= self.csvUploadRate:
             self.uploadReaderAnalyzed(newConfig)
             self.awsLastCsvUploadMillis = scanMillis
-            if self.currentDynamodbConfig != newConfig:
-                if self.AwsBoto3Service.pushExperimentRow(newConfig):
-                    self.currentDynamodbConfig = newConfig
+            if self.AwsBoto3Service.pushExperimentRow(newConfig):
+                self.currentDynamodbConfig = newConfig
         else:
             if not self.currentDynamodbConfig.softEquals(newConfig):
                 if self.AwsBoto3Service.pushExperimentRow(newConfig):

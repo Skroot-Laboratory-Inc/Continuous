@@ -6,7 +6,8 @@
       "3": "Refactored IBI theme to black and orange."
     },
     "bugfixes": {
-      "1": "Fix toggle button freezing the application"
+      "1": "Fix toggle button freezing the application",
+      "2": "Fixed last updated value only changing when the dynamodb row changes."
     }
   },
   "v1.0.6": {
