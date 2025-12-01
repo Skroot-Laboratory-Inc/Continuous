@@ -65,21 +65,21 @@ class SetupReaderForm:
             highlightthickness=0,
             justify="center")
 
-        entriesMap['Pump Speed (RPM)'] = tk.Entry(
-            self.window,
-            textvariable=self.pumpFlowRateEntry,
-            borderwidth=0,
-            fg=Colors().body.text,
-            bg=Colors().body.background,
-            font=self.Fonts.primary,
-            highlightthickness=0,
-            justify="center")
+        # entriesMap['Pump Speed (RPM)'] = tk.Entry(
+        #     self.window,
+        #     textvariable=self.pumpFlowRateEntry,
+        #     borderwidth=0,
+        #     fg=Colors().body.text,
+        #     bg=Colors().body.background,
+        #     font=self.Fonts.primary,
+        #     highlightthickness=0,
+        #     justify="center")
 
         options = ["2", "5", "10"]
-        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options)
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)
 
         options = ["0", "0.2", "2", "12", "24"]
-        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options)
+        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, bg=Colors().body.background, fg=Colors().body.text)
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():

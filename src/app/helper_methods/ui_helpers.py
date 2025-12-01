@@ -45,14 +45,14 @@ def styleDropdownOption(option):
     return f"{option}".center(45)
 
 
-def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
+def createDropdown(root, entryVariable, options, outline=False, addSpace=True, bg="white", fg="black"):
     entryValue = entryVariable.get()
 
     dropdown_button = tk.Button(
         root,
         text=entryValue if entryValue else options[0],
-        bg=Colors().body.background,
-        fg=Colors().body.text,
+        bg=bg,
+        fg=fg,
         borderwidth=1 if outline else 0,
         highlightthickness=1 if outline else 0,
         font=FontTheme().primary,
@@ -63,8 +63,8 @@ def createDropdown(root, entryVariable, options, outline=False, addSpace=True):
     custom_menu = CustomDropdownMenu(
         root,
         item_justify="center",
-        bg=Colors().body.background,
-        fg=Colors().body.text,
+        bg=bg,
+        fg=fg,
         font=FontTheme().primary,
         item_padding_y=WidgetTheme().internalPadding,
         borderwidth=1 if outline else 2,

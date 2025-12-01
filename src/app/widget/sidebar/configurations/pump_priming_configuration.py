@@ -6,13 +6,13 @@ from src.app.properties.pump_properties import PumpProperties
 
 class PumpPrimingConfiguration:
     def __init__(self):
-        if not DevProperties().isDevMode:
-            self.defaultPrimingFlowRate = getFloatEnvFlag(
-                ConfigurationConstants().defaultPrimingFlowRate,
-                PumpProperties().defaultPrimingFlowRate,
-            )
-        else:
-            self.defaultPrimingFlowRate = PumpProperties().defaultPrimingFlowRate
+        # if not DevProperties().isDevMode:
+        #     self.defaultPrimingFlowRate = getFloatEnvFlag(
+        #         ConfigurationConstants().defaultPrimingFlowRate,
+        #         PumpProperties().defaultPrimingFlowRate,
+        #     )
+        # else:
+        self.defaultPrimingFlowRate = PumpProperties().defaultPrimingFlowRate
 
     def setConfig(self, newSetting: float):
         self.defaultPrimingFlowRate = newSetting

@@ -64,7 +64,7 @@ class PumpConfigurationPage:
 
         pumpFlowRateEntry = ttk.Entry(
             self.windowRoot,
-            background="white",
+            background=Colors().body.background,
             justify="center",
             textvariable=self.pumpFlowRate,
             font=FontTheme().primary,
@@ -86,7 +86,7 @@ class PumpConfigurationPage:
 
         pumpFlowRateEntry = ttk.Entry(
             self.windowRoot,
-            background="white",
+            background=Colors().body.background,
             justify="center",
             textvariable=self.primingFlowRate,
             font=FontTheme().primary,
