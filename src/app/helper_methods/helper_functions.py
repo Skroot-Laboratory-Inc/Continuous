@@ -4,6 +4,8 @@ import logging
 import os
 import platform
 import random
+import re
+import socket
 import string
 import subprocess
 import time

@@ -244,7 +244,7 @@ class IBITheme(ColorTheme):
         )
         self.sidebar = SidebarColors(
             background='#232323',
-            text='#f7941d',
+            text='#FFFFFF',
             hover='#464646',
             separator='#464646'
         )
