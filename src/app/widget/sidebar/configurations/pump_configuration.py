@@ -6,13 +6,13 @@ from src.app.properties.pump_properties import PumpProperties
 
 class PumpConfiguration:
     def __init__(self):
-        if not DevProperties().isDevMode:
-            self.defaultPumpFlowRate = getFloatEnvFlag(
-                ConfigurationConstants().defaultFlowRate,
-                PumpProperties().defaultFlowRate,
-            )
-        else:
-            self.defaultPumpFlowRate = PumpProperties().defaultFlowRate
+        # if not DevProperties().isDevMode:
+        #     self.defaultPumpFlowRate = getFloatEnvFlag(
+        #         ConfigurationConstants().defaultFlowRate,
+        #         PumpProperties().defaultFlowRate,
+        #     )
+        # else:
+        self.defaultPumpFlowRate = PumpProperties().defaultFlowRate
 
     def setConfig(self, newSetting: float):
         self.defaultPumpFlowRate = newSetting

@@ -1,4 +1,10 @@
 {
+  "v1.0.8": {
+    "features": {
+      "1": "Added a WiFi widget to manage current connections.",
+      "2": "Reduced pump speed to 2 RPM and removed the ability to configure speeds."
+    }
+  },
   "v1.0.7": {
     "features": {
       "1": "Added support for unitless second axis readings.",

@@ -22,7 +22,7 @@ class TertiaryMenu(BaseMenu):
             ],
             "Configuration": [
                 MenuItem("System Configuration", lambda: self.systemConfiguration()),
-                MenuItem("Pump Configuration", lambda: self.pumpConfiguration()),
+                # MenuItem("Pump Configuration", lambda: self.pumpConfiguration()),
                 MenuItem("Secondary Axis", lambda: self.setSecondaryAxis()),
                 MenuItem("System Time", lambda: self.setSystemTime()),
             ]

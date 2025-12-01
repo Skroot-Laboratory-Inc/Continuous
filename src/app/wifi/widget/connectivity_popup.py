@@ -178,19 +178,19 @@ class ConnectivityPopup:
         connectButton.pack(side=tk.LEFT, padx=5)
         connectButton.configure(state="disabled")
 
-        disconnectButton = GenericButton(
-            "Disconnect",
-            buttonFrame,
-            self.disconnectFromNetwork
-        ).button
-        disconnectButton.pack(side=tk.RIGHT, padx=5)
-
         closeButton = GenericButton(
             "Close",
             buttonFrame,
             self.close
         ).button
         closeButton.pack(side=tk.RIGHT, padx=5)
+
+        disconnectButton = GenericButton(
+            "Disconnect",
+            buttonFrame,
+            self.disconnectFromNetwork
+        ).button
+        disconnectButton.pack(side=tk.RIGHT, padx=5)
         return refreshButton, connectButton, disconnectButton
 
     def updateConnectionStatus(self):
