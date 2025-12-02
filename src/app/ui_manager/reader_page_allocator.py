@@ -1,37 +1,30 @@
-import platform
 import threading
 import tkinter as tk
 
 from src.app.authentication.helpers.decorators import requireUser
 from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
-from src.app.reader.pump.pump_manager import PumpManager
-from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
+from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.image_theme import ImageTheme
-from src.app.widget.kpi_form.flow_cell.flow_cell_kpi_form import FlowCellKpiForm
 from src.app.widget.pump_control_popup import PumpControlPopup
-from src.app.widget.setup_form.flow_cell.flow_cell_setup_form import FlowCellSetupForm
 from src.app.widget.timer import RunningTimer
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-if platform.system() == "Windows":
-    from src.app.reader.pump.dev_pump import DevPump as PumpClass
-else:
-    from src.app.reader.pump.pump import Pump as PumpClass
 
 
 class ReaderPageAllocator:
     def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber,
                  connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
-        # TODO PumpClass and PumpManager should be provided by the context provider only if it is Flow Cell.
-        self.Pump = PumpClass()
-        self.PumpManager = PumpManager(self.Pump)
+        self.factory = ContextFactory()
+        self.Pump = self.factory.createPump()
+        self.PumpManager = self.factory.createPumpManager(self.Pump)
         self.rootManager = rootManager
         self.sessionManager = sessionManager
         self.readerNumber = readerNumber
@@ -99,13 +92,13 @@ class ReaderPageAllocator:
     @requireUser
     def startReader(self, readerNumber):
         try:
-            # TODO This popup should only appear if the UseCase is set to Flow Cell
-            PumpControlPopup(
-                self.rootManager,
-                "Prime Line",
-                "Would you like to prime the line?",
-                self.PumpManager
-            )
+            if self.factory.showPumpControls():
+                PumpControlPopup(
+                    self.rootManager,
+                    "Prime Line",
+                    "Would you like to prime the line?",
+                    self.PumpManager
+                )
         except UserConfirmationException:
             return
         if self.sessionManager.user:
@@ -151,16 +144,20 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="form")
         plottingFrame = tk.Frame(mainFrame, bg=Colors().body.background, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        # TODO Update this to use a context provider to return the KPI form based on @UseCase
-        kpiForm = FlowCellKpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
+        kpiForm = self.factory.createKpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=Colors().body.background, bd=5)
-        # TODO Update this to use a context provider to return the Setup Form based on @UseCase
-        setupReaderForm = FlowCellSetupForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn, self.Pump)
+        setupReaderForm = self.factory.createSetupForm(
+            self.rootManager,
+            SetupReaderFormInput(),
+            setupFrame,
+            submitFn,
+            self.Pump
+        )
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

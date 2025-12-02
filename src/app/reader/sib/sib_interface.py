@@ -51,6 +51,9 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
     def estimateDuration(self) -> float:
         """Estimates the amount of time that a scan will take given its number of points. """
 
+    def performHandshake(self) -> bool:
+        """The reader performs a handshake to establish communication."""
+
     def performCalibration(self):
         """The reader performs a calibration."""
 

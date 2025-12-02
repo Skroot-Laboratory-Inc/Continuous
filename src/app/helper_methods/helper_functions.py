@@ -5,7 +5,6 @@ import os
 import platform
 import random
 import re
-import socket
 import string
 import subprocess
 import time
@@ -14,7 +13,6 @@ import numpy as np
 from serial.tools import list_ports
 from serial.tools.list_ports_common import ListPortInfo
 
-from src.app.authentication.helpers.functions import setFileOwner
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException
 from src.app.custom_exceptions.sib_exception import NoSibFound
@@ -22,8 +20,8 @@ from src.app.helper_methods.data_helpers import convertListToPercent
 from src.app.model.sweep_data import SweepData
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.hardware_properties import HardwareProperties
-from src.app.properties.sib_properties import SibProperties
 from src.app.properties.usb_properties import USBProperties
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.widget import text_notification
 
 

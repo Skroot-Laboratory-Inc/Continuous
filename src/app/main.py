@@ -13,10 +13,10 @@ from src.resources.version.version import Version
 
 class Main(CommonModules):
     def __init__(self):
-        ThemeManager().set_theme(Theme.IBI)
+        version = Version()
+        ThemeManager().set_theme(version.getTheme())
 
         self.GuiManager = RootManager()
-        version = Version()
         logger.loggerSetup(
             f"{CommonFileManager().getExperimentLogDir()}/log.txt",
             f"{version.getUseCase()}_v{version.getMajorVersion()}.{version.getMinorVersion()}",

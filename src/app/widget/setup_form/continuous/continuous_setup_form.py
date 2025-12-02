@@ -14,16 +14,18 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.setup_form.setup_form_base import SetupReaderForm
 
 
-class ContinuousSetupForm:
+class ContinuousSetupForm(SetupReaderForm):
     def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
                  submitFn: Callable):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
+        self.GlobalFileManager = None
         self.Fonts = FontTheme()
-        self.window = tk.Frame(parent, background=Colors().secondaryColor)
+        self.window = tk.Frame(parent, background=Colors().body.background)
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
@@ -47,6 +49,8 @@ class ContinuousSetupForm:
             textvariable=self.deviceIdEntry,
             borderwidth=0,
             font=self.Fonts.primary,
+            fg=Colors().body.text,
+            bg=Colors().body.background,
             highlightthickness=0,
             justify="center")
 
@@ -55,41 +59,53 @@ class ContinuousSetupForm:
             textvariable=self.lotIdEntry,
             borderwidth=0,
             font=self.Fonts.primary,
+            fg=Colors().body.text,
+            bg=Colors().body.background,
             highlightthickness=0,
             justify="center")
 
         options = ["2", "5", "10", "30", "60"]
-        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options)
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)
 
         options = ["0", "0.2", "2", "12", "24"]
-        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options)
+        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, bg=Colors().body.background, fg=Colors().body.text)
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
-
-            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.primary).grid(row=row,
-                                                                                                       column=0,
-                                                                                                       sticky='w')
+            tk.Label(
+                self.window,
+                text=entryLabelText,
+                bg=Colors().body.background,
+                fg=Colors().body.text,
+                font=self.Fonts.primary
+            ).grid(row=row, column=0, sticky='w')
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
             if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
-                entry['disabledbackground'] = Colors().secondaryColor
+                entry['disabledbackground'] = Colors().body.background
             row += 1
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        calibrateCheck = tk.Checkbutton(self.window,
-                                        text="Calibration Required",
-                                        variable=self.calibrateRequired,
-                                        font=self.Fonts.primary,
-                                        onvalue=1,
-                                        offvalue=0,
-                                        pady=WidgetTheme().externalPadding,
-                                        command=self.setCalibrate,
-                                        bg='white', borderwidth=0, highlightthickness=0)
-        calibrateCheck.grid(row=row, column=1, sticky="w")
+        tk.Checkbutton(
+            self.window,
+            text="Calibration Required",
+            variable=self.calibrateRequired,
+            font=self.Fonts.primary,
+            onvalue=1,
+            offvalue=0,
+            pady=WidgetTheme().externalPadding,
+            command=self.setCalibrate,
+            bg=Colors().body.background,
+            fg=Colors().body.text,
+            selectcolor=Colors().body.background,
+            activeforeground=Colors().body.text,
+            activebackground=Colors().body.background,
+            borderwidth=0,
+            highlightthickness=0
+        ).grid(row=row, column=0, columnspan=2, sticky="ns")
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
         row += 1

@@ -1,5 +1,7 @@
 from enum import Enum
 
+from src.app.ui_manager.theme.theme_manager import Theme
+
 
 class DevelopmentVersion(Enum):
     Dev = "Dev"
@@ -18,7 +20,8 @@ class Version:
     def __init__(self):
         self.majorVersion = 1.0
         self.minorVersion = 0
-        self.useCase = UseCase.Tunair
+        self.theme = Theme.IBI
+        self.useCase = UseCase.FlowCell
         self.developmentVersion = DevelopmentVersion.Dev
 
     def getMajorVersion(self) -> float:
@@ -29,6 +32,9 @@ class Version:
 
     def getUseCase(self) -> str:
         return self.useCase.value
+
+    def getTheme(self) -> Theme:
+        return self.theme
 
     def getReleaseBucket(self) -> str:
         return f"{self.useCase.value}/{self.developmentVersion.value}"

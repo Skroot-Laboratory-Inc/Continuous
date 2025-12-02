@@ -11,9 +11,10 @@ from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import truncateByX
 from src.app.model.sweep_data import SweepData
-from src.app.properties.sib_properties import SibProperties
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.widget import text_notification
@@ -28,7 +29,7 @@ class ContinuousSib(SibInterface):
         self.calibrationFrequency, self.calibrationVolts = [], []
         self.initialize(port.device)
         self.serialNumber = port.serial_number
-        Properties = SibProperties()
+        Properties = ContextFactory().getSibProperties()
         self.calibrationStartFreq = Properties.calibrationStartFreq
         self.calibrationStopFreq = Properties.calibrationStopFreq
         self.stepSize = Properties.stepSize
@@ -40,7 +41,7 @@ class ContinuousSib(SibInterface):
         self.currentlyScanning = Subject()
 
     def getYAxisLabel(self) -> str:
-        return SibProperties().yAxisLabel
+        return ContextFactory().getSibProperties().yAxisLabel
 
     def loadCalibrationFile(self):
         try:
@@ -96,8 +97,8 @@ class ContinuousSib(SibInterface):
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             createCalibrationFile(self.calibrationFilename, frequency, volts)
-            self.setStartFrequency(SibProperties().defaultStartFrequency)
-            self.setStopFrequency(SibProperties().defaultEndFrequency)
+            self.setStartFrequency(ContextFactory().getSibProperties().defaultStartFrequency)
+            self.setStopFrequency(ContextFactory().getSibProperties().defaultEndFrequency)
             return True
         except SIBConnectionError:
             self.resetSibConnection()

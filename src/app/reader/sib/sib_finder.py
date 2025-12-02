@@ -1,16 +1,12 @@
 import logging
 import os
 
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.properties.dev_properties import DevProperties
-from src.app.reader.sib.continuous.continuous_sib import ContinuousSib
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.port_allocator import PortAllocator
-from src.app.reader.sib.flow_cell.flow_cell_sib import FlowCellSib
-from src.app.reader.sib.roller_bottle.roller_bottle_sib import RollerBottleSib
 from src.app.reader.sib.sib_interface import SibInterface
-from src.app.reader.sib.tunair.tunair_sib import TunairSib
 from src.app.widget import text_notification
-from src.resources.version.version import Version, UseCase
 
 
 class SibFinder:
@@ -27,37 +23,12 @@ class SibFinder:
 
 def instantiateReader(port, portAllocator, readerNumber) -> SibInterface:
     try:
-        # TODO Use context provider or factory pattern here to provide the Sib type based on UseCase
-        if Version().useCase == UseCase.FlowCell:
-            sib = FlowCellSib(
-                port,
-                getReaderCalibrationFile(),
-                readerNumber,
-                portAllocator,
-            )
-        elif Version().useCase == UseCase.RollerBottle:
-            sib = RollerBottleSib(
-                port,
-                getReaderCalibrationFile(),
-                readerNumber,
-                portAllocator,
-            )
-        elif Version().useCase == UseCase.Manufacturing:
-            sib = ContinuousSib(
-                port,
-                getReaderCalibrationFile(),
-                readerNumber,
-                portAllocator,
-            )
-        elif Version().useCase == UseCase.Tunair:
-            sib = TunairSib(
-                port,
-                getReaderCalibrationFile(),
-                readerNumber,
-                portAllocator,
-            )
-        else:
-            raise Exception("Unsupported use case for SIB instantiation.")
+        sib = ContextFactory().createSib(
+            port,
+            getReaderCalibrationFile(),
+            readerNumber,
+            portAllocator
+        )
         success = sib.performHandshake()
         if success:
             text_notification.setText("Reader hardware connected successfully.")
