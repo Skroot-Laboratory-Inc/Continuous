@@ -1,19 +1,16 @@
 import csv
 import logging
 import os.path
-from datetime import datetime
 from itertools import zip_longest
 
 import numpy as np
-from scipy.optimize import curve_fit
 from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
 from src.app.custom_exceptions.analysis_exception import ScanAnalysisException
 from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.helper_methods.data_helpers import frequencyToIndex, gaussian
-from src.app.helper_methods.datetime_helpers import datetimeToMillis
+from src.app.helper_methods.data_helpers import frequencyToIndex, findMaxGaussian
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
 from src.app.model.result_set.temperature_result_set import TemperatureResultSet
@@ -152,27 +149,12 @@ class Analyzer(AnalyzerInterface):
 
     @staticmethod
     def findMaxGaussian(x, y) -> (float, float, float):
-        pointsOnEachSide = 500
-        if pointsOnEachSide < np.argmax(y) < len(y) - pointsOnEachSide:
-            xAroundPeak = x[np.argmax(y) - pointsOnEachSide:np.argmax(y) + pointsOnEachSide]
-            yAroundPeak = y[np.argmax(y) - pointsOnEachSide:np.argmax(y) + pointsOnEachSide]
-        elif np.argmax(y) > pointsOnEachSide and np.argmax(y) > len(y) - pointsOnEachSide:
-            xAroundPeak = x[np.argmax(y) - pointsOnEachSide:np.argmax(y)]
-            yAroundPeak = y[np.argmax(y) - pointsOnEachSide:np.argmax(y)]
-        else:
-            xAroundPeak = x[np.argmax(y):np.argmax(y) + pointsOnEachSide]
-            yAroundPeak = y[np.argmax(y):np.argmax(y) + pointsOnEachSide]
-        popt, _ = curve_fit(
-            gaussian,
-            xAroundPeak,
-            yAroundPeak,
-            p0=(max(y), x[np.argmax(y)], 1),
-            bounds=([min(y), min(xAroundPeak), 0], [max(y), max(xAroundPeak), np.inf]),
-        )
-        amplitude = popt[0]
-        centroid = popt[1]
-        peakWidth = popt[2]
-        return amplitude, centroid, peakWidth
+        """
+        Find the peak using Gaussian curve fitting.
+        Uses the shared findMaxGaussian helper with default 50 points on each side.
+        """
+        # TODO: Make pointsOnEachSide configurable since roller bottle uses 50, and others use 500
+        return findMaxGaussian(x, y, pointsOnEachSide=50)
 
     @staticmethod
     def calculateDerivativeValues(time, sgi) -> float:

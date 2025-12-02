@@ -1,12 +1,13 @@
 import logging
 import math
+import os
 import threading
 import time
 from typing import Callable
 
 import numpy as np
 
-from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException
+from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, SensorNotFoundException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile
@@ -17,7 +18,6 @@ from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.issue_properties import IssueProperties
 from src.app.reader.reader import Reader
-from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import text_notification
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
@@ -97,7 +97,7 @@ class ReaderThreadManager:
             reader.Indicator.changeIndicatorYellow()
             self.checkZeroPoint()
             sweepData = reader.SibInterface.takeScan(
-                reader.FileManager.getCurrentScan(),
+                os.path.splitext(reader.FileManager.getCurrentScan())[0],
                 self.disableFullSaveFiles,
             )
             createScanFile(reader.FileManager.getCurrentScan(), sweepData)
@@ -209,6 +209,20 @@ class ReaderThreadManager:
                         extra={"id": f"Reader {reader.readerNumber}"})
                     text_notification.setText(
                         f"Sweep analysis failed, check vessel placement.")
+                except SensorNotFoundException as e:
+                    if reader.readerNumber in self.currentIssues:
+                        if type(self.currentIssues[reader.readerNumber]) is PotentialIssue:
+                            self.currentIssues[reader.readerNumber] = self.currentIssues[
+                                reader.readerNumber].persistIssue()
+                    else:
+                        self.currentIssues[reader.readerNumber] = PotentialIssue(
+                            IssueProperties().consecutiveAnalysisIssue,
+                            f"Automated - Sensor not found on Reader {reader.readerNumber}.",
+                            reader.AutomatedIssueManager.createIssue,
+                        )
+                    reader.Indicator.changeIndicatorRed()
+                    text_notification.setText(f"Sensor not found above Reader Port {reader.readerNumber}.")
+                    logging.info(e.message, extra={"id": f"Reader {reader.readerNumber}"})
                 finally:
                     self.Timer.updateTime()
                 if not self.issueOccurredFn():

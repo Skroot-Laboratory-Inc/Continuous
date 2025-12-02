@@ -14,9 +14,9 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.image_theme import ImageTheme
-from src.app.widget.kpi_form import KpiForm
+from src.app.widget.kpi_form.flow_cell.flow_cell_kpi_form import FlowCellKpiForm
 from src.app.widget.pump_control_popup import PumpControlPopup
-from src.app.widget.setup_reader_form import SetupReaderForm
+from src.app.widget.setup_form.flow_cell.flow_cell_setup_form import FlowCellSetupForm
 from src.app.widget.timer import RunningTimer
 from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 if platform.system() == "Windows":
@@ -29,6 +29,7 @@ class ReaderPageAllocator:
     def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber,
                  connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
+        # TODO PumpClass and PumpManager should be provided by the context provider only if it is Flow Cell.
         self.Pump = PumpClass()
         self.PumpManager = PumpManager(self.Pump)
         self.rootManager = rootManager
@@ -52,7 +53,7 @@ class ReaderPageAllocator:
         readerFrame.grid_rowconfigure(1, weight=9, minsize=100)
         readerFrame.grid_rowconfigure(2, weight=1, minsize=30)
         readerFrame.place(x=0, y=0, relheight=1, relwidth=1)
-        indicatorCanvas, indicator = self.createIndicator(readerFrame, 'green')
+        indicatorCanvas, indicator = self.createIndicator(readerFrame, Colors().status.success)
         setupReaderForm, setupFrame = self.createSetupFrame(readerFrame,
                                                             lambda: self.connectNewReader(self.readerNumber))
         header = self.createHeader(readerFrame)
@@ -98,6 +99,7 @@ class ReaderPageAllocator:
     @requireUser
     def startReader(self, readerNumber):
         try:
+            # TODO This popup should only appear if the UseCase is set to Flow Cell
             PumpControlPopup(
                 self.rootManager,
                 "Prime Line",
@@ -149,14 +151,16 @@ class ReaderPageAllocator:
         kpiFrame.grid_columnconfigure(1, weight=1, uniform="form")
         plottingFrame = tk.Frame(mainFrame, bg=Colors().body.background, bd=5)
         plottingFrame.grid(row=0, column=1, sticky='nsew')
-        kpiForm = KpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
+        # TODO Update this to use a context provider to return the KPI form based on @UseCase
+        kpiForm = FlowCellKpiForm(kpiFrame, self.rootManager, self.sessionManager, self.PumpManager)
         kpiFrame.grid_remove()
         mainFrame.grid_remove()
         return mainFrame, plottingFrame, kpiForm
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=Colors().body.background, bd=5)
-        setupReaderForm = SetupReaderForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn, self.Pump)
+        # TODO Update this to use a context provider to return the Setup Form based on @UseCase
+        setupReaderForm = FlowCellSetupForm(self.rootManager, SetupReaderFormInput(), setupFrame, submitFn, self.Pump)
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()
         return setupReaderForm, setupFrame

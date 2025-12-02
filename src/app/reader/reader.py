@@ -7,8 +7,8 @@ from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set.result_set import ResultSet
-from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
+from src.app.properties.sib_properties import SibProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
@@ -20,7 +20,6 @@ from src.app.reader.service.aws_service import AwsService
 from src.app.reader.service.dev_aws_service import DevAwsService
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
-from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
@@ -55,8 +54,8 @@ class Reader(ReaderInterface):
             readerPageAllocator.getPlottingFrame(),
             self.SecondaryAxisTracker,
         )
-        self.SibInterface.setStartFrequency(CommonProperties().defaultStartFrequency)
-        self.SibInterface.setStopFrequency(CommonProperties().defaultEndFrequency)
+        self.SibInterface.setStartFrequency(SibProperties().defaultStartFrequency)
+        self.SibInterface.setStopFrequency(SibProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.plotFrequencyButton = ttk.Button(

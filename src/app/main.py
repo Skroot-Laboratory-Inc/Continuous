@@ -19,7 +19,7 @@ class Main(CommonModules):
         version = Version()
         logger.loggerSetup(
             f"{CommonFileManager().getExperimentLogDir()}/log.txt",
-            f"Tunair_v{version.getMajorVersion()}.{version.getMinorVersion()}",
+            f"{version.getUseCase()}_v{version.getMajorVersion()}.{version.getMinorVersion()}",
         )
         try:
             super().__init__(

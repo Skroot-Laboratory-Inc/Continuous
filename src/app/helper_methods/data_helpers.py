@@ -1,6 +1,8 @@
 import csv
+from typing import Optional, Tuple
 
 import numpy as np
+from scipy.optimize import curve_fit
 
 from src.app.properties.dev_properties import DevProperties
 
@@ -52,3 +54,50 @@ def createCsv(data, csvFilename):
 def gaussian(x, amplitude, centroid, std):
     """ Standard gaussian fit. """
     return amplitude * np.exp(-(x - centroid) ** 2 / (2 * std ** 2))
+
+
+def findMaxGaussian(x, y, pointsOnEachSide: Optional[int] = 50) -> Tuple[float, float, float]:
+    """
+    Find the peak using Gaussian curve fitting.
+
+    Args:
+        x: Frequency array (list or numpy array)
+        y: Magnitude array (list or numpy array)
+        pointsOnEachSide: Number of points on each side of the peak to use for fitting.
+                         If None, uses all available points. Defaults to 50.
+
+    Returns:
+        Tuple of (amplitude, centroid_frequency, peak_width)
+    """
+    x = np.asarray(x)
+    y = np.asarray(y)
+
+    max_idx = np.argmax(y)
+
+    if pointsOnEachSide is None:
+        # Use all points
+        xAroundPeak = x
+        yAroundPeak = y
+    elif pointsOnEachSide < max_idx < len(y) - pointsOnEachSide:
+        xAroundPeak = x[max_idx - pointsOnEachSide:max_idx + pointsOnEachSide]
+        yAroundPeak = y[max_idx - pointsOnEachSide:max_idx + pointsOnEachSide]
+    elif max_idx > pointsOnEachSide and max_idx > len(y) - pointsOnEachSide:
+        xAroundPeak = x[max_idx - pointsOnEachSide:max_idx]
+        yAroundPeak = y[max_idx - pointsOnEachSide:max_idx]
+    else:
+        xAroundPeak = x[max_idx:max_idx + pointsOnEachSide]
+        yAroundPeak = y[max_idx:max_idx + pointsOnEachSide]
+
+    popt, _ = curve_fit(
+        gaussian,
+        xAroundPeak,
+        yAroundPeak,
+        p0=(max(y), x[max_idx], 1),
+        bounds=([min(y), min(xAroundPeak), 0], [max(y), max(xAroundPeak), np.inf]),
+    )
+
+    amplitude = popt[0]
+    centroid = popt[1]
+    peakWidth = popt[2]
+
+    return amplitude, centroid, peakWidth

@@ -13,7 +13,6 @@ from reactivex.subject import BehaviorSubject
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import truncateByX
 from src.app.model.sweep_data import SweepData
-from src.app.properties.common_properties import CommonProperties
 from src.app.properties.sib_properties import SibProperties
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib_interface import SibInterface
@@ -22,7 +21,7 @@ from src.resources.sibcontrol import sibcontrol
 from src.resources.sibcontrol.sibcontrol import SIBDDSConfigError, SIBException, SIBConnectionError, SIBTimeoutError
 
 
-class Sib(SibInterface):
+class ContinuousSib(SibInterface):
     def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator):
         self.PortAllocator = portAllocator
         self.readerNumber = readerNumber
@@ -54,7 +53,7 @@ class Sib(SibInterface):
         except:
             return False
 
-    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
         try:
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             allVolts = self.performSweepAndWaitForComplete()
@@ -97,8 +96,8 @@ class Sib(SibInterface):
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             createCalibrationFile(self.calibrationFilename, frequency, volts)
-            self.setStartFrequency(CommonProperties().defaultStartFrequency)
-            self.setStopFrequency(CommonProperties().defaultEndFrequency)
+            self.setStartFrequency(SibProperties().defaultStartFrequency)
+            self.setStopFrequency(SibProperties().defaultEndFrequency)
             return True
         except SIBConnectionError:
             self.resetSibConnection()
@@ -122,8 +121,8 @@ class Sib(SibInterface):
                 self.setNumberOfPoints()
             return True
         except:
-            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
-            logging.exception("Failed to set start frequency.", extra={"id": f"Sib"})
+            text_notification.setText("Failed to set start frequency.")
+            logging.exception(f"Failed to set start frequency. Please check connection on Reader Port {self.readerNumber}.", extra={"id": f"Sib"})
             return False
 
     def setStopFrequency(self, stopFreqMHz) -> bool:
@@ -134,7 +133,7 @@ class Sib(SibInterface):
                 self.setNumberOfPoints()
             return True
         except:
-            text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
+            text_notification.setText(f"Failed to set stop frequency. Please check connection on Reader Port {self.readerNumber}.")
             logging.exception("Failed to set stop frequency.", extra={"id": f"Sib"})
             return False
 
@@ -169,7 +168,6 @@ class Sib(SibInterface):
         self.sib = sibcontrol.SIB350(port)
         self.sib.amplitude_mA = 31.6  # The synthesizer output amplitude is set to 31.6 mA by default
         self.sib.open()
-        self.sib.wake()
 
     def performHandshake(self) -> bool:
         data = 500332  # Some random 32-bit value
@@ -201,28 +199,34 @@ class Sib(SibInterface):
             self.sib.write_asf()  # Send the signal amplitude to the SIB
         else:
             text_notification.setText(
-                f"Reader configuration is not valid. Change the reader frequency or number of points.")
+                f"Reader Port configuration is not valid.\nChange the scan frequency or number of points to reset it.")
 
     def performSweepAndWaitForComplete(self) -> List[str]:
+        self.sib.wake()
         self.checkAndSendConfiguration()
         self.sib.write_sweep_command()
         conversion_results, sweep_complete = list(), False
-        while not sweep_complete:
-            try:
-                ack_msg, tmp_data = self.sib.read_sweep_response()
+        try:
+            while not sweep_complete:
+                try:
+                    ack_msg, tmp_data = self.sib.read_sweep_response()
 
-                if ack_msg == 'ok':
-                    # SIB has sent the sweep complete command.
+                    if ack_msg == 'ok':
+                        # SIB has sent the sweep complete command.
+                        sweep_complete = True
+                    elif ack_msg == 'send_data':
+                        # SIB is sending measurement data. Add it to the conversion results array
+                        conversion_results.extend(tmp_data)
+                    else:
+                        logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
+                except:
                     sweep_complete = True
-                elif ack_msg == 'send_data':
-                    # SIB is sending measurement data. Add it to the conversion results array
-                    conversion_results.extend(tmp_data)
-                else:
-                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
-            except:
-                sweep_complete = True
-                logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
-                raise
+                    logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
+                    raise
+        except:
+            raise
+        finally:
+            self.sib.sleep()
         return convertAdcToVolts(conversion_results)
 
     def calibrationComparison(self, frequency, volts):
@@ -265,14 +269,8 @@ def loadCalibrationFile(calibrationFilename) -> (List[str], List[str], List[str]
         return calibrationFrequency, calibrationVolts
     except KeyError or ValueError:
         logging.exception("Column did not exist", extra={"id": calibrationFilename})
-        return [], []
-    except FileNotFoundError:
-        logging.exception("No previous calibration found.", extra={"id": calibrationFilename})
-        text_notification.setText("No previous calibration found, please calibrate.")
-        return [], []
     except Exception:
         logging.exception("Failed to load in calibration", extra={"id": calibrationFilename})
-        return [], []
 
 
 def createCalibrationFile(outputFileName, frequency, volts):

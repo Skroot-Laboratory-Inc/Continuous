@@ -5,7 +5,6 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
-from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
@@ -17,20 +16,18 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 
 
-class SetupReaderForm:
+class TunairSetupForm:
     def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
-                 submitFn: Callable, pump: PumpInterface):
+                 submitFn: Callable):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
         self.Fonts = FontTheme()
-        self.window = tk.Frame(parent, background=Colors().body.background)
+        self.window = tk.Frame(parent, background=Colors().secondaryColor)
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
-        self.GlobalFileManager = None
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
-        self.pumpFlowRateEntry = tk.StringVar(value=f"{guidedSetupInputs.getPumpFlowRate():g}")
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
@@ -49,8 +46,6 @@ class SetupReaderForm:
             self.window,
             textvariable=self.deviceIdEntry,
             borderwidth=0,
-            fg=Colors().body.text,
-            bg=Colors().body.background,
             font=self.Fonts.primary,
             highlightthickness=0,
             justify="center")
@@ -59,73 +54,45 @@ class SetupReaderForm:
             self.window,
             textvariable=self.lotIdEntry,
             borderwidth=0,
-            fg=Colors().body.text,
-            bg=Colors().body.background,
             font=self.Fonts.primary,
             highlightthickness=0,
             justify="center")
 
-        # entriesMap['Pump Speed (RPM)'] = tk.Entry(
-        #     self.window,
-        #     textvariable=self.pumpFlowRateEntry,
-        #     borderwidth=0,
-        #     fg=Colors().body.text,
-        #     bg=Colors().body.background,
-        #     font=self.Fonts.primary,
-        #     highlightthickness=0,
-        #     justify="center")
-
-        options = ["2", "5", "10"]
-        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)
+        options = ["5", "10"]
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options)
 
         options = ["0", "0.2", "2", "12", "24"]
-        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, bg=Colors().body.background, fg=Colors().body.text)
+        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options)
 
         ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
 
-            tk.Label(
-                self.window,
-                text=entryLabelText,
-                bg=Colors().body.background,
-                fg=Colors().body.text,
-                font=self.Fonts.primary
-            ).grid(row=row, column=0, sticky='w')
-
+            tk.Label(self.window, text=entryLabelText, bg='white', font=self.Fonts.primary).grid(row=row,
+                                                                                                       column=0,
+                                                                                                       sticky='w')
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
             if entryLabelText == "Run ID":
-                entry.bind("<Button-1>",
-                           lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            if entryLabelText == "Pump Speed (RPM)":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(),
-                                                                      "Pump Speed (RPM):  "))
+                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
             if entryLabelText == "Device ID":
                 entry['state'] = "disabled"
-                entry['disabledbackground'] = Colors().body.background
+                entry['disabledbackground'] = Colors().secondaryColor
             row += 1
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        tk.Checkbutton(
-            self.window,
-            text="Calibration Required",
-            variable=self.calibrateRequired,
-            font=self.Fonts.primary,
-            onvalue=1,
-            offvalue=0,
-            pady=WidgetTheme().externalPadding,
-            command=self.setCalibrate,
-            bg=Colors().body.background,
-            fg=Colors().body.text,
-            selectcolor=Colors().body.background,
-            activeforeground=Colors().body.text,
-            activebackground=Colors().body.background,
-            borderwidth=0,
-            highlightthickness=0
-        ).grid(row=row, column=0, columnspan=2, sticky="ns")
-        row += 1
+        calibrateCheck = tk.Checkbutton(self.window,
+                                        text="Calibration Required",
+                                        variable=self.calibrateRequired,
+                                        font=self.Fonts.primary,
+                                        onvalue=1,
+                                        offvalue=0,
+                                        pady=WidgetTheme().externalPadding,
+                                        command=self.setCalibrate,
+                                        bg='white', borderwidth=0, highlightthickness=0)
+        calibrateCheck.grid(row=row, column=1, sticky="w")
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
+        row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
         self.cancelButton.grid(row=row, column=1, sticky="se")
@@ -148,19 +115,12 @@ class SetupReaderForm:
         self.monthEntry.set(guidedSetupInputs.getMonth())
         self.dayEntry.set(guidedSetupInputs.getDay())
         self.yearEntry.set(guidedSetupInputs.getYear())
-        self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
-        return self.guidedSetupResults
-
-    def resetFlowRate(self):
-        guidedSetupInputs = self.guidedSetupResults.resetFlowRate()
-        self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
         return self.guidedSetupResults
 
     def onSubmit(self):
         if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
-            self.guidedSetupResults.pumpFlowRate = float(self.pumpFlowRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
             self.guidedSetupResults.day = self.dayEntry.get()
             self.guidedSetupResults.year = self.yearEntry.get()

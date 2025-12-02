@@ -1,6 +1,5 @@
 import glob
 import os
-import shutil
 import time
 
 import pandas
@@ -30,12 +29,10 @@ class DevSib(SibInterface):
     def getCalibrationFilePresent(self) -> BehaviorSubject:
         return self.calibrationFilePresent
 
-    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
         self.currentDevFileIndex += 1
         currentScanFile = self.devFiles[self.currentDevFileIndex]
         readings = pandas.read_csv(currentScanFile)
-        if not disableSaveFiles:
-            shutil.copy(currentScanFile, outputFilename)
         return SweepData(
             readings['Frequency (MHz)'].values.tolist(),
             convertListFromPercent(readings[self.yAxisLabel].values.tolist()),

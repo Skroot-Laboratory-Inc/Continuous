@@ -1,75 +1,7 @@
 {
-  "v1.0.8": {
-    "features": {
-      "1": "Added a WiFi widget to manage current connections.",
-      "2": "Reduced pump speed to 2 RPM and removed the ability to configure speeds."
-    }
-  },
-  "v1.0.7": {
-    "features": {
-      "1": "Added support for unitless second axis readings.",
-      "2": "Added priming and line clearing pages for pump control.",
-      "3": "Refactored IBI theme to black and orange."
-    },
-    "bugfixes": {
-      "1": "Fix toggle button freezing the application",
-      "2": "Fixed last updated value only changing when the dynamodb row changes."
-    }
-  },
-  "v1.0.6": {
-    "features": {
-      "1": "Added functionality to push up saturation date and last_updated timestamp to AWS.",
-      "2": "Added logging for system crashes.",
-      "3": "Converted to timestamps for raw data, calculating hours instead."
-    }
-  },
-  "v1.0.5": {
-    "features": {
-      "1": "Added a configurations page to set second axis measurement and units.",
-      "2": "Added functionality to enter second axis measurement during scans.",
-      "3": "Added upload functionality for second axis measurement data to AWS."
-    },
-    "bugfixes": {
-      "1": "Failed calibrations now properly force the user to retry.",
-      "2": "Missing calibration files now properly force the user to calibrate."
-    }
-  },
-  "v1.0.4": {
-    "bugfixes": {
-      "1": "Fixed issue with changes to pump priming speed not propagating when the setup screen is open."
-    }
-  },
-  "v1.0.3": {
-    "features": {
-      "1": "Reverted back to pump RPM.",
-      "2": "Updated frequency range to be 70-120 MHz.",
-      "3": "Added priming toggle to setup screen.",
-      "4": "Update the pump controller to utilize En pin with permanent VDD connection.",
-      "5": "Added ability to configure the pump priming flow rate via settings.",
-      "6": "Added controls to keep the pump RPM within 0.1-600."
-    }
-  },
-  "v1.0.2": {
-    "features": {
-      "1": "Added ability to manually configure time, date and timezone from the app.",
-      "2": "Added configuration to update the default pump flow rate."
-    },
-    "bugfixes": {
-      "1": "Fixed data export from run screen when signed out.",
-      "2": "Fixed issue with progress bar disappearing early during scans, and not disappearing after scans error.",
-      "3": "Pump now properly stops when a run is finished."
-    }
-  },
-  "v1.0.1": {
-    "features": {
-      "1": "Updated text notifications to use better terminology.",
-      "2": "Updated default flow rate to 5 mL/hr",
-      "3": "Updated calibration range to be 100-160 MHz."
-    }
-  },
   "v1.0.0": {
     "features": {
-      "1": "Branched off of continuous reader."
+      "1": "Merged apps together from Flow Cell."
     }
   }
 }

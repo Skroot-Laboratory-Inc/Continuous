@@ -132,6 +132,7 @@ class ReaderPageThreadManager:
             readerFrame.resetSetupForm()
             readerFrame.timer.resetTimer()
             readerFrame.kpiForm.resetForm()
+            # TODO This popup should only appear if the UseCase is set to Flow Cell
             PumpControlPopup(
                 self.RootManager,
                 "Clear Line",

@@ -42,8 +42,11 @@ class SibInterface(metaclass=SibInterfaceMetaClass):
     def getCalibrationFilePresent(self) -> BehaviorSubject:
         """Returns whether the calibration file for the reader is present."""
 
-    def takeScan(self, outputFilename, disableSaveFiles) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
+
+    def setReferenceFrequency(self, peakFrequencyMHz: float):
+        """The reader sets the reference frequency according to the peak frequency."""
 
     def estimateDuration(self) -> float:
         """Estimates the amount of time that a scan will take given its number of points. """
