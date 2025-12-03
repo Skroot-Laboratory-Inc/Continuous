@@ -8,10 +8,9 @@ from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.dynamodbConfig import DynamodbConfig
 from src.app.properties.aws_properties import AwsProperties
-from src.app.reader.service.aws_service_interface import AwsServiceInterface
 
 
-class AwsService(AwsServiceInterface):
+class AwsService:
     def __init__(self, readerFileManager: ReaderFileManager, globalFileManager: GlobalFileManager):
         self.AwsBoto3Service = AwsBoto3()
         self.currentDynamodbConfig = DynamodbConfig()

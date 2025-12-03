@@ -16,7 +16,6 @@ from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.factory.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import truncateByX
 from src.app.model.sweep_data import SweepData
-from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.roller_bottle.vna_sweep_optimizer import VnaSweepOptimizer
 from src.app.reader.sib.sib_interface import SibInterface

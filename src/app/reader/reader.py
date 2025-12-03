@@ -9,14 +9,12 @@ from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set.result_set import ResultSet
 from src.app.properties.dev_properties import DevProperties
-from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
 from src.app.reader.analyzer.dev_secondary_axis_tracker import DevSecondaryAxisTracker
 from src.app.reader.analyzer.secondary_axis_tracker import SecondaryAxisTracker
 from src.app.reader.helpers.plotter import Plotter
-from src.app.reader.reader_interface import ReaderInterface
 from src.app.reader.service.aws_service import AwsService
 from src.app.reader.service.dev_aws_service import DevAwsService
 from src.app.reader.sib.dev_sib import DevSib
@@ -27,7 +25,7 @@ from src.app.widget.indicator import Indicator
 from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 
 
-class Reader(ReaderInterface):
+class Reader:
     def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface):
         self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
         self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager)

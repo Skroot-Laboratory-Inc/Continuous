@@ -17,10 +17,9 @@ from src.app.model.result_set.temperature_result_set import TemperatureResultSet
 from src.app.model.sweep_data import SweepData
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
-from src.app.reader.analyzer.analyzer_interface import AnalyzerInterface
 
 
-class Analyzer(AnalyzerInterface):
+class Analyzer:
     def __init__(self, FileManager: ReaderFileManager, harvestAlgorithm: HarvestAlgorithm):
         self.zeroPoint = 1
         self.ResultSet = ResultSet()

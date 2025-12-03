@@ -10,7 +10,6 @@ from src.app.factory.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import convertListFromPercent
 from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
-from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.sib.sib_interface import SibInterface
 
 
@@ -27,6 +26,9 @@ class DevSib(SibInterface):
         )
         self.currentlyScanning = Subject()
 
+    def getCurrentlyScanning(self) -> Subject:
+        return self.currentlyScanning
+
     def getCalibrationFilePresent(self) -> BehaviorSubject:
         return self.calibrationFilePresent
 
@@ -39,17 +41,20 @@ class DevSib(SibInterface):
             convertListFromPercent(readings[self.yAxisLabel].values.tolist()),
         )
 
-    def getYAxisLabel(self) -> str:
-        return self.yAxisLabel
+    def setReferenceFrequency(self, peakFrequencyMHz: float):
+        return
 
     def estimateDuration(self) -> float:
         return DevProperties().devScanTime
 
-    def loadCalibrationFile(self):
+    def performHandshake(self) -> bool:
         return True
 
     def performCalibration(self):
         return self.takeCalibrationScan()
+
+    def loadCalibrationFile(self):
+        return True
 
     def takeCalibrationScan(self) -> bool:
         self.currentlyScanning.on_next(True)
@@ -63,5 +68,8 @@ class DevSib(SibInterface):
     def setStopFrequency(self, stopFreqMHz) -> bool:
         return True
 
-    def getCurrentlyScanning(self) -> Subject:
-        return self.currentlyScanning
+    def getYAxisLabel(self) -> str:
+        return self.yAxisLabel
+
+    def close(self) -> bool:
+        return True
