@@ -281,6 +281,12 @@ class SkrootTheme(ColorTheme):
             focus_border='#203864',
             disabled='#F5F5F5'
         )
+        self.sidebar = SidebarColors(
+            background='#203864',
+            text='#FFFFFF',
+            hover='#3B537F',
+            separator='#FFFFFF'
+        )
         self.reportLabPrimary = reportlab_colors.HexColor('#334c99')
         self.reportLabLightPrimary = reportlab_colors.HexColor('#d8e5ff')
 
@@ -313,6 +319,12 @@ class WilsonWolfTheme(ColorTheme):
             border='#CCCCCC',
             focus_border='#008876',
             disabled='#F5F5F5'
+        )
+        self.sidebar = SidebarColors(
+            background='#008876',
+            text='#FFFFFF',
+            hover='#0a6b5d',
+            separator='#FFFFFF'
         )
         self.reportLabPrimary = reportlab_colors.HexColor('#008776')
         self.reportLabLightPrimary = reportlab_colors.HexColor('#e5f7f2')

@@ -20,9 +20,10 @@ class Version:
     def __init__(self):
         self.majorVersion = 3.0
         self.minorVersion = 0
-        self.theme = Theme.IBI
-        self.useCase = UseCase.FlowCell
+        self.theme = Theme.Skroot
+        self.useCase = UseCase.RollerBottle
         self.developmentVersion = DevelopmentVersion.Dev
+        self.isBeta = True
 
     def getMajorVersion(self) -> float:
         return self.majorVersion
@@ -37,5 +38,8 @@ class Version:
         return self.theme
 
     def getReleaseBucket(self) -> str:
-        return f"{self.useCase.value}/{self.developmentVersion.value}"
+        if self.isBeta:
+            return f"{self.useCase.value}/{self.developmentVersion.value}/Beta"
+        else:
+            return f"{self.useCase.value}/{self.developmentVersion.value}"
 
