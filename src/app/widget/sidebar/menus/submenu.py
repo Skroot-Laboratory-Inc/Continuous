@@ -19,13 +19,6 @@ class SubMenu(BaseMenu):
         self.softwareUpdate = softwareUpdate
         self.active_menu = None
 
-        settingsMenu: List[MenuItem] = [
-                MenuItem("Configuration", lambda: self.requestMenu("Configuration")),
-                MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
-            ]
-        if isAwsConnected():
-            settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
-
         self.submenus = {
             "Export Data": [
                 MenuItem("Export Run", lambda: self.exportRun()),
@@ -43,8 +36,19 @@ class SubMenu(BaseMenu):
                 MenuItem("Troubleshooting", lambda: TroubleshootingPage(self.rootManager)),
                 MenuItem("Advanced Use", lambda: AdvancedSettingsDocument(self.rootManager)),
             ],
-            "Settings": settingsMenu
+            "Settings": []  # Dynamically built in _getSettingsMenu()
         }
+
+    def _getSettingsMenu(self) -> List[MenuItem]:
+        """Build Settings menu dynamically based on current connectivity status"""
+        settingsMenu: List[MenuItem] = [
+            MenuItem("Configuration", lambda: self.requestMenu("Configuration")),
+            MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
+        ]
+        # Only show Software Update option when connected to AWS
+        if isAwsConnected():
+            settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
+        return settingsMenu
 
     def showMenu(self, menu_label, main_menu_width):
         """Show the submenu for the selected main menu item"""
@@ -61,7 +65,13 @@ class SubMenu(BaseMenu):
         self.destroyChildren()
 
         self.createTitle(menu_label)
-        menu_items = self.submenus.get(menu_label, [])
+
+        # Dynamically build Settings menu to reflect current connectivity
+        if menu_label == "Settings":
+            menu_items = self._getSettingsMenu()
+        else:
+            menu_items = self.submenus.get(menu_label, [])
+
         self.createButtons(menu_items)
 
         # Calculate position and animate in
