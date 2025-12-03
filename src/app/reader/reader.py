@@ -3,12 +3,13 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.model.plottable import Plottable
 from src.app.model.result_set.result_set import ResultSet
 from src.app.properties.dev_properties import DevProperties
-from src.app.properties.sib_properties import SibProperties
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer
 from src.app.reader.analyzer.dev_analyzer import DevAnalyzer
@@ -54,8 +55,8 @@ class Reader(ReaderInterface):
             readerPageAllocator.getPlottingFrame(),
             self.SecondaryAxisTracker,
         )
-        self.SibInterface.setStartFrequency(SibProperties().defaultStartFrequency)
-        self.SibInterface.setStopFrequency(SibProperties().defaultEndFrequency)
+        self.SibInterface.setStartFrequency(ContextFactory().getSibProperties().defaultStartFrequency)
+        self.SibInterface.setStopFrequency(ContextFactory().getSibProperties().defaultEndFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.plotFrequencyButton = ttk.Button(

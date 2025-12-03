@@ -6,16 +6,17 @@ import pandas
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import convertListFromPercent
 from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
-from src.app.properties.sib_properties import SibProperties
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.sib.sib_interface import SibInterface
 
 
 class DevSib(SibInterface):
     def __init__(self, readerNumber):
-        Properties = SibProperties()
+        Properties = ContextFactory().getSibProperties()
         self.DevProperties = DevProperties()
         self.yAxisLabel = Properties.yAxisLabel
         self.devFiles = glob.glob(f'{self.DevProperties.devBaseFolder}/Reader {readerNumber}/1*.csv')

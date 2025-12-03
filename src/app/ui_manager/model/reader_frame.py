@@ -2,8 +2,8 @@ import tkinter as tk
 
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
-from src.app.widget.kpi_form import KpiForm
-from src.app.widget.setup_form import SetupReaderForm
+from src.app.widget.kpi_form.kpi_form_base import KpiForm
+from src.app.widget.setup_form.setup_form_base import SetupReaderForm
 from src.app.widget.timer import RunningTimer
 
 
@@ -48,7 +48,6 @@ class ReaderFrame:
         self.setupFrame.grid_remove()
 
     def showSetupFrame(self):
-        formResults, _ = self.setupReaderForm.getConfiguration()
         self.setupReaderForm.resetFlowRate()
         self.setupFrame.grid()
 

@@ -15,20 +15,21 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.setup_form.setup_form_base import SetupReaderForm
 
 
-class FlowCellSetupForm:
+class FlowCellSetupForm(SetupReaderForm):
     def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
                  submitFn: Callable, pump: PumpInterface):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
+        self.GlobalFileManager = None
         self.Fonts = FontTheme()
         self.window = tk.Frame(parent, background=Colors().body.background)
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
-        self.GlobalFileManager = None
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.pumpFlowRateEntry = tk.StringVar(value=f"{guidedSetupInputs.getPumpFlowRate():g}")
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())

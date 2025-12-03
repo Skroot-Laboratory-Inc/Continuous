@@ -1,9 +1,8 @@
 class SibProperties:
     def __init__(self):
-        # TODO Each UseCase should have their own SibProperties file corresponding to their values to pull in.
         self.calibrationStartFreq = 100
         self.calibrationStopFreq = 160
-        self.defaultStartFrequency = 120
+        self.defaultStartFrequency = 100
         self.defaultEndFrequency = 160
         self.stepSize = 0.01
         self.initialSpikeMhz = 0.2

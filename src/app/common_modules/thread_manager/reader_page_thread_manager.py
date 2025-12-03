@@ -132,14 +132,14 @@ class ReaderPageThreadManager:
             readerFrame.resetSetupForm()
             readerFrame.timer.resetTimer()
             readerFrame.kpiForm.resetForm()
-            # TODO This popup should only appear if the UseCase is set to Flow Cell
-            PumpControlPopup(
-                self.RootManager,
-                "Clear Line",
-                "Would you like to clear the line?",
-                self.readerAllocator.PumpManager,
-                altCancelText="Close",
-                requireConfirmation=False
-            )
+            if self.readerAllocator.factory.showPumpControls():
+                PumpControlPopup(
+                    self.RootManager,
+                    "Clear Line",
+                    "Would you like to clear the line?",
+                    self.readerAllocator.PumpManager,
+                    altCancelText="Close",
+                    requireConfirmation=False
+                )
         except UserConfirmationException:
             return False

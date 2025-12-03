@@ -5,6 +5,7 @@ from reactivex.subject import BehaviorSubject
 
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.reader.sib.sib_finder import SibFinder
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
@@ -69,13 +70,14 @@ def createReaderPageToggle(parent, previousPageFunc, nextPageFunc):
         parent,
         lambda: previousPageFunc,
         "Toggle.TButton").button
-    # previousButton.grid(row=0, column=0, sticky='nsew')
     nextButton = GenericButton(
         "⟩",
         parent,
         lambda: nextPageFunc,
         "Toggle.TButton").button
-    # nextButton.grid(row=0, column=2, sticky='nsew')
+    if ContextFactory().showNextPageToggle():
+        previousButton.grid(row=0, column=0, sticky='nsew')
+        nextButton.grid(row=0, column=2, sticky='nsew')
     return previousButton, nextButton
 
 

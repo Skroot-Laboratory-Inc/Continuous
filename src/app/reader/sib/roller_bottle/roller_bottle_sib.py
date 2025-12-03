@@ -13,9 +13,10 @@ from reactivex.subject import BehaviorSubject
 
 from src.app.custom_exceptions.analysis_exception import SensorNotFoundException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.factory.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import truncateByX
 from src.app.model.sweep_data import SweepData
-from src.app.properties.sib_properties import SibProperties
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.roller_bottle.vna_sweep_optimizer import VnaSweepOptimizer
 from src.app.reader.sib.sib_interface import SibInterface
@@ -34,7 +35,7 @@ class RollerBottleSib(SibInterface):
         self.calibrationFrequency, self.calibrationVolts = [], []
         self.initialize(port.device)
         self.serialNumber = port.serial_number
-        Properties = SibProperties()
+        Properties = ContextFactory().getSibProperties()
         self.calibrationStartFreq = Properties.calibrationStartFreq
         self.calibrationStopFreq = Properties.calibrationStopFreq
         self.referenceFreqMHz = ReferenceFrequencyConfiguration().getConfig()
@@ -47,7 +48,7 @@ class RollerBottleSib(SibInterface):
         self.currentlyScanning = Subject()
 
     def getYAxisLabel(self) -> str:
-        return SibProperties().yAxisLabel
+        return ContextFactory().getSibProperties().yAxisLabel
 
     def loadCalibrationFile(self):
         try:
@@ -262,7 +263,7 @@ class RollerBottleSib(SibInterface):
             elif freq < self.referenceFreqMHz:
                 stepSize = abs(freq - self.referenceFreqMHz)
                 self.prepareSweep(self.referenceFreqMHz - (2 * stepSize), self.referenceFreqMHz, 3)
-            for i in range(SibProperties().repeatMeasurements):
+            for i in range(ContextFactory().getSibProperties().repeatMeasurements):
                 time.sleep(0.005)  # Small delay to allow the DDS to settle
                 try:
                     if freq > self.referenceFreqMHz:
@@ -378,11 +379,11 @@ def convertAdcToVolts(adcList):
 
 
 def getNumPointsFrequency(startFreq, stopFreq):
-    return int((stopFreq - startFreq) * (1/SibProperties().stepSize) + 1)
+    return int((stopFreq - startFreq) * (1 / ContextFactory().getSibProperties().stepSize) + 1)
 
 
 def getNumPointsSweep(startFreq, stopFreq):
-    return int((stopFreq - startFreq) * (1/SibProperties().stepSize))
+    return int((stopFreq - startFreq) * (1 / ContextFactory().getSibProperties().stepSize))
 
 
 def findSelfResonantFrequency(frequency, volts, scanRange, threshold):

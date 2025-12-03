@@ -20,9 +20,10 @@ from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
 from src.app.widget.sidebar.configurations.secondary_axis_units import SecondaryAxisUnits
 from src.app.widget.sidebar.helpers.run_exporter import RunExporter
+from src.app.widget.kpi_form.kpi_form_base import KpiForm
 
 
-class FlowCellKpiForm:
+class FlowCellKpiForm(KpiForm):
     def __init__(self, parent: tk.Frame, rootManager: RootManager, sessionManager: SessionManager, pumpManager: PumpManager):
         """ Displays all relevant information for a scan to the user by placing them on the provided frame. """
         self.rootManager = rootManager
@@ -154,7 +155,7 @@ class FlowCellKpiForm:
                 runId=self.runId.get(),
             )
 
-    def setConstants(self, lotId: str, user: str, pumpFlowRate: float):
+    def setConstants(self, lotId: str, user: str, pumpFlowRate: Optional[float]):
         self.runId.set(lotId)
         self.user.set(user)
         self.axisLabel.set(f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}:")
