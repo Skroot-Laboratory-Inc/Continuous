@@ -58,7 +58,7 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.reader.sib.roller_bottle.roller_bottle_sib import RollerBottleSib
             return RollerBottleSib(port, calibration_file, reader_number, port_allocator)
-        elif self.use_case == UseCase.Manufacturing:
+        elif self.use_case == UseCase.Continuous:
             from src.app.reader.sib.continuous.continuous_sib import ContinuousSib
             return ContinuousSib(port, calibration_file, reader_number, port_allocator)
         elif self.use_case == UseCase.Tunair:
@@ -98,7 +98,7 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.widget.kpi_form.roller_bottle.roller_bottle_kpi_form import RollerBottleKpiForm
             return RollerBottleKpiForm(parent, root_manager, session_manager)
-        elif self.use_case == UseCase.Manufacturing:
+        elif self.use_case == UseCase.Continuous:
             from src.app.widget.kpi_form.continuous.continuous_kpi_form import ContinuousKpiForm
             return ContinuousKpiForm(parent, root_manager, session_manager)
         elif self.use_case == UseCase.Tunair:
@@ -140,7 +140,7 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.widget.setup_form.roller_bottle.roller_bottle_setup_form import RollerBottleSetupForm
             return RollerBottleSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
-        elif self.use_case == UseCase.Manufacturing:
+        elif self.use_case == UseCase.Continuous:
             from src.app.widget.setup_form.continuous.continuous_setup_form import ContinuousSetupForm
             return ContinuousSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
         elif self.use_case == UseCase.Tunair:
@@ -162,7 +162,7 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.reader.sib.roller_bottle.roller_bottle_sib_properties import RollerBottleSibProperties
             return RollerBottleSibProperties()
-        elif self.use_case == UseCase.Manufacturing:
+        elif self.use_case == UseCase.Continuous:
             from src.app.reader.sib.continuous.continuous_sib_properties import ContinuousSibProperties
             return ContinuousSibProperties()
         elif self.use_case == UseCase.Tunair:
@@ -224,5 +224,5 @@ class ContextFactory:
         Returns:
             True if popup should be shown, False otherwise
         """
-        return self.use_case == UseCase.Tunair or self.use_case == UseCase.Manufacturing or self.use_case == UseCase.RollerBottle
+        return self.use_case == UseCase.Tunair or self.use_case == UseCase.Continuous or self.use_case == UseCase.RollerBottle
 

@@ -10,7 +10,7 @@ class DevelopmentVersion(Enum):
 
 
 class UseCase(Enum):
-    Manufacturing = "Manufacturing"
+    Continuous = "Manufacturing"
     FlowCell = "FlowCell"
     Tunair = "Tunair"
     RollerBottle = "RollerBottle"
@@ -20,8 +20,8 @@ class Version:
     def __init__(self):
         self.majorVersion = 3.0
         self.minorVersion = 0
-        self.theme = Theme.Skroot
-        self.useCase = UseCase.RollerBottle
+        self.theme = Theme.WW
+        self.useCase = UseCase.Continuous
         self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 
