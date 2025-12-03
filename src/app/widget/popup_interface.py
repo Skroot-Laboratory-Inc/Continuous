@@ -1,18 +1,9 @@
 import tkinter as tk
+from abc import ABC, abstractmethod
 
 
-class PopupInterfaceMetaClass(type):
-    """This checks that classes that implement SibInterface implement all members of the class"""
+class PopupInterface(ABC):
 
-    def __instancecheck__(cls, instance):
-        return cls.__subclasscheck__(type(instance))
-
-    def __subclasscheck__(cls, subclass):
-        return (hasattr(subclass, 'fillOutWindowFn') and
-                callable(subclass.fillOutWindowFn))
-
-
-class PopupInterface(metaclass=PopupInterfaceMetaClass):
-
+    @abstractmethod
     def fillOutWindowFn(self, window: tk.Frame):
         """ This populates the popup with whatever widgets are required. """

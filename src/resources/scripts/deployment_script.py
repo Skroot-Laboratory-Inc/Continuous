@@ -59,7 +59,6 @@ release_notes_name = f'v{major_version}.{minor_version}.json'
 release_notes_fp = '../version/release-notes.json'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
-# Eventually we want this to be release specific, but will require some timing and app updates.
 release_notes_bucket = f'release-notes/{version.getUseCase()}'
 
 try:

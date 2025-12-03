@@ -5,7 +5,7 @@ import gpiod
 from reactivex.subject import BehaviorSubject
 
 from src.app.properties.pump_properties import PumpProperties
-from src.app.reader.pump.pump_helpers import flowRateToStepPeriod, rpmToStepPeriod
+from src.app.reader.pump.pump_helpers import rpmToStepPeriod
 from src.app.reader.pump.pump_interface import PumpInterface
 
 

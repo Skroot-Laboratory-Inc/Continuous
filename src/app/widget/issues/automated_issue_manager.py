@@ -6,11 +6,11 @@ from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.timestamped_message import TimestampedMessage
-from src.app.reader.service.aws_service_interface import AwsServiceInterface
+from src.app.reader.service.aws_service import AwsService
 
 
 class AutomatedIssueManager:
-    def __init__(self, awsService: AwsServiceInterface, globalFileManager: GlobalFileManager):
+    def __init__(self, awsService: AwsService, globalFileManager: GlobalFileManager):
         self.issues = []
         self.nextIssueId = 1
         self.AwsService = awsService
