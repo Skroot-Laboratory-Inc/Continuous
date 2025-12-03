@@ -64,13 +64,13 @@ class SetupBaseUi:
         profileButton = ProfileButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
         profileButton.grid(row=0, column=2, sticky='nsew')
         self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, profileButton))
-        connectivityButton = ConnectivityButton(self.FrameManager.bannerFrame, self.RootManager).button
-        connectivityButton.grid(row=0, column=3, sticky='nse')
-        self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, connectivityButton))
+        connectivityButtonInstance = ConnectivityButton(self.FrameManager.bannerFrame, self.RootManager)
+        connectivityButtonInstance.button.grid(row=0, column=3, sticky='nse')
+        self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, connectivityButtonInstance.button))
         powerButton = PowerButton(self.FrameManager.bannerFrame, self.RootManager, self.SessionManager).button
         powerButton.grid(row=0, column=4, sticky='nse')
         self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, powerButton))
-        sidebar = Sidebar(self.RootManager, self.SessionManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate)
+        sidebar = Sidebar(self.RootManager, self.SessionManager, self.FrameManager.bodyFrame, self.FrameManager.bannerFrame, self.SoftwareUpdate, connectivityButtonInstance)
         sidebar.getHamburger.grid(row=0, column=0, sticky='nsw')
         self.RootManager.popupDisplayed.subscribe(lambda toggle: toggleButton(toggle, sidebar.getHamburger))
         return self.FrameManager.bodyFrame, sidebar

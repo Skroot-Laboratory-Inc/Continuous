@@ -12,12 +12,13 @@ from src.app.widget.sidebar.menus.tertiary_menu import TertiaryMenu
 class Sidebar:
     """Main sidebar controller that manages all menu levels"""
 
-    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, bodyFrame, toolbar, softwareUpdate: SoftwareUpdate):
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, bodyFrame, toolbar, softwareUpdate: SoftwareUpdate, connectivityButton=None):
         self.rootManager = rootManager
         self.softwareUpdate = softwareUpdate
         self.SessionManager = sessionManager
         self.bodyFrame = bodyFrame
         self.toolbar = toolbar
+        self.connectivityButton = connectivityButton
 
         menuWidth = floor(ScreenProperties().resolution['width'] / 3)
         self.menuWidth = menuWidth
@@ -42,7 +43,8 @@ class Sidebar:
             sessionManager=self.SessionManager,
             requestMenu=self.handleTertiaryMenuClick,
             onActionExecuted=self.closeAllMenus,
-            softwareUpdate=self.softwareUpdate
+            softwareUpdate=self.softwareUpdate,
+            connectivityButton=self.connectivityButton
         )
 
         self.tertiaryMenu = TertiaryMenu(
