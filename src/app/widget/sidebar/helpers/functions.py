@@ -18,11 +18,11 @@ from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
 
-# Cache for AWS connectivity status
+# Cache for AWS credentials validation (checked once at startup)
 _aws_connectivity_cache = {
     "connected": False,
     "timestamp": 0,
-    "cache_timeout": 10  # seconds
+    "cache_timeout": 300  # 5 minutes - credentials rarely change
 }
 
 
@@ -128,13 +128,13 @@ def setHostname(hostname: str):
         return False
 
 
-def isAwsConnected():
+def hasValidAwsCredentials():
     """
-    Check if the device is connected to AWS by calling STS get-caller-identity.
-    Results are cached for 10 seconds to avoid repeated API calls.
+    Check if valid AWS credentials are configured by calling STS get-caller-identity.
+    Results are cached for 5 minutes since credentials rarely change.
 
     Returns:
-        bool: True if connected to AWS, False otherwise
+        bool: True if AWS credentials are valid, False otherwise
     """
     current_time = time.time()
     cache_age = current_time - _aws_connectivity_cache["timestamp"]
@@ -153,7 +153,7 @@ def isAwsConnected():
         # No AWS credentials configured
         connected = False
     except ClientError:
-        # AWS service error (e.g., invalid credentials, network issues)
+        # AWS service error (e.g., invalid credentials)
         connected = False
     except BotoCoreError:
         # Other boto3/botocore errors
@@ -167,3 +167,13 @@ def isAwsConnected():
     _aws_connectivity_cache["timestamp"] = current_time
 
     return connected
+
+
+def isAwsConnected():
+    """
+    Deprecated: Use hasValidAwsCredentials() instead for credential checks,
+    and combine with internet connectivity check from ConnectivityButton.
+
+    This function is kept for backward compatibility.
+    """
+    return hasValidAwsCredentials()
