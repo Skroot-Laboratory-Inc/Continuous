@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import subprocess
-import time
 from datetime import datetime
 
 import boto3
@@ -18,12 +17,8 @@ from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
 
-# Cache for AWS credentials validation (checked once at startup)
-_aws_connectivity_cache = {
-    "connected": False,
-    "timestamp": 0,
-    "cache_timeout": 300  # 5 minutes - credentials rarely change
-}
+# Cache for AWS credentials validation (checked once, cached forever)
+_aws_credentials_validated = None
 
 
 def createAuditTrail(user: str, driveLocation: str, startDate: datetime.date, endDate: datetime.date):
@@ -131,42 +126,37 @@ def setHostname(hostname: str):
 def hasValidAwsCredentials():
     """
     Check if valid AWS credentials are configured by calling STS get-caller-identity.
-    Results are cached for 5 minutes since credentials rarely change.
+    Result is cached forever since credentials cannot change at runtime.
 
     Returns:
         bool: True if AWS credentials are valid, False otherwise
     """
-    current_time = time.time()
-    cache_age = current_time - _aws_connectivity_cache["timestamp"]
+    global _aws_credentials_validated
 
-    # Return cached result if still valid
-    if cache_age < _aws_connectivity_cache["cache_timeout"]:
-        return _aws_connectivity_cache["connected"]
+    # Return cached result if already checked
+    if _aws_credentials_validated is not None:
+        return _aws_credentials_validated
 
-    # Cache expired or doesn't exist, perform fresh check
+    # First check - validate credentials
     try:
         sts_client = boto3.client('sts')
         response = sts_client.get_caller_identity()
         logging.info(f"Currently logged in as {response.get('Arn')}", extra={"id": "AWS"})
-        connected = True
+        _aws_credentials_validated = True
     except NoCredentialsError:
         # No AWS credentials configured
-        connected = False
+        _aws_credentials_validated = False
     except ClientError:
         # AWS service error (e.g., invalid credentials)
-        connected = False
+        _aws_credentials_validated = False
     except BotoCoreError:
         # Other boto3/botocore errors
-        connected = False
+        _aws_credentials_validated = False
     except Exception:
         # Any other unexpected error
-        connected = False
+        _aws_credentials_validated = False
 
-    # Update cache
-    _aws_connectivity_cache["connected"] = connected
-    _aws_connectivity_cache["timestamp"] = current_time
-
-    return connected
+    return _aws_credentials_validated
 
 
 def isAwsConnected():
