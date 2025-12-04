@@ -47,7 +47,7 @@ class SubMenu(BaseMenu):
             MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
         ]
         # Only show Software Update option when:
-        # 1. AWS credentials are valid (checked once at boot, cached for 5 min)
+        # 1. AWS credentials are valid (checked at startup, cached forever)
         # 2. Internet is currently connected (from ConnectivityButton state)
         hasCredentials = hasValidAwsCredentials()
         hasInternet = self.connectivityButton.isConnected if self.connectivityButton else False

@@ -15,6 +15,7 @@ from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
+from src.app.widget.sidebar.helpers.functions import hasValidAwsCredentials
 from src.app.widget.sidebar.sidebar import Sidebar
 
 
@@ -32,6 +33,10 @@ class SetupBaseUi:
         self.GuiProperties = GuiProperties()
         self.version = f'{major_version}.{minor_version}'
         self.isDevMode = DevProperties().isDevMode
+
+        # Check AWS credentials at startup (cached forever)
+        hasValidAwsCredentials()
+
         self.bodyFrame, self.sidebar = self.createFrames()
         self.createTheme()
 
