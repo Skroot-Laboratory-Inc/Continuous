@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from datetime import datetime
 
 import boto3
@@ -16,6 +17,13 @@ from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
+
+# Cache for AWS connectivity status
+_aws_connectivity_cache = {
+    "connected": False,
+    "timestamp": 0,
+    "cache_timeout": 10  # seconds
+}
 
 
 def createAuditTrail(user: str, driveLocation: str, startDate: datetime.date, endDate: datetime.date):
@@ -123,24 +131,39 @@ def setHostname(hostname: str):
 def isAwsConnected():
     """
     Check if the device is connected to AWS by calling STS get-caller-identity.
+    Results are cached for 10 seconds to avoid repeated API calls.
 
     Returns:
         bool: True if connected to AWS, False otherwise
     """
+    current_time = time.time()
+    cache_age = current_time - _aws_connectivity_cache["timestamp"]
+
+    # Return cached result if still valid
+    if cache_age < _aws_connectivity_cache["cache_timeout"]:
+        return _aws_connectivity_cache["connected"]
+
+    # Cache expired or doesn't exist, perform fresh check
     try:
         sts_client = boto3.client('sts')
         response = sts_client.get_caller_identity()
         logging.info(f"Currently logged in as {response.get('Arn')}", extra={"id": "AWS"})
-        return True
+        connected = True
     except NoCredentialsError:
         # No AWS credentials configured
-        return False
+        connected = False
     except ClientError:
         # AWS service error (e.g., invalid credentials, network issues)
-        return False
+        connected = False
     except BotoCoreError:
         # Other boto3/botocore errors
-        return False
+        connected = False
     except Exception:
         # Any other unexpected error
-        return False
+        connected = False
+
+    # Update cache
+    _aws_connectivity_cache["connected"] = connected
+    _aws_connectivity_cache["timestamp"] = current_time
+
+    return connected
