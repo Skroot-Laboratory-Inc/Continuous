@@ -23,12 +23,12 @@ class ConfigurableSetupForm(SetupReaderForm):
     """A configurable setup form that adapts based on use case configuration."""
 
     def __init__(
-        self,
-        rootManager: RootManager,
-        guidedSetupInputs: SetupReaderFormInput,
-        parent: tk.Frame,
-        submitFn: Callable,
-        config: SetupFormConfig
+            self,
+            rootManager: RootManager,
+            guidedSetupInputs: SetupReaderFormInput,
+            parent: tk.Frame,
+            submitFn: Callable,
+            config: SetupFormConfig
     ):
         self.RootManager = rootManager
         self.parent = parent
@@ -41,7 +41,6 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
 
-        # Initialize all entry variables
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
@@ -49,26 +48,19 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
-
-        # Conditionally initialize pump flow rate if enabled
         self.pumpFlowRateEntry: Optional[tk.StringVar] = None
-        if self.config.enable_pump_flow_rate:
-            self.pumpFlowRateEntry = tk.StringVar(value=f"{guidedSetupInputs.getPumpFlowRate():g}")
 
-        # Configure grid
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(fill="x", expand=True)
 
-        # Build the form UI
-        self._build_form()
+        self._buildForm()
 
-    def _build_form(self):
+    def _buildForm(self):
         """Build the form UI based on configuration."""
         entriesMap = {}
         row = 0
 
-        # Device ID (read-only)
         entriesMap['Device ID'] = tk.Entry(
             self.window,
             textvariable=self.deviceIdEntry,
@@ -80,7 +72,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             justify="center"
         )
 
-        # Run ID (editable with keyboard)
         entriesMap['Run ID'] = tk.Entry(
             self.window,
             textvariable=self.lotIdEntry,
@@ -92,38 +83,22 @@ class ConfigurableSetupForm(SetupReaderForm):
             justify="center"
         )
 
-        # Scan Rate dropdown (configured per use case)
         entriesMap["Scan Rate (min)"] = createDropdown(
             self.window,
             self.scanRateEntry,
-            self.config.scan_rate_options,
+            self.config.scanRateOptions,
             bg=Colors().body.background,
             fg=Colors().body.text
         )
 
-        # Equilibration Time dropdown (configured per use case)
         entriesMap["Equilibration Time (hr)"] = createDropdown(
             self.window,
             self.equilibrationTimeEntry,
-            self.config.equilibration_time_options,
+            self.config.equilibrationTimeOptions,
             bg=Colors().body.background,
             fg=Colors().body.text
         )
 
-        # Conditionally add Pump Flow Rate if enabled
-        if self.config.enable_pump_flow_rate and self.pumpFlowRateEntry is not None:
-            entriesMap["Pump Speed (RPM)"] = tk.Entry(
-                self.window,
-                textvariable=self.pumpFlowRateEntry,
-                borderwidth=0,
-                font=self.Fonts.primary,
-                fg=Colors().body.text,
-                bg=Colors().body.background,
-                highlightthickness=0,
-                justify="center"
-            )
-
-        # Create label and entry widgets
         for entryLabelText, entry in entriesMap.items():
             tk.Label(
                 self.window,
@@ -135,13 +110,9 @@ class ConfigurableSetupForm(SetupReaderForm):
 
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
 
-            # Bind keyboard for editable fields
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(
                     event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            elif entryLabelText == "Pump Speed (RPM)":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(
-                    event.widget, self.RootManager.getRoot(), "Pump Speed (RPM):  "))
             elif entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().body.background
@@ -150,7 +121,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        # Calibration checkbox
         tk.Checkbutton(
             self.window,
             text="Calibration Required",
@@ -170,7 +140,6 @@ class ConfigurableSetupForm(SetupReaderForm):
         ).grid(row=row, column=0, columnspan=2, sticky="ns")
         row += 1
 
-        # Submit and Cancel buttons
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
@@ -194,23 +163,11 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.monthEntry.set(guidedSetupInputs.getMonth())
         self.dayEntry.set(guidedSetupInputs.getDay())
         self.yearEntry.set(guidedSetupInputs.getYear())
-        if self.config.enable_pump_flow_rate and self.pumpFlowRateEntry is not None:
-            self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
         return self.guidedSetupResults
-
-    def resetFlowRate(self):
-        """Reset flow rate - only applicable for use cases with pump support."""
-        if self.config.enable_pump_flow_rate and self.pumpFlowRateEntry is not None:
-            guidedSetupInputs = self.guidedSetupResults.resetFlowRate()
-            self.pumpFlowRateEntry.set(guidedSetupInputs.getPumpFlowRate())
-            return self.guidedSetupResults
-        else:
-            # For use cases without pump, return current configuration
-            return self.guidedSetupResults
 
     def onSubmit(self):
         if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and
-            self.yearEntry.get() != "" and self.lotIdEntry.get() != ""):
+                self.yearEntry.get() != "" and self.lotIdEntry.get() != ""):
 
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
@@ -219,11 +176,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.lotId = self.lotIdEntry.get()
             self.guidedSetupResults.deviceId = self.deviceIdEntry.get()
-
-            # Set pump flow rate if enabled
-            if self.config.enable_pump_flow_rate and self.pumpFlowRateEntry is not None:
-                self.guidedSetupResults.pumpFlowRate = float(self.pumpFlowRateEntry.get())
-
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()

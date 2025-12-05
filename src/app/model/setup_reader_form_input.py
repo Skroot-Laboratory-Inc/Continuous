@@ -1,41 +1,28 @@
 from datetime import datetime
-from typing import Optional
 
 from src.app.helper_methods.datetime_helpers import datetimeToMillis, formatDate
 from src.app.helper_methods.helper_functions import generateLotId
-from src.app.properties.setup_reader_form_defaults import SetupReaderFormDefaults
+from src.app.widget.setup_form.setup_form_config import SetupFormConfig
 from src.app.widget.sidebar.configurations.pump_configuration import PumpConfiguration
 
 
 class SetupReaderFormInput:
-    def __init__(self, config: Optional['SetupFormConfig'] = None):
+    def __init__(self, config: SetupFormConfig):
         """
-        Initialize SetupReaderFormInput with optional use-case-specific configuration.
+        Initialize SetupReaderFormInput with use-case-specific configuration.
 
         Args:
-            config: Optional SetupFormConfig for use-case-specific defaults.
-                   If None, uses the legacy SetupReaderFormDefaults.
+            config: SetupFormConfig for use-case-specific defaults and options.
         """
-        # Use config defaults if provided, otherwise fall back to legacy defaults
-        if config is not None:
-            scan_rate = config.default_scan_rate
-            calibrate = config.default_calibrate
-            equilibration_time = config.default_equilibration_time
-        else:
-            setupReaderFormDefaults = SetupReaderFormDefaults()
-            scan_rate = setupReaderFormDefaults.scanRate
-            calibrate = setupReaderFormDefaults.calibrate
-            equilibration_time = setupReaderFormDefaults.equilibrationTime
-
         self.date = datetime.now()
         self.month = self.date.month
         self.day = self.date.day
         self.year = self.date.year
-        self.scanRate = scan_rate
-        self.calibrate = calibrate
+        self.scanRate = config.defaultScanRate
+        self.calibrate = config.defaultCalibrate
         self.pumpFlowRate = PumpConfiguration().getConfig()
         self.lotId = generateLotId()
-        self.equilibrationTime = equilibration_time
+        self.equilibrationTime = config.defaultEquilibrationTime
         self.savePath = ""
 
     def getMonth(self) -> int:
@@ -79,9 +66,5 @@ class SetupReaderFormInput:
         self.day = self.date.day
         self.year = self.date.year
         self.lotId = generateLotId()
-        return self
-
-    def resetFlowRate(self):
-        self.pumpFlowRate = PumpConfiguration().getConfig()
         return self
 

@@ -21,7 +21,7 @@ class Version:
         self.majorVersion = 3.0
         self.minorVersion = 1
         self.theme = Theme.WW
-        self.useCase = UseCase.Continuous
+        self.useCase = UseCase.FlowCell
         self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 

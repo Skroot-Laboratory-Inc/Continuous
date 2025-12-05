@@ -120,13 +120,13 @@ class ContextFactory:
         from src.app.widget.setup_form.setup_form_config import SetupFormConfig
 
         if self.use_case == UseCase.FlowCell:
-            return SetupFormConfig.get_flow_cell_config()
+            return SetupFormConfig.getFlowCellConfig()
         elif self.use_case == UseCase.RollerBottle:
-            return SetupFormConfig.get_roller_bottle_config()
+            return SetupFormConfig.getRollerBottleConfig()
         elif self.use_case == UseCase.Continuous:
-            return SetupFormConfig.get_continuous_config()
+            return SetupFormConfig.getContinuousConfig()
         elif self.use_case == UseCase.Tunair:
-            return SetupFormConfig.get_tunair_config()
+            return SetupFormConfig.getTunairConfig()
         else:
             raise Exception(f"Unsupported use case for Setup form config: {self.use_case}")
 

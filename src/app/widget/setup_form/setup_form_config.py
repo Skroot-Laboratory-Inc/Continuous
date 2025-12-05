@@ -7,57 +7,52 @@ from typing import List
 class SetupFormConfig:
     """Configuration for a setup form that defines which options are available."""
 
-    scan_rate_options: List[str]
-    equilibration_time_options: List[str]
-    enable_pump_flow_rate: bool
-    default_scan_rate: str
-    default_equilibration_time: str
-    default_calibrate: bool
+    scanRateOptions: List[str]
+    equilibrationTimeOptions: List[str]
+    defaultScanRate: str
+    defaultEquilibrationTime: str
+    defaultCalibrate: bool
 
     @staticmethod
-    def get_continuous_config():
+    def getContinuousConfig():
         """Configuration for Continuous (Manufacturing) use case."""
         return SetupFormConfig(
-            scan_rate_options=["2", "5", "10", "30", "60"],
-            equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False,
-            default_scan_rate="5",
-            default_equilibration_time="24",
-            default_calibrate=True
+            scanRateOptions=["2", "5", "10", "30", "60"],
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="24",
+            defaultCalibrate=True
         )
 
     @staticmethod
-    def get_flow_cell_config():
+    def getFlowCellConfig():
         """Configuration for FlowCell use case."""
         return SetupFormConfig(
-            scan_rate_options=["2", "5", "10"],
-            equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=True,
-            default_scan_rate="5",
-            default_equilibration_time="24",
-            default_calibrate=True
+            scanRateOptions=["2", "5", "10"],
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="24",
+            defaultCalibrate=True
         )
 
     @staticmethod
-    def get_roller_bottle_config():
+    def getRollerBottleConfig():
         """Configuration for RollerBottle use case."""
         return SetupFormConfig(
-            scan_rate_options=["5", "10", "30", "60"],
-            equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False,
-            default_scan_rate="5",
-            default_equilibration_time="24",
-            default_calibrate=True
+            scanRateOptions=["5", "10", "30", "60"],
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="24",
+            defaultCalibrate=True
         )
 
     @staticmethod
-    def get_tunair_config():
+    def getTunairConfig():
         """Configuration for Tunair use case."""
         return SetupFormConfig(
-            scan_rate_options=["5", "10"],
-            equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False,
-            default_scan_rate="5",
-            default_equilibration_time="24",
-            default_calibrate=True
+            scanRateOptions=["5", "10"],
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="24",
+            defaultCalibrate=True
         )
