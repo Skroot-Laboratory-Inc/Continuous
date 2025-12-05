@@ -48,7 +48,6 @@ class ReaderFrame:
         self.setupFrame.grid_remove()
 
     def showSetupFrame(self):
-        self.setupReaderForm.resetFlowRate()
         self.setupFrame.grid()
 
     def updateHeader(self):

@@ -151,9 +151,10 @@ class ReaderPageAllocator:
 
     def createSetupFrame(self, readerFrame, submitFn):
         setupFrame = tk.Frame(readerFrame, bg=Colors().body.background, bd=5)
+        config = self.factory.getSetupFormConfig()
         setupReaderForm = self.factory.createSetupForm(
             self.rootManager,
-            SetupReaderFormInput(),
+            SetupReaderFormInput(config),
             setupFrame,
             submitFn,
         )

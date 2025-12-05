@@ -33,14 +33,14 @@ class TunairSib(SibInterface):
         self.initialize(port.device)
         self.serialNumber = port.serial_number
         Properties = ContextFactory().getSibProperties()
-        self.calibrationStartFreq = Properties.calibrationStartFreq
-        self.calibrationStopFreq = Properties.calibrationStopFreq
+        self.calibrationStartFreq = Properties.startFrequency
+        self.calibrationStopFreq = Properties.stopFrequency
         self.referenceFreqMHz = ReferenceFrequencyConfiguration().getConfig()
         self.stepSize = Properties.stepSize
         self.initialSpikeMhz = Properties.initialSpikeMhz
         self.calibrationFilename = calibrationFileName
-        self.stopFreqMHz = Properties.defaultEndFrequency
-        self.startFreqMHz = Properties.defaultStartFrequency
+        self.stopFreqMHz = Properties.stopFrequency
+        self.startFreqMHz = Properties.startFrequency
         self.calibrationFilePresent = BehaviorSubject(self.loadCalibrationFile())
         self.currentlyScanning = Subject()
 

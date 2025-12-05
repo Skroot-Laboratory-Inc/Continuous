@@ -35,14 +35,14 @@ class RollerBottleSib(SibInterface):
         self.initialize(port.device)
         self.serialNumber = port.serial_number
         Properties = ContextFactory().getSibProperties()
-        self.calibrationStartFreq = Properties.calibrationStartFreq
-        self.calibrationStopFreq = Properties.calibrationStopFreq
+        self.calibrationStartFreq = Properties.startFrequency
+        self.calibrationStopFreq = Properties.stopFrequency
         self.referenceFreqMHz = ReferenceFrequencyConfiguration().getConfig()
         self.stepSize = Properties.stepSize
         self.initialSpikeMhz = Properties.initialSpikeMhz
         self.calibrationFilename = calibrationFileName
-        self.stopFreqMHz = Properties.defaultEndFrequency
-        self.startFreqMHz = Properties.defaultStartFrequency
+        self.stopFreqMHz = Properties.stopFrequency
+        self.startFreqMHz = Properties.startFrequency
         self.calibrationFilePresent = BehaviorSubject(self.loadCalibrationFile())
         self.currentlyScanning = Subject()
 
@@ -245,51 +245,6 @@ class RollerBottleSib(SibInterface):
 
     def setReferenceFrequency(self, peakFrequencyMHz: float):
         self.referenceFreqMHz = peakFrequencyMHz - 10
-
-    def performRandomSweep(self, frequencyRange: List[float], directory: str) -> (List[float], List[float]):
-        shuffledFrequencyRange = random.sample(frequencyRange, len(frequencyRange))
-        shuffledVolts = []
-        for frequency in shuffledFrequencyRange:
-            freq = round(frequency, 1)
-            allFreqVolts = []
-            allReferenceVolts = []
-            averagedFreqVolts = []
-            maxReferenceVoltage = MaximumReferenceVoltageConfiguration().getConfig()
-            minReferenceVoltage = MinimumReferenceVoltageConfiguration().getConfig()
-            if freq > self.referenceFreqMHz:
-                stepSize = freq - self.referenceFreqMHz
-                self.prepareSweep(self.referenceFreqMHz - stepSize, self.referenceFreqMHz + stepSize, 3)
-            elif freq < self.referenceFreqMHz:
-                stepSize = abs(freq - self.referenceFreqMHz)
-                self.prepareSweep(self.referenceFreqMHz - (2 * stepSize), self.referenceFreqMHz, 3)
-            for i in range(ContextFactory().getSibProperties().repeatMeasurements):
-                time.sleep(0.005)  # Small delay to allow the DDS to settle
-                try:
-                    if freq > self.referenceFreqMHz:
-                        sweepVolts = self.performSweep()
-                        referenceVolts = self.calibrationPointComparison(self.referenceFreqMHz, sweepVolts[1])
-                        pointVolts = self.calibrationPointComparison(freq, sweepVolts[2])
-                        freqVolts = normalizeToReference(pointVolts, referenceVolts)
-                    elif freq < self.referenceFreqMHz:
-                        sweepVolts = self.performSweep()
-                        referenceVolts = self.calibrationPointComparison(self.referenceFreqMHz, sweepVolts[2])
-                        pointVolts = self.calibrationPointComparison(freq, sweepVolts[1])
-                        freqVolts = normalizeToReference(pointVolts, referenceVolts)
-                    else:
-                        referenceVolts = np.nan
-                        freqVolts = 1
-                    allReferenceVolts.append(referenceVolts)
-                    allFreqVolts.append(freqVolts)
-                    if minReferenceVoltage < referenceVolts < maxReferenceVoltage or np.isnan(referenceVolts):
-                        averagedFreqVolts.append(freqVolts)
-                except SIBException:
-                    logging.exception(f"Failed to get point at {freq} MHz", extra={"id": "Sib"})
-            shuffledVolts.append(np.mean(averagedFreqVolts))
-            if freq % 10 == 0 or 9.7 < freq - self.referenceFreqMHz < 10.3:
-                createReferenceFile(f"{directory}/{freq} Reference Scan.csv", allReferenceVolts, allFreqVolts)
-        sorted_pairs = sorted(zip(shuffledFrequencyRange, shuffledVolts))
-        sortedFrequencies, sortedVolts = zip(*sorted_pairs)
-        return list(sortedFrequencies), list(sortedVolts)
 
     def calibrationPointComparison(self, frequency: float, volts: float):
         calibrationVoltsOffset = find_nearest(frequency, self.calibrationFrequency, self.calibrationVolts)

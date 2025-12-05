@@ -29,8 +29,8 @@ class ContinuousSib(SibInterface):
         self.initialize(port.device)
         self.serialNumber = port.serial_number
         Properties = ContextFactory().getSibProperties()
-        self.calibrationStartFreq = Properties.calibrationStartFreq
-        self.calibrationStopFreq = Properties.calibrationStopFreq
+        self.calibrationStartFreq = Properties.startFrequency
+        self.calibrationStopFreq = Properties.stopFrequency
         self.stepSize = Properties.stepSize
         self.initialSpikeMhz = Properties.initialSpikeMhz
         self.calibrationFilename = calibrationFileName
@@ -96,8 +96,8 @@ class ContinuousSib(SibInterface):
             allVolts = self.performSweepAndWaitForComplete()
             frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
             createCalibrationFile(self.calibrationFilename, frequency, volts)
-            self.setStartFrequency(ContextFactory().getSibProperties().defaultStartFrequency)
-            self.setStopFrequency(ContextFactory().getSibProperties().defaultEndFrequency)
+            self.setStartFrequency(ContextFactory().getSibProperties().startFrequency)
+            self.setStopFrequency(ContextFactory().getSibProperties().stopFrequency)
             return True
         except SIBConnectionError:
             self.resetSibConnection()

@@ -1,3 +1,4 @@
+"""Generic configurable setup form that works across all use cases."""
 import os
 import socket
 import tkinter as tk
@@ -5,30 +6,41 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
-from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.ui_helpers import launchKeyboard, createDropdown
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
-from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.setup_form.setup_form_base import SetupReaderForm
+from src.app.widget.setup_form.setup_form_config import SetupFormConfig
 
 
-class TunairSetupForm(SetupReaderForm):
-    def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
-                 submitFn: Callable):
+class ConfigurableSetupForm(SetupReaderForm):
+    """A configurable setup form that adapts based on use case configuration."""
+
+    def __init__(
+            self,
+            rootManager: RootManager,
+            guidedSetupInputs: SetupReaderFormInput,
+            parent: tk.Frame,
+            submitFn: Callable,
+            config: SetupFormConfig
+    ):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
+        self.config = config
         self.GlobalFileManager = None
         self.Fonts = FontTheme()
         self.window = tk.Frame(parent, background=Colors().body.background)
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
+
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
@@ -36,11 +48,15 @@ class TunairSetupForm(SetupReaderForm):
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
+
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
         self.window.pack(fill="x", expand=True)
 
-        ''' Normal entries '''
+        self._buildForm()
+
+    def _buildForm(self):
+        """Build the form UI based on configuration."""
         entriesMap = {}
         row = 0
 
@@ -52,7 +68,8 @@ class TunairSetupForm(SetupReaderForm):
             fg=Colors().body.text,
             bg=Colors().body.background,
             highlightthickness=0,
-            justify="center")
+            justify="center"
+        )
 
         entriesMap['Run ID'] = tk.Entry(
             self.window,
@@ -62,15 +79,25 @@ class TunairSetupForm(SetupReaderForm):
             fg=Colors().body.text,
             bg=Colors().body.background,
             highlightthickness=0,
-            justify="center")
+            justify="center"
+        )
 
-        options = ["5", "10"]
-        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)
+        entriesMap["Scan Rate (min)"] = createDropdown(
+            self.window,
+            self.scanRateEntry,
+            self.config.scanRateOptions,
+            bg=Colors().body.background,
+            fg=Colors().body.text
+        )
 
-        options = ["0", "0.2", "2", "12", "24"]
-        entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, bg=Colors().body.background, fg=Colors().body.text)
+        entriesMap["Equilibration Time (hr)"] = createDropdown(
+            self.window,
+            self.equilibrationTimeEntry,
+            self.config.equilibrationTimeOptions,
+            bg=Colors().body.background,
+            fg=Colors().body.text
+        )
 
-        ''' Create Label and Entry Widgets'''
         for entryLabelText, entry in entriesMap.items():
             tk.Label(
                 self.window,
@@ -79,12 +106,16 @@ class TunairSetupForm(SetupReaderForm):
                 fg=Colors().body.text,
                 font=self.Fonts.primary
             ).grid(row=row, column=0, sticky='w')
+
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
+
             if entryLabelText == "Run ID":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            if entryLabelText == "Device ID":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(
+                    event.widget, self.RootManager.getRoot(), "Run ID:  "))
+            elif entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().body.background
+
             row += 1
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
@@ -106,9 +137,9 @@ class TunairSetupForm(SetupReaderForm):
             borderwidth=0,
             highlightthickness=0
         ).grid(row=row, column=0, columnspan=2, sticky="ns")
+        row += 1
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
-        row += 1
         self.submitButton.grid(row=row, column=0, sticky="sw")
         self.cancelButton = GenericButton("Cancel", self.window, self.onCancel).button
         self.cancelButton.grid(row=row, column=1, sticky="se")
@@ -134,7 +165,9 @@ class TunairSetupForm(SetupReaderForm):
         return self.guidedSetupResults
 
     def onSubmit(self):
-        if self.monthEntry.get() != "" and self.dayEntry.get() != "" and self.yearEntry.get() != "" and self.lotIdEntry.get() != "":
+        if (self.monthEntry.get() != "" and self.dayEntry.get() != "" and
+                self.yearEntry.get() != "" and self.lotIdEntry.get() != ""):
+
             self.guidedSetupResults.equilibrationTime = float(self.equilibrationTimeEntry.get())
             self.guidedSetupResults.scanRate = float(self.scanRateEntry.get())
             self.guidedSetupResults.month = self.monthEntry.get()
@@ -149,15 +182,15 @@ class TunairSetupForm(SetupReaderForm):
         else:
             messagebox.showerror(
                 "Incorrect Formatting",
-                "One (or more) of the values entered is not formatted properly")
+                "One (or more) of the values entered is not formatted properly"
+            )
 
     def createSavePath(self, date):
         FileManager = CommonFileManager()
         baseSavePath = FileManager.getDataSavePath()
         if not os.path.exists(baseSavePath):
             os.mkdir(baseSavePath)
-        if not os.path.exists(
-                f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"):
+        if not os.path.exists(f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"):
             return f"{baseSavePath}/{date}_{self.lotIdEntry.get()}"
         else:
             incrementalNumber = 0

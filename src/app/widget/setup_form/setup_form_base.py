@@ -56,16 +56,3 @@ class SetupReaderForm(ABC):
             The full save path
         """
         pass
-
-    def resetFlowRate(self) -> SetupReaderFormInput:
-        """
-        Reset the flow rate to default value.
-
-        This is a no-op for UseCases that don't use pumps.
-        Override in subclasses that require pump flow rate management.
-
-        Returns:
-            Updated SetupReaderFormInput (default: returns current configuration)
-        """
-        config, _ = self.getConfiguration()
-        return config
