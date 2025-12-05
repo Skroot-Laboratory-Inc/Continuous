@@ -10,7 +10,7 @@ import numpy as np
 from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, SensorNotFoundException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import frequencyToIndex
-from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile
+from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile, copyExperimentLog
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
@@ -241,6 +241,7 @@ class ReaderThreadManager:
                 self.Reader.getAnalyzer().ResultSet.getStartTime(),
             )
         self.resetRunFunc(reader.readerNumber)
+        copyExperimentLog(self.Reader.FileManager.getReaderSavePath())
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
 
     def checkIfScanTookTooLong(self, timeTaken):

@@ -5,6 +5,7 @@ import os
 import platform
 import random
 import re
+import shutil
 import string
 import subprocess
 import time
@@ -16,6 +17,7 @@ from serial.tools.list_ports_common import ListPortInfo
 from src.app.authentication.helpers.logging import logAuthAction
 from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException
 from src.app.custom_exceptions.sib_exception import NoSibFound
+from src.app.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.data_helpers import convertListToPercent
 from src.app.model.sweep_data import SweepData
 from src.app.properties.common_properties import CommonProperties
@@ -284,6 +286,10 @@ def getTimezoneOptions():
         'US/Eastern',
         'US/Arizona'
     ]
+
+
+def copyExperimentLog(destinationDirectory: str):
+    shutil.copy(f"{CommonFileManager().getExperimentLogDir()}/log.txt", destinationDirectory)
 
 
 def createScanFile(outputFileName: str, sweepData: SweepData):
