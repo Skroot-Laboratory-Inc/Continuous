@@ -64,6 +64,9 @@ class RollerBottleSetupForm(SetupReaderForm):
             highlightthickness=0,
             justify="center")
 
+        options = ["5", "10", "30", "60"]
+        entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)
+
         options = ["0", "0.2", "2", "12", "24"]
         entriesMap["Equilibration Time (hr)"] = createDropdown(self.window, self.equilibrationTimeEntry, options, bg=Colors().body.background, fg=Colors().body.text)
 

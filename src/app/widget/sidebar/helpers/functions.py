@@ -17,6 +17,9 @@ from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
 
+# Cache for AWS credentials validation (checked once, cached forever)
+_aws_credentials_validated = None
+
 
 def createAuditTrail(user: str, driveLocation: str, startDate: datetime.date, endDate: datetime.date):
     try:
@@ -120,27 +123,51 @@ def setHostname(hostname: str):
         return False
 
 
-def isAwsConnected():
+def hasValidAwsCredentials():
     """
-    Check if the device is connected to AWS by calling STS get-caller-identity.
+    Check if valid AWS credentials are configured by calling STS get-caller-identity.
+    Result is cached forever since credentials cannot change at runtime.
 
     Returns:
-        bool: True if connected to AWS, False otherwise
+        bool: True if AWS credentials are valid, False otherwise
     """
+    global _aws_credentials_validated
+
+    # Return cached result if already checked
+    if _aws_credentials_validated is not None:
+        return _aws_credentials_validated
+
+    # First check - validate credentials
     try:
         sts_client = boto3.client('sts')
         response = sts_client.get_caller_identity()
         logging.info(f"Currently logged in as {response.get('Arn')}", extra={"id": "AWS"})
-        return True
+        _aws_credentials_validated = True
     except NoCredentialsError:
         # No AWS credentials configured
-        return False
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        _aws_credentials_validated = False
     except ClientError:
-        # AWS service error (e.g., invalid credentials, network issues)
-        return False
+        # AWS service error (e.g., invalid credentials)
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        _aws_credentials_validated = False
     except BotoCoreError:
         # Other boto3/botocore errors
-        return False
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        _aws_credentials_validated = False
     except Exception:
         # Any other unexpected error
-        return False
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        _aws_credentials_validated = False
+    logging.info(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+    return _aws_credentials_validated
+
+
+def isAwsConnected():
+    """
+    Deprecated: Use hasValidAwsCredentials() instead for credential checks,
+    and combine with internet connectivity check from ConnectivityButton.
+
+    This function is kept for backward compatibility.
+    """
+    return hasValidAwsCredentials()

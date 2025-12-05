@@ -1,8 +1,9 @@
+import logging
 from typing import List
 
 from src.app.authentication.session_manager.session_manager import SessionManager
 from src.app.model.menu_item import MenuItem
-from src.app.widget.sidebar.helpers.functions import isAwsConnected
+from src.app.widget.sidebar.helpers.functions import hasValidAwsCredentials
 from src.app.widget.sidebar.manuals.advanced_setting_document import AdvancedSettingsDocument
 from src.app.widget.sidebar.manuals.troubleshooting_page import TroubleshootingPage
 from src.app.widget.sidebar.manuals.user_guide_page import UserGuidePage
@@ -13,18 +14,13 @@ class SubMenu(BaseMenu):
     """Submenu panel that displays based on main menu selection"""
 
     def __init__(self, parent_frame, width, rootManager, sessionManager: SessionManager, requestMenu=None,
-                 onActionExecuted=None, softwareUpdate=None):
+                 onActionExecuted=None, softwareUpdate=None, connectivityButton=None):
         super().__init__(parent_frame, width, rootManager, sessionManager, onActionExecuted)
         self.requestMenu = requestMenu
         self.softwareUpdate = softwareUpdate
+        self.connectivityButton = connectivityButton
         self.active_menu = None
-
-        settingsMenu: List[MenuItem] = [
-                MenuItem("Configuration", lambda: self.requestMenu("Configuration")),
-                MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
-            ]
-        if isAwsConnected():
-            settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
+        hasValidAwsCredentials()  # Pre-check AWS credentials on init
 
         self.submenus = {
             "Export Data": [
@@ -43,8 +39,21 @@ class SubMenu(BaseMenu):
                 MenuItem("Troubleshooting", lambda: TroubleshootingPage(self.rootManager)),
                 MenuItem("Advanced Use", lambda: AdvancedSettingsDocument(self.rootManager)),
             ],
-            "Settings": settingsMenu
+            "Settings": []  # Dynamically built in _getSettingsMenu()
         }
+
+    def _getSettingsMenu(self) -> List[MenuItem]:
+        """Build Settings menu dynamically based on current connectivity status"""
+        settingsMenu: List[MenuItem] = [
+            MenuItem("Configuration", lambda: self.requestMenu("Configuration")),
+            MenuItem("Manage Passwords", lambda: self.requestMenu("Manage Passwords")),
+        ]
+        hasCredentials = hasValidAwsCredentials()
+        hasInternet = self.connectivityButton.isConnected if self.connectivityButton else False
+        logging.info(f"AWS credentials valid: {hasCredentials}, Has Internet: {hasInternet}", extra={"id": "AWS"})
+        if hasCredentials and hasInternet:
+            settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
+        return settingsMenu
 
     def showMenu(self, menu_label, main_menu_width):
         """Show the submenu for the selected main menu item"""
@@ -61,7 +70,11 @@ class SubMenu(BaseMenu):
         self.destroyChildren()
 
         self.createTitle(menu_label)
-        menu_items = self.submenus.get(menu_label, [])
+        if menu_label == "Settings":
+            menu_items = self._getSettingsMenu()
+        else:
+            menu_items = self.submenus.get(menu_label, [])
+
         self.createButtons(menu_items)
 
         # Calculate position and animate in
