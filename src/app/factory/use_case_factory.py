@@ -8,6 +8,7 @@ from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.reader.pump.pump_interface import PumpInterface
 from src.app.reader.pump.pump_manager import PumpManager
 from src.app.reader.sib.sib_interface import SibInterface
+from src.app.reader.sib.sib_properties import SibProperties
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.kpi_form.kpi_form_base import KpiForm
 from src.app.widget.setup_form.setup_form_base import SetupReaderForm
@@ -107,6 +108,29 @@ class ContextFactory:
         else:
             raise Exception(f"Unsupported use case for KPI form creation: {self.use_case}")
 
+    def getSetupFormConfig(self):
+        """
+        Get the SetupFormConfig for the current UseCase.
+
+        Returns:
+            SetupFormConfig for the current UseCase
+
+        Raises:
+            Exception: If the UseCase is not supported
+        """
+        from src.app.widget.setup_form.setup_form_config import SetupFormConfig
+
+        if self.use_case == UseCase.FlowCell:
+            return SetupFormConfig.getFlowCellConfig()
+        elif self.use_case == UseCase.RollerBottle:
+            return SetupFormConfig.getRollerBottleConfig()
+        elif self.use_case == UseCase.Continuous:
+            return SetupFormConfig.getContinuousConfig()
+        elif self.use_case == UseCase.Tunair:
+            return SetupFormConfig.getTunairConfig()
+        else:
+            raise Exception(f"Unsupported use case for Setup form config: {self.use_case}")
+
     def createSetupForm(
         self,
         root_manager: RootManager,
@@ -122,29 +146,17 @@ class ContextFactory:
             guided_setup_inputs: The setup form input data
             parent: The parent frame
             submit_fn: The submit callback function
-            pump: The pump instance (required for FlowCell, ignored otherwise)
 
         Returns:
             SetupReaderForm implementation for the current UseCase
 
         Raises:
             Exception: If the UseCase is not supported
-            ValueError: If FlowCell UseCase requires pump but it's not provided
         """
-        if self.use_case == UseCase.FlowCell:
-            from src.app.widget.setup_form.flow_cell.flow_cell_setup_form import FlowCellSetupForm
-            return FlowCellSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
-        elif self.use_case == UseCase.RollerBottle:
-            from src.app.widget.setup_form.roller_bottle.roller_bottle_setup_form import RollerBottleSetupForm
-            return RollerBottleSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
-        elif self.use_case == UseCase.Continuous:
-            from src.app.widget.setup_form.continuous.continuous_setup_form import ContinuousSetupForm
-            return ContinuousSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
-        elif self.use_case == UseCase.Tunair:
-            from src.app.widget.setup_form.tunair.tunair_setup_form import TunairSetupForm
-            return TunairSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
-        else:
-            raise Exception(f"Unsupported use case for Setup form creation: {self.use_case}")
+        from src.app.widget.setup_form.configurable_setup_form import ConfigurableSetupForm
+
+        config = self.getSetupFormConfig()
+        return ConfigurableSetupForm(root_manager, guided_setup_inputs, parent, submit_fn, config)
 
     def getSibProperties(self):
         """
@@ -154,17 +166,13 @@ class ContextFactory:
             SibProperties instance (currently shared across all UseCases)
         """
         if self.use_case == UseCase.FlowCell:
-            from src.app.reader.sib.flow_cell.flow_cell_sib_properties import FlowCellSibProperties
-            return FlowCellSibProperties()
+            return SibProperties.getFlowCellProperties()
         elif self.use_case == UseCase.RollerBottle:
-            from src.app.reader.sib.roller_bottle.roller_bottle_sib_properties import RollerBottleSibProperties
-            return RollerBottleSibProperties()
+            return SibProperties.getRollerBottleProperties()
         elif self.use_case == UseCase.Continuous:
-            from src.app.reader.sib.continuous.continuous_sib_properties import ContinuousSibProperties
-            return ContinuousSibProperties()
+            return SibProperties.getContinuousProperties()
         elif self.use_case == UseCase.Tunair:
-            from src.app.reader.sib.tunair.tunair_sib_properties import TunairSibProperties
-            return TunairSibProperties()
+            return SibProperties.getTunairProperties()
         else:
             raise Exception(f"Unsupported use case for SIB instantiation: {self.use_case}")
 

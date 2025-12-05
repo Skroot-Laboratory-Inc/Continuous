@@ -1,7 +1,7 @@
 {
-  "v1.0.0": {
+  "v3.0.0": {
     "features": {
-      "1": "Merged apps together from Flow Cell."
+      "1": "Merged apps together based off of Flow Cell."
     }
   }
 }

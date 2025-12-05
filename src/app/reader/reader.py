@@ -53,8 +53,8 @@ class Reader:
             readerPageAllocator.getPlottingFrame(),
             self.SecondaryAxisTracker,
         )
-        self.SibInterface.setStartFrequency(ContextFactory().getSibProperties().defaultStartFrequency)
-        self.SibInterface.setStopFrequency(ContextFactory().getSibProperties().defaultEndFrequency)
+        self.SibInterface.setStartFrequency(ContextFactory().getSibProperties().startFrequency)
+        self.SibInterface.setStopFrequency(ContextFactory().getSibProperties().stopFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
         self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
         self.plotFrequencyButton = ttk.Button(

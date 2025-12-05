@@ -10,7 +10,7 @@ import numpy as np
 from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, SensorNotFoundException
 from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import frequencyToIndex
-from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile
+from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile, copyExperimentLog
 from src.app.model.issue.issue import Issue
 from src.app.model.issue.potential_issue import PotentialIssue
 from src.app.model.setup_reader_form_input import SetupReaderFormInput
@@ -58,11 +58,7 @@ class ReaderThreadManager:
         text_notification.setText(f"Added {SecondaryAxisType().getConfig()} of {value} {SecondaryAxisUnits().getAsUnit()}")
 
     def startReaderLoop(self, user: str):
-        self.kpiForm.setConstants(
-            self.guidedSetupForm.getLotId(),
-            user,
-            self.guidedSetupForm.getPumpFlowRate(),
-        )
+        self.kpiForm.setConstants(self.guidedSetupForm.getLotId(), user)
         self.thread.start()
 
     def checkZeroPoint(self):
@@ -92,6 +88,9 @@ class ReaderThreadManager:
 
     def takeSweep(self):
         reader = self.Reader
+        analyzer = self.Reader.getAnalyzer()
+        resultSet = self.Reader.getResultSet()
+        harvestAlgorithm = self.Reader.HarvestAlgorithm
         try:
             reader.FileManager.updateScanName()
             reader.Indicator.changeIndicatorYellow()
@@ -101,16 +100,14 @@ class ReaderThreadManager:
                 self.disableFullSaveFiles,
             )
             createScanFile(reader.FileManager.getCurrentScan(), sweepData)
-            reader.getAnalyzer().analyzeScan(sweepData, self.denoiseSet)
+            analyzer.analyzeScan(sweepData, self.denoiseSet)
+            reader.SibInterface.setReferenceFrequency(resultSet.getMaxFrequencySmooth()[-1])
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
-            reader.HarvestAlgorithm.check(reader.getResultSet())
-            if reader.HarvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(reader.HarvestAlgorithm.currentHarvestPrediction):
-                self.kpiForm.setSaturation(reader.HarvestAlgorithm.currentHarvestPrediction)
+            harvestAlgorithm.check(resultSet)
+            if harvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(harvestAlgorithm.currentHarvestPrediction):
+                self.kpiForm.saturationDate = harvestAlgorithm.currentHarvestPrediction
             if reader.finishedEquilibrationPeriod:
-                self.kpiForm.setSgi(
-                    frequencyToIndex(self.Reader.Analyzer.zeroPoint,
-                                     self.Reader.Analyzer.ResultSet.getDenoiseFrequencySmooth())[-1],
-                )
+                self.kpiForm.sgi = frequencyToIndex(analyzer.zeroPoint, resultSet.getDenoiseFrequencySmooth())[-1]
             reader.Indicator.changeIndicatorGreen()
             if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
                 self.currentIssues[reader.readerNumber].resolveIssue()
@@ -118,14 +115,14 @@ class ReaderThreadManager:
                     reader.AutomatedIssueManager.updateIssue(self.currentIssues[reader.readerNumber])
                 del self.currentIssues[reader.readerNumber]
         finally:
-            reader.Analyzer.createAnalyzedFiles()
+            analyzer.createAnalyzedFiles()
             if reader.finishedEquilibrationPeriod:
                 reader.AwsService.uploadExperimentFilesOnInterval(
                     reader.FileManager.getCurrentScanDate(),
                     self.guidedSetupForm.getLotId(),
                     self.kpiForm.saturationDate,
                     reader.AutomatedIssueManager.hasOpenIssues(),
-                    self.Reader.getAnalyzer().ResultSet.getStartTime(),
+                    resultSet.getStartTime(),
                 )
 
     def mainLoop(self, reader):
@@ -244,6 +241,7 @@ class ReaderThreadManager:
                 self.Reader.getAnalyzer().ResultSet.getStartTime(),
             )
         self.resetRunFunc(reader.readerNumber)
+        copyExperimentLog(self.Reader.FileManager.getReaderSavePath())
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})
 
     def checkIfScanTookTooLong(self, timeTaken):
