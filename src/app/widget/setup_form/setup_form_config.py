@@ -10,6 +10,9 @@ class SetupFormConfig:
     scan_rate_options: List[str]
     equilibration_time_options: List[str]
     enable_pump_flow_rate: bool
+    default_scan_rate: str
+    default_equilibration_time: str
+    default_calibrate: bool
 
     @staticmethod
     def get_continuous_config():
@@ -17,7 +20,10 @@ class SetupFormConfig:
         return SetupFormConfig(
             scan_rate_options=["2", "5", "10", "30", "60"],
             equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False
+            enable_pump_flow_rate=False,
+            default_scan_rate="5",
+            default_equilibration_time="24",
+            default_calibrate=True
         )
 
     @staticmethod
@@ -26,7 +32,10 @@ class SetupFormConfig:
         return SetupFormConfig(
             scan_rate_options=["2", "5", "10"],
             equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=True
+            enable_pump_flow_rate=True,
+            default_scan_rate="5",
+            default_equilibration_time="24",
+            default_calibrate=True
         )
 
     @staticmethod
@@ -35,7 +44,10 @@ class SetupFormConfig:
         return SetupFormConfig(
             scan_rate_options=["5", "10", "30", "60"],
             equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False
+            enable_pump_flow_rate=False,
+            default_scan_rate="5",
+            default_equilibration_time="24",
+            default_calibrate=True
         )
 
     @staticmethod
@@ -44,5 +56,8 @@ class SetupFormConfig:
         return SetupFormConfig(
             scan_rate_options=["5", "10"],
             equilibration_time_options=["0", "0.2", "2", "12", "24"],
-            enable_pump_flow_rate=False
+            enable_pump_flow_rate=False,
+            default_scan_rate="5",
+            default_equilibration_time="24",
+            default_calibrate=True
         )

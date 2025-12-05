@@ -107,6 +107,29 @@ class ContextFactory:
         else:
             raise Exception(f"Unsupported use case for KPI form creation: {self.use_case}")
 
+    def getSetupFormConfig(self):
+        """
+        Get the SetupFormConfig for the current UseCase.
+
+        Returns:
+            SetupFormConfig for the current UseCase
+
+        Raises:
+            Exception: If the UseCase is not supported
+        """
+        from src.app.widget.setup_form.setup_form_config import SetupFormConfig
+
+        if self.use_case == UseCase.FlowCell:
+            return SetupFormConfig.get_flow_cell_config()
+        elif self.use_case == UseCase.RollerBottle:
+            return SetupFormConfig.get_roller_bottle_config()
+        elif self.use_case == UseCase.Continuous:
+            return SetupFormConfig.get_continuous_config()
+        elif self.use_case == UseCase.Tunair:
+            return SetupFormConfig.get_tunair_config()
+        else:
+            raise Exception(f"Unsupported use case for Setup form config: {self.use_case}")
+
     def createSetupForm(
         self,
         root_manager: RootManager,
@@ -130,20 +153,8 @@ class ContextFactory:
             Exception: If the UseCase is not supported
         """
         from src.app.widget.setup_form.configurable_setup_form import ConfigurableSetupForm
-        from src.app.widget.setup_form.setup_form_config import SetupFormConfig
 
-        # Select the appropriate configuration based on use case
-        if self.use_case == UseCase.FlowCell:
-            config = SetupFormConfig.get_flow_cell_config()
-        elif self.use_case == UseCase.RollerBottle:
-            config = SetupFormConfig.get_roller_bottle_config()
-        elif self.use_case == UseCase.Continuous:
-            config = SetupFormConfig.get_continuous_config()
-        elif self.use_case == UseCase.Tunair:
-            config = SetupFormConfig.get_tunair_config()
-        else:
-            raise Exception(f"Unsupported use case for Setup form creation: {self.use_case}")
-
+        config = self.getSetupFormConfig()
         return ConfigurableSetupForm(root_manager, guided_setup_inputs, parent, submit_fn, config)
 
     def getSibProperties(self):
