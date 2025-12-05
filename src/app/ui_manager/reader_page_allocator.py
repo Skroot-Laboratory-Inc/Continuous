@@ -156,7 +156,6 @@ class ReaderPageAllocator:
             SetupReaderFormInput(),
             setupFrame,
             submitFn,
-            self.Pump
         )
         setupFrame.grid(row=1, rowspan=2, column=0, columnspan=3, sticky='nsew')
         setupFrame.grid_remove()

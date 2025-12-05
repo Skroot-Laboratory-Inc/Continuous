@@ -145,17 +145,21 @@ def hasValidAwsCredentials():
         _aws_credentials_validated = True
     except NoCredentialsError:
         # No AWS credentials configured
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
         _aws_credentials_validated = False
     except ClientError:
         # AWS service error (e.g., invalid credentials)
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
         _aws_credentials_validated = False
     except BotoCoreError:
         # Other boto3/botocore errors
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
         _aws_credentials_validated = False
     except Exception:
         # Any other unexpected error
+        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
         _aws_credentials_validated = False
-
+    logging.info(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
     return _aws_credentials_validated
 
 

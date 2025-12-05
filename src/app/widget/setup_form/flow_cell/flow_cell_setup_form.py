@@ -20,7 +20,7 @@ from src.app.widget.setup_form.setup_form_base import SetupReaderForm
 
 class FlowCellSetupForm(SetupReaderForm):
     def __init__(self, rootManager: RootManager, guidedSetupInputs: SetupReaderFormInput, parent: tk.Frame,
-                 submitFn: Callable, pump: PumpInterface):
+                 submitFn: Callable):
         self.RootManager = rootManager
         self.parent = parent
         self.submitFn = submitFn
@@ -65,16 +65,6 @@ class FlowCellSetupForm(SetupReaderForm):
             font=self.Fonts.primary,
             highlightthickness=0,
             justify="center")
-
-        # entriesMap['Pump Speed (RPM)'] = tk.Entry(
-        #     self.window,
-        #     textvariable=self.pumpFlowRateEntry,
-        #     borderwidth=0,
-        #     fg=Colors().body.text,
-        #     bg=Colors().body.background,
-        #     font=self.Fonts.primary,
-        #     highlightthickness=0,
-        #     justify="center")
 
         options = ["2", "5", "10"]
         entriesMap["Scan Rate (min)"] = createDropdown(self.window, self.scanRateEntry, options, bg=Colors().body.background, fg=Colors().body.text)

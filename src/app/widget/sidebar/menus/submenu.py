@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from src.app.authentication.session_manager.session_manager import SessionManager
@@ -49,6 +50,7 @@ class SubMenu(BaseMenu):
         ]
         hasCredentials = hasValidAwsCredentials()
         hasInternet = self.connectivityButton.isConnected if self.connectivityButton else False
+        logging.info(f"AWS credentials valid: {hasCredentials}, Has Internet: {hasInternet}", extra={"id": "AWS"})
         if hasCredentials and hasInternet:
             settingsMenu.append(MenuItem("Software Update", lambda: self.updateSoftware(self.softwareUpdate)))
         return settingsMenu

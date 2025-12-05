@@ -113,7 +113,6 @@ class ContextFactory:
         guided_setup_inputs: SetupReaderFormInput,
         parent: tk.Frame,
         submit_fn: Callable,
-        pump: Optional[PumpInterface] = None
     ) -> SetupReaderForm:
         """
         Create a SetupReaderForm instance based on the current UseCase.
@@ -133,10 +132,8 @@ class ContextFactory:
             ValueError: If FlowCell UseCase requires pump but it's not provided
         """
         if self.use_case == UseCase.FlowCell:
-            if pump is None:
-                raise ValueError("FlowCell UseCase requires a pump")
             from src.app.widget.setup_form.flow_cell.flow_cell_setup_form import FlowCellSetupForm
-            return FlowCellSetupForm(root_manager, guided_setup_inputs, parent, submit_fn, pump)
+            return FlowCellSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
         elif self.use_case == UseCase.RollerBottle:
             from src.app.widget.setup_form.roller_bottle.roller_bottle_setup_form import RollerBottleSetupForm
             return RollerBottleSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
