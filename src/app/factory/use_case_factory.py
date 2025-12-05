@@ -122,29 +122,29 @@ class ContextFactory:
             guided_setup_inputs: The setup form input data
             parent: The parent frame
             submit_fn: The submit callback function
-            pump: The pump instance (required for FlowCell, ignored otherwise)
 
         Returns:
             SetupReaderForm implementation for the current UseCase
 
         Raises:
             Exception: If the UseCase is not supported
-            ValueError: If FlowCell UseCase requires pump but it's not provided
         """
+        from src.app.widget.setup_form.configurable_setup_form import ConfigurableSetupForm
+        from src.app.widget.setup_form.setup_form_config import SetupFormConfig
+
+        # Select the appropriate configuration based on use case
         if self.use_case == UseCase.FlowCell:
-            from src.app.widget.setup_form.flow_cell.flow_cell_setup_form import FlowCellSetupForm
-            return FlowCellSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
+            config = SetupFormConfig.get_flow_cell_config()
         elif self.use_case == UseCase.RollerBottle:
-            from src.app.widget.setup_form.roller_bottle.roller_bottle_setup_form import RollerBottleSetupForm
-            return RollerBottleSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
+            config = SetupFormConfig.get_roller_bottle_config()
         elif self.use_case == UseCase.Continuous:
-            from src.app.widget.setup_form.continuous.continuous_setup_form import ContinuousSetupForm
-            return ContinuousSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
+            config = SetupFormConfig.get_continuous_config()
         elif self.use_case == UseCase.Tunair:
-            from src.app.widget.setup_form.tunair.tunair_setup_form import TunairSetupForm
-            return TunairSetupForm(root_manager, guided_setup_inputs, parent, submit_fn)
+            config = SetupFormConfig.get_tunair_config()
         else:
             raise Exception(f"Unsupported use case for Setup form creation: {self.use_case}")
+
+        return ConfigurableSetupForm(root_manager, guided_setup_inputs, parent, submit_fn, config)
 
     def getSibProperties(self):
         """
