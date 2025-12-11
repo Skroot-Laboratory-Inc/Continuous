@@ -41,5 +41,5 @@ class SibProperties:
             startFrequency=100,
             stopFrequency=160,
             stepSize=0.1,
-            repeatMeasurements=16,
+            repeatMeasurements=80,
         )

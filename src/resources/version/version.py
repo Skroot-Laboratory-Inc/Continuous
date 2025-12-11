@@ -19,8 +19,8 @@ class UseCase(Enum):
 class Version:
     def __init__(self):
         self.majorVersion = 3.0
-        self.minorVersion = 1
-        self.theme = Theme.WW
+        self.minorVersion = 2
+        self.theme = Theme.Skroot
         self.useCase = UseCase.RollerBottle
         self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True

@@ -206,25 +206,31 @@ class FlowCellSib(SibInterface):
                 f"Reader configuration is not valid. Change the reader frequency or number of points.")
 
     def performSweepAndWaitForComplete(self) -> List[str]:
+        self.sib.wake()
         self.checkAndSendConfiguration()
         self.sib.write_sweep_command()
         conversion_results, sweep_complete = list(), False
-        while not sweep_complete:
-            try:
-                ack_msg, tmp_data = self.sib.read_sweep_response()
+        try:
+            while not sweep_complete:
+                try:
+                    ack_msg, tmp_data = self.sib.read_sweep_response()
 
-                if ack_msg == 'ok':
-                    # SIB has sent the sweep complete command.
+                    if ack_msg == 'ok':
+                        # SIB has sent the sweep complete command.
+                        sweep_complete = True
+                    elif ack_msg == 'send_data':
+                        # SIB is sending measurement data. Add it to the conversion results array
+                        conversion_results.extend(tmp_data)
+                    else:
+                        logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
+                except:
                     sweep_complete = True
-                elif ack_msg == 'send_data':
-                    # SIB is sending measurement data. Add it to the conversion results array
-                    conversion_results.extend(tmp_data)
-                else:
-                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
-            except:
-                sweep_complete = True
-                logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
-                raise
+                    logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
+                    raise
+        except:
+            raise
+        finally:
+            self.sib.sleep()
         return convertAdcToVolts(conversion_results)
 
     def calibrationComparison(self, frequency, volts):
