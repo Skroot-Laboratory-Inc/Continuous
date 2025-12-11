@@ -56,7 +56,7 @@ class SibInterface(ABC):
     def close(self) -> bool:
         """The reader closes the port that it is using to connect."""
 
-    @abstractmethod
-    def getYAxisLabel(self) -> str:
+    @staticmethod
+    def getYAxisLabel() -> str:
         """ Returns the yaxislabel, or units of the magnitude of the graph. """
 
