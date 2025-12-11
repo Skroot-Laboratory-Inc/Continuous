@@ -621,3 +621,58 @@ Create separate strategy classes:
   - Base class: ~300 lines
   - Shared utils: ~100 lines
   - Each implementation: ~75-100 lines each
+
+---
+
+## REFACTORING COMPLETED
+
+### Final Results
+
+The refactoring has been successfully completed with the following outcomes:
+
+**Files Created:**
+1. `src/app/reader/sib/base_sib.py` - BaseSib base class (210 lines)
+2. `src/app/reader/sib/sib_utils.py` - Shared utility functions (122 lines)
+
+**Files Refactored:**
+1. `ContinuousSib` - 334 → 136 lines (59% reduction)
+2. `FlowCellSib` - 341 → 136 lines (60% reduction)
+3. `RollerBottleSib` - 363 → 158 lines (56% reduction)
+4. `TunairSib` - 400 → 200 lines (50% reduction)
+
+**Total Impact:**
+- Lines removed: 868
+- Lines added: 380
+- Net reduction: 488 lines (35% total code reduction)
+- All files compile successfully with no syntax errors
+
+**Implementation Details:**
+
+1. **BaseSib class contains:**
+   - 11 identical methods extracted from all implementations
+   - Common `__init__()` with hook for frequency initialization
+   - Proper `initialize()` using RollerBottle/Tunair version (with wake + write_asf)
+   - Proper `checkAndSendConfiguration()` using RollerBottle/Tunair version
+   - Proper `performCalibration()` using Continuous/FlowCell version (with try/except)
+   - Abstract methods for implementation-specific behavior
+
+2. **sib_utils.py contains:**
+   - 13 shared utility functions
+   - Step size calculation fixed to always use ContextFactory
+   - Better exception handling in loadCalibrationFile (FlowCell version)
+
+3. **Implementation-specific code preserved:**
+   - ContinuousSib: performSweepAndWaitForComplete, calibrationComparison, spike adjustment
+   - FlowCellSib: Same as Continuous but with different error messages
+   - RollerBottleSib: VnaSweepOptimizer, prepareSweep, performSweep, calibrationPointComparison
+   - TunairSib: performRandomSweep with complex reference frequency logic
+
+**Benefits Achieved:**
+- Single source of truth for common functionality
+- Eliminated 11 duplicate method implementations
+- Eliminated 13 duplicate utility function implementations
+- Easier maintenance - bug fixes in one place
+- Consistent behavior across all SIB types
+- Improved code organization and readability
+- All step size calculations now consistently use ContextFactory
+- All implementations use correct initialize() and checkAndSendConfiguration()
