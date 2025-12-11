@@ -35,7 +35,7 @@ class SetupFormConfig:
     def getRollerBottleConfig():
         """Configuration for RollerBottle use case."""
         return SetupFormConfig(
-            scanRateOptions=["10", "30", "60"],
+            scanRateOptions=["5", "10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
             defaultScanRate="10",
         )
@@ -46,5 +46,5 @@ class SetupFormConfig:
         return SetupFormConfig(
             scanRateOptions=["10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
-            defaultScanRate="10",
+            defaultScanRate="30",
         )
