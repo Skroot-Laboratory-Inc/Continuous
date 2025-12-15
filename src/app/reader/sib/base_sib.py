@@ -11,17 +11,18 @@ from src.app.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.factory.use_case_factory import ContextFactory
 from src.app.model.sweep_data import SweepData
 from src.app.reader.sib.port_allocator import PortAllocator
-from src.app.reader.sib.sib_interface import SibInterface
 from src.app.reader.sib.sib_utils import (
     loadCalibrationFile,
     findSelfResonantFrequency,
-    getNumPointsSweep,
+    getNumPointsSweep, convertAdcToVolts, find_nearest, createCalibrationDirectoryIfNotExists, calculateFrequencyValues,
+    createCalibrationFile, removeInitialSpike,
 )
 from src.app.widget import text_notification
 from src.resources.sibcontrol import sibcontrol
+from src.resources.sibcontrol.sibcontrol import SIBConnectionError, SIBTimeoutError, SIBDDSConfigError, SIBException
 
 
-class BaseSib(SibInterface):
+class BaseSib:
     """Base class for all SIB implementations with common functionality."""
 
     def __init__(self, port, calibrationFileName, readerNumber, portAllocator: PortAllocator):
@@ -39,17 +40,16 @@ class BaseSib(SibInterface):
         self.calibrationFilename = calibrationFileName
         self.calibrationFilePresent = BehaviorSubject(self.loadCalibrationFile())
         self.currentlyScanning = Subject()
+        self.stopFreqMHz = Properties.stopFrequency
+        self.startFreqMHz = Properties.startFrequency
 
-        # Allow subclasses to set initial start/stop frequencies
-        self._initializeFrequencies(Properties)
+    @abstractmethod
+    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
+        """The reader takes a scan and returns magnitude values. Must be implemented by subclass."""
+        pass
 
-    def _initializeFrequencies(self, Properties):
-        """Initialize start and stop frequencies. Override in subclasses if needed."""
-        # Default: set to None (Continuous/FlowCell behavior)
-        self.stopFreqMHz = None
-        self.startFreqMHz = None
-
-    def getYAxisLabel(self) -> str:
+    @staticmethod
+    def getYAxisLabel() -> str:
         """Returns the y-axis label from SIB properties."""
         return ContextFactory().getSibProperties().yAxisLabel
 
@@ -64,11 +64,6 @@ class BaseSib(SibInterface):
             return True
         except:
             return False
-
-    @abstractmethod
-    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
-        """The reader takes a scan and returns magnitude values. Must be implemented by subclass."""
-        pass
 
     def estimateDuration(self) -> float:
         """Estimate scan duration based on number of points."""
@@ -85,20 +80,58 @@ class BaseSib(SibInterface):
         except:
             return False
 
-    @abstractmethod
     def takeCalibrationScan(self) -> bool:
-        """Take calibration scan. Must be implemented by subclass."""
-        pass
+        try:
+            self.sib.wake()
+            self.currentlyScanning.on_next(True)
+            createCalibrationDirectoryIfNotExists(self.calibrationFilename)
+            startFrequency = self.calibrationStartFreq - self.initialSpikeMhz
+            stopFrequency = self.calibrationStopFreq
+            numPoints = getNumPointsSweep(startFrequency, stopFrequency)
+            allFrequency = calculateFrequencyValues(self.calibrationStartFreq - self.initialSpikeMhz, self.calibrationStopFreq, self.stepSize)
+            self.prepareSweep(startFrequency, stopFrequency, numPoints)
+            allVolts = self.performSweep()
+            frequency, volts = removeInitialSpike(allFrequency, allVolts, self.initialSpikeMhz, self.stepSize)
+            createCalibrationFile(self.calibrationFilename, frequency, volts)
+            self.setStartFrequency(ContextFactory().getSibProperties().startFrequency)
+            self.setStopFrequency(ContextFactory().getSibProperties().stopFrequency)
+            return True
+        except SIBConnectionError:
+            self.resetSibConnection()
+            raise SIBConnectionError()
+        except SIBTimeoutError:
+            self.resetSibConnection()
+            raise SIBConnectionError()
+        except SIBDDSConfigError:
+            self.resetDDSConfiguration()
+            raise SIBDDSConfigError()
+        except SIBException:
+            raise
+        finally:
+            self.currentlyScanning.on_next(False)
+            self.sib.sleep()
 
-    @abstractmethod
     def setStartFrequency(self, startFreqMHz) -> bool:
-        """Set start frequency. Must be implemented by subclass due to spike handling differences."""
-        pass
+        try:
+            self.startFreqMHz = startFreqMHz - self.initialSpikeMhz
+            self.sib.start_MHz = startFreqMHz - self.initialSpikeMhz
+            if self.stopFreqMHz:
+                self.setNumberOfPoints()
+            return True
+        except:
+            logging.exception("Failed to set start frequency.", extra={"id": f"Sib"})
+            return False
 
-    @abstractmethod
     def setStopFrequency(self, stopFreqMHz) -> bool:
-        """Set stop frequency. Must be implemented by subclass due to error message differences."""
-        pass
+        try:
+            self.stopFreqMHz = stopFreqMHz
+            self.sib.stop_MHz = stopFreqMHz
+            if self.startFreqMHz:
+                self.setNumberOfPoints()
+            return True
+        except:
+            logging.exception("Failed to set stop frequency.", extra={"id": f"Sib"})
+            return False
 
     def getCurrentlyScanning(self) -> Subject:
         """Returns the currently scanning subject."""
@@ -108,7 +141,6 @@ class BaseSib(SibInterface):
         """Returns the calibration file present behavior subject."""
         return self.calibrationFilePresent
 
-    @abstractmethod
     def setReferenceFrequency(self, peakFrequencyMHz: float):
         """Set reference frequency. Implementation varies by subclass."""
         pass
@@ -201,3 +233,47 @@ class BaseSib(SibInterface):
             raise
         except:
             pass
+
+    def performSweep(self) -> List[float]:
+        self.sib.write_sweep_command()
+        conversion_results, sweep_complete = list(), False
+        while not sweep_complete:
+            try:
+                ack_msg, tmp_data = self.sib.read_sweep_response()
+
+                if ack_msg == 'ok':
+                    # SIB has sent the sweep complete command.
+                    sweep_complete = True
+                elif ack_msg == 'send_data':
+                    # SIB is sending measurement data. Add it to the conversion results array
+                    conversion_results.extend(tmp_data)
+                else:
+                    logging.info(f"SIB Received an unexpected command. Something is wrong. ack_msg: {ack_msg}", extra={"id": "Sib"})
+            except:
+                sweep_complete = True
+                logging.exception("An error occurred while waiting for scan to complete", extra={"id": "Sib"})
+                raise
+        return convertAdcToVolts(conversion_results)
+
+    def calibrationPointComparison(self, frequency: float, volts: float):
+        calibrationVoltsOffset = find_nearest(frequency, self.calibrationFrequency, self.calibrationVolts)
+        return volts / calibrationVoltsOffset
+
+    def calibrationComparison(self, frequency, volts):
+        calibratedVolts = []
+        for i in range(len(frequency)):
+            calibratedVolts.append(self.calibrationPointComparison(frequency[i], volts[i]))
+        return calibratedVolts
+
+    def prepareSweep(self, startFrequency, stopFrequency, numPoints):
+        try:
+            self.sib.start_MHz = startFrequency
+            self.sib.stop_MHz = stopFrequency
+            self.sib.num_pts = numPoints
+            self.checkAndSendConfiguration()
+        except:
+            time.sleep(2)
+            self.sib.start_MHz = startFrequency
+            self.sib.stop_MHz = stopFrequency
+            self.sib.num_pts = numPoints
+            self.checkAndSendConfiguration()
