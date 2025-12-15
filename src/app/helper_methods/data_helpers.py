@@ -1,5 +1,5 @@
 import csv
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -7,7 +7,7 @@ from scipy.optimize import curve_fit
 from src.app.properties.dev_properties import DevProperties
 
 
-def frequencyToIndex(zeroPoint, frequencyVector):
+def frequencyToIndex(zeroPoint, frequencyVector) -> list:
     """ This converts a frequency vector into SGI """
     if DevProperties().isDevMode and DevProperties().mode == "GUI":
         return frequencyVector
@@ -15,7 +15,7 @@ def frequencyToIndex(zeroPoint, frequencyVector):
     return [100 * (1 - val / zeroPoint) for val in frequencyVector]
 
 
-def truncateByX(minX, maxX, x, y):
+def truncateByX(minX, maxX, x, y) -> Tuple[list, list]:
     """ This truncates all values from two vectors based on a min and max value for x. """
     truncatedX, truncatedY = [], []
     for index, xval in enumerate(x):
@@ -25,33 +25,33 @@ def truncateByX(minX, maxX, x, y):
     return truncatedX, truncatedY
 
 
-def convertListToPercent(lst):
+def convertListToPercent(lst) -> List[float]:
     """ This function converts a vector of values to percentages, i.e. 1.08 converts to 8% """
     return [convertToPercent(item) for item in lst]
 
 
-def convertListFromPercent(lst):
+def convertListFromPercent(lst) -> List[float]:
     """ This function converts a vector of percentages to values, i.e. 8% into 1.08 """
     return [convertFromPercent(item) for item in lst]
 
 
-def convertToPercent(item):
+def convertToPercent(item) -> float:
     """ This converts a single value into a percent i.e. 1.08 into 8%"""
     return (item - 1) * 100
 
 
-def convertFromPercent(item):
+def convertFromPercent(item) -> float:
     """ This converts a single value from a percent i.e. 8% into 1.08"""
     return (item / 100) + 1
 
 
-def createCsv(data, csvFilename):
+def createCsv(data, csvFilename) -> None:
     with open(csvFilename, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(data)
 
 
-def gaussian(x, amplitude, centroid, std):
+def gaussian(x, amplitude, centroid, std) -> np.ndarray:
     """ Standard gaussian fit. """
     return amplitude * np.exp(-(x - centroid) ** 2 / (2 * std ** 2))
 

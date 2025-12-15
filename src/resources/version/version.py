@@ -22,7 +22,7 @@ class Version:
         self.minorVersion = 2
         self.theme = Theme.Skroot
         self.useCase = UseCase.RollerBottle
-        self.developmentVersion = DevelopmentVersion.Dev
+        self.developmentVersion = DevelopmentVersion.Test
         self.isBeta = True
 
     def getMajorVersion(self) -> float:
