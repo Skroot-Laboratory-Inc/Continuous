@@ -97,11 +97,11 @@ class ReaderThreadManager:
             self.checkZeroPoint()
             sweepData = reader.SibInterface.takeScan(
                 os.path.splitext(reader.FileManager.getCurrentScan())[0],
-                self.disableFullSaveFiles,
+                resultSet.getCurrentVolts(),
             )
             createScanFile(reader.FileManager.getCurrentScan(), sweepData)
             analyzer.analyzeScan(sweepData, self.denoiseSet)
-            reader.SibInterface.setReferenceFrequency(resultSet.getMaxFrequencySmooth()[-1])
+            reader.SibInterface.setReferenceFrequency(resultSet.getCurrentFrequency())
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
             harvestAlgorithm.check(resultSet)
             if harvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(harvestAlgorithm.currentHarvestPrediction):

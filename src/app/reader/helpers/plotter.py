@@ -4,7 +4,6 @@ import numpy as np
 
 from src.app.file_manager.reader_file_manager import ReaderFileManager
 from src.app.helper_methods.data_helpers import frequencyToIndex, convertListToPercent, convertToPercent
-from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.model.result_set.result_set import ResultSet
 from src.app.model.sweep_data import SweepData
 from src.app.reader.analyzer.secondary_axis_tracker import SecondaryAxisTracker
@@ -64,8 +63,8 @@ class Plotter:
         self.ReaderFigureCanvas.redrawPlot()
         self.ReaderFigureCanvas.scatter(sweepData.getFrequency(), convertListToPercent(sweepData.getMagnitude()), 20, Colors().plot.primary_line)
         self.ReaderFigureCanvas.scatter(
-            resultSet.getMaxFrequencySmooth()[-1],
-            convertToPercent(resultSet.getMaxVoltsSmooth()[-1]),
+            resultSet.getCurrentFrequency(),
+            convertToPercent(resultSet.getCurrentVolts()),
             30,
             'red'
         )

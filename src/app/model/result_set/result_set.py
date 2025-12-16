@@ -43,8 +43,20 @@ class ResultSet:
     def getMaxVoltsSmooth(self) -> List[float]:
         return self.maxVoltsSmooth
 
+    def getCurrentVolts(self) -> float:
+        if len(self.maxVoltsSmooth) > 0:
+            return self.maxVoltsSmooth[-1]
+        else:
+            return np.nan
+
     def getMaxFrequencySmooth(self) -> List[float]:
         return self.maxFrequencySmooth
+
+    def getCurrentFrequency(self) -> float:
+        if len(self.maxFrequencySmooth) > 0:
+            return self.maxFrequencySmooth[-1]
+        else:
+            return np.nan
 
     def getFilenames(self) -> List[str]:
         return self.filenames

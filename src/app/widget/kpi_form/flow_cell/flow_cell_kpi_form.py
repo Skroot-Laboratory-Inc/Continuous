@@ -154,6 +154,7 @@ class FlowCellKpiForm(KpiForm):
         self._runId.set("")
         self._user.set("")
         self._sgi.set("-")
+        self.pumpManager.stop()
         self._saturationTime.set("")
         self._saturationDate = None
         self._saturationTime.set("")

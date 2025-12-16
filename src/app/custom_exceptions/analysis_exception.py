@@ -12,6 +12,10 @@ class SensorNotFoundException(Exception):
         self.message = message
 
 
+class FocusedSweepFailedException(Exception):
+    """ Exception thrown when the sensor data is not found above the antenna. """
+
+
 class BadFitException(AnalysisException):
     """ Exception thrown when the fitting function fails to fit the data. """
 

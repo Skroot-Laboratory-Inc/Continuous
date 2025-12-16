@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 from scipy.signal import savgol_filter
 
-from src.app.custom_exceptions.analysis_exception import SensorNotFoundException
+from src.app.custom_exceptions.analysis_exception import SensorNotFoundException, FocusedSweepFailedException
 from src.app.helper_methods.data_helpers import findMaxGaussian
 from src.app.model.sweep_data import SweepData
 
@@ -20,14 +20,15 @@ class VnaSweepOptimizer:
     This class is independent and does not require an analyzer instance.
     """
 
-    def __init__(self, minVoltageThreshold: float = 1.1):
+    def __init__(self, previousPeak: float = 1.1):
         """Initialize the VNA sweep optimizer."""
         self.max_wide_attempts = 1000  # Maximum number of wide sweep attempts before logging an error
+        self.min_wide_attempts = 10  # Minimum number of wide sweep attempts before accepting a peak
         self.max_focused_attempts = 6  # Maximum number of focused sweep attempts before stopping
         self.wide_sweep_points = 50  # Number of points per wide sweep
         self.sweep_points = 200  # Number of points per focused sweep
         self.peak_window_mhz = 10  # +/- MHz around peak for focused sweep
-        self.minVoltageThreshold = minVoltageThreshold - (minVoltageThreshold - 1) * (1/2)
+        self.minVoltageThreshold = self._setMinVoltageThreshold(previousPeak)
 
     def performOptimizedSweep(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float) -> SweepData:
         """
@@ -45,18 +46,33 @@ class VnaSweepOptimizer:
         Raises:
             ScanAnalysisException: If no successful peak is found after max_attempts
         """
-        peak_frequency = self._performWideSweepUntilPeakFound(
-            sib_device,
-            start_freq_mhz,
-            stop_freq_mhz
-        )
-        final_sweep_data = self._performRepeatedFocusedSweeps(
-            sib_device,
-            peak_frequency,
-            start_freq_mhz,
-            stop_freq_mhz
-        )
+        final_sweep_data = None
+        while not final_sweep_data:
+            peak_frequency = self._performWideSweepUntilPeakFound(
+                sib_device,
+                start_freq_mhz,
+                stop_freq_mhz
+            )
+            try:
+                final_sweep_data = self._performRepeatedFocusedSweeps(
+                    sib_device,
+                    peak_frequency,
+                    start_freq_mhz,
+                    stop_freq_mhz
+                )
+            except FocusedSweepFailedException:
+                logging.exception("Error during focused sweeps, restarting wide sweep.")
         return final_sweep_data
+
+    def _setMinVoltageThreshold(self, peakMagnitude: float):
+        """
+        Set the minimum voltage threshold for peak detection.
+
+        Args:
+            peakMagnitude: The previous peak magnitude to base the threshold on
+        """
+        self.minVoltageThreshold = peakMagnitude - (peakMagnitude - 1) * (1/2)
+        return self.minVoltageThreshold
 
     def _performWideSweepUntilPeakFound(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float) -> float:
         """
@@ -83,9 +99,9 @@ class VnaSweepOptimizer:
             )
 
             peak_magnitude, peak_frequency = self._findPeakFrequency(sweep_data)
-            if peak_magnitude is not None and peak_magnitude > maxMagnitude:
+            if peak_magnitude is not None and peak_magnitude > maxMagnitude and attempt > self.min_wide_attempts:
                 maxMagnitude = peak_magnitude
-            if peak_frequency is not None and peak_magnitude >= self.minVoltageThreshold:
+            if peak_frequency is not None and peak_magnitude >= self.minVoltageThreshold and attempt > self.min_wide_attempts:
                 logging.info(
                     f"Successful sweep on attempt {attempt + 1}. "
                     f"Peak found at {peak_frequency:.2f} MHz",
@@ -168,6 +184,13 @@ class VnaSweepOptimizer:
             f"Selected sweep {best_index + 1} of {num_sweeps} with highest peak magnitude ({best_magnitude:.3f})",
             extra={"id": "VnaSweepOptimizer"}
         )
+
+        if best_magnitude < self.minVoltageThreshold:
+            logging.warning(
+                f"Highest peak magnitude ({best_magnitude:.3f}) is below threshold ({self.minVoltageThreshold}).",
+                extra={"id": "VnaSweepOptimizer"}
+            )
+            raise FocusedSweepFailedException()
 
         return sweep_data_list[best_index]
 

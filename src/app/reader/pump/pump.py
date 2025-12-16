@@ -15,7 +15,7 @@ class Pump(PumpInterface):
     """
 
     def __init__(self, step_pin: int = 21, dir_pin: int = 20, en_pin=16,
-                 chip_name: str = 'gpiochip0', direction: int = 1):
+                 chip_name: str = '/dev/gpiochip0', direction: int = 1):
         """
         Initialize the stepper motor pump controller.
 
@@ -33,21 +33,25 @@ class Pump(PumpInterface):
         self.toggleSubject = BehaviorSubject(False)  # Start with pump off
         self.toggleSubject.subscribe(self._on_toggle_changed)
 
-        # GPIO setup
         self.chip = gpiod.Chip(chip_name)
-        self.step_line = self.chip.get_line(step_pin)
-        self.dir_line = self.chip.get_line(dir_pin)
-        self.en_line = self.chip.get_line(en_pin)
-
-        # Configure as outputs
-        self.step_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
-        self.dir_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
-        self.en_line.request(consumer="stepper_pump", type=gpiod.LINE_REQ_DIR_OUT)
-
-        # Initialize pins
-        self.step_line.set_value(0)
-        self.dir_line.set_value(direction)
-        self.en_line.set_value(1)
+        config = gpiod.LineSettings(
+            direction=gpiod.line.Direction.OUTPUT,
+            output_value=gpiod.line.Value.INACTIVE
+        )
+        self.request = self.chip.request_lines(
+            consumer="stepper_pump",
+            config={
+                step_pin: config,
+                dir_pin: config,
+                en_pin: config
+            }
+        )
+        self.step_pin = step_pin
+        self.dir_pin = dir_pin
+        self.en_pin = en_pin
+        self.request.set_value(self.step_pin, gpiod.line.Value.INACTIVE)
+        self.request.set_value(self.dir_pin, gpiod.line.Value.ACTIVE if direction else gpiod.line.Value.INACTIVE)
+        self.request.set_value(self.en_pin, gpiod.line.Value.ACTIVE)
 
     def start(self):
         if self.isRunning:
@@ -87,21 +91,21 @@ class Pump(PumpInterface):
 
     def _pump_continuously(self):
         """Internal method to run the pump continuously."""
-        self.en_line.set_value(0)
+        self.request.set_value(self.en_pin, gpiod.line.Value.INACTIVE)
+
         while not self._stop_event.is_set():
-            # Step pulse
-            self.step_line.set_value(1)
+            self.request.set_value(self.step_pin, gpiod.line.Value.ACTIVE)
             time.sleep(self.stepPeriod / 2)
-            self.step_line.set_value(0)
+            self.request.set_value(self.step_pin, gpiod.line.Value.INACTIVE)
             time.sleep(self.stepPeriod / 2)
-        self.en_line.set_value(1)
+        self.request.set_value(self.en_pin, gpiod.line.Value.ACTIVE)
 
     def cleanup(self):
         """Clean up GPIO resources."""
         self.stop()
         try:
-            self.step_line.release()
-            self.dir_line.release()
+            if hasattr(self, 'request'):
+                self.request.release()
         except:
             pass
 

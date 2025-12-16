@@ -1,4 +1,9 @@
 {
+  "v3.0.4": {
+    "bugfixes": {
+      "1": "Fixed an issue causing bad sweeps to be recorded in some cases."
+    }
+  },
   "v3.0.2": {
     "features": {
       "1": "Added back sleep functionality to all apps."
