@@ -3,8 +3,8 @@ import socket
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.configuration import AuthConfiguration
-from src.app.authentication.helpers.logging import logAuthAction
+from src.app.common_modules.authentication.helpers.configuration import AuthConfiguration
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption, launchKeyboard, \
     formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton

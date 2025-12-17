@@ -4,9 +4,9 @@ import os.path
 import numpy as np
 import pandas
 
-from src.app.file_manager.reader_file_manager import ReaderFileManager
-from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
-from src.app.model.sweep_data import SweepData
+from src.app.helper_methods.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.helper_methods.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer

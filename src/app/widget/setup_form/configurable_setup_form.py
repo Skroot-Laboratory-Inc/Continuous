@@ -6,17 +6,17 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
-from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.helper_methods.ui_helpers import launchKeyboard, createDropdown
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.setup_form.setup_form_base import SetupReaderForm
-from src.app.widget.setup_form.setup_form_config import SetupFormConfig
+from src.app.use_case.configuration.setup_form_config import SetupFormConfig
 
 
 class ConfigurableSetupForm(SetupReaderForm):

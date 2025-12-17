@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 import pandas
 
-from src.app.factory.use_case_factory import ContextFactory
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import truncateByX
 from src.app.widget import text_notification
 

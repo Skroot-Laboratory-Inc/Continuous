@@ -1,8 +1,8 @@
 import logging
 from typing import List
 
-from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.model.menu_item import MenuItem
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.model.menu_item import MenuItem
 from src.app.widget.sidebar.helpers.functions import hasValidAwsCredentials
 from src.app.widget.sidebar.manuals.advanced_setting_document import AdvancedSettingsDocument
 from src.app.widget.sidebar.manuals.troubleshooting_page import TroubleshootingPage

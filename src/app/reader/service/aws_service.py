@@ -1,12 +1,12 @@
 import socket
 from datetime import datetime
 
-from src.app.aws.aws import AwsBoto3
-from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.common_modules.aws.aws import AwsBoto3
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
-from src.app.model.dynamodbConfig import DynamodbConfig
+from src.app.helper_methods.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.model.dynamodbConfig import DynamodbConfig
 from src.app.properties.aws_properties import AwsProperties
 
 

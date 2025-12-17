@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.file_manager import ReaderFileManager
 from src.app.reader.service.aws_service import AwsService
 from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 

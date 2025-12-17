@@ -3,11 +3,11 @@ import os
 import shutil
 import tkinter.ttk as ttk
 
-from src.app.factory.use_case_factory import ContextFactory
-from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.model.plottable import Plottable
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import frequencyToIndex
-from src.app.model.plottable import Plottable
-from src.app.model.result_set.result_set import ResultSet
+from src.app.helper_methods.model.result_set.result_set import ResultSet
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 from src.app.reader.analyzer.analyzer import Analyzer

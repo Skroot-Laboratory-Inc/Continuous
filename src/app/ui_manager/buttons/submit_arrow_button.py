@@ -3,7 +3,7 @@ from typing import Callable
 
 from PIL import Image, ImageTk
 
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.image_theme import ImageTheme
 

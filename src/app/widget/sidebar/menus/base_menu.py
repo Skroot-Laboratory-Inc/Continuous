@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme

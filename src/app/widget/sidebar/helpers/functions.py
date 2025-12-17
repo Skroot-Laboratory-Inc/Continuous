@@ -8,11 +8,11 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError, BotoCoreError
 
-from src.app.authentication.helpers.constants import AuthenticationConstants
-from src.app.authentication.helpers.exceptions import AideLogsNotFound, AuthLogsNotFound
-from src.app.authentication.helpers.functions import getAdmins, getUsers
-from src.app.authentication.helpers.logging import extractAuthLogs, extractAideLogs, logAuthAction
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.common_modules.authentication.helpers.constants import AuthenticationConstants
+from src.app.common_modules.authentication.helpers.exceptions import AuthLogsNotFound, AideLogsNotFound
+from src.app.common_modules.authentication.helpers.functions import getAdmins, getUsers
+from src.app.common_modules.authentication.helpers.logging import extractAuthLogs, extractAideLogs, logAuthAction
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification

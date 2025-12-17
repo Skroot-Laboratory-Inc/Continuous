@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 
-from src.app.model.result_set.result_set import ResultSet
+from src.app.helper_methods.model.result_set.result_set import ResultSet
 
 
 class AlgorithmInterface(ABC):

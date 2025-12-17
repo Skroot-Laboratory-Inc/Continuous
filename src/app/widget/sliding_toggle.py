@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import PhotoImage
 from reactivex.subject import BehaviorSubject
 
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.theme.colors import Colors
 
 

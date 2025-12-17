@@ -2,10 +2,10 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import UserDoesntExistException, SystemAdminException, \
+from src.app.common_modules.authentication.helpers.exceptions import SystemAdminException, UserDoesntExistException, \
     ModifyUserRoleException
-from src.app.authentication.helpers.functions import getRole, modifyRole
-from src.app.authentication.model.user_role import UserRole
+from src.app.common_modules.authentication.helpers.functions import getRole, modifyRole
+from src.app.common_modules.authentication.model.user_role import UserRole
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, createDropdown, styleDropdownOption, \
     formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton

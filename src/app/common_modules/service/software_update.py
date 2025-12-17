@@ -6,11 +6,11 @@ from zipfile import ZipFile
 
 import botocore
 
-from src.app.aws.aws import AwsBoto3
-from src.app.aws.helpers.exceptions import DownloadFailedException
-from src.app.aws.helpers.helpers import runShScript
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.common_modules.aws.aws import AwsBoto3
+from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException
+from src.app.common_modules.aws.helpers.helpers import runShScript
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import restartPc
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget import release_notes, text_notification

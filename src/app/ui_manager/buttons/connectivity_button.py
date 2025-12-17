@@ -4,12 +4,12 @@ import threading
 
 from PIL import Image, ImageTk
 
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.image_theme import ImageTheme
-from src.app.wifi.helpers.wifi_helpers import checkInternetConnection
-from src.app.wifi.widget.connectivity_popup import ConnectivityPopup
+from src.app.common_modules.wifi.helpers.wifi_helpers import checkInternetConnection
+from src.app.common_modules.wifi.widget.connectivity_popup import ConnectivityPopup
 
 
 class ConnectivityButton:

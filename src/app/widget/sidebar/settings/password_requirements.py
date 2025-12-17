@@ -3,11 +3,11 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import ConfigurationException, InvalidConfiguration
-from src.app.authentication.helpers.logging import logAuthAction
-from src.app.authentication.password_requirements_manager.dev_password_requirements_manager import \
+from src.app.common_modules.authentication.helpers.exceptions import ConfigurationException, InvalidConfiguration
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
+from src.app.common_modules.authentication.password_requirements_manager.dev_password_requirements_manager import \
     DevPasswordRequirementsManager
-from src.app.authentication.password_requirements_manager.password_requirements_manager import \
+from src.app.common_modules.authentication.password_requirements_manager.password_requirements_manager import \
     PasswordRequirementsManager
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton

@@ -1,9 +1,9 @@
 import platform
 import tkinter as tk
 
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.setup_base_ui import SetupBaseUi
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.reader_page_manager import ReaderPageManager
 from src.app.ui_manager.root_manager import RootManager
 

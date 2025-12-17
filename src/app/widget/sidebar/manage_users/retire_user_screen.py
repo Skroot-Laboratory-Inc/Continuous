@@ -2,10 +2,10 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import RetireUserException, \
-    UserDoesntExistException, SystemAdminException, InsufficientPermissions
-from src.app.authentication.helpers.functions import retireUser
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.common_modules.authentication.helpers.exceptions import UserDoesntExistException, InsufficientPermissions, \
+    SystemAdminException, RetireUserException
+from src.app.common_modules.authentication.helpers.functions import retireUser
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager

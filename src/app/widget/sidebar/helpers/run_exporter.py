@@ -4,9 +4,9 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.logging import logAuthAction
-from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
+from src.app.helper_methods.custom_exceptions.common_exceptions import USBDriveNotFoundException
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.helper_functions import getUsbDrive, unmountUSBDrive
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton

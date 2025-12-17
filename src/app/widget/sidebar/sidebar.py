@@ -1,6 +1,6 @@
 from math import floor
 
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.service.software_update import SoftwareUpdate
 from src.app.properties.screen_properties import ScreenProperties
 from src.app.ui_manager.root_manager import RootManager

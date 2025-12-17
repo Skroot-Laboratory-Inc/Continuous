@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import formatDatetime
 from src.app.ui_manager.theme.colors import Colors
 

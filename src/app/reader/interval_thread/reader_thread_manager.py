@@ -7,13 +7,14 @@ from typing import Callable
 
 import numpy as np
 
-from src.app.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, SensorNotFoundException
-from src.app.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.helper_methods.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, \
+    SensorNotFoundException
+from src.app.helper_methods.custom_exceptions.sib_exception import SIBReconnectException
 from src.app.helper_methods.data_helpers import frequencyToIndex
 from src.app.helper_methods.helper_functions import getZeroPoint, createScanFile, copyExperimentLog
-from src.app.model.issue.issue import Issue
-from src.app.model.issue.potential_issue import PotentialIssue
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.helper_methods.model.issue.issue import Issue
+from src.app.helper_methods.model.issue.potential_issue import PotentialIssue
+from src.app.helper_methods.model.setup_reader_form_input import SetupReaderFormInput
 from src.app.properties.common_properties import CommonProperties
 from src.app.properties.dev_properties import DevProperties
 from src.app.properties.issue_properties import IssueProperties

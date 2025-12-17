@@ -2,7 +2,7 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.logging import logAuthAction
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager
