@@ -6,7 +6,7 @@ import tkcalendar
 from dateutil.relativedelta import relativedelta
 from tkcalendar import Calendar
 
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager

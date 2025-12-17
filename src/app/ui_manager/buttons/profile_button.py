@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from src.app.authentication.authentication_popup import AuthenticationPopup
-from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.common_modules.authentication.authentication_popup import AuthenticationPopup
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme

@@ -1,6 +1,6 @@
 import os
 
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 
 
 class DevProperties:

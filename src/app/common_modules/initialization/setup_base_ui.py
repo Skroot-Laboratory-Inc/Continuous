@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.frame_manager import FrameManager
 from src.app.common_modules.service.dev_software_update import DevSoftwareUpdate
 from src.app.common_modules.service.software_update import SoftwareUpdate

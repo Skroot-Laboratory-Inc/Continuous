@@ -7,9 +7,9 @@ from typing import List
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
-from src.app.custom_exceptions.sib_exception import SIBReconnectException
-from src.app.factory.use_case_factory import ContextFactory
-from src.app.model.sweep_data import SweepData
+from src.app.helper_methods.custom_exceptions import SIBReconnectException
+from src.app.use_case.use_case_factory import ContextFactory
+from src.app.helper_methods.model import SweepData
 from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib_interface import SibInterface
 from src.app.reader.sib.sib_utils import (

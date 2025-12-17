@@ -3,9 +3,9 @@ import tkinter as tk
 from reactivex import operators
 from reactivex.subject import BehaviorSubject
 
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
-from src.app.factory.use_case_factory import ContextFactory
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.reader.sib.sib_finder import SibFinder
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager

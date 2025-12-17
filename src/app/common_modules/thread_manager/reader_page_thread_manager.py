@@ -4,8 +4,8 @@ from typing import Callable
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
-from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.reader.interval_thread.reader_thread_manager import ReaderThreadManager
 from src.app.reader.reader import Reader
 from src.app.reader.sib.sib_finder import SibFinder

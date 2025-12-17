@@ -3,7 +3,7 @@ from abc import abstractmethod, ABC
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
-from src.app.model.sweep_data import SweepData
+from src.app.helper_methods.model.sweep_data import SweepData
 
 
 class SibInterface(ABC):

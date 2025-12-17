@@ -2,10 +2,10 @@ import datetime
 import json
 from typing import List
 
-from src.app.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
-from src.app.model.issue.issue import Issue
-from src.app.model.issue.timestamped_message import TimestampedMessage
+from src.app.helper_methods.model.issue.issue import Issue
+from src.app.helper_methods.model.issue.timestamped_message import TimestampedMessage
 from src.app.reader.service.aws_service import AwsService
 
 

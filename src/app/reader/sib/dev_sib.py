@@ -6,9 +6,9 @@ import pandas
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
-from src.app.factory.use_case_factory import ContextFactory
+from src.app.helper_methods.model.sweep_data import SweepData
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.helper_methods.data_helpers import convertListFromPercent
-from src.app.model.sweep_data import SweepData
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.sib.sib_interface import SibInterface
 

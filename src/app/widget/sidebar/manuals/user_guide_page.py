@@ -1,5 +1,4 @@
-from src.app.file_manager.common_file_manager import CommonFileManager
-from src.app.ui_manager.theme.colors import Colors
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.root_manager import RootManager
 from src.app.widget.sidebar.manuals.tkinterPdfViewer import ShowPdf

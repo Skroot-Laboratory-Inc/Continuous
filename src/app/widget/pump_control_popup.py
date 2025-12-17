@@ -1,10 +1,9 @@
 import platform
-import tkinter as tk
 from tkinter import ttk
 
-from src.app.reader.pump.pump_manager import PumpManager
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.use_case.flow_cell.pump.pump_manager import PumpManager
 from src.app.ui_manager.buttons.generic_button import GenericButton
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme

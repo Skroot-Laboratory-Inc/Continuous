@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from src.app.reader.pump.pump_manager import PumpManager
+from src.app.use_case.flow_cell.pump.pump_manager import PumpManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget.sliding_toggle import ToggleSwitch

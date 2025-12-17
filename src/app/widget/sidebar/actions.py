@@ -5,14 +5,15 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
-from src.app.authentication.helpers.configuration import AuthConfiguration
-from src.app.authentication.helpers.decorators import requireAdmin, requireSystemAdmin, requireUser, \
+from src.app.common_modules.authentication.helpers.configuration import AuthConfiguration
+from src.app.common_modules.authentication.helpers.decorators import requireAdmin, requireSystemAdmin, requireUser, \
     forceRequireSystemAdmin
-from src.app.authentication.helpers.logging import logAuthAction
-from src.app.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.service.software_update import SoftwareUpdate
-from src.app.custom_exceptions.common_exceptions import USBDriveNotFoundException, UserConfirmationException
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.custom_exceptions.common_exceptions import USBDriveNotFoundException, \
+    UserConfirmationException
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.helper_functions import getUsbDrive, unmountUSBDrive
 from src.app.ui_manager.root_manager import RootManager

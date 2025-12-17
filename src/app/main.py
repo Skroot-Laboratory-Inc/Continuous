@@ -4,9 +4,9 @@ import traceback
 import matplotlib as mpl
 
 from src.app.common_modules.common_modules import CommonModules
-from src.app.file_manager.common_file_manager import CommonFileManager
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.ui_manager.root_manager import RootManager
-from src.app.ui_manager.theme.theme_manager import ThemeManager, Theme
+from src.app.ui_manager.theme.theme_manager import ThemeManager
 from src.app.widget import logger
 from src.resources.version.version import Version
 

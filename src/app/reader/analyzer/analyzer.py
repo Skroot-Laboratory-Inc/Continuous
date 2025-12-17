@@ -8,13 +8,13 @@ from scipy.signal import savgol_filter
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-from src.app.custom_exceptions.analysis_exception import ScanAnalysisException
-from src.app.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.custom_exceptions.analysis_exception import ScanAnalysisException
 from src.app.helper_methods.data_helpers import frequencyToIndex, findMaxGaussian
-from src.app.model.result_set.result_set import ResultSet
-from src.app.model.result_set.result_set_data_point import ResultSetDataPoint
-from src.app.model.result_set.temperature_result_set import TemperatureResultSet
-from src.app.model.sweep_data import SweepData
+from src.app.helper_methods.file_manager.reader_file_manager import ReaderFileManager
+from src.app.helper_methods.model.result_set.result_set import ResultSet
+from src.app.helper_methods.model.result_set.result_set_data_point import ResultSetDataPoint
+from src.app.helper_methods.model.result_set.temperature_result_set import TemperatureResultSet
+from src.app.helper_methods.model.sweep_data import SweepData
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
 

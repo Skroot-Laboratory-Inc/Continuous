@@ -1,7 +1,7 @@
 import logging
 import os
 
-from src.app.factory.use_case_factory import ContextFactory
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.properties.dev_properties import DevProperties
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.port_allocator import PortAllocator

@@ -2,8 +2,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
-from src.app.file_manager.global_file_manager import GlobalFileManager
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
+from src.app.helper_methods.model.setup_reader_form_input import SetupReaderFormInput
 
 
 class SetupReaderForm(ABC):

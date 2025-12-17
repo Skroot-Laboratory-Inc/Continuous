@@ -1,11 +1,11 @@
 import threading
 import tkinter as tk
 
-from src.app.authentication.helpers.decorators import requireUser
-from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.custom_exceptions.common_exceptions import UserConfirmationException
-from src.app.factory.use_case_factory import ContextFactory
-from src.app.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.common_modules.authentication.helpers.decorators import requireUser
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
+from src.app.helper_methods.model.setup_reader_form_input import SetupReaderFormInput
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.buttons.plus_icon_button import PlusIconButton
 from src.app.ui_manager.model.reader_frame import ReaderFrame

@@ -3,10 +3,10 @@ import platform
 import tkinter as tk
 from tkinter import ttk
 
-from src.app.authentication.helpers.exceptions import PasswordMismatchException, UserExistsException, \
-    BadPasswordException
-from src.app.authentication.helpers.functions import createKioskAdmin, createKioskUser, check_password_quality
-from src.app.authentication.helpers.logging import logAuthAction
+from src.app.common_modules.authentication.helpers.exceptions import PasswordMismatchException, BadPasswordException, \
+    UserExistsException
+from src.app.common_modules.authentication.helpers.functions import createKioskAdmin, createKioskUser, check_password_quality
+from src.app.common_modules.authentication.helpers.logging import logAuthAction
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, launchKeyboard, createDropdown, formatPopup
 from src.app.ui_manager.buttons.generic_button import GenericButton
 from src.app.ui_manager.root_manager import RootManager

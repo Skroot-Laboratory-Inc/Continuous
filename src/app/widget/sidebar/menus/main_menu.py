@@ -1,7 +1,7 @@
 import tkinter as tk
 
-from src.app.authentication.session_manager.session_manager import SessionManager
-from src.app.model.menu_item import MenuItem
+from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.helper_methods.model.menu_item import MenuItem
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.widget.sidebar.menus.base_menu import BaseMenu
