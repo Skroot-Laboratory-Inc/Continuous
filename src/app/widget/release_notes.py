@@ -11,8 +11,13 @@ from src.app.widget.popup_interface import PopupInterface
 
 
 class ReleaseNotes(PopupInterface):
-    def __init__(self, releaseNotes, rootManager: RootManager):
-        self.releaseNotes = sortNotes(releaseNotes)
+    def __init__(self, releaseNotes, rootManager: RootManager, useCase: str = None):
+        # If use case is provided and release notes have use-case structure, extract specific use case notes
+        if useCase and isinstance(releaseNotes, dict) and useCase in releaseNotes:
+            self.releaseNotes = sortNotes(releaseNotes[useCase])
+        else:
+            # Fallback to old behavior for backward compatibility
+            self.releaseNotes = sortNotes(releaseNotes)
         self.download = False
         self.windowRoot = rootManager.createTopLevel()
         formatPopup(self.windowRoot)

@@ -1,17 +1,61 @@
 {
-  "v3.0.4": {
-    "bugfixes": {
-      "1": "Fixed an issue causing bad sweeps to be recorded in some cases."
+  "Manufacturing": {
+    "v3.0.4": {
+      "features": {
+        "1": "Added back sleep functionality."
+      }
+    },
+    "v3.0.0": {
+      "features": {
+        "1": "Initial release with unified application structure."
+      }
     }
   },
-  "v3.0.2": {
-    "features": {
-      "1": "Added back sleep functionality to all apps."
+  "FlowCell": {
+    "v3.0.4": {
+      "bugfixes": {
+        "1": "Updated GPIOd to work under Ubuntu 24.04 to fix pump control."
+      }
+    },
+    "v3.0.2": {
+      "features": {
+        "1": "Added back sleep functionality."
+      }
+    },
+    "v3.0.0": {
+      "features": {
+        "1": "Merged apps together based off of Flow Cell."
+      }
     }
   },
-  "v3.0.0": {
-    "features": {
-      "1": "Merged apps together based off of Flow Cell."
+  "Tunair": {
+    "v3.0.4": {
+      "features": {
+        "1": "Added back sleep functionality."
+      }
+    },
+    "v3.0.0": {
+      "features": {
+        "1": "Initial release with unified application structure."
+      }
+    }
+  },
+  "RollerBottle": {
+    "v3.0.4": {
+      "bugfixes": {
+        "1": "Fixed roller bottle algorithm to correctly record good sweeps only.",
+        "2": "Fixed an issue causing bad sweeps to be recorded in some cases."
+      }
+    },
+    "v3.0.2": {
+      "features": {
+        "1": "Added back sleep functionality."
+      }
+    },
+    "v3.0.0": {
+      "features": {
+        "1": "Initial release with unified application structure."
+      }
     }
   }
 }

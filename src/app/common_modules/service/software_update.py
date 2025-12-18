@@ -102,14 +102,21 @@ class SoftwareUpdate(AwsBoto3):
         self.newestZipVersion = filename
 
     def mergeReleaseNotesIfNeededAndSave(self):
-        if f"v{self.newestMajorVersion}.{self.newestMinorVersion}" not in self.releaseNotes:
+        useCase = Version().getUseCase()
+        # Check if this use case exists in release notes structure
+        if useCase not in self.releaseNotes:
+            self.releaseNotes[useCase] = {}
+
+        # Check if this version exists for the current use case
+        if f"v{self.newestMajorVersion}.{self.newestMinorVersion}" not in self.releaseNotes[useCase]:
             localFilename = self.getCurrentReleaseNotes()
             with open(localFilename) as f:
                 dictionary = json.load(f)
-            self.releaseNotes.update(dictionary)
+            # Merge the new version into this use case's release notes
+            self.releaseNotes[useCase].update(dictionary)
             os.remove(localFilename)
             with open(f"../resources/version/release-notes.json", "w") as outfile:
-                outfile.write(json.dumps(self.releaseNotes))
+                outfile.write(json.dumps(self.releaseNotes, indent=2))
 
     def getCurrentReleaseNotes(self):
         try:
@@ -124,7 +131,8 @@ class SoftwareUpdate(AwsBoto3):
 
     def downloadUpdate(self, local_filename):
         self.mergeReleaseNotesIfNeededAndSave()
-        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
+        useCase = Version().getUseCase()
+        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager, useCase)
         if ReleaseNotes.download:
             ConfirmationPopup(
                 self.RootManager,
