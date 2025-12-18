@@ -71,6 +71,12 @@ class Version:
             for use_case, data in self.versions.items()
         }
 
+    def getReleaseNotesFilePath(self, use_case: UseCase = None) -> str:
+        """Get the file path for release notes of a specific use case"""
+        if use_case is None:
+            use_case = self.useCase
+        return f"../resources/version/release-notes-{use_case.value}.json"
+
     def getUseCase(self) -> str:
         return self.useCase.value
 

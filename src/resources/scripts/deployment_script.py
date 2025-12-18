@@ -59,7 +59,8 @@ release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-release_notes_source_fp = '../version/release-notes.json'
+# Get use-case-specific release notes file path
+release_notes_source_fp = version.getReleaseNotesFilePath()
 release_notes_temp_fp = f'../temp/{release_notes_name}'
 
 software_releases_bucket = f'software-releases/{release_bucket}'
@@ -72,19 +73,12 @@ try:
         raise Exception("Did not perform update to avoid overwriting the current release files.")
     zip_files('../../..', zip_file_path)
 
-    # Extract use-case-specific release notes from the main file
-    print(f" > Extracting release notes for {use_case}")
+    # Load use-case-specific release notes file
+    print(f" > Loading release notes for {use_case} from {release_notes_source_fp}")
     with open(release_notes_source_fp, 'r') as f:
-        all_release_notes = json.load(f)
+        use_case_notes = json.load(f)
 
-    # Get release notes for this specific use case
-    if use_case in all_release_notes:
-        use_case_notes = all_release_notes[use_case]
-    else:
-        print(f" ! Warning: No release notes found for {use_case}, creating empty structure")
-        use_case_notes = {}
-
-    # Create temporary release notes file for this use case only
+    # Create temporary release notes file for deployment
     if not os.path.exists(os.path.dirname(release_notes_temp_fp)):
         os.mkdir(os.path.dirname(release_notes_temp_fp))
     with open(release_notes_temp_fp, 'w') as f:

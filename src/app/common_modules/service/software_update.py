@@ -25,8 +25,11 @@ class SoftwareUpdate(AwsBoto3):
         self.newestMinorVersion = minor_version
         self.RootManager = rootManager
         self.newestZipVersion = ''
-        self.releaseNotesPrefix = f'release-notes/{Version().getUseCase()}'
-        with open('../resources/version/release-notes.json') as f:
+        self.version = Version()
+        self.releaseNotesPrefix = f'release-notes/{self.version.getUseCase()}'
+        # Load use-case-specific release notes file
+        release_notes_file = self.version.getReleaseNotesFilePath()
+        with open(release_notes_file) as f:
             self.releaseNotes = json.load(f)
         self.CommonFileManager = CommonFileManager()
 
@@ -102,20 +105,17 @@ class SoftwareUpdate(AwsBoto3):
         self.newestZipVersion = filename
 
     def mergeReleaseNotesIfNeededAndSave(self):
-        useCase = Version().getUseCase()
-        # Check if this use case exists in release notes structure
-        if useCase not in self.releaseNotes:
-            self.releaseNotes[useCase] = {}
-
-        # Check if this version exists for the current use case
-        if f"v{self.newestMajorVersion}.{self.newestMinorVersion}" not in self.releaseNotes[useCase]:
+        # Check if this version exists in the current use case's release notes
+        if f"v{self.newestMajorVersion}.{self.newestMinorVersion}" not in self.releaseNotes:
             localFilename = self.getCurrentReleaseNotes()
             with open(localFilename) as f:
                 dictionary = json.load(f)
             # Merge the new version into this use case's release notes
-            self.releaseNotes[useCase].update(dictionary)
+            self.releaseNotes.update(dictionary)
             os.remove(localFilename)
-            with open(f"../resources/version/release-notes.json", "w") as outfile:
+            # Save back to the use-case-specific file
+            release_notes_file = self.version.getReleaseNotesFilePath()
+            with open(release_notes_file, "w") as outfile:
                 outfile.write(json.dumps(self.releaseNotes, indent=2))
 
     def getCurrentReleaseNotes(self):
@@ -131,8 +131,8 @@ class SoftwareUpdate(AwsBoto3):
 
     def downloadUpdate(self, local_filename):
         self.mergeReleaseNotesIfNeededAndSave()
-        useCase = Version().getUseCase()
-        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager, useCase)
+        # Release notes are already loaded for the current use case, no need to pass use case
+        ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
         if ReleaseNotes.download:
             ConfirmationPopup(
                 self.RootManager,

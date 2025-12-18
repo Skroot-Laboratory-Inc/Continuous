@@ -1,0 +1,12 @@
+{
+  "v3.0.4": {
+    "features": {
+      "1": "Added back sleep functionality."
+    }
+  },
+  "v3.0.0": {
+    "features": {
+      "1": "Initial release with unified application structure."
+    }
+  }
+}
