@@ -1,5 +1,10 @@
 {
-  "v3.0.4": {
+  "v3.0.5": {
+    "features": {
+      "1": "Separated software releases by use case to improve maintainability."
+    }
+  },
+  "v3.0.2": {
     "features": {
       "1": "Added back sleep functionality."
     }

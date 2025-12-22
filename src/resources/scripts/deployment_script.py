@@ -52,15 +52,13 @@ def check_before_overwrite(bucket, zip_name):
 
 version = Version()
 use_case = version.getUseCase()
-# Get version for the current use case
 major_version = version.getMajorVersion()
 minor_version = version.getMinorVersion()
 release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
-# Get use-case-specific release notes file path
-release_notes_source_fp = version.getReleaseNotesFilePath()
+release_notes_source_fp = f"../{version.getReleaseNotesFilePath()}"
 release_notes_temp_fp = f'../temp/{release_notes_name}'
 
 software_releases_bucket = f'software-releases/{release_bucket}'

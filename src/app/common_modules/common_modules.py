@@ -9,11 +9,11 @@ from src.app.ui_manager.root_manager import RootManager
 
 
 class CommonModules:
-    def __init__(self, rootManager: RootManager, major_version, minor_version):
+    def __init__(self, rootManager: RootManager):
         self.CommonFileManager = CommonFileManager()
         self.RootManager = rootManager
         self.sessionManager = SessionManager()
-        self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager, major_version, minor_version).bodyFrame
+        self.bodyFrame = SetupBaseUi(self.RootManager, self.sessionManager).bodyFrame
         self.ReaderPageManager = ReaderPageManager(self.bodyFrame, rootManager, self.sessionManager)
         self.configureRoot()
         self.ReaderPageManager.createPages()

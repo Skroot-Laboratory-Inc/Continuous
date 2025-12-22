@@ -19,15 +19,14 @@ from src.resources.version.version import Version
 
 
 class SoftwareUpdate(AwsBoto3):
-    def __init__(self, rootManager: RootManager, major_version, minor_version):
+    def __init__(self, rootManager: RootManager):
         super().__init__()
-        self.newestMajorVersion = major_version
-        self.newestMinorVersion = minor_version
+        self.version = Version()
+        self.newestMajorVersion = self.version.getMajorVersion()
+        self.newestMinorVersion = self.version.getMinorVersion()
         self.RootManager = rootManager
         self.newestZipVersion = ''
-        self.version = Version()
-        self.releaseNotesPrefix = f'release-notes/{self.version.getUseCase()}'
-        # Load use-case-specific release notes file
+        self.s3ReleaseNotesPrefix = f'release-notes/{self.version.getUseCase()}'
         release_notes_file = self.version.getReleaseNotesFilePath()
         with open(release_notes_file) as f:
             self.releaseNotes = json.load(f)
@@ -105,15 +104,12 @@ class SoftwareUpdate(AwsBoto3):
         self.newestZipVersion = filename
 
     def mergeReleaseNotesIfNeededAndSave(self):
-        # Check if this version exists in the current use case's release notes
         if f"v{self.newestMajorVersion}.{self.newestMinorVersion}" not in self.releaseNotes:
             localFilename = self.getCurrentReleaseNotes()
             with open(localFilename) as f:
                 dictionary = json.load(f)
-            # Merge the new version into this use case's release notes
             self.releaseNotes.update(dictionary)
             os.remove(localFilename)
-            # Save back to the use-case-specific file
             release_notes_file = self.version.getReleaseNotesFilePath()
             with open(release_notes_file, "w") as outfile:
                 outfile.write(json.dumps(self.releaseNotes, indent=2))
@@ -121,8 +117,10 @@ class SoftwareUpdate(AwsBoto3):
     def getCurrentReleaseNotes(self):
         try:
             localFilename = f"{CommonFileManager().getTempNotes()}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
+            if not os.path.exists(os.path.dirname(localFilename)):
+                os.mkdir(os.path.dirname(localFilename))
             self.downloadFile(
-                f"{self.releaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
+                f"{self.s3ReleaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
                 localFilename
             )
             return localFilename
@@ -131,7 +129,6 @@ class SoftwareUpdate(AwsBoto3):
 
     def downloadUpdate(self, local_filename):
         self.mergeReleaseNotesIfNeededAndSave()
-        # Release notes are already loaded for the current use case, no need to pass use case
         ReleaseNotes = release_notes.ReleaseNotes(self.releaseNotes, self.RootManager)
         if ReleaseNotes.download:
             ConfirmationPopup(

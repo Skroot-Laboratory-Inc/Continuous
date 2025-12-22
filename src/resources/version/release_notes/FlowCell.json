@@ -1,8 +1,12 @@
 {
+  "v3.0.5": {
+    "features": {
+      "1": "Separated software releases by use case to improve maintainability."
+    }
+  },
   "v3.0.4": {
     "bugfixes": {
-      "1": "Fixed roller bottle algorithm to correctly record good sweeps only.",
-      "2": "Fixed an issue causing bad sweeps to be recorded in some cases."
+      "1": "Updated GPIOd to work under Ubuntu 24.04 to fix pump control."
     }
   },
   "v3.0.2": {
