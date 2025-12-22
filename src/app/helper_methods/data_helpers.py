@@ -12,7 +12,7 @@ def frequencyToIndex(zeroPoint, frequencyVector) -> list:
     if DevProperties().isDevMode and DevProperties().mode == "GUI":
         return frequencyVector
         # return [100 * (1 - val/frequencyVector[0]) for val in frequencyVector]
-    return [100 * (1 - val / zeroPoint) for val in frequencyVector]
+    return [max(0, 100 * (1 - val / zeroPoint)) for val in frequencyVector]
 
 
 def truncateByX(minX, maxX, x, y) -> Tuple[list, list]:
