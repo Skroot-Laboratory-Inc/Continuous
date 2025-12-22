@@ -18,18 +18,35 @@ class UseCase(Enum):
 
 class Version:
     def __init__(self):
-        self.majorVersion = 3.0
-        self.minorVersion = 4
+        self.versions = {
+            UseCase.Continuous: {"major": 3.0, "minor": 1},
+            UseCase.FlowCell: {"major": 3.0, "minor": 5},
+            UseCase.Tunair: {"major": 3.0, "minor": 5},
+            UseCase.RollerBottle: {"major": 3.0, "minor": 5}
+        }
+
         self.theme = Theme.IBI
-        self.useCase = UseCase.FlowCell
-        self.developmentVersion = DevelopmentVersion.Test
+        self.useCase = UseCase.Continuous
+        self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 
     def getMajorVersion(self) -> float:
-        return self.majorVersion
+        """Get major version for a specific use case or current use case"""
+        return self.versions[self.useCase]["major"]
 
     def getMinorVersion(self) -> int:
-        return self.minorVersion
+        """Get minor version for a specific use case or current use case"""
+        return self.versions[self.useCase]["minor"]
+
+    def getVersionString(self) -> str:
+        """Get version string (e.g., '3.0.4') for a specific use case"""
+        major = self.versions[self.useCase]["major"]
+        minor = self.versions[self.useCase]["minor"]
+        return f"{major}.{minor}"
+
+    def getReleaseNotesFilePath(self) -> str:
+        """Get the file path for release notes of a specific use case"""
+        return f"../resources/version/release_notes/{self.getUseCase()}.json"
 
     def getUseCase(self) -> str:
         return self.useCase.value
@@ -39,7 +56,7 @@ class Version:
 
     def getReleaseBucket(self) -> str:
         if self.isBeta:
-            return f"{self.useCase.value}/{self.developmentVersion.value}/Beta"
+            return f"{self.getUseCase()}/{self.developmentVersion.value}/Beta"
         else:
-            return f"{self.useCase.value}/{self.developmentVersion.value}"
+            return f"{self.getUseCase()}/{self.developmentVersion.value}"
 

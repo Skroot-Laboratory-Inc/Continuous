@@ -19,14 +19,16 @@ from src.resources.version.version import Version
 
 
 class SoftwareUpdate(AwsBoto3):
-    def __init__(self, rootManager: RootManager, major_version, minor_version):
+    def __init__(self, rootManager: RootManager):
         super().__init__()
-        self.newestMajorVersion = major_version
-        self.newestMinorVersion = minor_version
+        self.version = Version()
+        self.newestMajorVersion = self.version.getMajorVersion()
+        self.newestMinorVersion = self.version.getMinorVersion()
         self.RootManager = rootManager
         self.newestZipVersion = ''
-        self.releaseNotesPrefix = f'release-notes/{Version().getUseCase()}'
-        with open('../resources/version/release-notes.json') as f:
+        self.s3ReleaseNotesPrefix = f'release-notes/{self.version.getUseCase()}'
+        release_notes_file = self.version.getReleaseNotesFilePath()
+        with open(release_notes_file) as f:
             self.releaseNotes = json.load(f)
         self.CommonFileManager = CommonFileManager()
 
@@ -108,14 +110,17 @@ class SoftwareUpdate(AwsBoto3):
                 dictionary = json.load(f)
             self.releaseNotes.update(dictionary)
             os.remove(localFilename)
-            with open(f"../resources/version/release-notes.json", "w") as outfile:
-                outfile.write(json.dumps(self.releaseNotes))
+            release_notes_file = self.version.getReleaseNotesFilePath()
+            with open(release_notes_file, "w") as outfile:
+                outfile.write(json.dumps(self.releaseNotes, indent=2))
 
     def getCurrentReleaseNotes(self):
         try:
             localFilename = f"{CommonFileManager().getTempNotes()}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json"
+            if not os.path.exists(os.path.dirname(localFilename)):
+                os.mkdir(os.path.dirname(localFilename))
             self.downloadFile(
-                f"{self.releaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
+                f"{self.s3ReleaseNotesPrefix}/v{self.newestMajorVersion}.{self.newestMinorVersion}.json",
                 localFilename
             )
             return localFilename

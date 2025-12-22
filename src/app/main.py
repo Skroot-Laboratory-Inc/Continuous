@@ -19,14 +19,10 @@ class Main(CommonModules):
         self.GuiManager = RootManager()
         logger.loggerSetup(
             f"{CommonFileManager().getExperimentLogDir()}/log.txt",
-            f"{version.getUseCase()}_v{version.getMajorVersion()}.{version.getMinorVersion()}",
+            f"{version.getUseCase()}: v{version.getVersionString()}",
         )
         try:
-            super().__init__(
-                self.GuiManager,
-                version.getMajorVersion(),
-                version.getMinorVersion(),
-            )
+            super().__init__(self.GuiManager)
         except:
             logging.exception("Exception in Main Initialization", extra={"id": "System failure"})
             tb = traceback.format_exc()

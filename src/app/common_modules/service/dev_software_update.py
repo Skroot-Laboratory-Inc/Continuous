@@ -4,8 +4,8 @@ from src.app.ui_manager.root_manager import RootManager
 
 
 class DevSoftwareUpdate(SoftwareUpdate):
-    def __init__(self, rootManager: RootManager, major_version, minor_version):
-        super().__init__(rootManager, major_version, minor_version)
+    def __init__(self, rootManager: RootManager):
+        super().__init__(rootManager)
 
         # This makes the app act as if it is not connected to the internet.
         properties = DevProperties()

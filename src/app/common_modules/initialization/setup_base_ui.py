@@ -16,21 +16,21 @@ from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.widget import text_notification
 from src.app.widget.sidebar.sidebar import Sidebar
+from src.resources.version.version import Version
 
 
 class SetupBaseUi:
-    def __init__(self, rootManager: RootManager, sessionManager: SessionManager, major_version, minor_version):
-
+    def __init__(self, rootManager: RootManager, sessionManager: SessionManager):
         self.RootManager = rootManager
         self.SessionManager = sessionManager
         self.isDevMode = DevProperties().isDevMode
         if self.isDevMode:
-            self.SoftwareUpdate = DevSoftwareUpdate(self.RootManager, major_version, minor_version)
+            self.SoftwareUpdate = DevSoftwareUpdate(self.RootManager)
         else:
-            self.SoftwareUpdate = SoftwareUpdate(self.RootManager, major_version, minor_version)
+            self.SoftwareUpdate = SoftwareUpdate(self.RootManager)
         self.FrameManager = FrameManager(self.RootManager)
         self.GuiProperties = GuiProperties()
-        self.version = f'{major_version}.{minor_version}'
+        self.version = Version().getVersionString()
         self.isDevMode = DevProperties().isDevMode
         self.bodyFrame, self.sidebar = self.createFrames()
         self.createTheme()
