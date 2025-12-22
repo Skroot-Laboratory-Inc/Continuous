@@ -64,9 +64,19 @@ def getCpuTemp():
 def getUsbDrive():
     """Find USB drives attached and mounts them to a temporary drive location. """
     if platform.system() == "Linux":
+        is_dst = time.localtime().tm_isdst > 0
+        tz_offset_seconds = time.altzone if is_dst else time.timezone
+        tz_offset_minutes = -(tz_offset_seconds // 60)
         for symLink in USBProperties().symLinkPaths:
             if os.path.exists(symLink):
-                subprocess.run(["sudo", "mount", "-o", "umask=000", symLink, USBProperties().driveDir])
+                subprocess.run([
+                    "sudo",
+                    "mount",
+                    "-o",
+                    f"umask=000,time_offset={tz_offset_minutes}",
+                    symLink,
+                    USBProperties().driveDir,
+                ])
                 if os.path.ismount(USBProperties().driveDir) and os.access(USBProperties().driveDir, os.W_OK):
                     return USBProperties().driveDir
                 else:
