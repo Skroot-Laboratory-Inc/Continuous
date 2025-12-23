@@ -3,6 +3,8 @@ from typing import List
 
 import numpy as np
 from scipy.signal import savgol_filter
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.model.result_set.result_set_data_point import ResultSetDataPoint
@@ -23,10 +25,8 @@ class ResultSet:
         self.derivativeMean = []
         self.smoothDerivativeMean = []
 
-        self.denoiseTimeSmooth = []
-        self.denoiseTime = []
-        self.denoiseFrequencySmooth = []
-        self.denoiseFrequency = []
+        self.denoiseIndices = []
+        self.denoiseSmoothIndices = []
 
     def getStartTime(self) -> int:
         return self.startTime
@@ -68,16 +68,32 @@ class ResultSet:
         return self.timestamps
 
     def getDenoiseTime(self) -> List[float]:
-        return self.denoiseTime
+        """Get denoised time values by filtering the time array using denoiseIndices"""
+        return [self.time[i] for i in self.denoiseIndices if i < len(self.time)]
 
     def getDenoiseTimeSmooth(self) -> List[float]:
-        return self.denoiseTimeSmooth
+        """Get denoised smooth time values by filtering the time array using denoiseSmoothIndices"""
+        return [self.time[i] for i in self.denoiseSmoothIndices if i < len(self.time)]
 
     def getDenoiseFrequency(self) -> List[float]:
-        return self.denoiseFrequency
+        """Get denoised frequency values by filtering the maxFrequency array using denoiseIndices"""
+        return [self.maxFrequency[i] for i in self.denoiseIndices if i < len(self.maxFrequency)]
 
     def getDenoiseFrequencySmooth(self) -> List[float]:
-        return self.denoiseFrequencySmooth
+        """Get denoised smooth frequency values by filtering the maxFrequencySmooth array using denoiseSmoothIndices"""
+        return [self.maxFrequencySmooth[i] for i in self.denoiseSmoothIndices if i < len(self.maxFrequencySmooth)]
+
+    def getDenoiseFilenames(self) -> List[str]:
+        """Get filenames corresponding to denoised data points"""
+        return [self.filenames[i] for i in self.denoiseIndices if i < len(self.filenames)]
+
+    def getDenoiseTimestamps(self) -> List[int]:
+        """Get timestamps corresponding to denoised data points"""
+        return [self.timestamps[i] for i in self.denoiseIndices if i < len(self.timestamps)]
+
+    def getDenoiseSmoothTimestamps(self) -> List[int]:
+        """Get timestamps corresponding to denoised smooth data points"""
+        return [self.timestamps[i] for i in self.denoiseSmoothIndices if i < len(self.timestamps)]
 
     def resetRun(self):
         self.time = self.time[-1:]
@@ -90,11 +106,8 @@ class ResultSet:
         self.derivative = self.derivative[-1:]
         self.derivativeMean = self.derivativeMean[-1:]
         self.smoothDerivativeMean = self.derivativeMean[-1:]
-
-        self.denoiseFrequency = self.denoiseFrequency[-1:]
-        self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
-        self.denoiseTime = self.denoiseTime[-1:]
-        self.denoiseTimeSmooth = self.denoiseTimeSmooth[-1:]
+        self.denoiseIndices = self.denoiseIndices[-1:]
+        self.denoiseSmoothIndices = self.denoiseSmoothIndices[-1:]
 
     def setValues(self, values: ResultSetDataPoint):
         self.time.append(values.time)
@@ -103,6 +116,8 @@ class ResultSet:
         self.maxFrequencySmooth.append(values.maxFrequencySmooth)
         self.filenames.append(values.filename)
         self.timestamps.append(values.timestamp)
+        self.denoiseIndices = self._calculateDenoiseIndices(self.time, self.maxFrequency)
+        self.denoiseSmoothIndices = self._calculateDenoiseIndices(self.time, self.maxFrequencySmooth)
         self.peakWidthsSmooth.append(values.peakWidthSmooth)
         self.derivative.append(values.derivative)
         if len(self.derivative) > HarvestProperties().derivativePoints:
@@ -115,13 +130,36 @@ class ResultSet:
             self.derivativeMean.append(np.nan)
             self.smoothDerivativeMean.append(np.nan)
 
-        # Denoise values change with time, so the entire array gets set at once.
-        self.denoiseTime = values.denoiseTime
-        self.denoiseTimeSmooth = values.denoiseTimeSmooth
-        self.denoiseFrequency = values.denoiseFrequency
-        self.denoiseFrequencySmooth = values.denoiseFrequencySmooth
-
     @staticmethod
     def takeDerivativeMean(rawValues: List[float]):
         return np.nanmean(rawValues[-HarvestProperties().derivativePoints:])
+
+    @staticmethod
+    def _calculateDenoiseIndices(x: List[float], y: List[float]) -> List[int]:
+        """Calculate indices of non-noise points using DBSCAN clustering"""
+        threshold, points = ResultSet._getDenoiseParameters(x)
+        x = list(x)
+        y = list(y)
+        ycopy = y.copy()
+        for y_index in range(len(ycopy)):
+            if np.isnan(ycopy[y_index]):
+                ycopy[y_index] = 0
+        data = np.column_stack([x, ycopy])
+        dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
+        core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
+        core_samples[dbsc.core_sample_indices_] = True
+        denoiseIndices = [i for i in range(len(core_samples)) if core_samples[i]]
+        return denoiseIndices
+
+    @staticmethod
+    def _getDenoiseParameters(numberOfTimePoints: List[float]) -> tuple:
+        """Get DBSCAN parameters based on dataset size"""
+        if len(numberOfTimePoints) > 1000:
+            return 0.2, 20
+        elif len(numberOfTimePoints) > 100:
+            return 0.5, 10
+        elif len(numberOfTimePoints) > 20:
+            return 0.6, 2
+        else:
+            return 1, 1
 
