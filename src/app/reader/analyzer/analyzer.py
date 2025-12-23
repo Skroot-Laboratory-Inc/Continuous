@@ -42,22 +42,29 @@ class Analyzer:
             resultSet.setMaxFrequencySmooth(maxFreq)
             resultSet.setPeakWidthSmooth(peakWidth)
             if shouldDenoise:
-                time, frequency = self.denoise(
+                # Get indices of non-noise points for raw data
+                denoiseIndices = self.denoise(
                     self.ResultSet.getTime() + [resultSet.time],
                     self.ResultSet.getMaxFrequency() + [resultSet.maxFrequency],
                 )
-                resultSet.setDenoiseTime(time)
-                resultSet.setDenoiseFrequency(frequency)
-                time, frequency = self.denoise(
+                resultSet.setDenoiseIndices(denoiseIndices)
+
+                # Get indices of non-noise points for smoothed data
+                denoiseSmoothIndices = self.denoise(
                     self.ResultSet.getTime() + [resultSet.time],
                     self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth],
                 )
-                resultSet.setDenoiseTimeSmooth(time)
-                resultSet.setDenoiseFrequencySmooth(frequency)
+                resultSet.setDenoiseSmoothIndices(denoiseSmoothIndices)
             if shouldDenoise:
+                # Get denoised arrays for derivative calculation
+                denoiseTimeSmooth = resultSet.denoiseSmoothIndices
+                timeArray = self.ResultSet.getTime() + [resultSet.time]
+                frequencyArray = self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth]
+                denoisedTime = [timeArray[i] for i in denoiseTimeSmooth]
+                denoisedFreq = [frequencyArray[i] for i in denoiseTimeSmooth]
                 derivative = self.calculateDerivativeValues(
-                    resultSet.denoiseTime,
-                    frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
+                    denoisedTime,
+                    frequencyToIndex(self.zeroPoint, denoisedFreq),
                 )
             else:
                 derivative = self.calculateDerivativeValues(
@@ -80,17 +87,16 @@ class Analyzer:
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
-        timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             rowHeaders = []
             rowData = []
             rowHeaders.append('Filename')
-            rowData.append(self.ResultSet.getFilenames())
+            rowData.append(self.ResultSet.getDenoiseFilenames())
             rowHeaders.append('Time (hours)')
             rowData.append(self.ResultSet.getDenoiseTime())
             rowHeaders.append('Timestamp')
-            rowData.append(timestamps)
+            rowData.append(self.ResultSet.getDenoiseTimestamps())
             rowHeaders.append('Skroot Growth Index (SGI)')
             rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
             rowHeaders.append('Frequency (MHz)')
@@ -102,7 +108,7 @@ class Analyzer:
             rowHeaders = []
             rowData = []
             rowHeaders.append('Timestamp')
-            rowData.append(timestamps)
+            rowData.append(self.ResultSet.getDenoiseSmoothTimestamps())
             rowHeaders.append('Time (hours)')
             rowData.append(self.ResultSet.getDenoiseTimeSmooth())
             rowHeaders.append('Skroot Growth Index (SGI)')
@@ -142,9 +148,9 @@ class Analyzer:
         dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
         core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
         core_samples[dbsc.core_sample_indices_] = True
-        denoiseX = [xval for xval in x if core_samples[x.index(xval)]]
-        denoiseY = [y[i] for i in range(len(y)) if core_samples[i]]
-        return denoiseX, denoiseY
+        # Return indices of non-noise points instead of filtered arrays
+        denoiseIndices = [i for i in range(len(core_samples)) if core_samples[i]]
+        return denoiseIndices
 
     @staticmethod
     def findMaxGaussian(x, y) -> (float, float, float):

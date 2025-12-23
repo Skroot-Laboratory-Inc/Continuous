@@ -14,25 +14,18 @@ class ResultSetDataPoint:
         self.peakWidthSmooth = np.nan
         self.derivative = np.nan
 
-        self.denoiseTimeSmooth = previousResultSet.denoiseTimeSmooth + [np.nan]
-        self.denoiseTime = previousResultSet.denoiseTime + [np.nan]
-        self.denoiseFrequencySmooth = previousResultSet.denoiseFrequencySmooth + [np.nan]
-        self.denoiseFrequency = previousResultSet.denoiseFrequency + [np.nan]
+        # Store indices of denoised data instead of separate arrays
+        self.denoiseIndices = []
+        self.denoiseSmoothIndices = []
 
     def setTime(self, time: float):
         self.time = time
 
-    def setDenoiseTime(self, time: List[float]):
-        self.denoiseTime = time
+    def setDenoiseIndices(self, indices: List[int]):
+        self.denoiseIndices = indices
 
-    def setDenoiseTimeSmooth(self, time: List[float]):
-        self.denoiseTimeSmooth = time
-
-    def setDenoiseFrequency(self, frequency: List[float]):
-        self.denoiseFrequency = frequency
-
-    def setDenoiseFrequencySmooth(self, frequency: List[float]):
-        self.denoiseFrequencySmooth = frequency
+    def setDenoiseSmoothIndices(self, indices: List[int]):
+        self.denoiseSmoothIndices = indices
 
     def setMaxFrequency(self, maxFrequency: float):
         self.maxFrequency = maxFrequency

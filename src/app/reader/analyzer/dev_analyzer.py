@@ -56,8 +56,6 @@ class DevAnalyzer(Analyzer):
 
     def loadDevMode(self):
         self.ResultSet.time = self.devTime[0:self.currentDevFileIndex]
-        self.ResultSet.denoiseTime = self.devTime[0:self.currentDevFileIndex]
-        self.ResultSet.denoiseTimeSmooth = self.devTime[0:self.currentDevFileIndex]
         self.ResultSet.timestamps = self.devTimestamps[0:self.currentDevFileIndex]
         self.ResultSet.filenames = self.devFilenames[0:self.currentDevFileIndex]
         self.ResultSet.smoothDerivativeMean = [np.nan for _ in self.devTime[0:self.currentDevFileIndex]]
@@ -68,23 +66,26 @@ class DevAnalyzer(Analyzer):
         self.ResultSet.maxVoltsSmooth = self.devDb[0:self.currentDevFileIndex]
 
         self.ResultSet.maxFrequency = self.devFrequency[0:self.currentDevFileIndex]
-        self.ResultSet.denoiseFrequency = self.devFrequency[0:self.currentDevFileIndex]
         self.ResultSet.maxFrequencySmooth = self.devFrequency[0:self.currentDevFileIndex]
-        self.ResultSet.denoiseFrequencySmooth = self.devFrequency[0:self.currentDevFileIndex]
+
+        # In dev mode, assume all data points are valid (not denoised)
+        self.ResultSet.denoiseIndices = list(range(self.currentDevFileIndex))
+        self.ResultSet.denoiseSmoothIndices = list(range(self.currentDevFileIndex))
 
     def analyzeDevScan(self):
         newPoint = ResultSetDataPoint(self.ResultSet)
         newPoint.setTime(self.devTime[self.currentDevFileIndex])
-        newPoint.setDenoiseTimeSmooth(self.ResultSet.getTime() + [self.devTime[self.currentDevFileIndex]])
-        newPoint.setDenoiseTime(self.ResultSet.getTime() + [self.devTime[self.currentDevFileIndex]])
-        newPoint.setDenoiseFrequency(self.ResultSet.getDenoiseFrequency() + [self.devFrequency[self.currentDevFileIndex]])
-        newPoint.setDenoiseFrequencySmooth(self.ResultSet.getDenoiseFrequencySmooth() + [self.devFrequency[self.currentDevFileIndex]])
         newPoint.setMaxFrequency(self.devFrequency[self.currentDevFileIndex])
         newPoint.setMaxVoltsSmooth(self.devDb[self.currentDevFileIndex])
         newPoint.setMaxFrequencySmooth(self.devFrequency[self.currentDevFileIndex])
         newPoint.setFilename(self.devFilenames[self.currentDevFileIndex])
         newPoint.setTimestamp(self.devTimestamps[self.currentDevFileIndex])
         newPoint.setDerivative(self.devFrequency[self.currentDevFileIndex])
+
+        # In dev mode, all data points are valid (not denoised), so indices are sequential
+        newPoint.setDenoiseIndices(list(range(len(self.ResultSet.getTime()) + 1)))
+        newPoint.setDenoiseSmoothIndices(list(range(len(self.ResultSet.getTime()) + 1)))
+
         self.ResultSet.setValues(newPoint)
 
     def analyzeActualScan(self, sweepData, shouldDenoise):

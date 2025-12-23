@@ -23,10 +23,9 @@ class ResultSet:
         self.derivativeMean = []
         self.smoothDerivativeMean = []
 
-        self.denoiseTimeSmooth = []
-        self.denoiseTime = []
-        self.denoiseFrequencySmooth = []
-        self.denoiseFrequency = []
+        # Store indices of denoised data instead of separate arrays
+        self.denoiseIndices = []
+        self.denoiseSmoothIndices = []
 
     def getStartTime(self) -> int:
         return self.startTime
@@ -68,16 +67,32 @@ class ResultSet:
         return self.timestamps
 
     def getDenoiseTime(self) -> List[float]:
-        return self.denoiseTime
+        """Get denoised time values by filtering the time array using denoiseIndices"""
+        return [self.time[i] for i in self.denoiseIndices if i < len(self.time)]
 
     def getDenoiseTimeSmooth(self) -> List[float]:
-        return self.denoiseTimeSmooth
+        """Get denoised smooth time values by filtering the time array using denoiseSmoothIndices"""
+        return [self.time[i] for i in self.denoiseSmoothIndices if i < len(self.time)]
 
     def getDenoiseFrequency(self) -> List[float]:
-        return self.denoiseFrequency
+        """Get denoised frequency values by filtering the maxFrequency array using denoiseIndices"""
+        return [self.maxFrequency[i] for i in self.denoiseIndices if i < len(self.maxFrequency)]
 
     def getDenoiseFrequencySmooth(self) -> List[float]:
-        return self.denoiseFrequencySmooth
+        """Get denoised smooth frequency values by filtering the maxFrequencySmooth array using denoiseSmoothIndices"""
+        return [self.maxFrequencySmooth[i] for i in self.denoiseSmoothIndices if i < len(self.maxFrequencySmooth)]
+
+    def getDenoiseFilenames(self) -> List[str]:
+        """Get filenames corresponding to denoised data points"""
+        return [self.filenames[i] for i in self.denoiseIndices if i < len(self.filenames)]
+
+    def getDenoiseTimestamps(self) -> List[int]:
+        """Get timestamps corresponding to denoised data points"""
+        return [self.timestamps[i] for i in self.denoiseIndices if i < len(self.timestamps)]
+
+    def getDenoiseSmoothTimestamps(self) -> List[int]:
+        """Get timestamps corresponding to denoised smooth data points"""
+        return [self.timestamps[i] for i in self.denoiseSmoothIndices if i < len(self.timestamps)]
 
     def resetRun(self):
         self.time = self.time[-1:]
@@ -91,10 +106,9 @@ class ResultSet:
         self.derivativeMean = self.derivativeMean[-1:]
         self.smoothDerivativeMean = self.derivativeMean[-1:]
 
-        self.denoiseFrequency = self.denoiseFrequency[-1:]
-        self.denoiseFrequencySmooth = self.denoiseFrequencySmooth[-1:]
-        self.denoiseTime = self.denoiseTime[-1:]
-        self.denoiseTimeSmooth = self.denoiseTimeSmooth[-1:]
+        # Reset indices - keep only index 0 if it exists
+        self.denoiseIndices = [0] if 0 in self.denoiseIndices else []
+        self.denoiseSmoothIndices = [0] if 0 in self.denoiseSmoothIndices else []
 
     def setValues(self, values: ResultSetDataPoint):
         self.time.append(values.time)
@@ -115,11 +129,9 @@ class ResultSet:
             self.derivativeMean.append(np.nan)
             self.smoothDerivativeMean.append(np.nan)
 
-        # Denoise values change with time, so the entire array gets set at once.
-        self.denoiseTime = values.denoiseTime
-        self.denoiseTimeSmooth = values.denoiseTimeSmooth
-        self.denoiseFrequency = values.denoiseFrequency
-        self.denoiseFrequencySmooth = values.denoiseFrequencySmooth
+        # Denoise indices change with time, so the entire list gets set at once.
+        self.denoiseIndices = values.denoiseIndices
+        self.denoiseSmoothIndices = values.denoiseSmoothIndices
 
     @staticmethod
     def takeDerivativeMean(rawValues: List[float]):
