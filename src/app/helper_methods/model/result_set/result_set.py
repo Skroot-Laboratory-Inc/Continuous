@@ -25,7 +25,6 @@ class ResultSet:
         self.derivativeMean = []
         self.smoothDerivativeMean = []
 
-        # Store indices of denoised data instead of separate arrays
         self.denoiseIndices = []
         self.denoiseSmoothIndices = []
 
@@ -107,18 +106,18 @@ class ResultSet:
         self.derivative = self.derivative[-1:]
         self.derivativeMean = self.derivativeMean[-1:]
         self.smoothDerivativeMean = self.derivativeMean[-1:]
+        self.denoiseIndices = self.denoiseIndices[-1:]
+        self.denoiseSmoothIndices = self.denoiseSmoothIndices[-1:]
 
-        # Reset indices - keep only index 0 if it exists
-        self.denoiseIndices = [0] if 0 in self.denoiseIndices else []
-        self.denoiseSmoothIndices = [0] if 0 in self.denoiseSmoothIndices else []
-
-    def setValues(self, values: ResultSetDataPoint, shouldDenoise: bool = True):
+    def setValues(self, values: ResultSetDataPoint):
         self.time.append(values.time)
         self.maxFrequency.append(values.maxFrequency)
         self.maxVoltsSmooth.append(values.maxVoltsSmooth)
         self.maxFrequencySmooth.append(values.maxFrequencySmooth)
         self.filenames.append(values.filename)
         self.timestamps.append(values.timestamp)
+        self.denoiseIndices = self._calculateDenoiseIndices(self.time, self.maxFrequency)
+        self.denoiseSmoothIndices = self._calculateDenoiseIndices(self.time, self.maxFrequencySmooth)
         self.peakWidthsSmooth.append(values.peakWidthSmooth)
         self.derivative.append(values.derivative)
         if len(self.derivative) > HarvestProperties().derivativePoints:
@@ -130,15 +129,6 @@ class ResultSet:
         else:
             self.derivativeMean.append(np.nan)
             self.smoothDerivativeMean.append(np.nan)
-
-        # Calculate denoise indices based on the accumulated data
-        if shouldDenoise:
-            self.denoiseIndices = self._calculateDenoiseIndices(self.time, self.maxFrequency)
-            self.denoiseSmoothIndices = self._calculateDenoiseIndices(self.time, self.maxFrequencySmooth)
-        else:
-            # If not denoising, all indices are valid
-            self.denoiseIndices = list(range(len(self.time)))
-            self.denoiseSmoothIndices = list(range(len(self.time)))
 
     @staticmethod
     def takeDerivativeMean(rawValues: List[float]):

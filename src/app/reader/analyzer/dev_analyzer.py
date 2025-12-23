@@ -82,8 +82,7 @@ class DevAnalyzer(Analyzer):
         newPoint.setTimestamp(self.devTimestamps[self.currentDevFileIndex])
         newPoint.setDerivative(self.devFrequency[self.currentDevFileIndex])
 
-        # In dev mode, don't denoise (indices will be all sequential)
-        self.ResultSet.setValues(newPoint, shouldDenoise=False)
+        self.ResultSet.setValues(newPoint)
 
     def analyzeActualScan(self, sweepData, shouldDenoise):
         super().analyzeScan(sweepData, shouldDenoise)

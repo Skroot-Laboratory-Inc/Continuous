@@ -39,9 +39,6 @@ class Analyzer:
             resultSet.setMaxVoltsSmooth(maxMag)
             resultSet.setMaxFrequencySmooth(maxFreq)
             resultSet.setPeakWidthSmooth(peakWidth)
-
-            # Calculate derivative - will use denoised data if shouldDenoise is True
-            # Note: We calculate this before setValues() so we use the PREVIOUS ResultSet's denoised data
             if shouldDenoise and len(self.ResultSet.getTime()) > 0:
                 derivative = self.calculateDerivativeValues(
                     self.ResultSet.getDenoiseTimeSmooth(),
@@ -57,8 +54,7 @@ class Analyzer:
         except:
             raise ScanAnalysisException()
         finally:
-            # setValues() will calculate denoise indices based on accumulated data
-            self.ResultSet.setValues(resultSet, shouldDenoise)
+            self.ResultSet.setValues(resultSet)
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
@@ -66,7 +62,7 @@ class Analyzer:
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
-        self.ResultSet.setValues(resultSet, shouldDenoise=False)
+        self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
