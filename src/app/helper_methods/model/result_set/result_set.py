@@ -3,6 +3,8 @@ from typing import List
 
 import numpy as np
 from scipy.signal import savgol_filter
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.model.result_set.result_set_data_point import ResultSetDataPoint
@@ -110,7 +112,7 @@ class ResultSet:
         self.denoiseIndices = [0] if 0 in self.denoiseIndices else []
         self.denoiseSmoothIndices = [0] if 0 in self.denoiseSmoothIndices else []
 
-    def setValues(self, values: ResultSetDataPoint):
+    def setValues(self, values: ResultSetDataPoint, shouldDenoise: bool = True):
         self.time.append(values.time)
         self.maxFrequency.append(values.maxFrequency)
         self.maxVoltsSmooth.append(values.maxVoltsSmooth)
@@ -129,11 +131,45 @@ class ResultSet:
             self.derivativeMean.append(np.nan)
             self.smoothDerivativeMean.append(np.nan)
 
-        # Denoise indices change with time, so the entire list gets set at once.
-        self.denoiseIndices = values.denoiseIndices
-        self.denoiseSmoothIndices = values.denoiseSmoothIndices
+        # Calculate denoise indices based on the accumulated data
+        if shouldDenoise:
+            self.denoiseIndices = self._calculateDenoiseIndices(self.time, self.maxFrequency)
+            self.denoiseSmoothIndices = self._calculateDenoiseIndices(self.time, self.maxFrequencySmooth)
+        else:
+            # If not denoising, all indices are valid
+            self.denoiseIndices = list(range(len(self.time)))
+            self.denoiseSmoothIndices = list(range(len(self.time)))
 
     @staticmethod
     def takeDerivativeMean(rawValues: List[float]):
         return np.nanmean(rawValues[-HarvestProperties().derivativePoints:])
+
+    @staticmethod
+    def _calculateDenoiseIndices(x: List[float], y: List[float]) -> List[int]:
+        """Calculate indices of non-noise points using DBSCAN clustering"""
+        threshold, points = ResultSet._getDenoiseParameters(x)
+        x = list(x)
+        y = list(y)
+        ycopy = y.copy()
+        for y_index in range(len(ycopy)):
+            if np.isnan(ycopy[y_index]):
+                ycopy[y_index] = 0
+        data = np.column_stack([x, ycopy])
+        dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
+        core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
+        core_samples[dbsc.core_sample_indices_] = True
+        denoiseIndices = [i for i in range(len(core_samples)) if core_samples[i]]
+        return denoiseIndices
+
+    @staticmethod
+    def _getDenoiseParameters(numberOfTimePoints: List[float]) -> tuple:
+        """Get DBSCAN parameters based on dataset size"""
+        if len(numberOfTimePoints) > 1000:
+            return 0.2, 20
+        elif len(numberOfTimePoints) > 100:
+            return 0.5, 10
+        elif len(numberOfTimePoints) > 20:
+            return 0.6, 2
+        else:
+            return 1, 1
 

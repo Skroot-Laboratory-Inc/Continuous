@@ -68,7 +68,7 @@ class DevAnalyzer(Analyzer):
         self.ResultSet.maxFrequency = self.devFrequency[0:self.currentDevFileIndex]
         self.ResultSet.maxFrequencySmooth = self.devFrequency[0:self.currentDevFileIndex]
 
-        # In dev mode, assume all data points are valid (not denoised)
+        # In dev mode, assume all data points are valid (indices will be set when setValues is called)
         self.ResultSet.denoiseIndices = list(range(self.currentDevFileIndex))
         self.ResultSet.denoiseSmoothIndices = list(range(self.currentDevFileIndex))
 
@@ -82,11 +82,8 @@ class DevAnalyzer(Analyzer):
         newPoint.setTimestamp(self.devTimestamps[self.currentDevFileIndex])
         newPoint.setDerivative(self.devFrequency[self.currentDevFileIndex])
 
-        # In dev mode, all data points are valid (not denoised), so indices are sequential
-        newPoint.setDenoiseIndices(list(range(len(self.ResultSet.getTime()) + 1)))
-        newPoint.setDenoiseSmoothIndices(list(range(len(self.ResultSet.getTime()) + 1)))
-
-        self.ResultSet.setValues(newPoint)
+        # In dev mode, don't denoise (indices will be all sequential)
+        self.ResultSet.setValues(newPoint, shouldDenoise=False)
 
     def analyzeActualScan(self, sweepData, shouldDenoise):
         super().analyzeScan(sweepData, shouldDenoise)

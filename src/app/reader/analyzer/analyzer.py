@@ -5,8 +5,6 @@ from itertools import zip_longest
 
 import numpy as np
 from scipy.signal import savgol_filter
-from sklearn.cluster import DBSCAN
-from sklearn.preprocessing import StandardScaler
 
 from src.app.helper_methods.custom_exceptions.analysis_exception import ScanAnalysisException
 from src.app.helper_methods.data_helpers import frequencyToIndex, findMaxGaussian
@@ -41,42 +39,26 @@ class Analyzer:
             resultSet.setMaxVoltsSmooth(maxMag)
             resultSet.setMaxFrequencySmooth(maxFreq)
             resultSet.setPeakWidthSmooth(peakWidth)
-            if shouldDenoise:
-                # Get indices of non-noise points for raw data
-                denoiseIndices = self.denoise(
-                    self.ResultSet.getTime() + [resultSet.time],
-                    self.ResultSet.getMaxFrequency() + [resultSet.maxFrequency],
-                )
-                resultSet.setDenoiseIndices(denoiseIndices)
 
-                # Get indices of non-noise points for smoothed data
-                denoiseSmoothIndices = self.denoise(
-                    self.ResultSet.getTime() + [resultSet.time],
-                    self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth],
-                )
-                resultSet.setDenoiseSmoothIndices(denoiseSmoothIndices)
-            if shouldDenoise:
-                # Get denoised arrays for derivative calculation
-                denoiseTimeSmooth = resultSet.denoiseSmoothIndices
-                timeArray = self.ResultSet.getTime() + [resultSet.time]
-                frequencyArray = self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth]
-                denoisedTime = [timeArray[i] for i in denoiseTimeSmooth]
-                denoisedFreq = [frequencyArray[i] for i in denoiseTimeSmooth]
+            # Calculate derivative - will use denoised data if shouldDenoise is True
+            # Note: We calculate this before setValues() so we use the PREVIOUS ResultSet's denoised data
+            if shouldDenoise and len(self.ResultSet.getTime()) > 0:
                 derivative = self.calculateDerivativeValues(
-                    denoisedTime,
-                    frequencyToIndex(self.zeroPoint, denoisedFreq),
+                    self.ResultSet.getDenoiseTimeSmooth(),
+                    frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth()),
                 )
             else:
                 derivative = self.calculateDerivativeValues(
-                    resultSet.time,
-                    frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
+                    [resultSet.time],
+                    [frequencyToIndex(self.zeroPoint, resultSet.maxFrequency)],
                 )
             resultSet.setDerivative(derivative)
             self.TemperatureResultSet.appendTemp(resultSet.timestamp)
         except:
             raise ScanAnalysisException()
         finally:
-            self.ResultSet.setValues(resultSet)
+            # setValues() will calculate denoise indices based on accumulated data
+            self.ResultSet.setValues(resultSet, shouldDenoise)
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
@@ -84,7 +66,7 @@ class Analyzer:
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
-        self.ResultSet.setValues(resultSet)
+        self.ResultSet.setValues(resultSet, shouldDenoise=False)
 
     def createAnalyzedFiles(self):
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
@@ -136,23 +118,6 @@ class Analyzer:
             return self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
 
     @staticmethod
-    def denoise(x, y):
-        threshold, points = getDenoiseParameters(x)
-        x = list(x)
-        y = list(y)
-        ycopy = y.copy()
-        for y_index in range(len(ycopy)):
-            if np.isnan(ycopy[y_index]):
-                ycopy[y_index] = 0
-        data = np.column_stack([x, ycopy])
-        dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
-        core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
-        core_samples[dbsc.core_sample_indices_] = True
-        # Return indices of non-noise points instead of filtered arrays
-        denoiseIndices = [i for i in range(len(core_samples)) if core_samples[i]]
-        return denoiseIndices
-
-    @staticmethod
     def findMaxGaussian(x, y) -> (float, float, float):
         """
         Find the peak using Gaussian curve fitting.
@@ -183,15 +148,4 @@ class Analyzer:
             logging.exception("Failed to get derivative values", extra={"id": "global"})
         finally:
             return derivativeValue
-
-
-def getDenoiseParameters(numberOfTimePoints):
-    if len(numberOfTimePoints) > 1000:
-        return 0.2, 20
-    elif len(numberOfTimePoints) > 100:
-        return 0.5, 10
-    elif len(numberOfTimePoints) > 20:
-        return 0.6, 2
-    else:
-        return 1, 1
 
