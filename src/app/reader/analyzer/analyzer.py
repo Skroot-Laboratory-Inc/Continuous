@@ -5,8 +5,6 @@ from itertools import zip_longest
 
 import numpy as np
 from scipy.signal import savgol_filter
-from sklearn.cluster import DBSCAN
-from sklearn.preprocessing import StandardScaler
 
 from src.app.helper_methods.custom_exceptions.analysis_exception import ScanAnalysisException
 from src.app.helper_methods.data_helpers import frequencyToIndex, findMaxGaussian
@@ -30,7 +28,7 @@ class Analyzer:
 
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
-        resultSet = ResultSetDataPoint(self.ResultSet)
+        resultSet = ResultSetDataPoint()
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
@@ -41,28 +39,15 @@ class Analyzer:
             resultSet.setMaxVoltsSmooth(maxMag)
             resultSet.setMaxFrequencySmooth(maxFreq)
             resultSet.setPeakWidthSmooth(peakWidth)
-            if shouldDenoise:
-                time, frequency = self.denoise(
-                    self.ResultSet.getTime() + [resultSet.time],
-                    self.ResultSet.getMaxFrequency() + [resultSet.maxFrequency],
-                )
-                resultSet.setDenoiseTime(time)
-                resultSet.setDenoiseFrequency(frequency)
-                time, frequency = self.denoise(
-                    self.ResultSet.getTime() + [resultSet.time],
-                    self.ResultSet.getMaxFrequencySmooth() + [resultSet.maxFrequencySmooth],
-                )
-                resultSet.setDenoiseTimeSmooth(time)
-                resultSet.setDenoiseFrequencySmooth(frequency)
-            if shouldDenoise:
+            if shouldDenoise and len(self.ResultSet.getTime()) > 0:
                 derivative = self.calculateDerivativeValues(
-                    resultSet.denoiseTime,
-                    frequencyToIndex(self.zeroPoint, resultSet.denoiseFrequencySmooth),
+                    self.ResultSet.getDenoiseTimeSmooth(),
+                    frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth()),
                 )
             else:
                 derivative = self.calculateDerivativeValues(
-                    resultSet.time,
-                    frequencyToIndex(self.zeroPoint, resultSet.maxFrequency),
+                    self.ResultSet.getTime(),
+                    frequencyToIndex(self.zeroPoint, self.ResultSet.getMaxFrequency()),
                 )
             resultSet.setDerivative(derivative)
             self.TemperatureResultSet.appendTemp(resultSet.timestamp)
@@ -73,24 +58,23 @@ class Analyzer:
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
-        resultSet = ResultSetDataPoint(self.ResultSet)
+        resultSet = ResultSetDataPoint()
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
         self.ResultSet.setValues(resultSet)
 
     def createAnalyzedFiles(self):
-        timestamps = self.ResultSet.getTimestamps()
         with open(self.FileManager.getAnalyzed(), 'w', newline='') as f:
             writer = csv.writer(f)
             rowHeaders = []
             rowData = []
             rowHeaders.append('Filename')
-            rowData.append(self.ResultSet.getFilenames())
+            rowData.append(self.ResultSet.getDenoiseFilenames())
             rowHeaders.append('Time (hours)')
             rowData.append(self.ResultSet.getDenoiseTime())
             rowHeaders.append('Timestamp')
-            rowData.append(timestamps)
+            rowData.append(self.ResultSet.getDenoiseTimestamps())
             rowHeaders.append('Skroot Growth Index (SGI)')
             rowData.append(frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequency()))
             rowHeaders.append('Frequency (MHz)')
@@ -102,7 +86,7 @@ class Analyzer:
             rowHeaders = []
             rowData = []
             rowHeaders.append('Timestamp')
-            rowData.append(timestamps)
+            rowData.append(self.ResultSet.getDenoiseSmoothTimestamps())
             rowHeaders.append('Time (hours)')
             rowData.append(self.ResultSet.getDenoiseTimeSmooth())
             rowHeaders.append('Skroot Growth Index (SGI)')
@@ -128,23 +112,6 @@ class Analyzer:
             return self.findMaxGaussian(smoothedSweepData.frequency, smoothedSweepData.magnitude)
         else:
             return self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
-
-    @staticmethod
-    def denoise(x, y):
-        threshold, points = getDenoiseParameters(x)
-        x = list(x)
-        y = list(y)
-        ycopy = y.copy()
-        for y_index in range(len(ycopy)):
-            if np.isnan(ycopy[y_index]):
-                ycopy[y_index] = 0
-        data = np.column_stack([x, ycopy])
-        dbsc = DBSCAN(eps=threshold, min_samples=points).fit(StandardScaler().fit(data).transform(data))
-        core_samples = np.zeros_like(dbsc.labels_, dtype=bool)
-        core_samples[dbsc.core_sample_indices_] = True
-        denoiseX = [xval for xval in x if core_samples[x.index(xval)]]
-        denoiseY = [y[i] for i in range(len(y)) if core_samples[i]]
-        return denoiseX, denoiseY
 
     @staticmethod
     def findMaxGaussian(x, y) -> (float, float, float):
@@ -177,15 +144,4 @@ class Analyzer:
             logging.exception("Failed to get derivative values", extra={"id": "global"})
         finally:
             return derivativeValue
-
-
-def getDenoiseParameters(numberOfTimePoints):
-    if len(numberOfTimePoints) > 1000:
-        return 0.2, 20
-    elif len(numberOfTimePoints) > 100:
-        return 0.5, 10
-    elif len(numberOfTimePoints) > 20:
-        return 0.6, 2
-    else:
-        return 1, 1
 
