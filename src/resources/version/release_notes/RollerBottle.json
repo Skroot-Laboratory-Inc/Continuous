@@ -5,7 +5,8 @@
       "2": "Updated SGI calculation to remove negative readings"
     },
     "bugfixes": {
-      "1": "Fixed exports to display correct modified date on Windows."
+      "1": "Fixed exports to display correct modified date on Windows.",
+      "2": "Updated analyzed file creation to correctly align timestamps with scan values."
     }
   },
   "v3.0.4": {

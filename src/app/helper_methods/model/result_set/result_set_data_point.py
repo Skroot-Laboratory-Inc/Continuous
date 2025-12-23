@@ -1,10 +1,8 @@
-from typing import List
-
 import numpy as np
 
 
 class ResultSetDataPoint:
-    def __init__(self, previousResultSet):
+    def __init__(self):
         self.time = np.nan
         self.maxFrequency = np.nan
         self.maxVoltsSmooth = np.nan

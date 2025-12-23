@@ -73,7 +73,7 @@ class DevAnalyzer(Analyzer):
         self.ResultSet.denoiseSmoothIndices = list(range(self.currentDevFileIndex))
 
     def analyzeDevScan(self):
-        newPoint = ResultSetDataPoint(self.ResultSet)
+        newPoint = ResultSetDataPoint()
         newPoint.setTime(self.devTime[self.currentDevFileIndex])
         newPoint.setMaxFrequency(self.devFrequency[self.currentDevFileIndex])
         newPoint.setMaxVoltsSmooth(self.devDb[self.currentDevFileIndex])

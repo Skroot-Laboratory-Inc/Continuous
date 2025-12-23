@@ -28,7 +28,7 @@ class Analyzer:
 
     def analyzeScan(self, sweepData: SweepData, shouldDenoise):
         self.sweepData = sweepData
-        resultSet = ResultSetDataPoint(self.ResultSet)
+        resultSet = ResultSetDataPoint()
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
@@ -46,8 +46,8 @@ class Analyzer:
                 )
             else:
                 derivative = self.calculateDerivativeValues(
-                    [resultSet.time],
-                    [frequencyToIndex(self.zeroPoint, resultSet.maxFrequency)],
+                    self.ResultSet.getTime(),
+                    frequencyToIndex(self.zeroPoint, self.ResultSet.getMaxFrequency()),
                 )
             resultSet.setDerivative(derivative)
             self.TemperatureResultSet.appendTemp(resultSet.timestamp)
@@ -58,7 +58,7 @@ class Analyzer:
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])
-        resultSet = ResultSetDataPoint(self.ResultSet)
+        resultSet = ResultSetDataPoint()
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
