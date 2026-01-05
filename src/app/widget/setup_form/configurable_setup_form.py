@@ -41,14 +41,14 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
 
-        self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
+        # Force equilibration time to 0 and scan rate to 2 for power consumption testing
+        self.equilibrationTimeEntry = tk.StringVar(value='0')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
-        self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
-        self.warehouseEntry = tk.StringVar(value=guidedSetupInputs.getWarehouse())
+        self.scanRateEntry = tk.StringVar(value='2')
 
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
@@ -72,18 +72,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             justify="center"
         )
 
-        if self.config.includeWarehouse:
-            entriesMap['Warehouse'] = tk.Entry(
-                self.window,
-                textvariable=self.warehouseEntry,
-                borderwidth=0,
-                font=self.Fonts.primary,
-                fg=Colors().body.text,
-                bg=Colors().body.background,
-                highlightthickness=0,
-                justify="center"
-            )
-
         entriesMap['Run ID'] = tk.Entry(
             self.window,
             textvariable=self.lotIdEntry,
@@ -95,21 +83,22 @@ class ConfigurableSetupForm(SetupReaderForm):
             justify="center"
         )
 
-        entriesMap["Scan Rate (min)"] = createDropdown(
-            self.window,
-            self.scanRateEntry,
-            self.config.scanRateOptions,
-            bg=Colors().body.background,
-            fg=Colors().body.text
-        )
+        # Scan Rate and Equilibration Time removed for power consumption testing
+        # entriesMap["Scan Rate (min)"] = createDropdown(
+        #     self.window,
+        #     self.scanRateEntry,
+        #     self.config.scanRateOptions,
+        #     bg=Colors().body.background,
+        #     fg=Colors().body.text
+        # )
 
-        entriesMap["Equilibration Time (hr)"] = createDropdown(
-            self.window,
-            self.equilibrationTimeEntry,
-            self.config.equilibrationTimeOptions,
-            bg=Colors().body.background,
-            fg=Colors().body.text
-        )
+        # entriesMap["Equilibration Time (hr)"] = createDropdown(
+        #     self.window,
+        #     self.equilibrationTimeEntry,
+        #     self.config.equilibrationTimeOptions,
+        #     bg=Colors().body.background,
+        #     fg=Colors().body.text
+        # )
 
         for entryLabelText, entry in entriesMap.items():
             tk.Label(
@@ -125,9 +114,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(
                     event.widget, self.RootManager.getRoot(), "Run ID:  "))
-            elif entryLabelText == "Warehouse":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(
-                    event.widget, self.RootManager.getRoot(), "Warehouse:  "))
             elif entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().body.background
@@ -191,7 +177,6 @@ class ConfigurableSetupForm(SetupReaderForm):
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.lotId = self.lotIdEntry.get()
             self.guidedSetupResults.deviceId = self.deviceIdEntry.get()
-            self.guidedSetupResults.warehouse = self.warehouseEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()

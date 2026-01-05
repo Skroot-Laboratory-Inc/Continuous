@@ -2,8 +2,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.app.helper_methods.warehouse_configuration import WarehouseConfiguration
-
 
 @dataclass
 class SetupFormConfig:
@@ -14,8 +12,6 @@ class SetupFormConfig:
     defaultScanRate: str
     defaultEquilibrationTime: str = "24"
     defaultCalibrate: bool = True
-    defaultWarehouse: str = ""
-    includeWarehouse: bool = False
 
     @staticmethod
     def getContinuousConfig():
@@ -23,9 +19,8 @@ class SetupFormConfig:
         return SetupFormConfig(
             scanRateOptions=["2", "5", "10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
-            defaultScanRate="5",
-            defaultWarehouse=WarehouseConfiguration().getConfig(),
-            includeWarehouse=True,
+            defaultScanRate="2",
+            defaultEquilibrationTime="0",
         )
 
     @staticmethod

@@ -255,11 +255,13 @@ class ReaderThreadManager:
                          extra={"id": f"Reader {self.Reader.readerNumber}"})
 
     def waitUntilNextScan(self, currentTime, startTime):
-        while currentTime - startTime < self.scanRate * 60:
-            if self.thread.shutdown_flag.is_set():
-                logging.info('Cancelling data collection due to stop button pressed',
-                             extra={"id": f"Reader {self.Reader.readerNumber}"})
-                break
-            time.sleep(0.05)
-            self.Timer.updateTime()
-            currentTime = time.time()
+        # Wait removed for power consumption testing - scan immediately
+        # while currentTime - startTime < self.scanRate * 60:
+        #     if self.thread.shutdown_flag.is_set():
+        #         logging.info('Cancelling data collection due to stop button pressed',
+        #                      extra={"id": f"Reader {self.Reader.readerNumber}"})
+        #         break
+        #     time.sleep(0.05)
+        #     self.Timer.updateTime()
+        #     currentTime = time.time()
+        pass
