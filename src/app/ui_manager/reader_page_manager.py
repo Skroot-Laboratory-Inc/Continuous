@@ -42,8 +42,6 @@ class ReaderPageManager:
                 self.SibFinder,
                 self.appendReader,
             )
-            if self.currentFrame.value:
-                self.currentFrame.on_next(self.currentFrame.value)
 
     def createPages(self):
         """Initialize the first reader page and set up navigation."""
