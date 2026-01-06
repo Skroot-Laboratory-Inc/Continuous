@@ -1,3 +1,4 @@
+import logging
 import platform
 from tkinter import ttk
 
@@ -44,13 +45,23 @@ class PumpControlPopup:
         self.cancelButton = self.createCancelButton(altCancelText)
         self.continueButton = self.createContinueButton(altContinueText)
 
+        # Set up window close handler to detect unexpected closes
+        self.windowRoot.protocol("WM_DELETE_WINDOW", self._onWindowClose)
+
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
             self.windowRoot.overrideredirect(True)
             self.windowRoot.attributes('-topmost', True)
+        logging.info("PumpControlPopup: Waiting for window...")
         rootManager.waitForWindow(self.windowRoot)
+        logging.info(f"PumpControlPopup: Window closed, confirmed={self.confirmed}")
         self.pumpManager.setPriming(False)
         self.getConfirm()
+
+    def _onWindowClose(self):
+        """Handle window close button (X) - treat as cancel"""
+        logging.info("PumpControlPopup: Window close (X) button clicked")
+        self.cancel()
 
     def createHeader(self, header: str):
         ttk.Label(
@@ -81,11 +92,18 @@ class PumpControlPopup:
         return cancelButton
 
     def confirm(self):
+        logging.info("PumpControlPopup: confirm() called")
         self.confirmed = True
+        logging.info(f"PumpControlPopup: self.confirmed set to {self.confirmed}")
         try:
             self.pumpManager.stop()
+            logging.info("PumpControlPopup: pumpManager.stop() completed")
             self.pumpToggleWidget.cleanup()
+            logging.info("PumpControlPopup: pumpToggleWidget.cleanup() completed")
+        except Exception as e:
+            logging.exception(f"PumpControlPopup: Exception during cleanup: {e}")
         finally:
+            logging.info("PumpControlPopup: Destroying window")
             self.windowRoot.destroy()
 
     def cancel(self):
@@ -97,9 +115,13 @@ class PumpControlPopup:
             self.windowRoot.destroy()
 
     def getConfirm(self):
+        logging.info(f"PumpControlPopup: getConfirm() called, confirmed={self.confirmed}, requireConfirmation={self.requireConfirmation}")
         if self.confirmed:
+            logging.info("PumpControlPopup: User confirmed, continuing")
             pass
         elif self.requireConfirmation:
+            logging.info("PumpControlPopup: User did not confirm, raising exception")
             raise UserConfirmationException()
         else:
+            logging.info("PumpControlPopup: Confirmation not required, continuing")
             pass  # Just close without exception

@@ -1,3 +1,4 @@
+import logging
 import threading
 import tkinter as tk
 
@@ -91,24 +92,33 @@ class ReaderPageAllocator:
 
     @requireUser
     def startReader(self, readerNumber):
+        logging.info(f"ReaderPageAllocator: startReader({readerNumber}) called")
         try:
             if self.factory.showPumpControls():
+                logging.info("ReaderPageAllocator: Showing pump controls popup")
                 PumpControlPopup(
                     self.rootManager,
                     "Prime Line",
                     "Would you like to prime the line?",
                     self.PumpManager
                 )
+                logging.info("ReaderPageAllocator: Popup completed without exception")
         except UserConfirmationException:
+            logging.info("ReaderPageAllocator: User cancelled, exiting")
             return
+
+        logging.info(f"ReaderPageAllocator: About to call startFn, user={self.sessionManager.user}")
         if self.sessionManager.user:
             self.startFn(readerNumber, self.sessionManager.getUser())
         else:
             self.startFn(readerNumber, "")
+        logging.info("ReaderPageAllocator: startFn completed, updating button states")
+
         readerFrame = self.getReaderFrame()
         readerFrame.startButton.disable()
         readerFrame.stopButton.enable()
         readerFrame.timer.resetTimer()
+        logging.info("ReaderPageAllocator: startReader completed successfully")
 
     @requireUser
     def stopReader(self, readerNumber):
