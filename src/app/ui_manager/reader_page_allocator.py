@@ -92,33 +92,33 @@ class ReaderPageAllocator:
 
     @requireUser
     def startReader(self, readerNumber):
-        logging.info(f"ReaderPageAllocator: startReader({readerNumber}) called")
+        logging.info(f"ReaderPageAllocator: startReader({readerNumber}) called", extra={"id": f"Reader {readerNumber}"})
         try:
             if self.factory.showPumpControls():
-                logging.info("ReaderPageAllocator: Showing pump controls popup")
+                logging.info("ReaderPageAllocator: Showing pump controls popup", extra={"id": f"Reader {readerNumber}"})
                 PumpControlPopup(
                     self.rootManager,
                     "Prime Line",
                     "Would you like to prime the line?",
                     self.PumpManager
                 )
-                logging.info("ReaderPageAllocator: Popup completed without exception")
+                logging.info("ReaderPageAllocator: Popup completed without exception", extra={"id": f"Reader {readerNumber}"})
         except UserConfirmationException:
-            logging.info("ReaderPageAllocator: User cancelled, exiting")
+            logging.info("ReaderPageAllocator: User cancelled, exiting", extra={"id": f"Reader {readerNumber}"})
             return
 
-        logging.info(f"ReaderPageAllocator: About to call startFn, user={self.sessionManager.user}")
+        logging.info(f"ReaderPageAllocator: About to call startFn, user={self.sessionManager.user}", extra={"id": f"Reader {readerNumber}"})
         if self.sessionManager.user:
             self.startFn(readerNumber, self.sessionManager.getUser())
         else:
             self.startFn(readerNumber, "")
-        logging.info("ReaderPageAllocator: startFn completed, updating button states")
+        logging.info("ReaderPageAllocator: startFn completed, updating button states", extra={"id": f"Reader {readerNumber}"})
 
         readerFrame = self.getReaderFrame()
         readerFrame.startButton.disable()
         readerFrame.stopButton.enable()
         readerFrame.timer.resetTimer()
-        logging.info("ReaderPageAllocator: startReader completed successfully")
+        logging.info("ReaderPageAllocator: startReader completed successfully", extra={"id": f"Reader {readerNumber}"})
 
     @requireUser
     def stopReader(self, readerNumber):

@@ -52,15 +52,15 @@ class PumpControlPopup:
         if platform.system() == "Windows":
             self.windowRoot.overrideredirect(True)
             self.windowRoot.attributes('-topmost', True)
-        logging.info("PumpControlPopup: Waiting for window...")
+        logging.info("PumpControlPopup: Waiting for window...", extra={"id": "PumpControlPopup"})
         rootManager.waitForWindow(self.windowRoot)
-        logging.info(f"PumpControlPopup: Window closed, confirmed={self.confirmed}")
+        logging.info(f"PumpControlPopup: Window closed, confirmed={self.confirmed}", extra={"id": "PumpControlPopup"})
         self.pumpManager.setPriming(False)
         self.getConfirm()
 
     def _onWindowClose(self):
         """Handle window close button (X) - treat as cancel"""
-        logging.info("PumpControlPopup: Window close (X) button clicked")
+        logging.info("PumpControlPopup: Window close (X) button clicked", extra={"id": "PumpControlPopup"})
         self.cancel()
 
     def createHeader(self, header: str):
@@ -92,18 +92,18 @@ class PumpControlPopup:
         return cancelButton
 
     def confirm(self):
-        logging.info("PumpControlPopup: confirm() called")
+        logging.info("PumpControlPopup: confirm() called", extra={"id": "PumpControlPopup"})
         self.confirmed = True
-        logging.info(f"PumpControlPopup: self.confirmed set to {self.confirmed}")
+        logging.info(f"PumpControlPopup: self.confirmed set to {self.confirmed}", extra={"id": "PumpControlPopup"})
         try:
             self.pumpManager.stop()
-            logging.info("PumpControlPopup: pumpManager.stop() completed")
+            logging.info("PumpControlPopup: pumpManager.stop() completed", extra={"id": "PumpControlPopup"})
             self.pumpToggleWidget.cleanup()
-            logging.info("PumpControlPopup: pumpToggleWidget.cleanup() completed")
+            logging.info("PumpControlPopup: pumpToggleWidget.cleanup() completed", extra={"id": "PumpControlPopup"})
         except Exception as e:
-            logging.exception(f"PumpControlPopup: Exception during cleanup: {e}")
+            logging.exception(f"PumpControlPopup: Exception during cleanup: {e}", extra={"id": "PumpControlPopup"})
         finally:
-            logging.info("PumpControlPopup: Destroying window")
+            logging.info("PumpControlPopup: Destroying window", extra={"id": "PumpControlPopup"})
             self.windowRoot.destroy()
 
     def cancel(self):
@@ -115,13 +115,13 @@ class PumpControlPopup:
             self.windowRoot.destroy()
 
     def getConfirm(self):
-        logging.info(f"PumpControlPopup: getConfirm() called, confirmed={self.confirmed}, requireConfirmation={self.requireConfirmation}")
+        logging.info(f"PumpControlPopup: getConfirm() called, confirmed={self.confirmed}, requireConfirmation={self.requireConfirmation}", extra={"id": "PumpControlPopup"})
         if self.confirmed:
-            logging.info("PumpControlPopup: User confirmed, continuing")
+            logging.info("PumpControlPopup: User confirmed, continuing", extra={"id": "PumpControlPopup"})
             pass
         elif self.requireConfirmation:
-            logging.info("PumpControlPopup: User did not confirm, raising exception")
+            logging.info("PumpControlPopup: User did not confirm, raising exception", extra={"id": "PumpControlPopup"})
             raise UserConfirmationException()
         else:
-            logging.info("PumpControlPopup: Confirmation not required, continuing")
+            logging.info("PumpControlPopup: Confirmation not required, continuing", extra={"id": "PumpControlPopup"})
             pass  # Just close without exception
