@@ -8,8 +8,9 @@ from typing import List
 import numpy as np
 import pandas
 
-from src.app.use_case.use_case_factory import ContextFactory
+from src.app.helper_methods.custom_exceptions.sib_exception import CancelSweepException
 from src.app.helper_methods.data_helpers import truncateByX
+from src.app.use_case.use_case_factory import ContextFactory
 from src.app.widget import text_notification
 
 
@@ -115,3 +116,19 @@ def removeInitialSpike(frequency, volts, initialSpikeMhz, stepSize) -> (List[flo
 def normalizeToReference(volts, referenceVolts) -> float:
     """Normalize voltage to reference voltage."""
     return volts / referenceVolts
+
+
+def check_shutdown_requested(shutdown_flag, logger_id: str = "Sib"):
+    """
+    Check if shutdown has been requested and raise SIBConnectionError if so.
+
+    Args:
+        shutdown_flag: Threading event to check for shutdown request
+        logger_id: Logger ID for logging the shutdown message
+
+    Raises:
+        SIBConnectionError: If shutdown has been requested
+    """
+    if shutdown_flag is not None and shutdown_flag.is_set():
+        logging.info("Shutdown requested during sweep, stopping operation", extra={"id": logger_id})
+        raise CancelSweepException("Sweep cancelled due to shutdown request")

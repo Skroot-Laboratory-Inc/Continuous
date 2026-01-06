@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 
+from src.app.helper_methods.custom_exceptions.sib_exception import CancelSweepException
 from src.app.use_case.use_case_factory import ContextFactory
 from src.app.helper_methods.model.sweep_data import SweepData
 from src.app.reader.sib.base_sib import BaseSib
@@ -12,7 +13,7 @@ from src.app.reader.sib.port_allocator import PortAllocator
 from src.app.reader.sib.sib_utils import (
     calculateFrequencyValues,
     createReferenceFile,
-    normalizeToReference,
+    normalizeToReference, check_shutdown_requested,
 )
 from src.app.widget.sidebar.configurations.default_reference_frequency import ReferenceFrequencyConfiguration
 from src.app.widget.sidebar.configurations.maximum_reference_voltage import MaximumReferenceVoltageConfiguration
@@ -28,11 +29,11 @@ class TunairSib(BaseSib):
     def setReferenceFrequency(self, peakFrequencyMHz: float):
         self.referenceFreqMHz = peakFrequencyMHz - 10
 
-    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float, shutdown_flag=None) -> SweepData:
         try:
             self.sib.wake()
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
-            randomizedFrequency, randomizedVolts = self.performRandomSweep(list(allFrequency), directory)
+            randomizedFrequency, randomizedVolts = self.performRandomSweep(list(allFrequency), directory, shutdown_flag)
             return SweepData(randomizedFrequency, randomizedVolts)
         except SIBConnectionError:
             self.resetSibConnection()
@@ -43,12 +44,15 @@ class TunairSib(BaseSib):
         except SIBDDSConfigError:
             self.resetDDSConfiguration()
             raise SIBDDSConfigError()
+        except CancelSweepException:
+            self.sib.reset_sib()
+            raise CancelSweepException()
         except SIBException:
             raise
         finally:
             self.sib.sleep()
 
-    def performRandomSweep(self, frequencyRange: List[float], directory: str) -> (List[float], List[float]):
+    def performRandomSweep(self, frequencyRange: List[float], directory: str, shutdown_flag=None) -> (List[float], List[float]):
         shuffledFrequencyRange = random.sample(frequencyRange, len(frequencyRange))
         shuffledVolts = []
         for frequency in shuffledFrequencyRange:
@@ -65,6 +69,7 @@ class TunairSib(BaseSib):
                 stepSize = abs(freq - self.referenceFreqMHz)
                 self.prepareSweep(self.referenceFreqMHz - (2 * stepSize), self.referenceFreqMHz, 3)
             for i in range(ContextFactory().getSibProperties().repeatMeasurements):
+                check_shutdown_requested(shutdown_flag)
                 time.sleep(0.005)  # Small delay to allow the DDS to settle
                 try:
                     if freq > self.referenceFreqMHz:

@@ -99,6 +99,7 @@ class ReaderThreadManager:
             sweepData = reader.SibInterface.takeScan(
                 os.path.splitext(reader.FileManager.getCurrentScan())[0],
                 resultSet.getCurrentVolts(),
+                self.thread.shutdown_flag,
             )
             createScanFile(reader.FileManager.getCurrentScan(), sweepData)
             analyzer.analyzeScan(sweepData, self.denoiseSet)

@@ -36,10 +36,11 @@ def instantiateReader(port, portAllocator, readerNumber) -> SibInterface:
         else:
             logging.info(f"Failed to handshake SIB  on port {port}", extra={"id": "Sib"})
             text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
-            portAllocator.removePort(port)
+            portAllocator.removePort(readerNumber)
             sib.close()
     except:
         logging.exception(f"Failed to connect to reader hardware.", extra={"id": "Sib"})
+        portAllocator.removePort(readerNumber)
 
 
 def getDesktopLocation():

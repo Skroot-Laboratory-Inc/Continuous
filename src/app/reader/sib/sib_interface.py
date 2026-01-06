@@ -17,7 +17,7 @@ class SibInterface(ABC):
         """Returns whether the calibration file for the reader is present."""
 
     @abstractmethod
-    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float, shutdown_flag=None) -> SweepData:
         """The reader takes a scan and returns magnitude values."""
 
     @abstractmethod

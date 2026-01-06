@@ -32,7 +32,7 @@ class DevSib(SibInterface):
     def getCalibrationFilePresent(self) -> BehaviorSubject:
         return self.calibrationFilePresent
 
-    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float, shutdown_flag=None) -> SweepData:
         self.currentDevFileIndex += 1
         currentScanFile = self.devFiles[self.currentDevFileIndex]
         readings = pandas.read_csv(currentScanFile)

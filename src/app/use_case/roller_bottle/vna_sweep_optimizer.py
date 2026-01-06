@@ -7,6 +7,7 @@ from scipy.signal import savgol_filter
 from src.app.helper_methods.custom_exceptions.analysis_exception import SensorNotFoundException, FocusedSweepFailedException
 from src.app.helper_methods.data_helpers import findMaxGaussian
 from src.app.helper_methods.model.sweep_data import SweepData
+from src.app.reader.sib.sib_utils import check_shutdown_requested
 
 
 class VnaSweepOptimizer:
@@ -30,7 +31,7 @@ class VnaSweepOptimizer:
         self.peak_window_mhz = 10  # +/- MHz around peak for focused sweep
         self.minVoltageThreshold = self._setMinVoltageThreshold(previousPeak)
 
-    def performOptimizedSweep(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float) -> SweepData:
+    def performOptimizedSweep(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float, shutdown_flag=None) -> SweepData:
         """
         Perform wide-range sweeps until a successful peak is identified,
         then perform a final focused sweep around the identified peak.
@@ -39,6 +40,7 @@ class VnaSweepOptimizer:
             sib_device: The SIB device to perform sweeps with
             start_freq_mhz: Starting frequency in MHz
             stop_freq_mhz: Stopping frequency in MHz
+            shutdown_flag: Optional threading.Event to check for shutdown requests
 
         Returns:
             SweepData from the final focused sweep around the peak
@@ -51,14 +53,16 @@ class VnaSweepOptimizer:
             peak_frequency = self._performWideSweepUntilPeakFound(
                 sib_device,
                 start_freq_mhz,
-                stop_freq_mhz
+                stop_freq_mhz,
+                shutdown_flag
             )
             try:
                 final_sweep_data = self._performRepeatedFocusedSweeps(
                     sib_device,
                     peak_frequency,
                     start_freq_mhz,
-                    stop_freq_mhz
+                    stop_freq_mhz,
+                    shutdown_flag
                 )
             except FocusedSweepFailedException:
                 logging.exception("Error during focused sweeps, restarting wide sweep.")
@@ -74,7 +78,7 @@ class VnaSweepOptimizer:
         self.minVoltageThreshold = peakMagnitude - (peakMagnitude - 1) * (1/2)
         return self.minVoltageThreshold
 
-    def _performWideSweepUntilPeakFound(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float) -> float:
+    def _performWideSweepUntilPeakFound(self, sib_device, start_freq_mhz: float, stop_freq_mhz: float, shutdown_flag=None) -> float:
         """
         Repeatedly perform wide sweeps until a peak is successfully identified.
 
@@ -82,6 +86,7 @@ class VnaSweepOptimizer:
             sib_device: The SIB device to perform sweeps with
             start_freq_mhz: Starting frequency in MHz
             stop_freq_mhz: Stopping frequency in MHz
+            shutdown_flag: Optional threading.Event to check for shutdown requests
 
         Returns:
             Peak frequency in MHz
@@ -91,6 +96,7 @@ class VnaSweepOptimizer:
         """
         maxMagnitude = 0.0
         for attempt in range(self.max_wide_attempts):
+            check_shutdown_requested(shutdown_flag, "VnaSweepOptimizer")
             sweep_data = self._performCalibratedSweep(
                 sib_device,
                 start_freq_mhz,
@@ -112,7 +118,7 @@ class VnaSweepOptimizer:
             f"Failed to find peak after {self.max_wide_attempts} attempts. Max magnitude seen: {maxMagnitude:.2f}"
         )
 
-    def _performRepeatedFocusedSweeps(self, sib_device, initial_peak_frequency: float, start_freq_mhz: float, stop_freq_mhz: float) -> SweepData:
+    def _performRepeatedFocusedSweeps(self, sib_device, initial_peak_frequency: float, start_freq_mhz: float, stop_freq_mhz: float, shutdown_flag=None) -> SweepData:
         """
         Perform repeated focused sweeps until conditions are no longer met,
         then return the sweep with the highest peak strength.
@@ -124,6 +130,7 @@ class VnaSweepOptimizer:
             initial_peak_frequency: The initial peak frequency to center the sweep around
             start_freq_mhz: Minimum frequency bound (original range)
             stop_freq_mhz: Maximum frequency bound (original range)
+            shutdown_flag: Optional threading.Event to check for shutdown requests
 
         Returns:
             SweepData from the sweep with the highest peak magnitude
@@ -133,6 +140,7 @@ class VnaSweepOptimizer:
         all_sweep_data = []
 
         for attempt in range(self.max_focused_attempts):
+            check_shutdown_requested(shutdown_flag, "VnaSweepOptimizer")
             sweep_count += 1
             sweep_data = self._performFocusedSweep(
                 sib_device,

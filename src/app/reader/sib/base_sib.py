@@ -7,7 +7,7 @@ from typing import List
 from reactivex import Subject
 from reactivex.subject import BehaviorSubject
 
-from src.app.helper_methods.custom_exceptions.sib_exception import SIBReconnectException
+from src.app.helper_methods.custom_exceptions.sib_exception import SIBReconnectException, CancelSweepException
 from src.app.helper_methods.model.sweep_data import SweepData
 from src.app.use_case.use_case_factory import ContextFactory
 from src.app.reader.sib.port_allocator import PortAllocator
@@ -16,7 +16,7 @@ from src.app.reader.sib.sib_utils import (
     loadCalibrationFile,
     findSelfResonantFrequency,
     getNumPointsSweep, convertAdcToVolts, find_nearest, createCalibrationDirectoryIfNotExists, calculateFrequencyValues,
-    createCalibrationFile, removeInitialSpike,
+    createCalibrationFile, removeInitialSpike, check_shutdown_requested,
 )
 from src.app.widget import text_notification
 from src.resources.sibcontrol import sibcontrol
@@ -45,7 +45,7 @@ class BaseSib(SibInterface):
         self.startFreqMHz = Properties.startFrequency
 
     @abstractmethod
-    def takeScan(self, directory: str, currentVolts: float) -> SweepData:
+    def takeScan(self, directory: str, currentVolts: float, shutdown_flag=None) -> SweepData:
         """The reader takes a scan and returns magnitude values. Must be implemented by subclass."""
         pass
 
@@ -235,10 +235,11 @@ class BaseSib(SibInterface):
         except:
             pass
 
-    def performSweep(self) -> List[float]:
+    def performSweep(self, shutdown_flag=None) -> List[float]:
         self.sib.write_sweep_command()
         conversion_results, sweep_complete = list(), False
         while not sweep_complete:
+            check_shutdown_requested(shutdown_flag)
             try:
                 ack_msg, tmp_data = self.sib.read_sweep_response()
 
