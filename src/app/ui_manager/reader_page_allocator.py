@@ -93,6 +93,12 @@ class ReaderPageAllocator:
     @requireUser
     def startReader(self, readerNumber):
         logging.info(f"ReaderPageAllocator: startReader({readerNumber}) called", extra={"id": f"Reader {readerNumber}"})
+
+        # Disable button immediately to prevent duplicate calls
+        readerFrame = self.getReaderFrame()
+        readerFrame.startButton.disable()
+        logging.info("ReaderPageAllocator: Start button disabled", extra={"id": f"Reader {readerNumber}"})
+
         try:
             if self.factory.showPumpControls():
                 logging.info("ReaderPageAllocator: Showing pump controls popup", extra={"id": f"Reader {readerNumber}"})
@@ -104,7 +110,8 @@ class ReaderPageAllocator:
                 )
                 logging.info("ReaderPageAllocator: Popup completed without exception", extra={"id": f"Reader {readerNumber}"})
         except UserConfirmationException:
-            logging.info("ReaderPageAllocator: User cancelled, exiting", extra={"id": f"Reader {readerNumber}"})
+            logging.info("ReaderPageAllocator: User cancelled, re-enabling start button", extra={"id": f"Reader {readerNumber}"})
+            readerFrame.startButton.enable()
             return
 
         logging.info(f"ReaderPageAllocator: About to call startFn, user={self.sessionManager.user}", extra={"id": f"Reader {readerNumber}"})
@@ -114,8 +121,6 @@ class ReaderPageAllocator:
             self.startFn(readerNumber, "")
         logging.info("ReaderPageAllocator: startFn completed, updating button states", extra={"id": f"Reader {readerNumber}"})
 
-        readerFrame = self.getReaderFrame()
-        readerFrame.startButton.disable()
         readerFrame.stopButton.enable()
         readerFrame.timer.resetTimer()
         logging.info("ReaderPageAllocator: startReader completed successfully", extra={"id": f"Reader {readerNumber}"})
