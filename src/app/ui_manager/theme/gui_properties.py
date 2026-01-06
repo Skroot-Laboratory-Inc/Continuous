@@ -18,6 +18,6 @@ class GuiProperties:
 
         """
         Reader Page GUI configuration
+        Simplified: Each page contains exactly one reader.
+        Pages are created dynamically as readers are added.
         """
-        self.readersPerScreen = 1
-        self.numScreens = 4
