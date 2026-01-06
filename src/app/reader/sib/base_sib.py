@@ -83,7 +83,7 @@ class BaseSib(SibInterface):
 
     def takeCalibrationScan(self) -> bool:
         try:
-            self.sib.wake()
+            # self.sib.wake()
             self.currentlyScanning.on_next(True)
             createCalibrationDirectoryIfNotExists(self.calibrationFilename)
             startFrequency = self.calibrationStartFreq - self.initialSpikeMhz
@@ -110,7 +110,7 @@ class BaseSib(SibInterface):
             raise
         finally:
             self.currentlyScanning.on_next(False)
-            self.sib.sleep()
+            # self.sib.sleep()
 
     def setStartFrequency(self, startFreqMHz) -> bool:
         try:

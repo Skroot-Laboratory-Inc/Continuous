@@ -41,14 +41,13 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
 
-        # Force equilibration time to 0 and scan rate to 2 for power consumption testing
-        self.equilibrationTimeEntry = tk.StringVar(value='0')
+        self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
         self.deviceIdEntry = tk.StringVar(value=socket.gethostname())
         self.monthEntry = tk.IntVar(value=guidedSetupInputs.getMonth())
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
-        self.scanRateEntry = tk.StringVar(value='2')
+        self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
 
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)

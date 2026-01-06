@@ -256,6 +256,7 @@ class ReaderThreadManager:
 
     def waitUntilNextScan(self, currentTime, startTime):
         # Wait removed for power consumption testing - scan immediately
+        time.sleep(0.1)
         # while currentTime - startTime < self.scanRate * 60:
         #     if self.thread.shutdown_flag.is_set():
         #         logging.info('Cancelling data collection due to stop button pressed',

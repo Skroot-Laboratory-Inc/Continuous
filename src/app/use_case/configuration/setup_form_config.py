@@ -18,9 +18,9 @@ class SetupFormConfig:
         """Configuration for Continuous (Manufacturing) use case."""
         return SetupFormConfig(
             scanRateOptions=["2", "5", "10", "30", "60"],
-            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
-            defaultScanRate="2",
-            defaultEquilibrationTime="0",
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24", "10000"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="10000",
         )
 
     @staticmethod
