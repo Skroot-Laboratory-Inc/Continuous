@@ -97,8 +97,12 @@ class ReaderPageThreadManager:
             readerFrame.calibrateButton.enable()
 
     def startReaderThread(self, readerNumber, user: str):
+        logging.info(f"startReaderThread called for reader {readerNumber}, user={user}", extra={"id": f"Reader {readerNumber}"})
+        logging.info(f"About to call appendReaderFunc with readerPage={self.readerPage}", extra={"id": f"Reader {readerNumber}"})
         self.appendReaderFunc(self.readerPage)
+        logging.info(f"appendReaderFunc completed, about to call startReaderLoop", extra={"id": f"Reader {readerNumber}"})
         self.readerThreads[readerNumber].startReaderLoop(user)
+        logging.info(f"startReaderLoop completed", extra={"id": f"Reader {readerNumber}"})
 
     def getReader(self, readerNumber) -> Reader:
         return self.Readers[readerNumber]

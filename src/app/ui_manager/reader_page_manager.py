@@ -1,3 +1,4 @@
+import logging
 import tkinter as tk
 
 from reactivex import operators
@@ -30,9 +31,12 @@ class ReaderPageManager:
         )
 
     def appendReader(self, readerPage: tk.Frame = None):
+        logging.info(f"appendReader called, readerPage={readerPage}, last_page={self.readerPages[-1] if self.readerPages else None}", extra={"id": "ReaderPageManager"})
         if not readerPage or readerPage == self.readerPages[-1]:
+            logging.info("Creating new reader page and ReaderPageThreadManager", extra={"id": "ReaderPageManager"})
             readerPage = tk.Frame(self.bodyPage, bg=Colors().body.background)
             self.readerPages.append(readerPage)
+            logging.info(f"Creating ReaderPageThreadManager for page {len(self.readerPages)}", extra={"id": "ReaderPageManager"})
             ReaderPageThreadManager(
                 readerPage,
                 len(self.readerPages),
@@ -41,8 +45,14 @@ class ReaderPageManager:
                 self.SibFinder,
                 self.appendReader,
             )
+            logging.info("ReaderPageThreadManager created", extra={"id": "ReaderPageManager"})
             if self.currentFrame.value:
+                logging.info("Triggering currentFrame.on_next", extra={"id": "ReaderPageManager"})
                 self.currentFrame.on_next(self.currentFrame.value)
+                logging.info("currentFrame.on_next completed", extra={"id": "ReaderPageManager"})
+        else:
+            logging.info("Not creating new page (condition not met)", extra={"id": "ReaderPageManager"})
+        logging.info("appendReader completed", extra={"id": "ReaderPageManager"})
 
     def createPages(self):
         self.currentFrame.pipe(
