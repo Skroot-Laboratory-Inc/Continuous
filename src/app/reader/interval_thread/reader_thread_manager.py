@@ -34,11 +34,11 @@ class ReaderThreadManager:
         self.scanRate = guidedSetupForm.getScanRate()
         self.equilibrationTime = guidedSetupForm.getEquilibrationTime()
         self.thread = threading.Thread(target=self.mainLoop, args=(reader,), daemon=True)
-        self.Timer = reader.ReaderPageAllocator.getTimer()
+        self.Timer = reader.ReaderPage.getTimer()
         self.isDevMode = DevProperties().isDevMode
         self.RootManager = rootManager
         self.Reader = reader
-        self.kpiForm = self.Reader.ReaderPageAllocator.getReaderFrame().kpiForm
+        self.kpiForm = self.Reader.ReaderPage.getReaderFrame().kpiForm
         self.kpiForm.lastSecondAxisEntry.subscribe(lambda value: threading.Thread(
             target=self.addSecondaryAxisValue,
             args=(float(value),)

@@ -19,14 +19,13 @@ from src.app.reader.service.aws_service import AwsService
 from src.app.reader.service.dev_aws_service import DevAwsService
 from src.app.reader.sib.dev_sib import DevSib
 from src.app.reader.sib.sib_interface import SibInterface
-from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 from src.app.widget import text_notification
 from src.app.widget.indicator import Indicator
 from src.app.widget.issues.automated_issue_manager import AutomatedIssueManager
 
 
 class Reader:
-    def __init__(self, globalFileManager, readerNumber, readerPageAllocator: ReaderPageAllocator, sibInterface: SibInterface):
+    def __init__(self, globalFileManager, readerNumber, readerPage, sibInterface: SibInterface):
         self.FileManager = ReaderFileManager(globalFileManager.getSavePath(), readerNumber)
         self.HarvestAlgorithm = HarvestAlgorithm(self.FileManager)
         if DevProperties().isDevMode:
@@ -38,7 +37,7 @@ class Reader:
             self.Analyzer = Analyzer(self.FileManager, self.HarvestAlgorithm)
             self.SibInterface = sibInterface
         self.AutomatedIssueManager = AutomatedIssueManager(self.AwsService, globalFileManager)
-        self.ReaderPageAllocator = readerPageAllocator
+        self.ReaderPage = readerPage
         self.finishedEquilibrationPeriod = False
 
         self.readerNumber = readerNumber
@@ -50,15 +49,15 @@ class Reader:
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
-            readerPageAllocator.getPlottingFrame(),
+            readerPage.getPlottingFrame(),
             self.SecondaryAxisTracker,
         )
         self.SibInterface.setStartFrequency(ContextFactory().getSibProperties().startFrequency)
         self.SibInterface.setStopFrequency(ContextFactory().getSibProperties().stopFrequency)
         self.yAxisLabel = self.SibInterface.getYAxisLabel()
-        self.Indicator = Indicator(readerNumber, self.ReaderPageAllocator)
+        self.Indicator = Indicator(readerNumber, self.ReaderPage)
         self.plotFrequencyButton = ttk.Button(
-            readerPageAllocator.readerPage,
+            readerPage.frame,
             text="Real Time Plot",
             command=lambda: self.Plotter.plotFrequencies(
                 self.getAnalyzer().ResultSet,

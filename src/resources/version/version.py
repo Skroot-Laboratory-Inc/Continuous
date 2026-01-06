@@ -20,7 +20,7 @@ class Version:
     def __init__(self):
         self.versions = {
             UseCase.Continuous: {"major": 3.0, "minor": 5},
-            UseCase.FlowCell: {"major": 3.0, "minor": 5},
+            UseCase.FlowCell: {"major": 3.0, "minor": 8},
             UseCase.Tunair: {"major": 3.0, "minor": 5},
             UseCase.RollerBottle: {"major": 3.0, "minor": 5}
         }

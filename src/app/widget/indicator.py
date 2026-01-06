@@ -1,14 +1,12 @@
 from src.app.ui_manager.theme.colors import Colors
-from src.app.ui_manager.reader_page_allocator import ReaderPageAllocator
 
 
 class Indicator:
-    def __init__(self, readerNumber, readerPageAllocator: ReaderPageAllocator):
-
+    def __init__(self, readerNumber, readerPage):
         self.indicatorColor = Colors().status.success
-        self.ReaderPageAllocator = readerPageAllocator
+        self.readerPage = readerPage
         self.readerNumber = readerNumber
-        self.indicatorCanvas, self.indicator = self.ReaderPageAllocator.getIndicator()
+        self.indicatorCanvas, self.indicator = self.readerPage.getIndicator()
 
     def changeIndicatorGreen(self):
         self.indicatorCanvas.itemconfig(self.indicator, fill=Colors().status.success)
