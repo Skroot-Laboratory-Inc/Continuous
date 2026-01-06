@@ -66,7 +66,8 @@ class ReaderPageManager:
         if currentFrame != previousFrame and previousFrame:
             previousFrame.place_forget()
 
-    def _createReaderPageToggle(self, bodyFrame):
+    @staticmethod
+    def _createReaderPageToggle(bodyFrame):
         """Create previous/next navigation buttons."""
         previousButton = GenericButton(
             "⟨",
@@ -85,7 +86,8 @@ class ReaderPageManager:
 
         return previousButton, nextButton
 
-    def _createBodyPage(self, bodyFrame):
+    @staticmethod
+    def _createBodyPage(bodyFrame):
         """Create the main body page container."""
         bodyFrame.grid_columnconfigure(0, weight=0)
         bodyFrame.grid_columnconfigure(1, weight=1)

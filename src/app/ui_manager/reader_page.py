@@ -35,21 +35,13 @@ class ReaderPage:
         self.frame = frame
         self.sibFinder = sibFinder
         self.appendReaderFunc = appendReaderFunc
-
-        # Initialize factories and managers
         self.factory = ContextFactory()
         self.Pump = self.factory.createPump()
         self.PumpManager = self.factory.createPumpManager(self.Pump)
-
-        # Reader state
         self.readerThreads = {}
         self.Readers = {}
-
-        # Progress bar
         self.progressBarDisplayed = BehaviorSubject(False)
         self.progressbar = ProgressBarBackground(self.frame, self.progressBarDisplayed)
-
-        # Create UI using dedicated UI class
         self.ui = ReaderPageUI(rootManager, sessionManager, self.PumpManager)
         self.readerFrame = self._createReaderFrame()
 
@@ -114,6 +106,37 @@ class ReaderPage:
             readerFrame.startButton.enable()
             readerFrame.showPlotFrame()
 
+    @requireUser
+    def _startReader(self, readerNumber):
+        try:
+            if self.factory.showPumpControls():
+                PumpControlPopup(
+                    self.rootManager,
+                    "Prime Line",
+                    "Would you like to prime the line?",
+                    self.PumpManager
+                )
+        except UserConfirmationException:
+            return
+        if self.sessionManager.user:
+            self._startReaderThread(readerNumber, self.sessionManager.getUser())
+        else:
+            self._startReaderThread(readerNumber, "")
+        readerFrame = self.readerFrame
+        readerFrame.startButton.disable()
+        readerFrame.stopButton.enable()
+        readerFrame.timer.resetTimer()
+
+    @requireUser
+    def _stopReader(self, readerNumber):
+        stopReaderThread = threading.Thread(target=self._stopReaderThread, args=(readerNumber,), daemon=True)
+        stopReaderThread.start()
+
+    @requireUser
+    def _calibrateReader(self, readerNumber):
+        calibrateReaderThread = threading.Thread(target=self._calibrateReaderSync, args=(readerNumber,), daemon=True)
+        calibrateReaderThread.start()
+
     def _connectReader(self, readerNumber):
         """Connect to the reader hardware and initialize."""
         try:
@@ -144,36 +167,10 @@ class ReaderPage:
             text_notification.setText("Reader hardware disconnected.\nPlease contact your system administrator.")
             return None
 
-    @requireUser
-    def _startReader(self, readerNumber):
-        try:
-            if self.factory.showPumpControls():
-                PumpControlPopup(
-                    self.rootManager,
-                    "Prime Line",
-                    "Would you like to prime the line?",
-                    self.PumpManager
-                )
-        except UserConfirmationException:
-            return
-        if self.sessionManager.user:
-            self._startReaderThread(readerNumber, self.sessionManager.getUser())
-        else:
-            self._startReaderThread(readerNumber, "")
-        readerFrame = self.readerFrame
-        readerFrame.startButton.disable()
-        readerFrame.stopButton.enable()
-        readerFrame.timer.resetTimer()
-
     def _startReaderThread(self, readerNumber, user: str):
         """Start the reader scanning thread."""
         self.appendReaderFunc(self.frame)
         self.readerThreads[readerNumber].startReaderLoop(user)
-
-    @requireUser
-    def _stopReader(self, readerNumber):
-        stopReaderThread = threading.Thread(target=self._stopReaderThread, args=(readerNumber,), daemon=True)
-        stopReaderThread.start()
 
     def _stopReaderThread(self, readerNumber):
         """Stop the reader scanning thread."""
@@ -207,11 +204,6 @@ class ReaderPage:
                 )
         except UserConfirmationException:
             return False
-
-    @requireUser
-    def _calibrateReader(self, readerNumber):
-        calibrateReaderThread = threading.Thread(target=self._calibrateReaderSync, args=(readerNumber,), daemon=True)
-        calibrateReaderThread.start()
 
     def _calibrateReaderSync(self, readerNumber):
         """Calibrate the reader."""
