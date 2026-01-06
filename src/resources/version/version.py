@@ -20,13 +20,13 @@ class Version:
     def __init__(self):
         self.versions = {
             UseCase.Continuous: {"major": 3.0, "minor": 5},
-            UseCase.FlowCell: {"major": 3.0, "minor": 8},
+            UseCase.FlowCell: {"major": 3.0, "minor": 6},
             UseCase.Tunair: {"major": 3.0, "minor": 5},
             UseCase.RollerBottle: {"major": 3.0, "minor": 5}
         }
 
-        self.theme = Theme.WW
-        self.useCase = UseCase.Continuous
+        self.theme = Theme.IBI
+        self.useCase = UseCase.FlowCell
         self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 

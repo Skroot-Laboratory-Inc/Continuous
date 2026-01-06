@@ -1,4 +1,9 @@
 {
+  "v3.0.6": {
+    "bugfixes": {
+      "1": "Fixed issue with pump popup appearing twice on boot."
+    }
+  },
   "v3.0.5": {
     "features": {
       "1": "Separated software releases by use case to improve maintainability.",

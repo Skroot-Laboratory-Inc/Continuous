@@ -1,3 +1,4 @@
+import logging
 import tkinter as tk
 
 from reactivex import operators
@@ -32,18 +33,19 @@ class ReaderPageManager:
         If called with the current page, creates a new page for the next reader.
         """
         if not currentPageFrame or currentPageFrame == self.readerPages[-1]:
-            pageFrame = tk.Frame(self.bodyPage, bg=Colors().body.background)
-            self.readerPages.append(pageFrame)
-            ReaderPage(
-                pageFrame,
-                len(self.readerPages),  # Reader number
-                self.rootManager,
-                self.sessionManager,
-                self.SibFinder,
-                self.appendReader,
-            )
-            if self.currentFrame.value:
-                self.currentFrame.on_next(self.currentFrame.value)
+            try:
+                pageFrame = tk.Frame(self.bodyPage, bg=Colors().body.background)
+                self.readerPages.append(pageFrame)
+                ReaderPage(
+                    pageFrame,
+                    len(self.readerPages),  # Reader number
+                    self.rootManager,
+                    self.sessionManager,
+                    self.SibFinder,
+                    self.appendReader,
+                )
+            except:
+                logging.exception("Failed to add new reader page.", extra={"id": "reader_page_manager"})
 
     def createPages(self):
         """Initialize the first reader page and set up navigation."""
