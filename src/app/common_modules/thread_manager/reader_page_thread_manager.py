@@ -19,6 +19,10 @@ from src.app.widget.pump_control_popup import PumpControlPopup
 
 
 class ReaderPageThreadManager:
+    """
+    Manages the reader thread and UI for a single reader page.
+    Simplified: Each page contains exactly one reader.
+    """
     def __init__(self, readerPage, startingReaderNumber, rootManager: RootManager, sessionManager: SessionManager, sibFinder: SibFinder, appendReaderFunc: Callable):
         self.readerAllocator = ReaderPageAllocator(
             rootManager,
@@ -74,7 +78,7 @@ class ReaderPageThreadManager:
             return None
 
     def issueOccurred(self):
-        # Will not work when more than one reader page is present.
+        """Check if any reader thread has current issues."""
         for readerThread in self.readerThreads.values():
             if readerThread.currentIssues != {}:
                 return True

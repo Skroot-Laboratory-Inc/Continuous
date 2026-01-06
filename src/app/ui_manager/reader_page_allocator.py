@@ -12,13 +12,16 @@ from src.app.ui_manager.model.reader_frame import ReaderFrame
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
-from src.app.ui_manager.theme.gui_properties import GuiProperties
 from src.app.ui_manager.theme.image_theme import ImageTheme
 from src.app.widget.pump_control_popup import PumpControlPopup
 from src.app.widget.timer import RunningTimer
 
 
 class ReaderPageAllocator:
+    """
+    Allocates and manages UI components for a single reader.
+    Simplified: Each page now contains exactly one reader.
+    """
     def __init__(self, rootManager: RootManager, sessionManager: SessionManager, readerPage: tk.Frame, readerNumber,
                  connectFn, calibrateFn, startFn, stopFn):
         self.connectFn = connectFn
@@ -32,7 +35,6 @@ class ReaderPageAllocator:
         self.startFn = startFn
         self.stopFn = stopFn
         self.readerPage = readerPage
-        self.maxReadersPerScreen = GuiProperties().readersPerScreen
 
         self.createButtons = []  # This is required for the plus icon to appear. It is removed from memory without it.
         self.readerFrame = self.createReaderFrames()
