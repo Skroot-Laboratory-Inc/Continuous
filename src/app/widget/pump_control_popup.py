@@ -81,16 +81,20 @@ class PumpControlPopup:
         return cancelButton
 
     def confirm(self):
-        self.pumpManager.stop()
-        self.pumpToggleWidget.cleanup()
         self.confirmed = True
-        self.windowRoot.destroy()
+        try:
+            self.pumpManager.stop()
+            self.pumpToggleWidget.cleanup()
+        finally:
+            self.windowRoot.destroy()
 
     def cancel(self):
-        self.pumpManager.stop()
-        self.pumpToggleWidget.cleanup()
         self.confirmed = False
-        self.windowRoot.destroy()
+        try:
+            self.pumpManager.stop()
+            self.pumpToggleWidget.cleanup()
+        finally:
+            self.windowRoot.destroy()
 
     def getConfirm(self):
         if self.confirmed:
