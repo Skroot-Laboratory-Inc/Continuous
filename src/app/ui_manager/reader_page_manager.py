@@ -4,10 +4,10 @@ from reactivex import operators
 from reactivex.subject import BehaviorSubject
 
 from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
-from src.app.common_modules.thread_manager.reader_page_thread_manager import ReaderPageThreadManager
 from src.app.use_case.use_case_factory import ContextFactory
 from src.app.reader.sib.sib_finder import SibFinder
 from src.app.ui_manager.buttons.generic_button import GenericButton
+from src.app.ui_manager.reader_page import ReaderPage
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 
@@ -26,16 +26,16 @@ class ReaderPageManager:
         self.currentFrame = BehaviorSubject(None)
         self.previousButton, self.nextButton = self._createReaderPageToggle(bodyFrame)
 
-    def appendReader(self, readerPage: tk.Frame = None):
+    def appendReader(self, currentPageFrame: tk.Frame = None):
         """
         Append a new reader page. Each page contains exactly one reader.
         If called with the current page, creates a new page for the next reader.
         """
-        if not readerPage or readerPage == self.readerPages[-1]:
-            readerPage = tk.Frame(self.bodyPage, bg=Colors().body.background)
-            self.readerPages.append(readerPage)
-            ReaderPageThreadManager(
-                readerPage,
+        if not currentPageFrame or currentPageFrame == self.readerPages[-1]:
+            pageFrame = tk.Frame(self.bodyPage, bg=Colors().body.background)
+            self.readerPages.append(pageFrame)
+            ReaderPage(
+                pageFrame,
                 len(self.readerPages),  # Reader number
                 self.rootManager,
                 self.sessionManager,
