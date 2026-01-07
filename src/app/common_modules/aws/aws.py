@@ -91,19 +91,22 @@ class AwsBoto3:
     def pushExperimentRow(self, config: DynamodbConfig) -> bool:
         if not self.disabled:
             if self.customerId is not None:
+                item = {
+                    'customerId': {'S': self.customerId},
+                    'runUid': {'N': str(self.runUid)},
+                    'startDate': {'N': str(config.startDate)},
+                    'endDate': {'S': str(config.endDate)},
+                    'saturationDate': {'S': str(config.saturationDate)},
+                    'lastUpdated': {'N': str(datetimeToMillis(datetime.datetime.now()))},
+                    'incubator': {'S': config.incubator},
+                    'lotId': {'S': config.lotId},
+                    'automatedFlagged': {'BOOL': config.flagged},
+                }
+                if config.warehouse:
+                    item['warehouse'] = {'S': config.warehouse}
                 self.dynamodb.put_item(
                     TableName='runs',
-                    Item={
-                        'customerId': {'S': self.customerId},
-                        'runUid': {'N': str(self.runUid)},
-                        'startDate': {'N': str(config.startDate)},
-                        'endDate': {'S': str(config.endDate)},
-                        'saturationDate': {'S': str(config.saturationDate)},
-                        'lastUpdated': {'N': str(datetimeToMillis(datetime.datetime.now()))},
-                        'incubator': {'S': config.incubator},
-                        'lotId': {'S': config.lotId},
-                        'automatedFlagged': {'BOOL': config.flagged},
-                    }
+                    Item=item
                 )
                 return True
         return False

@@ -124,6 +124,7 @@ class ReaderThreadManager:
                     self.kpiForm.saturationDate,
                     reader.AutomatedIssueManager.hasOpenIssues(),
                     resultSet.getStartTime(),
+                    self.guidedSetupForm.getWarehouse(),
                 )
 
     def mainLoop(self, reader):
@@ -240,6 +241,7 @@ class ReaderThreadManager:
                 self.guidedSetupForm.getLotId(),
                 self.kpiForm.saturationDate,
                 self.Reader.getAnalyzer().ResultSet.getStartTime(),
+                self.guidedSetupForm.getWarehouse(),
             )
         self.resetRunFunc(reader.readerNumber)
         copyExperimentLog(self.Reader.FileManager.getReaderSavePath())

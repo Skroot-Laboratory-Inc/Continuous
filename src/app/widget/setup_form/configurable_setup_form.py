@@ -48,6 +48,7 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.dayEntry = tk.IntVar(value=guidedSetupInputs.getDay())
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
+        self.warehouseEntry = tk.StringVar(value=guidedSetupInputs.getWarehouse())
 
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
@@ -70,6 +71,18 @@ class ConfigurableSetupForm(SetupReaderForm):
             highlightthickness=0,
             justify="center"
         )
+
+        if self.config.includeWarehouse:
+            entriesMap['Warehouse'] = tk.Entry(
+                self.window,
+                textvariable=self.warehouseEntry,
+                borderwidth=0,
+                font=self.Fonts.primary,
+                fg=Colors().body.text,
+                bg=Colors().body.background,
+                highlightthickness=0,
+                justify="center"
+            )
 
         entriesMap['Run ID'] = tk.Entry(
             self.window,
@@ -112,6 +125,9 @@ class ConfigurableSetupForm(SetupReaderForm):
             if entryLabelText == "Run ID":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(
                     event.widget, self.RootManager.getRoot(), "Run ID:  "))
+            elif entryLabelText == "Warehouse":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(
+                    event.widget, self.RootManager.getRoot(), "Warehouse:  "))
             elif entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().body.background
@@ -175,6 +191,7 @@ class ConfigurableSetupForm(SetupReaderForm):
             self.guidedSetupResults.year = self.yearEntry.get()
             self.guidedSetupResults.lotId = self.lotIdEntry.get()
             self.guidedSetupResults.deviceId = self.deviceIdEntry.get()
+            self.guidedSetupResults.warehouse = self.warehouseEntry.get()
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()

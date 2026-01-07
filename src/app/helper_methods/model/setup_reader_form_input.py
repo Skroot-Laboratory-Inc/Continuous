@@ -24,6 +24,7 @@ class SetupReaderFormInput:
         self.lotId = generateLotId()
         self.equilibrationTime = config.defaultEquilibrationTime
         self.savePath = ""
+        self.warehouse = config.defaultWarehouse
 
     def getMonth(self) -> int:
         return self.month
@@ -58,6 +59,9 @@ class SetupReaderFormInput:
 
     def getSavePath(self) -> str:
         return self.savePath
+
+    def getWarehouse(self) -> str:
+        return self.warehouse
 
     def resetRun(self):
         self.date = datetime.now()
