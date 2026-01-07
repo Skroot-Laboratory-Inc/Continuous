@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import List
 
+from src.app.helper_methods.warehouse_configuration import WarehouseConfiguration
+
 
 @dataclass
 class SetupFormConfig:
@@ -22,6 +24,7 @@ class SetupFormConfig:
             scanRateOptions=["2", "5", "10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
             defaultScanRate="5",
+            defaultWarehouse=WarehouseConfiguration().getConfig(),
             includeWarehouse=True,
         )
 
