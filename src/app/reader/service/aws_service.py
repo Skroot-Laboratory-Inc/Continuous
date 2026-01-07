@@ -25,13 +25,14 @@ class AwsService:
         self.awsLastRawDataUploadMillis = datetimeToMillis(datetime.now())
         self.awsLastNotesUploadMillis = datetimeToMillis(datetime.now())
 
-    def uploadExperimentFilesOnInterval(self, scanMillis: int, lotId: str, saturationDate: int, flagged: bool, startDate: int):
+    def uploadExperimentFilesOnInterval(self, scanMillis: int, lotId: str, saturationDate: int, flagged: bool, startDate: int, warehouse: str = ""):
         newConfig = DynamodbConfig(None,
                                    startDate,
                                    saturationDate,
                                    lotId,
                                    socket.gethostname(),
-                                   flagged)
+                                   flagged,
+                                   warehouse)
         self.uploadReaderCsvOnInterval(scanMillis, newConfig)
         self.uploadRawDataOnInterval(scanMillis)
 
@@ -54,13 +55,14 @@ class AwsService:
             )
             self.awsLastRawDataUploadMillis = scanMillis
 
-    def uploadFinalExperimentFiles(self, lotId: str, saturationDate: int, startDate: int):
+    def uploadFinalExperimentFiles(self, lotId: str, saturationDate: int, startDate: int, warehouse: str = ""):
         newConfig = DynamodbConfig(datetimeToMillis(datetime.now()),
                                    startDate,
                                    saturationDate,
                                    lotId,
                                    socket.gethostname(),
-                                   False)
+                                   False,
+                                   warehouse)
         self.uploadReaderAnalyzed(newConfig)
         self.AwsBoto3Service.pushExperimentRow(newConfig)
 
