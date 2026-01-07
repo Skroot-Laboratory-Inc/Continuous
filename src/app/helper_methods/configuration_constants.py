@@ -5,3 +5,4 @@ class ConfigurationConstants:
         self.defaultPrimingFlowRate = "pump_priming_flow_rate"
         self.secondaryAxisUnit = "secondary_axis_unit"
         self.secondaryAxisType = "secondary_axis_type"
+        self.warehouse = "warehouse"
