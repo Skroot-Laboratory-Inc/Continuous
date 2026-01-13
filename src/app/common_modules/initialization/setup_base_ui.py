@@ -1,10 +1,13 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 
+from PIL import ImageTk, Image
+
 from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
 from src.app.common_modules.initialization.frame_manager import FrameManager
 from src.app.common_modules.service.dev_software_update import DevSoftwareUpdate
 from src.app.common_modules.service.software_update import SoftwareUpdate
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.properties.dev_properties import DevProperties
 from src.app.ui_manager.buttons.connectivity_button import ConnectivityButton
 from src.app.ui_manager.buttons.power_button import PowerButton
@@ -46,11 +49,14 @@ class SetupBaseUi:
             text='\u00A9 Skroot Laboratory, Inc 2018-2025. All rights reserved.',
             bg=Colors().body.background, fg=Colors().body.text)
         copyrightLabel.grid(row=0, column=1, sticky="s")
+        img = Image.open(CommonFileManager().getPoweredByLogo()).resize((70, 20), Image.Resampling.LANCZOS)
+        poweredBy = ImageTk.PhotoImage(img)
         poweredByLabel = tk.Label(
             self.FrameManager.footerFrame,
-            text='Powered by Skroot',
-            bg=Colors().body.background, fg=Colors().body.text)
-        poweredByLabel.grid(row=0, column=2, sticky="se")
+            image=poweredBy,
+            bg=Colors().body.background)
+        poweredByLabel.image = poweredBy
+        poweredByLabel.grid(row=0, column=2, sticky="ne")
 
         self.FrameManager.bannerFrame.grid_rowconfigure(0, weight=1)
         self.FrameManager.bannerFrame.grid_columnconfigure(0, weight=0)

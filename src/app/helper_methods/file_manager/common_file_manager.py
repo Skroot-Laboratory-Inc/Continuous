@@ -9,6 +9,7 @@ class CommonFileManager:
         theme = get_current_theme_name()
         resourcesDir = f"{srcDir}/src/resources"
         self.addIcon = rf"{resourcesDir}/media/{theme}/plus.png"
+        self.poweredByLogo = rf"{resourcesDir}/media/{theme}/powered-by.png"
         self.arrowIcon = rf"{resourcesDir}/media/{theme}/arrow.png"
         self.switchOn = rf"{resourcesDir}/media/{theme}/switch-on.png"
         self.helpIconPng = rf"{resourcesDir}/media/help.png"
@@ -40,6 +41,9 @@ class CommonFileManager:
 
     def getAddIcon(self):
         return self.addIcon
+
+    def getPoweredByLogo(self):
+        return self.poweredByLogo
 
     def getArrowIcon(self):
         return self.arrowIcon
