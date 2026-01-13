@@ -1,9 +1,4 @@
 {
-  "v3.0.6": {
-    "bugfixes": {
-      "1": "Fixed issue with pump popup appearing twice on boot."
-    }
-  },
   "v3.0.5": {
     "features": {
       "1": "Separated software releases by use case to improve maintainability.",
@@ -11,7 +6,8 @@
     },
     "bugfixes": {
       "1": "Fixed exports to display correct modified date on Windows.",
-      "2": "Updated analyzed file creation to correctly align timestamps with scan values."
+      "2": "Updated analyzed file creation to correctly align timestamps with scan values.",
+      "3": "Fixed issue with pump popup appearing twice on boot."
     }
   },
   "v3.0.4": {

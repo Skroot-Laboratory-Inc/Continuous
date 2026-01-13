@@ -2,7 +2,8 @@
   "v3.0.5": {
     "features": {
       "1": "Separated software releases by use case to improve maintainability.",
-      "2": "Updated SGI calculation to remove negative readings"
+      "2": "Updated SGI calculation to remove negative readings",
+      "3": "Added a warehouse parameter that can be configured in settings or via the setup form."
     },
     "bugfixes": {
       "1": "Fixed exports to display correct modified date on Windows.",
