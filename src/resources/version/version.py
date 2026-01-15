@@ -19,15 +19,15 @@ class UseCase(Enum):
 class Version:
     def __init__(self):
         self.versions = {
-            UseCase.Continuous: {"major": 3.0, "minor": 5},
-            UseCase.FlowCell: {"major": 3.0, "minor": 6},
+            UseCase.Continuous: {"major": 3.0, "minor": 6},
+            UseCase.FlowCell: {"major": 3.0, "minor": 5},
             UseCase.Tunair: {"major": 3.0, "minor": 5},
             UseCase.RollerBottle: {"major": 3.0, "minor": 5}
         }
 
         self.theme = Theme.WW
         self.useCase = UseCase.Continuous
-        self.developmentVersion = DevelopmentVersion.Test
+        self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 
     def getMajorVersion(self) -> float:

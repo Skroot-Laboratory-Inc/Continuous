@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Custom Logo
+Description=Custom theme with centered logo
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/ibi
+ScriptFile=/usr/share/plymouth/themes/ibi/ibi.script
