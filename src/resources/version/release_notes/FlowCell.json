@@ -7,7 +7,8 @@
     "bugfixes": {
       "1": "Fixed exports to display correct modified date on Windows.",
       "2": "Updated analyzed file creation to correctly align timestamps with scan values.",
-      "3": "Fixed issue with pump popup appearing twice on boot."
+      "3": "Fixed issue with pump popup appearing twice on boot.",
+      "4": "Fixed fresh install to select the correct boot logo."
     }
   },
   "v3.0.4": {

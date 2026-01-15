@@ -40,17 +40,27 @@ echo "Setting up Plymouth boot splash..."
 # Ensure Plymouth is properly installed
 sudo apt install plymouth plymouth-themes -y
 
-# Copy theme files
+# Copy skroot theme
 sudo dos2unix -q ../ubuntu_settings/skroot/skroot.plymouth
 sudo dos2unix -q ../ubuntu_settings/skroot/skroot.script
 sudo cp ../ubuntu_settings/skroot /usr/share/plymouth/themes/ -R
 
-# Set theme using Plymouth commands
-sudo plymouth-set-default-theme skroot
+# Copy ibi theme
+sudo dos2unix -q ../ubuntu_settings/ibi/ibi.plymouth
+sudo dos2unix -q ../ubuntu_settings/ibi/ibi.script
+sudo cp ../ubuntu_settings/ibi /usr/share/plymouth/themes/ -R
 
-# Also set using update-alternatives (backup method)
-sudo update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/skroot/skroot.plymouth 120
-sudo update-alternatives --set default.plymouth /usr/share/plymouth/themes/skroot/skroot.plymouth
+# Copy wilson-wolf theme
+sudo dos2unix -q ../ubuntu_settings/wilson-wolf/wilson-wolf.plymouth
+sudo dos2unix -q ../ubuntu_settings/wilson-wolf/wilson-wolf.script
+sudo cp ../ubuntu_settings/wilson-wolf /usr/share/plymouth/themes/ -R
+
+# Detect theme from Version class
+THEME=$(python3 -c "from src.resources.version.version import Version; print(Version().getTheme().value)")
+echo "Detected theme: $THEME"
+
+# Set theme using Plymouth commands
+sudo plymouth-set-default-theme "$THEME"
 
 # Configure Plymouth to work better with LightDM
 sudo mkdir -p /etc/systemd/system/lightdm.service.d
