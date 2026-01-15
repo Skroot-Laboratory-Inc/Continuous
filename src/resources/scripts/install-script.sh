@@ -40,17 +40,27 @@ echo "Setting up Plymouth boot splash..."
 # Ensure Plymouth is properly installed
 sudo apt install plymouth plymouth-themes -y
 
+# Detect theme from Version class
+THEME=$(python3 -c "import sys; sys.path.insert(0, '/home/kiosk/Desktop/Continuous/src'); from resources.version.version import Version; print(Version().getTheme().value)")
+echo "Detected theme: $THEME"
+
+# Validate theme
+if [ ! -d "../ubuntu_settings/$THEME" ]; then
+    echo "Warning: Theme directory $THEME not found, falling back to skroot"
+    THEME="skroot"
+fi
+
 # Copy theme files
-sudo dos2unix -q ../ubuntu_settings/skroot/skroot.plymouth
-sudo dos2unix -q ../ubuntu_settings/skroot/skroot.script
-sudo cp ../ubuntu_settings/skroot /usr/share/plymouth/themes/ -R
+sudo dos2unix -q ../ubuntu_settings/$THEME/$THEME.plymouth
+sudo dos2unix -q ../ubuntu_settings/$THEME/$THEME.script
+sudo cp ../ubuntu_settings/$THEME /usr/share/plymouth/themes/ -R
 
 # Set theme using Plymouth commands
-sudo plymouth-set-default-theme skroot
+sudo plymouth-set-default-theme $THEME
 
 # Also set using update-alternatives (backup method)
-sudo update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/skroot/skroot.plymouth 120
-sudo update-alternatives --set default.plymouth /usr/share/plymouth/themes/skroot/skroot.plymouth
+sudo update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/$THEME/$THEME.plymouth 120
+sudo update-alternatives --set default.plymouth /usr/share/plymouth/themes/$THEME/$THEME.plymouth
 
 # Configure Plymouth to work better with LightDM
 sudo mkdir -p /etc/systemd/system/lightdm.service.d

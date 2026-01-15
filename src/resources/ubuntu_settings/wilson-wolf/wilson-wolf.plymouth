@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Wilson Wolf Logo
+Description=Wilson Wolf theme with centered logo
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/wilson-wolf
+ScriptFile=/usr/share/plymouth/themes/wilson-wolf/wilson-wolf.script
