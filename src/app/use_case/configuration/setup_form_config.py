@@ -12,6 +12,7 @@ class SetupFormConfig:
     defaultScanRate: str
     defaultEquilibrationTime: str = "24"
     defaultCalibrate: bool = True
+    includeWarehouse: bool = False
 
     @staticmethod
     def getContinuousConfig():
