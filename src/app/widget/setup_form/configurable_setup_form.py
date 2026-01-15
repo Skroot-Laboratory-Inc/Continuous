@@ -38,7 +38,7 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.Fonts = FontTheme()
         self.window = tk.Frame(parent, background=Colors().body.background)
         self.guidedSetupResults = guidedSetupInputs
-        self.calibrateRequired = tk.IntVar(value=1)
+        self.calibrateRequired = tk.IntVar(value=0)
         self.setCalibrate()
 
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
@@ -121,23 +121,24 @@ class ConfigurableSetupForm(SetupReaderForm):
             ttk.Separator(self.window, orient="horizontal").grid(row=row, column=1, sticky="ew")
             row += 1
 
-        tk.Checkbutton(
-            self.window,
-            text="Calibration Required",
-            variable=self.calibrateRequired,
-            font=self.Fonts.primary,
-            onvalue=1,
-            offvalue=0,
-            pady=WidgetTheme().externalPadding,
-            command=self.setCalibrate,
-            bg=Colors().body.background,
-            fg=Colors().body.text,
-            selectcolor=Colors().body.background,
-            activeforeground=Colors().body.text,
-            activebackground=Colors().body.background,
-            borderwidth=0,
-            highlightthickness=0
-        ).grid(row=row, column=0, columnspan=2, sticky="ns")
+        # Scan Rate and Equilibration Time removed for power consumption testing
+        # tk.Checkbutton(
+        #     self.window,
+        #     text="Calibration Required",
+        #     variable=self.calibrateRequired,
+        #     font=self.Fonts.primary,
+        #     onvalue=1,
+        #     offvalue=0,
+        #     pady=WidgetTheme().externalPadding,
+        #     command=self.setCalibrate,
+        #     bg=Colors().body.background,
+        #     fg=Colors().body.text,
+        #     selectcolor=Colors().body.background,
+        #     activeforeground=Colors().body.text,
+        #     activebackground=Colors().body.background,
+        #     borderwidth=0,
+        #     highlightthickness=0
+        # ).grid(row=row, column=0, columnspan=2, sticky="ns")
         row += 1
 
         self.submitButton = GenericButton("Submit", self.window, self.onSubmit).button
