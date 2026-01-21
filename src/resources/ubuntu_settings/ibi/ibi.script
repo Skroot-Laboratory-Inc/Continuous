@@ -9,3 +9,16 @@ logo_sprite = Sprite(scaled_logo);
 // Position at top-left (fullscreen)
 logo_sprite.SetX(0);
 logo_sprite.SetY(0);
+
+# Bottom-left overlay (10% screen width)
+overlay_image = Image("poweredBySkroot.png");
+overlay_width = Window.GetWidth() * 0.15;
+aspect_ratio = overlay_image.GetWidth() / overlay_image.GetHeight();
+overlay_height = overlay_width / aspect_ratio;
+scaled_overlay = overlay_image.Scale(overlay_width, overlay_height);
+overlay_sprite = Sprite(scaled_overlay);
+
+# Position in bottom-right corner with small margin
+margin = 10;
+overlay_sprite.SetX(margin);
+overlay_sprite.SetY(Window.GetHeight() - overlay_height - margin);
