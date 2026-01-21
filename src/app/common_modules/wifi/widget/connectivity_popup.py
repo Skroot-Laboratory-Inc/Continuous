@@ -32,6 +32,8 @@ class ConnectivityPopup:
         self.selectedNetwork = None
         self.isRefreshing = False
         self.password = tk.StringVar()
+        self.username = tk.StringVar()
+        self.authMethod = tk.StringVar(value='peap')
         self.showPassword = tk.BooleanVar(value=False)
         self.windowRoot = rootManager.createTopLevel()
         formatPopup(self.windowRoot)
@@ -39,7 +41,9 @@ class ConnectivityPopup:
         self.createHeader()
         self.statusLabel = self.createStatusSection()
         self.networkListbox = self.createNetworkList()
+        self.usernameFrame, self.usernameEntry = self.createUsernameSection()
         self.passwordFrame, self.passwordEntry, self.showPasswordButton = self.createPasswordSection()
+        self.authMethodFrame, self.authMethodDropdown = self.createAuthMethodSection()
         self.refreshButton, self.connectButton, self.disconnectButton = self.createButtonSection()
         self.refreshNetworks()
         self.updateConnectionStatus()
@@ -121,10 +125,35 @@ class ConnectivityPopup:
         networks.bind('<Double-Button-1>', lambda e: self.connectToSelectedNetwork())
         return networks
 
+    def createUsernameSection(self):
+        # Username frame is hidden by default; shown for enterprise networks
+        frame = tk.Frame(self.windowRoot, background=Colors().body.background)
+        frame.grid(row=4, column=0, sticky='ew', padx=10, pady=(0, 5))
+        ttk.Label(
+            frame,
+            text="Username:",
+            font=FontTheme().primary,
+            background=Colors().body.background,
+            foreground=Colors().body.text
+        ).pack(side=tk.LEFT, padx=(0, 5))
+
+        usernameEntry = ttk.Entry(
+            frame,
+            textvariable=self.username,
+            font=FontTheme().primary2
+        )
+        usernameEntry.bind(
+            "<Button-1>",
+            lambda event: launchKeyboard(event.widget, self.rootManager.getRoot(), "Username:  ")
+        )
+        usernameEntry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=WidgetTheme().externalPadding, pady=WidgetTheme().externalPadding)
+        frame.grid_remove()
+        return frame, usernameEntry
+
     def createPasswordSection(self):
         # Password frame is hidden by default; shown for secured networks
         frame = tk.Frame(self.windowRoot, background=Colors().body.background)
-        frame.grid(row=4, column=0, sticky='ew', padx=10, pady=(0, 5))
+        frame.grid(row=5, column=0, sticky='ew', padx=10, pady=(0, 5))
         ttk.Label(
             frame,
             text="Password:",
@@ -159,9 +188,43 @@ class ConnectivityPopup:
         frame.grid_remove()
         return frame, passwordEntry, showPasswordButton
 
+    def createAuthMethodSection(self):
+        # Auth method frame is hidden by default; shown for enterprise networks
+        frame = tk.Frame(self.windowRoot, background=Colors().body.background)
+        frame.grid(row=6, column=0, sticky='ew', padx=10, pady=(0, 5))
+        ttk.Label(
+            frame,
+            text="Auth Method:",
+            font=FontTheme().primary,
+            background=Colors().body.background,
+            foreground=Colors().body.text
+        ).pack(side=tk.LEFT, padx=(0, 5))
+
+        auth_methods = [
+            ('PEAP (MSCHAPv2)', 'peap'),
+            ('TTLS (MSCHAPv2)', 'ttls'),
+            ('TLS (Certificate)', 'tls'),
+            ('FAST', 'fast'),
+            ('PWD', 'pwd'),
+            ('LEAP', 'leap')
+        ]
+
+        authMethodDropdown = ttk.Combobox(
+            frame,
+            textvariable=self.authMethod,
+            values=[method[0] for method in auth_methods],
+            state='readonly',
+            font=FontTheme().primary2,
+            width=20
+        )
+        authMethodDropdown.set('PEAP (MSCHAPv2)')  # Default
+        authMethodDropdown.pack(side=tk.LEFT, padx=WidgetTheme().externalPadding, pady=WidgetTheme().externalPadding)
+        frame.grid_remove()
+        return frame, authMethodDropdown
+
     def createButtonSection(self):
         buttonFrame = tk.Frame(self.windowRoot, background=Colors().body.background)
-        buttonFrame.grid(row=5, column=0, sticky='ew', padx=10, pady=10)
+        buttonFrame.grid(row=7, column=0, sticky='ew', padx=10, pady=10)
 
         refreshButton = GenericButton(
             "Refresh",
@@ -234,6 +297,8 @@ class ConnectivityPopup:
                             display = f"{network['ssid']}"
                             if network['in_use']:
                                 display += " ✓"
+                            if network.get('is_enterprise', False):
+                                display += " [Enterprise]"
                             self.networkListbox.insert(tk.END, display)
 
                     self.refreshButton.configure(state="normal", text="Refresh")
@@ -260,20 +325,44 @@ class ConnectivityPopup:
             index = selection[0]
             if 0 <= index < len(self.networks):
                 self.selectedNetwork = self.networks[index]
-                if self.selectedNetwork.get('security') and self.selectedNetwork.get('security') != 'Open':
-                    self.password.set('')
-                    self.passwordFrame.grid()  # show
-                    self.windowRoot.after(50, lambda: self.passwordEntry.focus_set())
+                security = self.selectedNetwork.get('security', 'Open')
+                is_enterprise = self.selectedNetwork.get('is_enterprise', False)
+
+                # Clear previous entries
+                self.password.set('')
+                self.username.set('')
+
+                if security and security != 'Open':
+                    if is_enterprise:
+                        # Show enterprise fields (username, password, auth method)
+                        self.usernameFrame.grid()
+                        self.passwordFrame.grid()
+                        self.authMethodFrame.grid()
+                        self.windowRoot.after(50, lambda: self.usernameEntry.focus_set())
+                    else:
+                        # Show only password for WPA-PSK
+                        self.usernameFrame.grid_remove()
+                        self.passwordFrame.grid()
+                        self.authMethodFrame.grid_remove()
+                        self.windowRoot.after(50, lambda: self.passwordEntry.focus_set())
                 else:
+                    # Open network - hide all auth fields
+                    self.usernameFrame.grid_remove()
                     self.passwordFrame.grid_remove()
+                    self.authMethodFrame.grid_remove()
+
                 self.connectButton.configure(state="normal")
             else:
                 self.selectedNetwork = None
+                self.usernameFrame.grid_remove()
                 self.passwordFrame.grid_remove()
+                self.authMethodFrame.grid_remove()
                 self.connectButton.configure(state="disabled")
         else:
             self.selectedNetwork = None
+            self.usernameFrame.grid_remove()
             self.passwordFrame.grid_remove()
+            self.authMethodFrame.grid_remove()
             self.connectButton.configure(state="disabled")
 
     def connectToSelectedNetwork(self):
@@ -283,18 +372,44 @@ class ConnectivityPopup:
 
         ssid = self.selectedNetwork['ssid']
         security = self.selectedNetwork.get('security')
+        is_enterprise = self.selectedNetwork.get('is_enterprise', False)
 
-        # Read password from inline entry if required
+        # Read credentials from entries if required
         password = None
+        username = None
+        auth_method = None
+
         if security != 'Open':
             password = self.password.get()
             if not password:
-                # If empty, just show error message in status and don't attempt connect
+                # If empty, show error message in status and don't attempt connect
                 self.statusLabel.configure(
                     text="Password required",
                     foreground=Colors().status.error
                 )
                 return
+
+            # For enterprise networks, also get username and auth method
+            if is_enterprise:
+                username = self.username.get()
+                if not username:
+                    self.statusLabel.configure(
+                        text="Username required for enterprise network",
+                        foreground=Colors().status.error
+                    )
+                    return
+
+                # Map the displayed auth method back to the value
+                auth_method_map = {
+                    'PEAP (MSCHAPv2)': 'peap',
+                    'TTLS (MSCHAPv2)': 'ttls',
+                    'TLS (Certificate)': 'tls',
+                    'FAST': 'fast',
+                    'PWD': 'pwd',
+                    'LEAP': 'leap'
+                }
+                selected_method = self.authMethodDropdown.get()
+                auth_method = auth_method_map.get(selected_method, 'peap')
 
         # Disable buttons during connection
         self.connectButton.configure(state="disabled", text="Connecting...")
@@ -303,7 +418,7 @@ class ConnectivityPopup:
 
         def connect():
             try:
-                success, message = connectToWifi(ssid, password)
+                success, message = connectToWifi(ssid, password, username, auth_method)
 
                 def updateUI():
                     if success:

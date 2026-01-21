@@ -35,9 +35,16 @@ def checkInternetConnection(timeout=3) -> bool:
         return False
 
 
-def connectToWifi(ssid: str, password: str = None) -> tuple[bool, str]:
+def connectToWifi(ssid: str, password: str = None, username: str = None, auth_method: str = None) -> tuple[bool, str]:
     """
     Connect to a WiFi network using nmcli (Linux-only).
+    Supports both simple WPA-PSK and enterprise 802.1X authentication.
+
+    Args:
+        ssid: Network SSID
+        password: Password for WPA-PSK or enterprise authentication
+        username: Username for enterprise authentication (optional)
+        auth_method: Authentication method for enterprise networks (e.g., 'peap', 'ttls', 'tls')
     """
     if platform.system() != "Linux":
         return False, "WiFi connection only supported on Linux"
@@ -57,13 +64,16 @@ def connectToWifi(ssid: str, password: str = None) -> tuple[bool, str]:
             )
             if result.returncode == 0:
                 return True, f"Connected to {ssid}"
-            elif password:
+            elif password or username:
                 subprocess.run(['sudo', 'nmcli', 'connection', 'delete', ssid],
                                capture_output=True, timeout=5, check=False)
                 connection_exists = False
 
         if not connection_exists:
-            if password:
+            # If username is provided, it's an enterprise network
+            if username and auth_method:
+                return connectToEnterpriseWifi(ssid, username, password, auth_method)
+            elif password:
                 result = subprocess.run(
                     ['sudo', 'nmcli', 'device', 'wifi', 'connect', ssid, 'password', password],
                     capture_output=True, text=True, timeout=30
@@ -86,6 +96,97 @@ def connectToWifi(ssid: str, password: str = None) -> tuple[bool, str]:
         return False, f"Error connecting to network: {str(e)}"
     except Exception:
         logging.exception("Unexpected error connecting to WiFi", extra={"id": "Network"})
+        return False, "Unexpected error"
+
+
+def connectToEnterpriseWifi(ssid: str, username: str, password: str, auth_method: str = 'peap') -> tuple[bool, str]:
+    """
+    Connect to an enterprise WiFi network with 802.1X authentication.
+
+    Args:
+        ssid: Network SSID
+        username: Username for authentication
+        password: Password for authentication
+        auth_method: Authentication method ('peap', 'ttls', 'tls', 'pwd', 'fast')
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    if platform.system() != "Linux":
+        return False, "WiFi connection only supported on Linux"
+
+    # Map friendly names to nmcli auth methods
+    auth_map = {
+        'peap': 'peap',
+        'ttls': 'ttls',
+        'tls': 'tls',
+        'pwd': 'pwd',
+        'fast': 'fast',
+        'leap': 'leap'
+    }
+
+    eap_method = auth_map.get(auth_method.lower(), 'peap')
+
+    # For PEAP and TTLS, we typically use MSCHAPv2 as phase2 auth
+    phase2_map = {
+        'peap': 'mschapv2',
+        'ttls': 'mschapv2',
+        'fast': 'mschapv2'
+    }
+
+    try:
+        # Delete existing connection if it exists
+        subprocess.run(
+            ['sudo', 'nmcli', 'connection', 'delete', ssid],
+            capture_output=True, timeout=5, check=False
+        )
+
+        # Build the nmcli command for enterprise WiFi
+        cmd = [
+            'sudo', 'nmcli', 'connection', 'add',
+            'type', 'wifi',
+            'con-name', ssid,
+            'ssid', ssid,
+            'wifi-sec.key-mgmt', 'wpa-eap',
+            '802-1x.eap', eap_method,
+            '802-1x.identity', username,
+            '802-1x.password', password
+        ]
+
+        # Add phase2 authentication for methods that need it
+        if eap_method in phase2_map:
+            cmd.extend(['802-1x.phase2-auth', phase2_map[eap_method]])
+
+        # Create the connection
+        result = subprocess.run(
+            cmd,
+            capture_output=True, text=True, timeout=30
+        )
+
+        if result.returncode != 0:
+            error_msg = result.stderr.strip() if result.stderr else "Failed to create connection profile"
+            logging.error(f"Failed to create enterprise connection: {error_msg}")
+            return False, f"Failed to create connection: {error_msg}"
+
+        # Activate the connection
+        activate_result = subprocess.run(
+            ['sudo', 'nmcli', 'connection', 'up', ssid],
+            capture_output=True, text=True, timeout=30
+        )
+
+        if activate_result.returncode == 0:
+            return True, f"Successfully connected to {ssid}"
+        else:
+            error_msg = activate_result.stderr.strip() if activate_result.stderr else "Connection failed"
+            # Try to extract more useful error message
+            if "802-1x" in error_msg.lower() or "authentication" in error_msg.lower():
+                return False, "Authentication failed - check username and password"
+            return False, error_msg
+
+    except subprocess.TimeoutExpired:
+        return False, "Connection timeout - please try again"
+    except Exception:
+        logging.exception("Unexpected error connecting to enterprise WiFi", extra={"id": "Network"})
         return False, "Unexpected error"
 
 
@@ -131,7 +232,12 @@ def sortNetworks(networks_map: Dict[str, Dict]) -> List[Dict]:
         sorted_entries,
         key=lambda x: not x.get('in_use', False)
     )
-    return [{'ssid': e['ssid'], 'in_use': bool(e.get('in_use', False)), 'security': e.get('security', 'Open')} for e in sorted_entries]
+    return [{
+        'ssid': e['ssid'],
+        'in_use': bool(e.get('in_use', False)),
+        'security': e.get('security', 'Open'),
+        'is_enterprise': e.get('is_enterprise', False)
+    } for e in sorted_entries]
 
 
 def run_cmd(cmd: List[str], timeout: int = 10, check: bool = True) -> Optional[str]:
@@ -147,6 +253,18 @@ def run_cmd(cmd: List[str], timeout: int = 10, check: bool = True) -> Optional[s
     except Exception:
         logging.exception("Unexpected error running command", extra={"cmd": cmd})
         return None
+
+
+def is_enterprise_network(security: str) -> bool:
+    """
+    Determine if a network uses enterprise authentication (802.1X).
+    """
+    if not security or security == 'Open':
+        return False
+    security_lower = security.lower()
+    # Check for 802.1X indicators
+    enterprise_indicators = ['802.1x', '802-1x', 'enterprise', 'eap', 'wpa2-eap', 'wpa-eap']
+    return any(indicator in security_lower for indicator in enterprise_indicators)
 
 
 def parse_nmcli_lines(lines: List[str]) -> Dict[str, Dict]:
@@ -175,19 +293,23 @@ def parse_nmcli_lines(lines: List[str]) -> Dict[str, Dict]:
         if not ssid:
             continue
 
+        is_enterprise = is_enterprise_network(security)
+
         entry = networks.get(ssid)
         if entry is None:
             networks[ssid] = {
                 'ssid': ssid,
                 'signal': sig_val,
                 'security': security,
-                'in_use': (in_use_token == '*')
+                'in_use': (in_use_token == '*'),
+                'is_enterprise': is_enterprise
             }
         else:
             if sig_val > entry['signal']:
                 entry['signal'] = sig_val
             if (entry.get('security') == 'Open' or not entry.get('security')) and security != 'Open':
                 entry['security'] = security
+                entry['is_enterprise'] = is_enterprise
             if in_use_token == '*':
                 entry['in_use'] = True
     return networks
@@ -230,7 +352,7 @@ def parse_netsh_lines(lines: List[str]) -> Dict[str, Dict]:
             ssid = m.group(1).strip()
             if ssid:
                 current_ssid = ssid
-                networks.setdefault(ssid, {'ssid': ssid, 'signal': 0, 'security': 'Open', 'in_use': False})
+                networks.setdefault(ssid, {'ssid': ssid, 'signal': 0, 'security': 'Open', 'in_use': False, 'is_enterprise': False})
             else:
                 current_ssid = None
             continue
@@ -252,12 +374,15 @@ def parse_netsh_lines(lines: List[str]) -> Dict[str, Dict]:
             val = m.group(2).strip()
             if 'open' in val.lower():
                 networks[current_ssid]['security'] = 'Open'
+                networks[current_ssid]['is_enterprise'] = False
             else:
                 existing = networks[current_ssid].get('security', '')
                 if not existing or existing == 'Open':
                     networks[current_ssid]['security'] = val
                 elif val and val not in existing:
                     networks[current_ssid]['security'] = f"{existing}/{val}"
+                # Check if it's an enterprise network
+                networks[current_ssid]['is_enterprise'] = is_enterprise_network(val)
             continue
 
     return networks
