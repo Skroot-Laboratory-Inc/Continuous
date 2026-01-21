@@ -25,8 +25,8 @@ class Version:
             UseCase.RollerBottle: {"major": 3.0, "minor": 5}
         }
 
-        self.theme = Theme.WW
-        self.useCase = UseCase.Continuous
+        self.theme = Theme.IBI
+        self.useCase = UseCase.FlowCell
         self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 
