@@ -10,7 +10,8 @@ from src.app.common_modules.wifi.helpers.wifi_helpers import (
     checkInternetConnection,
     getWifiNetworks,
     connectToWifi,
-    disconnectWifi
+    disconnectWifi,
+    checkAndAuthenticateCaptivePortal
 )
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, formatPopup, launchKeyboard
 from src.app.ui_manager.buttons.generic_button import GenericButton
@@ -44,7 +45,7 @@ class ConnectivityPopup:
         self.usernameFrame, self.usernameEntry = self.createUsernameSection()
         self.passwordFrame, self.passwordEntry, self.showPasswordButton = self.createPasswordSection()
         self.authMethodFrame, self.authMethodDropdown = self.createAuthMethodSection()
-        self.refreshButton, self.connectButton, self.disconnectButton = self.createButtonSection()
+        self.refreshButton, self.connectButton, self.disconnectButton, self.portalAuthButton = self.createButtonSection()
         self.refreshNetworks()
         self.updateConnectionStatus()
 
@@ -241,6 +242,13 @@ class ConnectivityPopup:
         connectButton.pack(side=tk.LEFT, padx=5)
         connectButton.configure(state="disabled")
 
+        portalAuthButton = GenericButton(
+            "Auth Portal",
+            buttonFrame,
+            self.authenticatePortal
+        ).button
+        portalAuthButton.pack(side=tk.LEFT, padx=5)
+
         closeButton = GenericButton(
             "Close",
             buttonFrame,
@@ -254,7 +262,7 @@ class ConnectivityPopup:
             self.disconnectFromNetwork
         ).button
         disconnectButton.pack(side=tk.RIGHT, padx=5)
-        return refreshButton, connectButton, disconnectButton
+        return refreshButton, connectButton, disconnectButton, portalAuthButton
 
     def updateConnectionStatus(self):
         def checkStatus():
@@ -495,6 +503,61 @@ class ConnectivityPopup:
                 ))
 
         thread = threading.Thread(target=disconnect, daemon=True)
+        thread.start()
+
+    def authenticatePortal(self):
+        """Manually authenticate with captive portal using stored credentials"""
+        username = self.username.get()
+        password = self.password.get()
+
+        if not username or not password:
+            self.statusLabel.configure(
+                text="Username and password required for portal authentication",
+                foreground=Colors().status.error
+            )
+            return
+
+        self.portalAuthButton.configure(state="disabled", text="Authenticating...")
+        self.connectButton.configure(state="disabled")
+        self.refreshButton.configure(state="disabled")
+        self.disconnectButton.configure(state="disabled")
+
+        def authenticate():
+            try:
+                success, message = checkAndAuthenticateCaptivePortal(username, password)
+
+                def updateUI():
+                    self.statusLabel.configure(
+                        text=message,
+                        foreground=Colors().status.success if success else Colors().status.error
+                    )
+
+                    if success and self.connectivityButton:
+                        self.connectivityButton.forceCheck()
+
+                    self.portalAuthButton.configure(state="normal", text="Auth Portal")
+                    self.connectButton.configure(state="normal")
+                    self.refreshButton.configure(state="normal")
+                    self.disconnectButton.configure(state="normal")
+
+                self.windowRoot.after(0, updateUI)
+
+            except Exception as e:
+                logging.exception("Error authenticating with captive portal", extra={"id": "Network"})
+                self.windowRoot.after(0, lambda: self.portalAuthButton.configure(
+                    state="normal", text="Auth Portal"
+                ))
+                self.windowRoot.after(0, lambda: self.connectButton.configure(
+                    state="normal"
+                ))
+                self.windowRoot.after(0, lambda: self.refreshButton.configure(
+                    state="normal"
+                ))
+                self.windowRoot.after(0, lambda: self.disconnectButton.configure(
+                    state="normal"
+                ))
+
+        thread = threading.Thread(target=authenticate, daemon=True)
         thread.start()
 
     def close(self):

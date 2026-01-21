@@ -4,7 +4,11 @@ import re
 import socket
 import subprocess
 import time
-from typing import Dict, List, Optional
+import urllib.request
+import urllib.parse
+import urllib.error
+from html.parser import HTMLParser
+from typing import Dict, List, Optional, Tuple
 
 
 def getWifiNetworks() -> List[Dict]:
@@ -85,6 +89,20 @@ def connectToWifi(ssid: str, password: str = None, username: str = None, auth_me
                 )
 
             if result.returncode == 0:
+                # Check for captive portal after successful connection
+                time.sleep(2)  # Wait for network to stabilize
+                is_captive, portal_url = detectCaptivePortal(timeout=5)
+
+                if is_captive and portal_url and username and password:
+                    # Attempt to authenticate with captive portal
+                    portal_success, portal_msg = authenticateCaptivePortal(portal_url, username, password)
+                    if portal_success:
+                        return True, f"Connected to {ssid} and authenticated with captive portal"
+                    else:
+                        return True, f"Connected to {ssid} but captive portal auth failed: {portal_msg}"
+                elif is_captive:
+                    return True, f"Connected to {ssid} but captive portal detected (credentials needed)"
+
                 return True, f"Successfully connected to {ssid}"
             else:
                 error_msg = result.stderr.strip() if result.stderr else "Connection failed"
@@ -175,6 +193,18 @@ def connectToEnterpriseWifi(ssid: str, username: str, password: str, auth_method
         )
 
         if activate_result.returncode == 0:
+            # Check for captive portal after successful 802.1X connection
+            time.sleep(2)  # Wait for network to stabilize
+            is_captive, portal_url = detectCaptivePortal(timeout=5)
+
+            if is_captive and portal_url:
+                # Attempt to authenticate with captive portal using the same credentials
+                portal_success, portal_msg = authenticateCaptivePortal(portal_url, username, password)
+                if portal_success:
+                    return True, f"Connected to {ssid} and authenticated with captive portal"
+                else:
+                    return True, f"Connected to {ssid} but captive portal auth failed: {portal_msg}"
+
             return True, f"Successfully connected to {ssid}"
         else:
             error_msg = activate_result.stderr.strip() if activate_result.stderr else "Connection failed"
@@ -220,6 +250,218 @@ def disconnectWifi() -> tuple[bool, str]:
     except Exception:
         logging.exception("Error disconnecting from WiFi", extra={"id": "Network"})
         return False, "Error"
+
+
+class CaptivePortalFormParser(HTMLParser):
+    """
+    HTML parser to extract login form details from captive portal pages.
+    """
+    def __init__(self):
+        super().__init__()
+        self.forms = []
+        self.current_form = None
+        self.current_input = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs_dict = dict(attrs)
+
+        if tag == 'form':
+            self.current_form = {
+                'action': attrs_dict.get('action', ''),
+                'method': attrs_dict.get('method', 'post').lower(),
+                'inputs': {}
+            }
+        elif tag == 'input' and self.current_form is not None:
+            input_name = attrs_dict.get('name', '')
+            input_type = attrs_dict.get('type', 'text').lower()
+            input_value = attrs_dict.get('value', '')
+
+            if input_name:
+                self.current_form['inputs'][input_name] = {
+                    'type': input_type,
+                    'value': input_value
+                }
+
+    def handle_endtag(self, tag):
+        if tag == 'form' and self.current_form is not None:
+            self.forms.append(self.current_form)
+            self.current_form = None
+
+
+def detectCaptivePortal(timeout: int = 5) -> Tuple[bool, Optional[str]]:
+    """
+    Detect if there's a captive portal by checking for HTTP redirects.
+
+    Returns:
+        Tuple of (is_captive_portal: bool, portal_url: Optional[str])
+    """
+    # Common URLs used for captive portal detection
+    test_urls = [
+        'http://detectportal.firefox.com/success.txt',
+        'http://www.gstatic.com/generate_204',
+        'http://captive.apple.com/hotspot-detect.html',
+        'http://connectivitycheck.gstatic.com/generate_204'
+    ]
+
+    for test_url in test_urls:
+        try:
+            request = urllib.request.Request(test_url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = urllib.request.urlopen(request, timeout=timeout)
+
+            # Check if we got redirected
+            final_url = response.geturl()
+            status_code = response.getcode()
+
+            # If redirected to a different domain, it's likely a captive portal
+            if final_url != test_url and status_code in [200, 302, 303, 307]:
+                logging.info(f"Captive portal detected: {final_url}")
+                return True, final_url
+
+            # Some portals return 200 but with different content
+            if test_url.endswith('generate_204') and status_code != 204:
+                return True, final_url
+
+        except urllib.error.HTTPError as e:
+            # 302/303 redirects might throw HTTPError
+            if e.code in [302, 303, 307]:
+                redirect_url = e.headers.get('Location', '')
+                if redirect_url:
+                    logging.info(f"Captive portal detected via redirect: {redirect_url}")
+                    return True, redirect_url
+        except (urllib.error.URLError, socket.timeout):
+            continue
+        except Exception as e:
+            logging.debug(f"Error checking captive portal with {test_url}: {e}")
+            continue
+
+    return False, None
+
+
+def authenticateCaptivePortal(portal_url: str, username: str, password: str) -> Tuple[bool, str]:
+    """
+    Attempt to authenticate with a captive portal programmatically.
+
+    Args:
+        portal_url: The captive portal login page URL
+        username: Username for authentication
+        password: Password for authentication
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    try:
+        # Fetch the login page
+        request = urllib.request.Request(portal_url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = urllib.request.urlopen(request, timeout=10)
+        html_content = response.read().decode('utf-8', errors='ignore')
+
+        # Parse the HTML to find login forms
+        parser = CaptivePortalFormParser()
+        parser.feed(html_content)
+
+        if not parser.forms:
+            return False, "No login form found on captive portal page"
+
+        # Use the first form found (usually the login form)
+        form = parser.forms[0]
+
+        # Build the form action URL
+        if form['action'].startswith('http'):
+            action_url = form['action']
+        elif form['action'].startswith('/'):
+            parsed = urllib.parse.urlparse(portal_url)
+            action_url = f"{parsed.scheme}://{parsed.netloc}{form['action']}"
+        else:
+            action_url = urllib.parse.urljoin(portal_url, form['action'])
+
+        # Prepare form data - try common field names for username/password
+        form_data = {}
+        username_fields = ['username', 'user', 'userid', 'login', 'email', 'netid']
+        password_fields = ['password', 'pass', 'pwd']
+
+        # Copy existing hidden fields and values
+        for field_name, field_info in form['inputs'].items():
+            if field_info['type'] in ['hidden', 'submit']:
+                form_data[field_name] = field_info['value']
+
+        # Find and set username field
+        username_set = False
+        for field_name in form['inputs'].keys():
+            if any(uf in field_name.lower() for uf in username_fields):
+                form_data[field_name] = username
+                username_set = True
+                break
+
+        # Find and set password field
+        password_set = False
+        for field_name in form['inputs'].keys():
+            if any(pf in field_name.lower() for pf in password_fields):
+                form_data[field_name] = password
+                password_set = True
+                break
+
+        if not username_set or not password_set:
+            return False, "Could not identify username/password fields in login form"
+
+        # Submit the form
+        encoded_data = urllib.parse.urlencode(form_data).encode('utf-8')
+        submit_request = urllib.request.Request(
+            action_url,
+            data=encoded_data,
+            headers={'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+
+        submit_response = urllib.request.urlopen(submit_request, timeout=10)
+
+        # Wait a moment for authentication to complete
+        time.sleep(2)
+
+        # Check if we now have internet access
+        has_internet = checkInternetConnection(timeout=3)
+
+        if has_internet:
+            return True, "Successfully authenticated with captive portal"
+        else:
+            return False, "Captive portal form submitted but internet access not confirmed"
+
+    except urllib.error.HTTPError as e:
+        logging.error(f"HTTP error during captive portal auth: {e.code} - {e.reason}")
+        return False, f"Authentication failed: HTTP {e.code}"
+    except urllib.error.URLError as e:
+        logging.error(f"URL error during captive portal auth: {e.reason}")
+        return False, "Could not connect to captive portal"
+    except Exception as e:
+        logging.exception("Unexpected error during captive portal authentication", extra={"id": "Network"})
+        return False, f"Authentication error: {str(e)}"
+
+
+def checkAndAuthenticateCaptivePortal(username: str = None, password: str = None) -> Tuple[bool, str]:
+    """
+    Check if connected to a captive portal and attempt authentication if credentials provided.
+
+    Args:
+        username: Username for authentication (optional)
+        password: Password for authentication (optional)
+
+    Returns:
+        Tuple of (needs_auth: bool, message: str)
+    """
+    # First check if we already have internet
+    if checkInternetConnection(timeout=3):
+        return False, "Already have internet access"
+
+    # Check for captive portal
+    is_captive, portal_url = detectCaptivePortal(timeout=5)
+
+    if not is_captive:
+        return False, "No captive portal detected but no internet access"
+
+    if not username or not password:
+        return True, f"Captive portal detected at {portal_url} - credentials required"
+
+    # Attempt authentication
+    success, message = authenticateCaptivePortal(portal_url, username, password)
+    return success, message
 
 
 def sortNetworks(networks_map: Dict[str, Dict]) -> List[Dict]:
