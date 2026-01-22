@@ -365,6 +365,11 @@ def authenticateCaptivePortal(portal_url: str, username: str, password: str) -> 
         # Use the first form found (usually the login form)
         form = parser.forms[0]
 
+        # Debug: Log form fields found
+        field_names = list(form['inputs'].keys())
+        logging.info(f"Captive portal form fields found: {field_names}", extra={"id": "Network"})
+        logging.debug(f"Form details - Action: {form['action']}, Method: {form['method']}, Fields: {form['inputs']}", extra={"id": "Network"})
+
         # Build the form action URL
         if form['action'].startswith('http'):
             action_url = form['action']
@@ -386,19 +391,30 @@ def authenticateCaptivePortal(portal_url: str, username: str, password: str) -> 
 
         # Find and set username field
         username_set = False
+        matched_username_field = None
         for field_name in form['inputs'].keys():
             if any(uf in field_name.lower() for uf in username_fields):
                 form_data[field_name] = username
                 username_set = True
+                matched_username_field = field_name
                 break
 
         # Find and set password field
         password_set = False
+        matched_password_field = None
         for field_name in form['inputs'].keys():
             if any(pf in field_name.lower() for pf in password_fields):
                 form_data[field_name] = password
                 password_set = True
+                matched_password_field = field_name
                 break
+
+        # Debug: Log field matching results
+        if username_set and password_set:
+            logging.info(f"Matched fields - Username: '{matched_username_field}', Password: '{matched_password_field}'", extra={"id": "Network"})
+        else:
+            logging.warning(f"Field matching failed - Username set: {username_set}, Password set: {password_set}", extra={"id": "Network"})
+            logging.warning(f"Available fields: {field_names}", extra={"id": "Network"})
 
         if not username_set or not password_set:
             return False, "Could not identify username/password fields in login form"
