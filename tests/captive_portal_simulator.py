@@ -20,7 +20,8 @@ class CaptivePortalHandler(http.server.SimpleHTTPRequestHandler):
     VALID_CREDENTIALS = {
         'testuser': 'testpass',
         'netid@iastate.edu': 'password123',
-        'student@university.edu': 'mypassword'
+        'student@university.edu': 'mypassword',
+        'guest': 'guest'  # For simple accept-terms portal
     }
 
     def do_GET(self):
