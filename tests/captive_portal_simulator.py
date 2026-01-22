@@ -26,8 +26,13 @@ class CaptivePortalHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests - show login page or redirect"""
 
+        # Parse the path to separate from query parameters
+        parsed_url = urllib.parse.urlparse(self.path)
+        path_only = parsed_url.path
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+
         # Simulate connectivity check redirects
-        if self.path in ['/success.txt', '/generate_204', '/hotspot-detect.html']:
+        if path_only in ['/success.txt', '/generate_204', '/hotspot-detect.html']:
             # Redirect to login page (simulating captive portal)
             self.send_response(302)
             self.send_header('Location', f'http://localhost:{PORT}/login')
@@ -35,20 +40,20 @@ class CaptivePortalHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         # Show login page
-        if self.path == '/login' or self.path == '/':
+        if path_only == '/login' or path_only == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
 
             # Generate different portal types based on query parameter
-            portal_type = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('type', ['standard'])[0]
+            portal_type = query_params.get('type', ['standard'])[0]
 
             html = self.get_login_page(portal_type)
             self.wfile.write(html.encode())
             return
 
         # Success page after authentication
-        if self.path == '/success':
+        if path_only == '/success':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
@@ -71,7 +76,11 @@ class CaptivePortalHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         """Handle POST requests - process login"""
 
-        if self.path == '/auth' or self.path == '/login':
+        # Parse the path to separate from query parameters
+        parsed_url = urllib.parse.urlparse(self.path)
+        path_only = parsed_url.path
+
+        if path_only == '/auth' or path_only == '/login':
             # Parse form data
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length).decode('utf-8')
