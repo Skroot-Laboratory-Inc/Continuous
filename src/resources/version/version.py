@@ -19,15 +19,14 @@ class UseCase(Enum):
 class Version:
     def __init__(self):
         self.versions = {
-            UseCase.Continuous: {"major": 3.0, "minor": 6},
-            UseCase.FlowCell: {"major": 3.0, "minor": 5},
-            UseCase.Tunair: {"major": 3.0, "minor": 5},
-            UseCase.RollerBottle: {"major": 3.0, "minor": 5}
+            UseCase.Continuous: {"major": 3.0, "minor": 6, "version": DevelopmentVersion.Dev},
+            UseCase.FlowCell: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Test},
+            UseCase.Tunair: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Dev},
+            UseCase.RollerBottle: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Dev}
         }
 
         self.theme = Theme.IBI
         self.useCase = UseCase.FlowCell
-        self.developmentVersion = DevelopmentVersion.Dev
         self.isBeta = True
 
     def getMajorVersion(self) -> float:
@@ -51,12 +50,15 @@ class Version:
     def getUseCase(self) -> str:
         return self.useCase.value
 
+    def getDevelopmentVersion(self):
+        return self.versions[self.useCase]["version"].value
+
     def getTheme(self) -> Theme:
         return self.theme
 
     def getReleaseBucket(self) -> str:
         if self.isBeta:
-            return f"{self.getUseCase()}/{self.developmentVersion.value}/Beta"
+            return f"{self.getUseCase()}/{self.getDevelopmentVersion()}/Beta"
         else:
-            return f"{self.getUseCase()}/{self.developmentVersion.value}"
+            return f"{self.getUseCase()}/{self.getDevelopmentVersion()}"
 
