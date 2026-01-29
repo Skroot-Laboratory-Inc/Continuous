@@ -15,6 +15,7 @@ from src.app.helper_methods.model.result_set.temperature_result_set import Tempe
 from src.app.helper_methods.model.sweep_data import SweepData
 from src.app.properties.harvest_properties import HarvestProperties
 from src.app.reader.algorithm.harvest_algorithm import HarvestAlgorithm
+from src.app.use_case.use_case_factory import ContextFactory
 
 
 class Analyzer:
@@ -119,8 +120,7 @@ class Analyzer:
         Find the peak using Gaussian curve fitting.
         Uses the shared findMaxGaussian helper with default 50 points on each side.
         """
-        # TODO: Make pointsOnEachSide configurable since roller bottle uses 50, and others use 500
-        return findMaxGaussian(x, y, pointsOnEachSide=50)
+        return findMaxGaussian(x, y, pointsOnEachSide=round(5 * (1 / ContextFactory().getSibProperties().stepSize)))   # 5 MHz on each side
 
     @staticmethod
     def calculateDerivativeValues(time, sgi) -> float:

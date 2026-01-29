@@ -16,6 +16,7 @@ class SibProperties:
         return SibProperties(
             startFrequency=100,
             stopFrequency=160,
+            stepSize=0.1
         )
 
     @staticmethod
