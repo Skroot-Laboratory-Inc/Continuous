@@ -6,7 +6,7 @@ class DevSecondaryAxisTracker(SecondaryAxisTracker):
         super().__init__(outputFile)
 
     def getTimes(self, startTime: int) -> [float]:
-        return [0, 1.2, 3.1, 4.2, 7.8, 9.2, 10.3, 12.2]
+        return [1, 5, 8, 10, 28, 30, 39, 53]
 
     def getValues(self) -> [float]:
-        return [0, 0.3, 0.5, 1.2, 13, 19, 23, 24]
+        return [0, 6, 9.5, 11, 22, 24, 18, 20]

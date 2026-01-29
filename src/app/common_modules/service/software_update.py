@@ -59,6 +59,10 @@ class SoftwareUpdate(AwsBoto3):
         updateRequired = False
         newestVersion = ""
         if not self.disabled:
+            # Ensure credentials are fresh before operation
+            if self._ensure_credentials():
+                self._refresh_clients()
+
             allReleases = self.s3.list_objects_v2(
                 Bucket='skroot-data',
                 Prefix=f"software-releases/{Version().getUseCase()}",

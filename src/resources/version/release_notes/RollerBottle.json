@@ -3,7 +3,8 @@
     "features": {
       "1": "Separated software releases by use case to improve maintainability.",
       "2": "Updated SGI calculation to remove negative readings",
-      "3": "Added powered by Skroot logo on boot screen."
+      "3": "Added powered by Skroot logo on boot screen.",
+      "4": "Added support for device ID and secret to authenticate with AWS."
     },
     "bugfixes": {
       "1": "Fixed exports to display correct modified date on Windows.",

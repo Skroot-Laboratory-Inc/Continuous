@@ -12,8 +12,9 @@ from src.app.common_modules.authentication.helpers.constants import Authenticati
 from src.app.common_modules.authentication.helpers.exceptions import AuthLogsNotFound, AideLogsNotFound
 from src.app.common_modules.authentication.helpers.functions import getAdmins, getUsers
 from src.app.common_modules.authentication.helpers.logging import extractAuthLogs, extractAideLogs, logAuthAction
-from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
+from src.app.common_modules.aws.device_credentials import get_credentials_manager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
+from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.pdf_helpers import createPdf
 from src.app.widget import text_notification
 
@@ -125,42 +126,124 @@ def setHostname(hostname: str):
 
 def hasValidAwsCredentials():
     """
-    Check if valid AWS credentials are configured by calling STS get-caller-identity.
-    Result is cached forever since credentials cannot change at runtime.
+    Check if valid AWS credentials are available.
+
+    Uses device-based authentication if device config exists, otherwise falls back
+    to legacy AWS credential chain (environment variables, ~/.aws/credentials, etc.).
+
+    This function returns immediately using cached state if available.
+    If credentials haven't been validated yet, it triggers background validation
+    and returns False (conservative default).
+
+    For UI responsiveness, this function never blocks on network calls.
+    Use validateAwsCredentialsSync() for synchronous validation when needed.
+
+    Returns:
+        bool: True if AWS credentials are known to be valid, False otherwise
+    """
+    credentials_manager = get_credentials_manager()
+
+    # Return cached validation state if available
+    cached_state = credentials_manager.get_cached_validation_state()
+    if cached_state is not None:
+        # If using device auth and we have cached credentials that are still valid, return cached state
+        if credentials_manager.has_device_config() and credentials_manager.has_valid_cached_credentials():
+            return cached_state
+        # For legacy auth or expiring device credentials, trigger background refresh
+        if credentials_manager.has_device_config():
+            credentials_manager.ensure_valid_credentials_async()
+        return cached_state
+
+    # No cached state yet - trigger background validation and return False
+    # This ensures the UI doesn't block on first load
+    _triggerBackgroundValidation()
+    return False
+
+
+def _triggerBackgroundValidation():
+    """
+    Trigger AWS credential validation in a background thread.
+    Updates the cached validation state when complete.
+    """
+    import threading
+
+    def _validate():
+        validateAwsCredentialsSync()
+
+    thread = threading.Thread(target=_validate, daemon=True)
+    thread.start()
+
+
+def validateAwsCredentialsSync() -> bool:
+    """
+    Synchronously validate AWS credentials.
+
+    Uses device-based authentication if device config exists (/etc/skroot/device.json
+    on Linux or %PROGRAMDATA%\\Skroot\\device.json on Windows), otherwise falls back
+    to the legacy AWS credential chain (environment variables, ~/.aws/credentials, etc.).
+
+    This function WILL block on network calls. Use hasValidAwsCredentials()
+    for non-blocking checks in UI code.
 
     Returns:
         bool: True if AWS credentials are valid, False otherwise
     """
     global _aws_credentials_validated
 
-    # Return cached result if already checked
-    if _aws_credentials_validated is not None:
-        return _aws_credentials_validated
+    credentials_manager = get_credentials_manager()
 
-    # First check - validate credentials
+    # Check if device config exists - use device auth if available
+    if credentials_manager.has_device_config():
+        logging.info("Using device-based AWS authentication", extra={"id": "AWS"})
+        # Ensure we have valid credentials (fetches/refreshes as needed)
+        if not credentials_manager.ensure_valid_credentials():
+            logging.warning("Failed to obtain AWS credentials from device authentication", extra={"id": "AWS"})
+            _aws_credentials_validated = False
+            credentials_manager.set_validation_state(False)
+            return False
+    else:
+        # Fall back to legacy AWS credential chain
+        logging.info("Device config not found - using legacy AWS credential chain", extra={"id": "AWS"})
+
+    # Validate credentials with STS (works for both device and legacy auth)
     try:
-        sts_client = boto3.client('sts')
+        sts_client = boto3.client('sts', region_name='us-east-2')
         response = sts_client.get_caller_identity()
-        logging.info(f"Currently logged in as {response.get('Arn')}", extra={"id": "AWS"})
+        caller_arn = response.get('Arn')
+        logging.info(f"Currently logged in as {caller_arn}", extra={"id": "AWS"})
         _aws_credentials_validated = True
+        credentials_manager.set_validation_state(True, caller_arn)
     except NoCredentialsError:
-        # No AWS credentials configured
-        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        logging.error("No AWS credentials available", extra={"id": "AWS"})
         _aws_credentials_validated = False
-    except ClientError:
-        # AWS service error (e.g., invalid credentials)
-        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        credentials_manager.set_validation_state(False)
+    except ClientError as e:
+        logging.error(f"AWS credentials validation failed: {e}", extra={"id": "AWS"})
         _aws_credentials_validated = False
-    except BotoCoreError:
-        # Other boto3/botocore errors
-        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        credentials_manager.set_validation_state(False)
+    except BotoCoreError as e:
+        logging.error(f"AWS credentials validation error: {e}", extra={"id": "AWS"})
         _aws_credentials_validated = False
-    except Exception:
-        # Any other unexpected error
-        logging.exception(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
+        credentials_manager.set_validation_state(False)
+    except Exception as e:
+        logging.error(f"Unexpected error validating AWS credentials: {e}", extra={"id": "AWS"})
         _aws_credentials_validated = False
+        credentials_manager.set_validation_state(False)
+
     logging.info(f"AWS credentials valid: {_aws_credentials_validated}", extra={"id": "AWS"})
     return _aws_credentials_validated
+
+
+def getAwsCallerArn() -> str:
+    """
+    Get the ARN of the currently authenticated AWS caller.
+
+    Returns:
+        str: The ARN string, or empty string if not available
+    """
+    credentials_manager = get_credentials_manager()
+    arn = credentials_manager.get_caller_arn()
+    return arn if arn else ""
 
 
 def isAwsConnected():
