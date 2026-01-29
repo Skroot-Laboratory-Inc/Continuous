@@ -2,7 +2,8 @@
   "v3.0.6": {
     "bugfixes": {
       "1": "Fixed fresh install to select the correct boot logo.",
-      "2": "Added powered by Skroot logo on boot screen."
+      "2": "Added powered by Skroot logo on boot screen.",
+      "3": "Reduced resolution to 0.1 MHz"
     }
   },
   "v3.0.5": {
