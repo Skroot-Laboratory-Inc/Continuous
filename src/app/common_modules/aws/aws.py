@@ -8,6 +8,7 @@ import botocore
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
+from src.app.common_modules.aws.device_credentials import get_credentials_manager
 from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.model.dynamodbConfig import DynamodbConfig
@@ -16,9 +17,17 @@ from src.resources.version.version import Version
 
 class AwsBoto3:
     def __init__(self):
-        config = Config(connect_timeout=5, read_timeout=5)
-        self.s3 = boto3.client('s3', config=config, region_name='us-east-2')
-        self.dynamodb = boto3.client('dynamodb', config=config, region_name='us-east-2')
+        self._config = Config(connect_timeout=5, read_timeout=5)
+        self._region = 'us-east-2'
+        self._credentials_manager = get_credentials_manager()
+        self._uses_device_auth = self._credentials_manager.has_device_config()
+
+        # Ensure credentials are available before creating clients (only for device auth)
+        if self._uses_device_auth:
+            self._ensure_credentials()
+
+        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
         self.disabled = False
         self.bucket = 'skroot-data'
         self.dataPrefix = 'experiments/'
@@ -35,9 +44,35 @@ class AwsBoto3:
             self.disabled = True
         self.runUid = datetimeToMillis(datetime.datetime.now())
 
+    def _ensure_credentials(self) -> bool:
+        """
+        Ensure valid AWS credentials are available (device auth only).
+        Refreshes credentials if they are expired or expiring soon.
+
+        For legacy AWS credential chain, this is a no-op.
+
+        Returns:
+            bool: True if credentials were refreshed and clients need recreation
+        """
+        if not self._uses_device_auth:
+            return False
+        return self._credentials_manager.ensure_valid_credentials()
+
+    def _refresh_clients(self):
+        """
+        Recreate boto3 clients after credential refresh.
+        This is needed because boto3 clients cache credentials at creation time.
+        """
+        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
+
     def findFolderAndUploadFile(self, fileLocation, fileType, tags):
         """ Internal use only to upload the first file of a folder. """
         if not self.disabled:
+            # Ensure credentials are fresh before operation
+            if self._ensure_credentials():
+                self._refresh_clients()
+
             for folder in self.folders:
                 try:
                     self.s3.upload_file(
@@ -57,6 +92,10 @@ class AwsBoto3:
 
     def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
         if not self.disabled:
+            # Ensure credentials are fresh before operation
+            if self._ensure_credentials():
+                self._refresh_clients()
+
             try:
                 if not self.runFolder:
                     self.findFolderAndUploadFile(fileLocation, fileType, tags)
@@ -79,6 +118,10 @@ class AwsBoto3:
 
     def downloadFile(self, aws_filename, local_filename):
         if not self.disabled:
+            # Ensure credentials are fresh before operation
+            if self._ensure_credentials():
+                self._refresh_clients()
+
             try:
                 self.s3.download_file(self.bucket, aws_filename, local_filename)
             except botocore.exceptions.EndpointConnectionError:
@@ -90,6 +133,10 @@ class AwsBoto3:
 
     def pushExperimentRow(self, config: DynamodbConfig) -> bool:
         if not self.disabled:
+            # Ensure credentials are fresh before operation
+            if self._ensure_credentials():
+                self._refresh_clients()
+
             if self.customerId is not None:
                 item = {
                     'customerId': {'S': self.customerId},
