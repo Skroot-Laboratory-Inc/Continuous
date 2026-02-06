@@ -7,7 +7,7 @@ from zipfile import ZipFile
 import botocore
 
 from src.app.common_modules.aws.aws import AwsBoto3
-from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException, raise_on_expired_token
+from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException, ExpiredTokenException, raise_on_expired_token
 from src.app.common_modules.aws.helpers.helpers import runShScript
 from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
@@ -52,6 +52,8 @@ class SoftwareUpdate(AwsBoto3):
                 text_notification.setText("Software update aborted.")
         except UserConfirmationException:
             pass
+        except ExpiredTokenException:
+            raise
         except:
             logging.exception("failed to update software", extra={"id": "software-update"})
 
@@ -129,6 +131,8 @@ class SoftwareUpdate(AwsBoto3):
                 localFilename
             )
             return localFilename
+        except ExpiredTokenException:
+            raise
         except DownloadFailedException:
             text_notification.setText("Failed to download software update.")
 

@@ -10,6 +10,7 @@ from src.app.common_modules.authentication.helpers.decorators import requireAdmi
     forceRequireSystemAdmin
 from src.app.common_modules.authentication.helpers.logging import logAuthAction
 from src.app.common_modules.authentication.session_manager.session_manager import SessionManager
+from src.app.common_modules.aws.helpers.exceptions import ExpiredTokenException
 from src.app.common_modules.service.software_update import SoftwareUpdate
 from src.app.helper_methods.custom_exceptions.common_exceptions import USBDriveNotFoundException, \
     UserConfirmationException
@@ -172,6 +173,9 @@ class SideBarActions:
 
     @requireUser
     def updateSoftware(self, softwareUpdater: SoftwareUpdate):
-        softwareUpdater.checkForSoftwareUpdates()
-        if softwareUpdater.newestZipVersion:
-            softwareUpdater.downloadSoftwareUpdate()
+        try:
+            softwareUpdater.checkForSoftwareUpdates()
+            if softwareUpdater.newestZipVersion:
+                softwareUpdater.downloadSoftwareUpdate()
+        except ExpiredTokenException:
+            text_notification.setText("AWS token expired. Please contact your system administrator.")

@@ -2,6 +2,7 @@ import datetime
 import json
 from typing import List
 
+from src.app.common_modules.aws.helpers.exceptions import ExpiredTokenException
 from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.model.issue.issue import Issue
@@ -35,7 +36,10 @@ class AutomatedIssueManager:
     def syncToS3(self):
         with open(self.GlobalFileManager.getIssueLog(), "w") as issueLog:
             issueLog.write(json.dumps(self.jsonFromIssues(self.issues)))
-        self.AwsService.uploadIssueLog()
+        try:
+            self.AwsService.uploadIssueLog()
+        except ExpiredTokenException:
+            pass
 
     def hasOpenIssues(self):
         for issue in self.issues:

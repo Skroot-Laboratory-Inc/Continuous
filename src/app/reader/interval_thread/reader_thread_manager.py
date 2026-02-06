@@ -7,6 +7,7 @@ from typing import Callable
 
 import numpy as np
 
+from src.app.common_modules.aws.helpers.exceptions import ExpiredTokenException
 from src.app.helper_methods.custom_exceptions.analysis_exception import ZeroPointException, AnalysisException, \
     SensorNotFoundException
 from src.app.helper_methods.custom_exceptions.sib_exception import SIBReconnectException
@@ -55,7 +56,10 @@ class ReaderThreadManager:
 
     def addSecondaryAxisValue(self, value: float):
         self.Reader.SecondaryAxisTracker.addValue(value)
-        self.Reader.AwsService.uploadSecondAxis()
+        try:
+            self.Reader.AwsService.uploadSecondAxis()
+        except ExpiredTokenException:
+            pass
         text_notification.setText(f"Added {SecondaryAxisType().getConfig()} of {value} {SecondaryAxisUnits().getAsUnit()}")
 
     def startReaderLoop(self, user: str):
@@ -222,6 +226,8 @@ class ReaderThreadManager:
                     reader.Indicator.changeIndicatorRed()
                     text_notification.setText(f"Sensor not found above Reader Port {reader.readerNumber}.")
                     logging.info(e.message, extra={"id": f"Reader {reader.readerNumber}"})
+                except ExpiredTokenException:
+                    pass
                 finally:
                     self.Timer.updateTime()
                 if not self.issueOccurredFn():
@@ -237,12 +243,15 @@ class ReaderThreadManager:
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText("Run Finished.")
         if reader.finishedEquilibrationPeriod:
-            reader.AwsService.uploadFinalExperimentFiles(
-                self.guidedSetupForm.getLotId(),
-                self.kpiForm.saturationDate,
-                self.Reader.getAnalyzer().ResultSet.getStartTime(),
-                self.guidedSetupForm.getWarehouse(),
-            )
+            try:
+                reader.AwsService.uploadFinalExperimentFiles(
+                    self.guidedSetupForm.getLotId(),
+                    self.kpiForm.saturationDate,
+                    self.Reader.getAnalyzer().ResultSet.getStartTime(),
+                    self.guidedSetupForm.getWarehouse(),
+                )
+            except ExpiredTokenException:
+                pass
         self.resetRunFunc(reader.readerNumber)
         copyExperimentLog(self.Reader.FileManager.getReaderSavePath())
         logging.info(f'Finished run.', extra={"id": f"Reader {reader.readerNumber}"})

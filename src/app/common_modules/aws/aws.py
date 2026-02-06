@@ -40,9 +40,6 @@ class AwsBoto3:
                 Prefix=self.dataPrefix,
                 Delimiter='/',
             )['CommonPrefixes']
-        except ClientError as e:
-            raise_on_expired_token(e)
-            self.disabled = True
         except:
             self.disabled = True
         self.runUid = datetimeToMillis(datetime.datetime.now())

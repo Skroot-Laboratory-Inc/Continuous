@@ -8,7 +8,7 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError, BotoCoreError
 
-from src.app.common_modules.aws.helpers.exceptions import raise_on_expired_token
+from src.app.common_modules.aws.helpers.exceptions import ExpiredTokenException, raise_on_expired_token
 
 from src.app.common_modules.authentication.helpers.constants import AuthenticationConstants
 from src.app.common_modules.authentication.helpers.exceptions import AuthLogsNotFound, AideLogsNotFound
@@ -209,27 +209,31 @@ def validateAwsCredentialsSync() -> bool:
 
     # Validate credentials with STS (works for both device and legacy auth)
     try:
-        sts_client = boto3.client('sts', region_name='us-east-2')
-        response = sts_client.get_caller_identity()
-        caller_arn = response.get('Arn')
-        logging.info(f"Currently logged in as {caller_arn}", extra={"id": "AWS"})
-        _aws_credentials_validated = True
-        credentials_manager.set_validation_state(True, caller_arn)
-    except NoCredentialsError:
-        logging.error("No AWS credentials available", extra={"id": "AWS"})
-        _aws_credentials_validated = False
-        credentials_manager.set_validation_state(False)
-    except ClientError as e:
-        raise_on_expired_token(e)
-        logging.error(f"AWS credentials validation failed: {e}", extra={"id": "AWS"})
-        _aws_credentials_validated = False
-        credentials_manager.set_validation_state(False)
-    except BotoCoreError as e:
-        logging.error(f"AWS credentials validation error: {e}", extra={"id": "AWS"})
-        _aws_credentials_validated = False
-        credentials_manager.set_validation_state(False)
-    except Exception as e:
-        logging.error(f"Unexpected error validating AWS credentials: {e}", extra={"id": "AWS"})
+        try:
+            sts_client = boto3.client('sts', region_name='us-east-2')
+            response = sts_client.get_caller_identity()
+            caller_arn = response.get('Arn')
+            logging.info(f"Currently logged in as {caller_arn}", extra={"id": "AWS"})
+            _aws_credentials_validated = True
+            credentials_manager.set_validation_state(True, caller_arn)
+        except NoCredentialsError:
+            logging.error("No AWS credentials available", extra={"id": "AWS"})
+            _aws_credentials_validated = False
+            credentials_manager.set_validation_state(False)
+        except ClientError as e:
+            raise_on_expired_token(e)
+            logging.error(f"AWS credentials validation failed: {e}", extra={"id": "AWS"})
+            _aws_credentials_validated = False
+            credentials_manager.set_validation_state(False)
+        except BotoCoreError as e:
+            logging.error(f"AWS credentials validation error: {e}", extra={"id": "AWS"})
+            _aws_credentials_validated = False
+            credentials_manager.set_validation_state(False)
+        except Exception as e:
+            logging.error(f"Unexpected error validating AWS credentials: {e}", extra={"id": "AWS"})
+            _aws_credentials_validated = False
+            credentials_manager.set_validation_state(False)
+    except ExpiredTokenException:
         _aws_credentials_validated = False
         credentials_manager.set_validation_state(False)
 
