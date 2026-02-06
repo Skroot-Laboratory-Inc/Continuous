@@ -8,6 +8,8 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError, BotoCoreError
 
+from src.app.common_modules.aws.helpers.exceptions import raise_on_expired_token
+
 from src.app.common_modules.authentication.helpers.constants import AuthenticationConstants
 from src.app.common_modules.authentication.helpers.exceptions import AuthLogsNotFound, AideLogsNotFound
 from src.app.common_modules.authentication.helpers.functions import getAdmins, getUsers
@@ -218,6 +220,7 @@ def validateAwsCredentialsSync() -> bool:
         _aws_credentials_validated = False
         credentials_manager.set_validation_state(False)
     except ClientError as e:
+        raise_on_expired_token(e)
         logging.error(f"AWS credentials validation failed: {e}", extra={"id": "AWS"})
         _aws_credentials_validated = False
         credentials_manager.set_validation_state(False)

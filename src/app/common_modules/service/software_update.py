@@ -7,7 +7,7 @@ from zipfile import ZipFile
 import botocore
 
 from src.app.common_modules.aws.aws import AwsBoto3
-from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException
+from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException, raise_on_expired_token
 from src.app.common_modules.aws.helpers.helpers import runShScript
 from src.app.helper_methods.custom_exceptions.common_exceptions import UserConfirmationException
 from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
@@ -85,6 +85,7 @@ class SoftwareUpdate(AwsBoto3):
                                 minorVersion = int(tags['Value'])
 
                 except botocore.exceptions.ClientError as e:
+                    raise_on_expired_token(e)
                     continue  # This means it's an R&D update, and we are not using an R&D profile
                 except:
                     logging.exception("failed to get tags of software update file", extra={"id": "software-update"})

@@ -9,7 +9,7 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 
 from src.app.common_modules.aws.device_credentials import get_credentials_manager
-from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException
+from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException, raise_on_expired_token
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
 from src.app.helper_methods.model.dynamodbConfig import DynamodbConfig
 from src.resources.version.version import Version
@@ -40,6 +40,9 @@ class AwsBoto3:
                 Prefix=self.dataPrefix,
                 Delimiter='/',
             )['CommonPrefixes']
+        except ClientError as e:
+            raise_on_expired_token(e)
+            self.disabled = True
         except:
             self.disabled = True
         self.runUid = datetimeToMillis(datetime.datetime.now())
@@ -86,7 +89,7 @@ class AwsBoto3:
                     break
                 except Exception as e:
                     if type(e.__context__) is ClientError:
-                        pass  # This means unauthorized
+                        raise_on_expired_token(e.__context__)
                     else:
                         raise
 
@@ -109,6 +112,10 @@ class AwsBoto3:
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet', extra={"id": "aws"})
                 return False
+            except ClientError as e:
+                raise_on_expired_token(e)
+                logging.exception('Error - most likely there were no folders found in AWS.', extra={"id": "aws"})
+                return False
             except:
                 logging.exception('Error - most likely there were no folders found in AWS.', extra={"id": "aws"})
                 return False
@@ -127,6 +134,10 @@ class AwsBoto3:
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet', extra={"id": "aws"})
                 self.disabled = True
+            except ClientError as e:
+                raise_on_expired_token(e)
+                logging.exception("Failed to download release notes")
+                raise DownloadFailedException()
             except:
                 logging.exception("Failed to download release notes")
                 raise DownloadFailedException()
