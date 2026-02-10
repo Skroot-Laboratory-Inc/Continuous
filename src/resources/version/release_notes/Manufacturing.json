@@ -1,4 +1,9 @@
 {
+  "v3.0.8": {
+    "features": {
+      "1": "Added first and last name support to user management."
+    }
+  },
   "v3.0.7": {
     "features": {
       "1": "Added support for device ID and secret to authenticate with AWS."

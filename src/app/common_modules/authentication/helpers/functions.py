@@ -23,19 +23,21 @@ from src.app.common_modules.authentication.password_policy_manager.password_rota
 from src.app.widget import text_notification
 
 
-def createKioskUser(user: str, passwd: str):
+def createKioskUser(user: str, passwd: str, first_name: str = "", last_name: str = ""):
     if user_exists(user):
         raise UserExistsException()
     goodPassword, message = check_password_quality(user, passwd)
     if not goodPassword:
         raise BadPasswordException(message)
     encodedPasswd = subprocess.check_output(["mkpasswd", "-m", "sha-512", passwd]).decode().strip()
+    comment = f"{first_name},{last_name}"
 
     process = subprocess.Popen([
         "sudo", "useradd",  # Create a user using user group privileges
         "-M",  # Do not create a home directory for the user
         "--system",  # Do not allow the user to sign in from the GUI
         "-p", encodedPasswd,  # Enter the hashed password
+        "-c", comment,  # Store the user's first and last name in the comment field
         "-G", AuthenticationConstants().userGroup,  # Add them to their permissions group
         user],  # Enter the username to create
         stdin=subprocess.PIPE)
@@ -45,18 +47,21 @@ def createKioskUser(user: str, passwd: str):
     return process.returncode
 
 
-def createKioskAdmin(user: str, passwd: str):
+def createKioskAdmin(user: str, passwd: str, first_name: str = "", last_name: str = ""):
     if user_exists(user):
         raise UserExistsException()
     goodPassword, message = check_password_quality(user, passwd)
     if not goodPassword:
         raise BadPasswordException(message)
     encodedPasswd = subprocess.check_output(["mkpasswd", "-m", "sha-512", passwd]).decode().strip()
+    comment = f"{first_name},{last_name}"
+
     process = subprocess.Popen([
         "sudo", "useradd",  # Create a user using user group privileges
         "-M",  # Do not create a home directory for the user
         "--system",  # Do not allow the user to sign in from the GUI
         "-p", encodedPasswd,  # Enter the hashed password
+        "-c", comment,  # Store the user's first and last name in the comment field
         "-G", AuthenticationConstants().adminGroup,  # Add them to their permissions group
         user],  # Enter the username to create
         stdin=subprocess.PIPE)

@@ -44,7 +44,8 @@ def createUserInfoPdf(username: str, driveLocation: str):
             os.mkdir(f"{driveLocation}/Audit Trail")
         logAuthAction("User Export", "Initiated", username=username)
         fieldnames = [
-            'Username', 'Role', 'Password Last Changed', 'Password Expires', 'Password Inactive', 'Last Active',
+            'Username', 'First Name', 'Last Name', 'Role', 'Password Last Changed', 'Password Expires',
+            'Password Inactive', 'Last Active',
         ]
         data = [fieldnames]
 
@@ -61,6 +62,7 @@ def createUserInfoPdf(username: str, driveLocation: str):
             f"{driveLocation}/Audit Trail/Users_{datetimeToMillis(datetime.now())}.pdf",
             "User Account Details",
             username,
+            isLandscape=True,
         )
         logAuthAction("User Export", "Successful", username=username)
         text_notification.setText("User information exported to USB drive.")
