@@ -13,14 +13,37 @@ class User:
     def __init__(self, username, isAdmin: bool = False):
         self.username = username
         self.role = UserRole.ADMIN if isAdmin else UserRole.USER
+        self.first_name = "-"
+        self.last_name = "-"
         self.last_changed = "-"
         self.password_expires = "-"
         self.password_inactive = "-"
         self.account_expires = "-"
         self.last_login = "Never"
         if platform.system() == "Linux":
+            self._fetch_name_from_comment()
             self._fetch_password_info()
             self._fetch_last_auth_attempt()
+
+    def _fetch_name_from_comment(self):
+        """Parse first and last name from the GECOS comment field in /etc/passwd"""
+        try:
+            result = subprocess.run(
+                ['getent', 'passwd', self.username],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                # GECOS is the 5th field (index 4) in the colon-separated passwd entry
+                gecos = result.stdout.strip().split(':')[4]
+                parts = gecos.split(',', 1)
+                if len(parts) >= 1 and parts[0]:
+                    self.first_name = parts[0]
+                if len(parts) >= 2 and parts[1]:
+                    self.last_name = parts[1]
+        except Exception:
+            logging.exception(f"Failed to fetch name from comment for '{self.username}'",
+                              extra={"id": "User Management"})
 
     def _fetch_last_auth_attempt(self):
         """Fetch only the most recent successful authentication attempt"""
@@ -118,9 +141,11 @@ class User:
                 setattr(self, attr, None)
 
     def get_dict(self):
-        """Return user attributes as a dictionary for CSV export"""
+        """Return user attributes as a dictionary for PDF/CSV export"""
         return {
             'Username': self.username,
+            'First Name': self.first_name,
+            'Last Name': self.last_name,
             'Role': self.role.display_name,
             'Password Last Changed': self.last_changed,
             'Password Expires': self.password_expires,

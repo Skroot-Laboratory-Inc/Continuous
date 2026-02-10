@@ -23,6 +23,8 @@ class UserRegistration:
         self.windowRoot = rootManager.createTopLevel()
         formatPopup(self.windowRoot)
         self.username = tk.StringVar()
+        self.firstName = tk.StringVar()
+        self.lastName = tk.StringVar()
         self.password = tk.StringVar()
         self.confirmPassword = tk.StringVar()
         self.role = tk.StringVar(value="Administrator")
@@ -32,6 +34,9 @@ class UserRegistration:
         self.createRole()
         self.createUsernameEntry = self.createUsername()
         self.createUsernameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Username:  "))
+        self.createFirstNameEntry, self.createLastNameEntry = self.createNameRow()
+        self.createFirstNameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "First Name:  "))
+        self.createLastNameEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Last Name:  "))
         self.createPasswordEntry, self.showPasswordButton = self.createPassword()
         self.createPasswordEntry.bind("<Button-1>",
                                       lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Password:  ",True))
@@ -81,20 +86,40 @@ class UserRegistration:
         usernameEntry.grid(row=3, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
         return usernameEntry
 
+    def createNameRow(self):
+        ttk.Label(
+            self.windowRoot,
+            text="Name",
+            font=FontTheme().primary,
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=4, column=0)
+
+        nameFrame = tk.Frame(self.windowRoot, background=Colors().body.background)
+        nameFrame.grid(row=4, column=1, padx=10, sticky="ew", pady=WidgetTheme().externalPadding)
+
+        firstNameEntry = ttk.Entry(nameFrame, width=12, background="white", justify="center",
+                                   textvariable=self.firstName, font=FontTheme().primary)
+        firstNameEntry.pack(side="left", padx=(0, 5), ipady=WidgetTheme().internalPadding)
+
+        lastNameEntry = ttk.Entry(nameFrame, width=12, background="white", justify="center",
+                                  textvariable=self.lastName, font=FontTheme().primary)
+        lastNameEntry.pack(side="left", padx=(5, 0), ipady=WidgetTheme().internalPadding)
+
+        return firstNameEntry, lastNameEntry
+
     def createPassword(self):
         ttk.Label(
             self.windowRoot,
             text="Password",
             font=FontTheme().primary,
-            background=Colors().body.background, foreground=Colors().body.text).grid(row=4, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=5, column=0)
 
         passwordEntry = ttk.Entry(self.windowRoot, show="*", width=25, justify="center", background="white",
                                   textvariable=self.password, font=FontTheme().primary)
-        passwordEntry.grid(row=4, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
+        passwordEntry.grid(row=5, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
 
         showPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.togglePassword,
                                         style='Entry.TButton')
-        showPasswordButton.grid(row=4, column=2)
+        showPasswordButton.grid(row=5, column=2)
         return passwordEntry, showPasswordButton
 
     def createBadPasswordWarning(self) -> ttk.Label:
@@ -114,13 +139,13 @@ class UserRegistration:
         if not goodPassword:
             badPassword = True
             self.badPasswordLabel.configure(text=f"*{message}")
-            self.badPasswordLabel.grid(row=5, column=1, columnspan=2, sticky="w")
+            self.badPasswordLabel.grid(row=6, column=1, columnspan=2, sticky="w")
         else:
             self.badPasswordLabel.grid_forget()
         if self.password.get() != self.confirmPassword.get():
             badPassword = True
             self.passwordMismatchLabel.configure(text="*Password confirmation failed, passwords must match.")
-            self.passwordMismatchLabel.grid(row=7, column=1, columnspan=2, sticky="w")
+            self.passwordMismatchLabel.grid(row=8, column=1, columnspan=2, sticky="w")
         else:
             self.passwordMismatchLabel.grid_forget()
         if badPassword:
@@ -133,15 +158,15 @@ class UserRegistration:
             self.windowRoot,
             text="Confirm Password",
             font=FontTheme().primary,
-            background=Colors().body.background, foreground=Colors().body.text).grid(row=6, column=0)
+            background=Colors().body.background, foreground=Colors().body.text).grid(row=7, column=0)
 
         confirmPasswordEntry = ttk.Entry(self.windowRoot, show="*", justify="center", width=25, background="white",
                                          textvariable=self.confirmPassword, font=FontTheme().primary)
-        confirmPasswordEntry.grid(row=6, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
+        confirmPasswordEntry.grid(row=7, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding)
 
         showConfirmPasswordButton = ttk.Button(self.windowRoot, text="Show", command=self.toggleConfirmPassword,
                                                style='Entry.TButton')
-        showConfirmPasswordButton.grid(row=6, column=2, pady=WidgetTheme().externalPadding)
+        showConfirmPasswordButton.grid(row=7, column=2, pady=WidgetTheme().externalPadding)
         return confirmPasswordEntry, showConfirmPasswordButton
 
     def createPasswordMismatchWarning(self) -> ttk.Label:
@@ -155,13 +180,13 @@ class UserRegistration:
 
     def createSubmitButton(self):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitAuthentication).button
-        submitButton.grid(row=8, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
+        submitButton.grid(row=9, column=1, pady=WidgetTheme().externalPadding, columnspan=2, sticky="e")
         submitButton.configure(state="disabled")
         return submitButton
 
     def createCancelButton(self):
         cancelButton = GenericButton("Cancel", self.windowRoot, self.cancelAuthentication).button
-        cancelButton.grid(row=8, column=0, pady=WidgetTheme().externalPadding, sticky="w")
+        cancelButton.grid(row=9, column=0, pady=WidgetTheme().externalPadding, sticky="w")
         return cancelButton
 
     def submitAuthentication(self):
@@ -205,9 +230,11 @@ class UserRegistration:
 
         try:
             if self.role.get().strip() == "Administrator":
-                returnCode = createKioskAdmin(self.username.get(), self.password.get())
+                returnCode = createKioskAdmin(self.username.get(), self.password.get(),
+                                              self.firstName.get().strip(), self.lastName.get().strip())
             else:
-                returnCode = createKioskUser(self.username.get(), self.password.get())
+                returnCode = createKioskUser(self.username.get(), self.password.get(),
+                                             self.firstName.get().strip(), self.lastName.get().strip())
 
             if returnCode == 0:
                 logAuthAction(

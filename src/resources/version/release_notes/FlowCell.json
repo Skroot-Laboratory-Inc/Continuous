@@ -2,7 +2,8 @@
   "v3.0.6": {
     "features": {
       "1": "Updated submit arrow and plus icon to better match the IBI theme color.",
-      "2": "Added support for device ID and secret to authenticate with AWS."
+      "2": "Added support for device ID and secret to authenticate with AWS.",
+      "3": "Added first and last name support to user management."
     }
   },
   "v3.0.5": {
