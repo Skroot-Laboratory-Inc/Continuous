@@ -76,10 +76,9 @@ def analyzeScanFile(frequency, magnitude, windowMHz=5):
     ssTot = np.sum((yAroundPeak - np.mean(yAroundPeak)) ** 2)
     rSquared = 1 - (ssRes / ssTot) if ssTot != 0 else 0.0
 
-    maxFrequency = frequency[maxIdx]
     equation = f"y = {amplitude:.4f} * exp(-(x - {centroid:.4f})^2 / (2 * {std:.4f}^2))"
 
-    return maxFrequency, equation, rSquared
+    return centroid, equation, rSquared
 
 
 if __name__ == "__main__":
@@ -87,6 +86,6 @@ if __name__ == "__main__":
     if data is not None:
         frequency, magnitude = data
         maxFrequency, equation, rSquared = analyzeScanFile(frequency, magnitude)
-        print(f"Max Frequency (no smoothing): {maxFrequency} MHz")
+        print(f"Max Frequency (no smoothing): {maxFrequency:.3f} MHz")
         print(f"Gaussian Fit Equation: {equation}")
-        print(f"R² Value: {rSquared:.6f}")
+        print(f"R² Value: {rSquared:.3f}")
