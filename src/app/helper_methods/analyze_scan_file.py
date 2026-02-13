@@ -50,6 +50,10 @@ def loadScanFile():
 
 
 def analyzeScanFile(frequency, magnitude, windowMHz=5):
+    rangeMask = (frequency >= 110) & (frequency <= 160)
+    frequency = frequency[rangeMask]
+    magnitude = magnitude[rangeMask]
+
     maxIdx = np.argmax(magnitude)
     peakFreq = frequency[maxIdx]
 
