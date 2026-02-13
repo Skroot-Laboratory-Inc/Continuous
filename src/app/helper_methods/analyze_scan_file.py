@@ -49,21 +49,13 @@ def loadScanFile():
     return np.array(frequency), np.array(magnitude)
 
 
-def analyzeScanFile(frequency, magnitude, pointsOnEachSide=50):
+def analyzeScanFile(frequency, magnitude, windowMHz=5):
     maxIdx = np.argmax(magnitude)
+    peakFreq = frequency[maxIdx]
 
-    if pointsOnEachSide is None:
-        xAroundPeak = frequency
-        yAroundPeak = magnitude
-    elif pointsOnEachSide < maxIdx < len(magnitude) - pointsOnEachSide:
-        xAroundPeak = frequency[maxIdx - pointsOnEachSide:maxIdx + pointsOnEachSide]
-        yAroundPeak = magnitude[maxIdx - pointsOnEachSide:maxIdx + pointsOnEachSide]
-    elif maxIdx > pointsOnEachSide and maxIdx > len(magnitude) - pointsOnEachSide:
-        xAroundPeak = frequency[maxIdx - pointsOnEachSide:maxIdx]
-        yAroundPeak = magnitude[maxIdx - pointsOnEachSide:maxIdx]
-    else:
-        xAroundPeak = frequency[maxIdx:maxIdx + pointsOnEachSide]
-        yAroundPeak = magnitude[maxIdx:maxIdx + pointsOnEachSide]
+    mask = (frequency >= peakFreq - windowMHz) & (frequency <= peakFreq + windowMHz)
+    xAroundPeak = frequency[mask]
+    yAroundPeak = magnitude[mask]
 
     popt, _ = curve_fit(
         gaussian,
