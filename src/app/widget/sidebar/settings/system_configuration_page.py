@@ -14,6 +14,7 @@ from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
 from src.app.use_case.use_case_factory import ContextFactory
+from src.app.common_modules.aws.device_credentials import get_credentials_manager
 from src.app.widget.sidebar.helpers.functions import setHostname
 
 
@@ -44,8 +45,15 @@ class SystemConfigurationPage:
 
         self.deviceIdEntry = self.createDeviceId(currentRow)
         self.deviceIdEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Device ID:  "))
-        self.submitButton = self.createSubmitButton(currentRow + 1)
-        self.cancelButton = self.createCancelButton(currentRow + 1)
+        currentRow += 1
+
+        uniqueDeviceId = get_credentials_manager().get_device_id() or "N/A"
+        self.uniqueDeviceId = tk.StringVar(value=uniqueDeviceId)
+        self.uniqueDeviceIdEntry = self.createUniqueDeviceId(currentRow)
+        currentRow += 1
+
+        self.submitButton = self.createSubmitButton(currentRow)
+        self.cancelButton = self.createCancelButton(currentRow)
 
         centerWindowOnFrame(self.windowRoot, self.RootManager.getRoot())
         if platform.system() == "Windows":
@@ -113,6 +121,18 @@ class SystemConfigurationPage:
         deviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.deviceId, font=FontTheme().primary)
         deviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
         return deviceIdEntry
+
+    def createUniqueDeviceId(self, row: int):
+        ttk.Label(
+            self.windowRoot,
+            text="Unique Device ID:",
+            font=FontTheme().primary,
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0, sticky="w")
+
+        uniqueDeviceIdEntry = ttk.Entry(self.windowRoot, background="white", justify="center", textvariable=self.uniqueDeviceId, font=FontTheme().primary, state="readonly")
+        uniqueDeviceIdEntry.grid(row=row, column=1, padx=10, ipady=WidgetTheme().internalPadding, pady=WidgetTheme().externalPadding, sticky="ew")
+        return uniqueDeviceIdEntry
 
     def createSubmitButton(self, row: int):
         submitButton = GenericButton("Submit", self.windowRoot, self.submitConfig).button
