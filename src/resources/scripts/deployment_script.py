@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import traceback
 import zipfile
@@ -50,27 +51,37 @@ def check_before_overwrite(bucket, zip_name):
         raise
 
 
+def update_version_theme(version_file_path, theme):
+    """Rewrite version.py to set self.theme to the given Theme."""
+    with open(version_file_path, 'r') as f:
+        content = f.read()
+    content = re.sub(
+        r'self\.theme = Theme\.\w+',
+        f'self.theme = Theme.{theme.name}',
+        content
+    )
+    with open(version_file_path, 'w') as f:
+        f.write(content)
+
+
 version = Version()
 use_case = version.getUseCase()
 major_version = version.getMajorVersion()
 minor_version = version.getMinorVersion()
-release_bucket = version.getReleaseBucket()
 zip_name = f'DesktopApp_v{major_version}.{minor_version}.zip'
 zip_file_path = f'../temp/{zip_name}'
 release_notes_name = f'v{major_version}.{minor_version}.json'
 release_notes_source_fp = f"../{version.getReleaseNotesFilePath()}"
 release_notes_temp_fp = f'../temp/{release_notes_name}'
-
-software_releases_bucket = f'software-releases/{release_bucket}'
 release_notes_bucket = f'release-notes/{use_case}'
 
-try:
-    # zip up the whole package
-    print(f" > Zipping Files for {use_case} v{major_version}.{minor_version}")
-    if not check_before_overwrite(software_releases_bucket, zip_name):
-        raise Exception("Did not perform update to avoid overwriting the current release files.")
-    zip_files('../../..', zip_file_path)
+version_file_path = os.path.join(os.path.dirname(__file__), '../version/version.py')
 
+# Read original version.py so we can restore it after deployment
+with open(version_file_path, 'r') as f:
+    original_version_content = f.read()
+
+try:
     # Load use-case-specific release notes file
     print(f" > Loading release notes for {use_case} from {release_notes_source_fp}")
     with open(release_notes_source_fp, 'r') as f:
@@ -82,25 +93,60 @@ try:
     with open(release_notes_temp_fp, 'w') as f:
         json.dump(use_case_notes, f, indent=2)
 
-    # Upload the zip file to AWS in the skroot-data/software-releases bucket
-    print(f" > Uploading Zip as '{zip_name}' from '{zip_file_path}'")
-    s3_upload_file(
-        zip_file_path,
-        zip_name,
-        software_releases_bucket,
-        tag_str=f'major_version={major_version}&minor_version={minor_version}'
-    )
-    print(f" > Uploading Release Notes as '{release_notes_name}' from '{release_notes_temp_fp}'")
+    # Deploy to each theme folder
+    deployment_themes = Version.getDeploymentThemes()
+    for theme in deployment_themes:
+        version.theme = theme
+        release_bucket = version.getReleaseBucket()
+        software_releases_bucket = f'software-releases/{release_bucket}'
+
+        print(f"\n{'='*60}")
+        print(f" > Deploying {theme.value}/{use_case} v{major_version}.{minor_version}")
+        print(f" > Target: {software_releases_bucket}")
+        print(f"{'='*60}")
+
+        if not check_before_overwrite(software_releases_bucket, zip_name):
+            print(f" > Skipping {theme.value} to avoid overwriting the current release files.")
+            continue
+
+        # Update version.py with this theme before zipping
+        update_version_theme(version_file_path, theme)
+
+        # Zip up the whole package (includes the updated version.py)
+        print(f" > Zipping Files for {theme.value}/{use_case} v{major_version}.{minor_version}")
+        zip_files('../../..', zip_file_path)
+
+        # Upload the zip file to AWS in the skroot-data/software-releases bucket
+        print(f" > Uploading Zip as '{zip_name}' to '{software_releases_bucket}'")
+        s3_upload_file(
+            zip_file_path,
+            zip_name,
+            software_releases_bucket,
+            tag_str=f'major_version={major_version}&minor_version={minor_version}'
+        )
+
+        # Clean up zip before next iteration
+        if os.path.exists(zip_file_path):
+            os.remove(zip_file_path)
+
+        print(f" > Deployment complete for {theme.value}/{use_case} v{major_version}.{minor_version}")
+
+    # Upload release notes once (shared across themes)
+    print(f"\n > Uploading Release Notes as '{release_notes_name}' to '{release_notes_bucket}'")
     s3_upload_file(
         release_notes_temp_fp,
         release_notes_name,
         release_notes_bucket
     )
-    print(f" > Deployment complete for {use_case} v{major_version}.{minor_version}")
+    print(f"\n > All deployments complete for {use_case} v{major_version}.{minor_version}")
 except:
     traceback.print_exc()
 finally:
-    # look for the zip file and delete it if it exists
+    # Restore original version.py
+    with open(version_file_path, 'w') as f:
+        f.write(original_version_content)
+
+    # Look for the temp folder and delete it if it exists
     if os.path.exists(os.path.dirname(zip_file_path)):
         print(" > Deleting Temp Files")
         shutil.rmtree(os.path.dirname(zip_file_path))

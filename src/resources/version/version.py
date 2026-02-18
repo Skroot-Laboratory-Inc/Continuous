@@ -56,9 +56,17 @@ class Version:
     def getTheme(self) -> Theme:
         return self.theme
 
+    def getThemeString(self) -> str:
+        return self.theme.value
+
     def getReleaseBucket(self) -> str:
+        base = f"{self.getThemeString()}/{self.getUseCase()}/{self.getDevelopmentVersion()}"
         if self.isBeta:
-            return f"{self.getUseCase()}/{self.getDevelopmentVersion()}/Beta"
+            return f"{base}/Beta"
         else:
-            return f"{self.getUseCase()}/{self.getDevelopmentVersion()}"
+            return base
+
+    @staticmethod
+    def getDeploymentThemes() -> list:
+        return [Theme.IBI, Theme.Skroot, Theme.WW]
 

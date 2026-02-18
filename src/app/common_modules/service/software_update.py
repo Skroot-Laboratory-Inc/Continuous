@@ -65,7 +65,7 @@ class SoftwareUpdate(AwsBoto3):
 
             allReleases = self.s3.list_objects_v2(
                 Bucket='skroot-data',
-                Prefix=f"software-releases/{Version().getUseCase()}",
+                Prefix=f"software-releases/{self.version.getThemeString()}/{self.version.getUseCase()}",
             )
             # first, we're just going through the releases and finding the most recent one
             most_recent_version = (self.newestMajorVersion, self.newestMinorVersion)
