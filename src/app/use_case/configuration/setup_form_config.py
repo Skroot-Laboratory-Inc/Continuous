@@ -38,6 +38,15 @@ class SetupFormConfig:
         )
 
     @staticmethod
+    def getSkrootFlowCellConfig():
+        """Configuration for SkrootFlowCell use case."""
+        return SetupFormConfig(
+            scanRateOptions=["2", "5", "10", "30", "60"],
+            equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],
+            defaultScanRate="5",
+        )
+
+    @staticmethod
     def getRollerBottleConfig():
         """Configuration for RollerBottle use case."""
         return SetupFormConfig(
