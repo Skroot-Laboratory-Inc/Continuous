@@ -53,12 +53,9 @@ class ContextFactory:
         Raises:
             Exception: If the UseCase is not supported
         """
-        if self.use_case == UseCase.FlowCell:
+        if self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell):
             from src.app.use_case.flow_cell.flow_cell_sib import FlowCellSib
             return FlowCellSib(port, calibration_file, reader_number, port_allocator)
-        elif self.use_case == UseCase.SkrootFlowCell:
-            from src.app.use_case.skroot_flow_cell.skroot_flow_cell_sib import SkrootFlowCellSib
-            return SkrootFlowCellSib(port, calibration_file, reader_number, port_allocator)
         elif self.use_case == UseCase.RollerBottle:
             from src.app.use_case.roller_bottle.roller_bottle_sib import RollerBottleSib
             return RollerBottleSib(port, calibration_file, reader_number, port_allocator)
@@ -94,16 +91,11 @@ class ContextFactory:
             Exception: If the UseCase is not supported
             ValueError: If FlowCell UseCase requires pump_manager but it's not provided
         """
-        if self.use_case == UseCase.FlowCell:
+        if self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell):
             if pump_manager is None:
-                raise ValueError("FlowCell UseCase requires a pump_manager")
+                raise ValueError(f"{self.use_case.value} UseCase requires a pump_manager")
             from src.app.use_case.flow_cell.flow_cell_kpi_form import FlowCellKpiForm
             return FlowCellKpiForm(parent, root_manager, session_manager, pump_manager)
-        elif self.use_case == UseCase.SkrootFlowCell:
-            if pump_manager is None:
-                raise ValueError("SkrootFlowCell UseCase requires a pump_manager")
-            from src.app.use_case.skroot_flow_cell.skroot_flow_cell_kpi_form import SkrootFlowCellKpiForm
-            return SkrootFlowCellKpiForm(parent, root_manager, session_manager, pump_manager)
         elif self.use_case == UseCase.RollerBottle:
             from src.app.use_case.roller_bottle.roller_bottle_kpi_form import RollerBottleKpiForm
             return RollerBottleKpiForm(parent, root_manager, session_manager)

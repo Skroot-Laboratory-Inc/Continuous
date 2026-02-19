@@ -1,7 +1,7 @@
 {
   "v3.0.0": {
     "features": {
-      "1": "Initial release with unified application structure."
+      "1": "Initial release based on existing flow cell app with 110-160 MHz range and 0.1 MHz resolution."
     }
   }
 }
