@@ -12,6 +12,7 @@ class DevelopmentVersion(Enum):
 class UseCase(Enum):
     Continuous = "Manufacturing"
     FlowCell = "FlowCell"
+    SkrootFlowCell = "SkrootFlowCell"
     Tunair = "Tunair"
     RollerBottle = "RollerBottle"
 
@@ -21,6 +22,7 @@ class Version:
         self.versions = {
             UseCase.Continuous: {"major": 3.0, "minor": 8, "version": DevelopmentVersion.Dev},
             UseCase.FlowCell: {"major": 3.0, "minor": 6, "version": DevelopmentVersion.Dev},
+            UseCase.SkrootFlowCell: {"major": 3.0, "minor": 0, "version": DevelopmentVersion.Dev},
             UseCase.Tunair: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Dev},
             UseCase.RollerBottle: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Dev}
         }

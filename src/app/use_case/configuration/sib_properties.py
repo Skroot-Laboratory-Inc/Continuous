@@ -28,6 +28,15 @@ class SibProperties:
         )
 
     @staticmethod
+    def getSkrootFlowCellProperties():
+        """SIB configuration for Skroot Flow Cell use case."""
+        return SibProperties(
+            startFrequency=110,
+            stopFrequency=160,
+            stepSize=0.1,
+        )
+
+    @staticmethod
     def getRollerBottleProperties():
         """SIB configuration for Flow Cell use case."""
         return SibProperties(
