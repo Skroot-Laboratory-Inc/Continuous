@@ -53,7 +53,7 @@ class ContextFactory:
         Raises:
             Exception: If the UseCase is not supported
         """
-        if self.use_case == UseCase.FlowCell:
+        if self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell):
             from src.app.use_case.flow_cell.flow_cell_sib import FlowCellSib
             return FlowCellSib(port, calibration_file, reader_number, port_allocator)
         elif self.use_case == UseCase.RollerBottle:
@@ -91,9 +91,9 @@ class ContextFactory:
             Exception: If the UseCase is not supported
             ValueError: If FlowCell UseCase requires pump_manager but it's not provided
         """
-        if self.use_case == UseCase.FlowCell:
+        if self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell):
             if pump_manager is None:
-                raise ValueError("FlowCell UseCase requires a pump_manager")
+                raise ValueError(f"{self.use_case.value} UseCase requires a pump_manager")
             from src.app.use_case.flow_cell.flow_cell_kpi_form import FlowCellKpiForm
             return FlowCellKpiForm(parent, root_manager, session_manager, pump_manager)
         elif self.use_case == UseCase.RollerBottle:
@@ -122,6 +122,8 @@ class ContextFactory:
 
         if self.use_case == UseCase.FlowCell:
             return SetupFormConfig.getFlowCellConfig()
+        elif self.use_case == UseCase.SkrootFlowCell:
+            return SetupFormConfig.getSkrootFlowCellConfig()
         elif self.use_case == UseCase.RollerBottle:
             return SetupFormConfig.getRollerBottleConfig()
         elif self.use_case == UseCase.Continuous:
@@ -167,6 +169,8 @@ class ContextFactory:
         """
         if self.use_case == UseCase.FlowCell:
             return SibProperties.getFlowCellProperties()
+        elif self.use_case == UseCase.SkrootFlowCell:
+            return SibProperties.getSkrootFlowCellProperties()
         elif self.use_case == UseCase.RollerBottle:
             return SibProperties.getRollerBottleProperties()
         elif self.use_case == UseCase.Continuous:
@@ -183,7 +187,7 @@ class ContextFactory:
         Returns:
             True if pump is required, False otherwise
         """
-        return self.use_case == UseCase.FlowCell
+        return self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell)
 
     def createPump(self) -> Optional[PumpInterface]:
         """
@@ -220,7 +224,7 @@ class ContextFactory:
         Returns:
             True if popup should be shown, False otherwise
         """
-        return self.use_case == UseCase.FlowCell
+        return self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell)
 
     def showNextPageToggle(self) -> bool:
         """
