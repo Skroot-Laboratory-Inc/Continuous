@@ -1,7 +1,8 @@
 {
   "v3.0.8": {
     "features": {
-      "1": "Added first and last name support to user management."
+      "1": "Added first and last name support to user management.",
+      "2": "Added hardware ID to authenticator calls."
     }
   },
   "v3.0.7": {

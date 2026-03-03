@@ -86,7 +86,7 @@ class AwsBoto3:
                     break
                 except Exception as e:
                     if type(e.__context__) is ClientError:
-                        pass  # This means unauthorized
+                        logging.exception("Failed to find folder and upload file.", extra={"id": "AWS Permissions"})
                     else:
                         raise
 

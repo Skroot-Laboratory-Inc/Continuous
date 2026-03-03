@@ -27,8 +27,8 @@ class Version:
             UseCase.RollerBottle: {"major": 3.0, "minor": 5, "version": DevelopmentVersion.Dev}
         }
 
-        self.theme = Theme.Skroot
-        self.useCase = UseCase.SkrootFlowCell
+        self.theme = Theme.WW
+        self.useCase = UseCase.Continuous
         self.isBeta = True
 
     def getMajorVersion(self) -> float:
