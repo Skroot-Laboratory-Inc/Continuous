@@ -5,7 +5,8 @@
       "2": "Updated SGI calculation to remove negative readings",
       "3": "Added powered by Skroot logo on boot screen.",
       "4": "Added support for device ID and secret to authenticate with AWS.",
-      "5": "Added first and last name support to user management."
+      "5": "Added first and last name support to user management.",
+      "6": "Added hardware ID to authenticator calls."
     },
     "bugfixes": {
       "1": "Fixed exports to display correct modified date on Windows.",

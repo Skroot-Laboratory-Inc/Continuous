@@ -61,6 +61,7 @@ class DeviceCredentialsManager:
         self._initialized = True
         self._device_id: Optional[str] = None
         self._device_secret: Optional[str] = None
+        self._hardware_id: Optional[str] = None
         self._access_key_id: Optional[str] = None
         self._secret_access_key: Optional[str] = None
         self._session_token: Optional[str] = None
@@ -86,6 +87,29 @@ class DeviceCredentialsManager:
             return os.path.join(program_data, "Skroot", "device.json")
         else:
             return "/etc/skroot/device.json"
+
+    def _get_hardware_id(self) -> Optional[str]:
+        """
+        Get the hardware serial number of the Raspberry Pi.
+
+        Reads from /sys/firmware/devicetree/base/serial-number on Linux.
+        Returns None on Windows or if the serial number cannot be read.
+
+        Returns:
+            str or None: The hardware serial number if available
+        """
+        if platform.system() != "Linux":
+            return None
+
+        try:
+            with open("/sys/firmware/devicetree/base/serial-number", "r") as f:
+                return f.read().strip().strip('\x00')
+        except Exception:
+            logging.debug(
+                "Could not read hardware serial number",
+                extra={"id": "AWS"}
+            )
+            return None
 
     def _load_device_credentials(self) -> Tuple[Optional[str], Optional[str]]:
         """
@@ -146,6 +170,11 @@ class DeviceCredentialsManager:
             "device_id": device_id,
             "device_secret": device_secret
         }
+
+        if self._hardware_id is None:
+            self._hardware_id = self._get_hardware_id()
+        if self._hardware_id:
+            payload["hardware_id"] = self._hardware_id
 
         last_error = None
 
@@ -300,6 +329,17 @@ class DeviceCredentialsManager:
         if not self._device_id:
             self._device_id, self._device_secret = self._load_device_credentials()
         return self._device_id
+
+    def get_hardware_id(self) -> Optional[str]:
+        """
+        Get the hardware serial number.
+
+        Returns:
+            str or None: The hardware serial number if available (Linux only)
+        """
+        if self._hardware_id is None:
+            self._hardware_id = self._get_hardware_id()
+        return self._hardware_id
 
     def get_credentials_expiration(self) -> Optional[datetime]:
         """

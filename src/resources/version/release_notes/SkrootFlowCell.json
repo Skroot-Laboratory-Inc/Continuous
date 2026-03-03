@@ -1,4 +1,9 @@
 {
+  "v4.0.1": {
+    "features": {
+      "1": "Added hardware ID to authenticator calls."
+    }
+  },
   "v3.0.0": {
     "features": {
       "1": "Initial release based on existing flow cell app with 110-160 MHz range and 0.1 MHz resolution."
