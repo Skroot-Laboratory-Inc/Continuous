@@ -24,8 +24,9 @@ class AwsBoto3:
         if self._uses_device_auth:
             self._ensure_credentials()
 
-        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
-        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
+        self._session = boto3.Session()
+        self.s3 = self._session.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = self._session.client('dynamodb', config=self._config, region_name=self._region)
         self.disabled = False
         self.bucket = 'skroot-data'
         self.useCase = Version().getUseCase()
@@ -58,10 +59,12 @@ class AwsBoto3:
     def _refresh_clients(self):
         """
         Recreate boto3 clients after credential refresh.
-        This is needed because boto3 clients cache credentials at creation time.
+        A new Session is required because botocore caches resolved credentials
+        per session — reusing the old session would ignore updated env vars.
         """
-        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
-        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
+        self._session = boto3.Session()
+        self.s3 = self._session.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = self._session.client('dynamodb', config=self._config, region_name=self._region)
 
     def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
         if not self.disabled and self.runFolder:
