@@ -6,8 +6,6 @@ from urllib import parse
 import boto3
 import botocore
 from botocore.client import Config
-from botocore.exceptions import ClientError
-
 from src.app.common_modules.aws.device_credentials import get_credentials_manager
 from src.app.common_modules.aws.helpers.exceptions import DownloadFailedException
 from src.app.helper_methods.datetime_helpers import datetimeToMillis
@@ -26,23 +24,23 @@ class AwsBoto3:
         if self._uses_device_auth:
             self._ensure_credentials()
 
-        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
-        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
+        self._session = boto3.Session()
+        self.s3 = self._session.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = self._session.client('dynamodb', config=self._config, region_name=self._region)
         self.disabled = False
         self.bucket = 'skroot-data'
-        self.dataPrefix = 'experiments/'
         self.useCase = Version().getUseCase()
-        self.runFolder = None
-        self.customerId = None
-        try:
-            self.folders = self.s3.list_objects_v2(
-                Bucket=self.bucket,
-                Prefix=self.dataPrefix,
-                Delimiter='/',
-            )['CommonPrefixes']
-        except:
-            self.disabled = True
         self.runUid = datetimeToMillis(datetime.datetime.now())
+
+        # Get company ID and S3 prefix from credentials API
+        self.customerId = self._credentials_manager.get_company_id()
+        s3_prefix = self._credentials_manager.get_s3_prefix()
+        if s3_prefix and self.customerId:
+            if not s3_prefix.endswith('/'):
+                s3_prefix += '/'
+            self.runFolder = f'{s3_prefix}{self.useCase}/{self.runUid}'
+        else:
+            self.runFolder = None
 
     def _ensure_credentials(self) -> bool:
         """
@@ -61,56 +59,31 @@ class AwsBoto3:
     def _refresh_clients(self):
         """
         Recreate boto3 clients after credential refresh.
-        This is needed because boto3 clients cache credentials at creation time.
+        A new Session is required because botocore caches resolved credentials
+        per session — reusing the old session would ignore updated env vars.
         """
-        self.s3 = boto3.client('s3', config=self._config, region_name=self._region)
-        self.dynamodb = boto3.client('dynamodb', config=self._config, region_name=self._region)
-
-    def findFolderAndUploadFile(self, fileLocation, fileType, tags):
-        """ Internal use only to upload the first file of a folder. """
-        if not self.disabled:
-            # Ensure credentials are fresh before operation
-            if self._ensure_credentials():
-                self._refresh_clients()
-
-            for folder in self.folders:
-                try:
-                    self.s3.upload_file(
-                        fileLocation,
-                        self.bucket,
-                        f'{folder["Prefix"]}{self.useCase}/{self.runUid}/{os.path.basename(fileLocation)}',
-                        ExtraArgs={'ContentType': fileType, "Tagging": parse.urlencode(tags),
-                                   "CacheControl": "no-cache"})
-                    self.customerId = str(folder["Prefix"]).split('/')[-2]
-                    self.runFolder = f'{folder["Prefix"]}{self.useCase}/{self.runUid}'
-                    break
-                except Exception as e:
-                    if type(e.__context__) is ClientError:
-                        logging.exception("Failed to find folder and upload file.", extra={"id": "AWS Permissions"})
-                    else:
-                        raise
+        self._session = boto3.Session()
+        self.s3 = self._session.client('s3', config=self._config, region_name=self._region)
+        self.dynamodb = self._session.client('dynamodb', config=self._config, region_name=self._region)
 
     def uploadFile(self, fileLocation, fileType, tags={}) -> bool:
-        if not self.disabled:
+        if not self.disabled and self.runFolder:
             # Ensure credentials are fresh before operation
             if self._ensure_credentials():
                 self._refresh_clients()
 
             try:
-                if not self.runFolder:
-                    self.findFolderAndUploadFile(fileLocation, fileType, tags)
-                else:
-                    destination = f'{self.runFolder}/{os.path.basename(fileLocation)}'
-                    self.s3.upload_file(
-                        fileLocation, self.bucket, destination,
-                        ExtraArgs={'ContentType': fileType,
-                                   "Tagging": parse.urlencode(tags),
-                                   "CacheControl": "no-cache"})
+                destination = f'{self.runFolder}/{os.path.basename(fileLocation)}'
+                self.s3.upload_file(
+                    fileLocation, self.bucket, destination,
+                    ExtraArgs={'ContentType': fileType,
+                               "Tagging": parse.urlencode(tags),
+                               "CacheControl": "no-cache"})
             except botocore.exceptions.EndpointConnectionError:
                 logging.info('no internet', extra={"id": "aws"})
                 return False
             except:
-                logging.exception('Error - most likely there were no folders found in AWS.', extra={"id": "aws"})
+                logging.exception('Error uploading file to S3.', extra={"id": "aws"})
                 return False
             return True
         else:

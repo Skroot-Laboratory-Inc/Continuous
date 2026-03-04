@@ -72,6 +72,8 @@ class DeviceCredentialsManager:
         self._validation_lock = threading.Lock()
         self._background_fetch_in_progress = False
         self._caller_arn: Optional[str] = None  # Cached STS caller ARN
+        self._company_id: Optional[str] = None
+        self._s3_prefix: Optional[str] = None
 
     def _get_device_config_path(self) -> str:
         """
@@ -203,13 +205,16 @@ class DeviceCredentialsManager:
                                 expiration_str.replace('Z', '+00:00')
                             )
 
+                        self._company_id = data.get('companyId')
+                        self._s3_prefix = data.get('s3Prefix')
+
                         # Set environment variables for boto3
                         self._set_environment_variables()
 
                     self._last_fetch_failed = False
                     logging.info(
                         f"Successfully fetched AWS credentials for device {device_id}, "
-                        f"expires at {self._expiration}",
+                        f"company {self._company_id}, expires at {self._expiration}",
                         extra={"id": "AWS"}
                     )
                     return True
@@ -392,6 +397,26 @@ class DeviceCredentialsManager:
         """
         with self._validation_lock:
             return self._caller_arn
+
+    def get_company_id(self) -> Optional[str]:
+        """
+        Get the company ID from the credentials API response.
+
+        Returns:
+            str or None: The company ID if available
+        """
+        with self._credentials_lock:
+            return self._company_id
+
+    def get_s3_prefix(self) -> Optional[str]:
+        """
+        Get the S3 prefix from the credentials API response.
+
+        Returns:
+            str or None: The S3 prefix if available
+        """
+        with self._credentials_lock:
+            return self._s3_prefix
 
     def ensure_valid_credentials_async(self, callback=None):
         """
