@@ -1,7 +1,8 @@
 {
-  "v4.0.1": {
+  "v3.0.1": {
     "features": {
-      "1": "Added hardware ID to authenticator calls."
+      "1": "Added hardware ID to authenticator calls.",
+      "2": "Added first and last name support to user management."
     }
   },
   "v3.0.0": {
