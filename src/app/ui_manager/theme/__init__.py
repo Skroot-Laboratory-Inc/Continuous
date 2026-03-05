@@ -26,6 +26,9 @@ from src.app.ui_manager.theme.color_theme import (
     InputColors,
 )
 
+# Theme enum
+from src.app.ui_manager.theme_enum import Theme
+
 # Theme management
 from src.app.ui_manager.theme.theme_manager import (
     ThemeManager,
@@ -48,6 +51,9 @@ __all__ = [
     'PlotColors',
     'StatusColors',
     'InputColors',
+
+    # Theme enum
+    'Theme',
 
     # Theme manager
     'ThemeManager',

@@ -1,15 +1,7 @@
-from enum import Enum
 from typing import Dict, Type
 
 from src.app.ui_manager.theme.color_theme import ColorTheme, IBITheme, SkrootTheme, WilsonWolfTheme
-
-
-class Theme(Enum):
-    """ Theme options by default. These values correspond to folders present in resources/media"""
-    IBI = "ibi"
-    Skroot = "skroot"
-    WW = "wilson-wolf"
-    Default = "default"
+from src.app.ui_manager.theme_enum import Theme
 
 
 class ThemeManager:

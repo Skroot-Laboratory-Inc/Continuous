@@ -10,3 +10,6 @@ __pycache__/
 
 
 *.bak
+
+# Device-specific config (written on first launch via product selection UI)
+device_config.json
