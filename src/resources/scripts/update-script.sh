@@ -9,6 +9,14 @@ sudo mkdir -p /home/kiosk/.local/DesktopApp
 sudo mkdir -p /home/kiosk/.local/temp
 sudo mkdir -p /home/kiosk/.local/share/applications
 
+# Migrate device_config.json to /etc/skroot/ if it hasn't been migrated yet
+OLD_CONFIG="/home/kiosk/.local/DesktopApp/src/resources/version/device_config.json"
+NEW_CONFIG="/etc/skroot/device_config.json"
+if [ -f "$OLD_CONFIG" ] && [ ! -f "$NEW_CONFIG" ]; then
+    sudo mkdir -p /etc/skroot
+    sudo cp "$OLD_CONFIG" "$NEW_CONFIG"
+fi
+
 # Remove old application files and copy new ones
 sudo rm -rf /home/kiosk/.local/DesktopApp/src
 sudo cp ../../../src /home/kiosk/.local/DesktopApp/ -R

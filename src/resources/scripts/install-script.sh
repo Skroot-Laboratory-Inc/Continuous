@@ -5,6 +5,9 @@ xargs -a apt_requirements.txt sudo apt install -y
 sudo pip3 install reactivex --break-system-packages
 sudo apt remove brltty unattended-upgrades -y
 
+# Ensure /etc/skroot directory exists for device configuration
+sudo mkdir -p /etc/skroot
+
 # Add user to dialout group
 sudo usermod -a -G dialout kiosk
 
@@ -55,8 +58,14 @@ sudo dos2unix -q ../ubuntu_settings/wilson-wolf/wilson-wolf.plymouth
 sudo dos2unix -q ../ubuntu_settings/wilson-wolf/wilson-wolf.script
 sudo cp ../ubuntu_settings/wilson-wolf /usr/share/plymouth/themes/ -R
 
-# Detect theme from Version class
-THEME=$(python3 -c "from src.resources.version.version import Version; print(Version().getTheme().value)")
+# Detect theme from Version class (requires device_config.json to exist)
+THEME=$(python3 -c "from src.resources.version.version import Version; v = Version(); print(v.getTheme().value if v.getTheme() else '')")
+if [ -z "$THEME" ]; then
+    echo "WARNING: No product type configured yet. Plymouth theme will be set on first app launch."
+    echo "To configure now, run: python3 -c \"from src.resources.version.version import Version, UseCase; Version.setDeviceUseCase(UseCase.Continuous)\""
+    echo "Valid use cases: Continuous, FlowCell, SkrootFlowCell, Tunair, RollerBottle"
+    THEME="skroot"  # fallback default
+fi
 echo "Detected theme: $THEME"
 
 # Set theme using Plymouth commands

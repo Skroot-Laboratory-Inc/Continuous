@@ -1,0 +1,42 @@
+name: Deploy All Use Cases
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      use_case:
+        description: 'Specific use case to deploy (leave empty for all). Options: Continuous, FlowCell, SkrootFlowCell, Tunair, RollerBottle'
+        required: false
+        default: ''
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install boto3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy
+        working-directory: src/resources/scripts
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          if [ -n "${{ github.event.inputs.use_case }}" ]; then
+            python deployment_script.py --use-case "${{ github.event.inputs.use_case }}" --skip-overwrite-check
+          else
+            python deployment_script.py --skip-overwrite-check
+          fi

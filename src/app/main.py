@@ -8,12 +8,18 @@ from src.app.helper_methods.file_manager.common_file_manager import CommonFileMa
 from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.theme_manager import ThemeManager
 from src.app.widget import logger
+from src.app.widget.product_selection import prompt_product_selection
 from src.resources.version.version import Version
 
 
 class Main(CommonModules):
     def __init__(self):
         version = Version()
+
+        if version.useCase is None:
+            prompt_product_selection()
+            version = Version()
+
         ThemeManager().set_theme(version.getTheme())
 
         self.GuiManager = RootManager()
