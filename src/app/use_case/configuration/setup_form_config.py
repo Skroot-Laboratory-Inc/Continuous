@@ -18,9 +18,9 @@ class SetupFormConfig:
     def getContinuousConfig():
         """Configuration for Continuous (Manufacturing) use case."""
         return SetupFormConfig(
-            scanRateOptions=["2", "5", "10", "30", "60"],
+            scanRateOptions=["0.05", "2", "5", "10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24", "10000"],
-            defaultScanRate="5",
+            defaultScanRate="0.05",
             defaultEquilibrationTime="10000",
         )
 

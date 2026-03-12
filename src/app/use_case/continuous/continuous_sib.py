@@ -14,8 +14,7 @@ class ContinuousSib(BaseSib):
 
     def takeScan(self, directory: str, currentVolts: float) -> SweepData:
         try:
-            # Wake removed for power consumption testing
-            # self.sib.wake()
+            self.sib.wake()
             allFrequency = calculateFrequencyValues(self.startFreqMHz, self.stopFreqMHz, self.stepSize)
             self.checkAndSendConfiguration()
             allVolts = self.performSweep()
@@ -34,6 +33,4 @@ class ContinuousSib(BaseSib):
         except SIBException:
             raise
         finally:
-            # Sleep removed for power consumption testing
-            # self.sib.sleep()
-            pass
+            self.sib.sleep()
