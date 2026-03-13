@@ -230,10 +230,6 @@ class ReaderThreadManager:
                 logging.exception('Unknown error has occurred', extra={"id": f"Reader {reader.readerNumber}"})
             finally:
                 currentTime = time.time()
-                if self.isDevMode and DevProperties().enforceScanRate:
-                    pass
-                else:
-                    self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
         text_notification.setText("Run Finished.")
         if reader.finishedEquilibrationPeriod:

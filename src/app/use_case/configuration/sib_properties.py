@@ -14,7 +14,7 @@ class SibProperties:
     def getContinuousProperties():
         """Sib Properties for Continuous (Manufacturing) use case."""
         return SibProperties(
-            startFrequency=100,
+            startFrequency=110,
             stopFrequency=160,
             stepSize=0.2,
         )
