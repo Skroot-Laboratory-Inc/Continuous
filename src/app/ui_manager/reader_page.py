@@ -110,6 +110,9 @@ class ReaderPage:
     def _startReader(self, readerNumber):
         try:
             if self.factory.showPumpControls():
+                guidedSetupForm, _ = self.readerFrame.setupReaderForm.getConfiguration()
+                if guidedSetupForm.getPumpRpm() > 0:
+                    self.PumpManager.setFlowRate(guidedSetupForm.getPumpRpm())
                 PumpControlPopup(
                     self.rootManager,
                     "Prime Line",

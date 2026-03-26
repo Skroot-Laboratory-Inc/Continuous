@@ -49,6 +49,7 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.yearEntry = tk.IntVar(value=guidedSetupInputs.getYear())
         self.scanRateEntry = tk.StringVar(value=f'{guidedSetupInputs.getScanRate():g}')
         self.warehouseEntry = tk.StringVar(value=guidedSetupInputs.getWarehouse())
+        self.pumpRpmEntry = tk.StringVar(value=f'{guidedSetupInputs.getPumpRpm():g}') if config.includePumpRpm else None
 
         self.window.grid_columnconfigure(0, weight=1)
         self.window.grid_columnconfigure(1, weight=1)
@@ -111,6 +112,18 @@ class ConfigurableSetupForm(SetupReaderForm):
             fg=Colors().body.text
         )
 
+        if self.config.includePumpRpm:
+            entriesMap["Pump Speed (RPM)"] = tk.Entry(
+                self.window,
+                textvariable=self.pumpRpmEntry,
+                borderwidth=0,
+                font=self.Fonts.primary,
+                fg=Colors().body.text,
+                bg=Colors().body.background,
+                highlightthickness=0,
+                justify="center"
+            )
+
         for entryLabelText, entry in entriesMap.items():
             tk.Label(
                 self.window,
@@ -128,6 +141,9 @@ class ConfigurableSetupForm(SetupReaderForm):
             elif entryLabelText == "Warehouse":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(
                     event.widget, self.RootManager.getRoot(), "Warehouse:  "))
+            elif entryLabelText == "Pump Speed (RPM)":
+                entry.bind("<Button-1>", lambda event: launchKeyboard(
+                    event.widget, self.RootManager.getRoot(), "Pump Speed (RPM):  "))
             elif entryLabelText == "Device ID":
                 entry['state'] = "disabled"
                 entry['disabledbackground'] = Colors().body.background
@@ -192,6 +208,8 @@ class ConfigurableSetupForm(SetupReaderForm):
             self.guidedSetupResults.lotId = self.lotIdEntry.get()
             self.guidedSetupResults.deviceId = self.deviceIdEntry.get()
             self.guidedSetupResults.warehouse = self.warehouseEntry.get()
+            if self.pumpRpmEntry is not None:
+                self.guidedSetupResults.pumpRpm = float(self.pumpRpmEntry.get())
             self.guidedSetupResults.savePath = self.createSavePath(self.guidedSetupResults.getDate())
             self.GlobalFileManager = GlobalFileManager(self.guidedSetupResults.savePath)
             self.parent.grid_remove()

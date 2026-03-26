@@ -1,4 +1,12 @@
 {
+  "v3.0.10": {
+    "features": {
+      "1": "Added Pump flow rate option for the SkrootFlowCell app, hidden for others."
+    },
+    "other": {
+      "1": "Added in memory use case option."
+    }
+  },
   "v3.0.1": {
     "features": {
       "1": "Added hardware ID to authenticator calls.",

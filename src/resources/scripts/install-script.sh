@@ -7,6 +7,7 @@ sudo apt remove brltty unattended-upgrades -y
 
 # Ensure /etc/skroot directory exists for device configuration
 sudo mkdir -p /etc/skroot
+sudo chown kiosk:kiosk /etc/skroot
 
 # Add user to dialout group
 sudo usermod -a -G dialout kiosk
