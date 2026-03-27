@@ -1,3 +1,4 @@
+import platform
 import tkinter as tk
 
 from src.resources.version.version import UseCase, Version
@@ -5,10 +6,12 @@ from src.resources.version.version import UseCase, Version
 
 class ProductSelectionDialog:
     """First-launch dialog that prompts the user to select a product type.
-    Writes the selection to device_config.json for all future launches."""
+    On Linux, writes the selection to device_config.json for all future launches.
+    On Windows, the selection is kept in memory only for the current session."""
 
     def __init__(self):
         self.selected_use_case = None
+        self.isWindows = platform.system() == "Windows"
         self.displayNames = {
             UseCase.Continuous: "Manufacturing (Continuous)",
             UseCase.FlowCell: "FlowCell",
@@ -38,8 +41,13 @@ class ProductSelectionDialog:
         )
         header.pack()
 
+        if self.isWindows:
+            subtitleText = "This selection applies to the current session only."
+        else:
+            subtitleText = "This selection will be saved for future launches."
+
         subtitle = tk.Label(
-            root, text="This selection will be saved for future launches.",
+            root, text=subtitleText,
             font=("TkDefaultFont", 10), bg="#f0f0f0", fg="#666666"
         )
         subtitle.pack()
@@ -67,10 +75,15 @@ class ProductSelectionDialog:
 
 
 def prompt_product_selection() -> UseCase:
-    """Show product selection dialog, save the choice, and return the UseCase."""
+    """Show product selection dialog and return the UseCase.
+    On Linux, persists the choice to device_config.json.
+    On Windows, stores the choice in memory only for the current session."""
     dialog = ProductSelectionDialog()
     use_case = dialog.show()
     if use_case is None:
         raise SystemExit("No product type selected. Exiting.")
-    Version.setDeviceUseCase(use_case)
+    if platform.system() == "Windows":
+        Version.setInMemoryUseCase(use_case)
+    else:
+        Version.setDeviceUseCase(use_case)
     return use_case

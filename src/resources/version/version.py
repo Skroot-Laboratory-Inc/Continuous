@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 from enum import Enum
 
 from src.app.ui_manager.theme_enum import Theme
@@ -20,9 +21,11 @@ class UseCase(Enum):
 
 
 class Version:
+    _inMemoryUseCase = None
+
     def __init__(self):
         self.major = 3.0
-        self.minor = 9
+        self.minor = 10
         self.developmentVersion = DevelopmentVersion.Test
         self.isBeta = True
 
@@ -39,7 +42,14 @@ class Version:
         self.theme = self.use_case_themes[self.useCase] if self.useCase else None
 
     def _resolveUseCase(self):
-        """Resolve use case from device_config.json. Returns None if not configured."""
+        """Resolve use case from in-memory override or device_config.json.
+        On Windows, only the in-memory override is used so the product selection
+        dialog is shown on every launch without persisting to disk.
+        Returns None if not configured."""
+        if Version._inMemoryUseCase is not None:
+            return Version._inMemoryUseCase
+        if platform.system() == "Windows":
+            return None
         if not os.path.exists(self.deviceConfigPath):
             return None
         try:
@@ -57,12 +67,29 @@ class Version:
             return None
 
     @staticmethod
+    def setInMemoryUseCase(use_case: UseCase):
+        """Store the selected use case in memory only (no file write).
+        Used on Windows to avoid persisting dev selections to disk."""
+        Version._inMemoryUseCase = use_case
+
+    @staticmethod
     def setDeviceUseCase(use_case: UseCase):
         """Write the selected use case to the device config file and update Plymouth boot theme."""
+        import logging
         config_path = "/etc/skroot/device_config.json"
-        os.makedirs(os.path.dirname(config_path), exist_ok=True)
-        with open(config_path, 'w') as f:
-            json.dump({"use_case": use_case.value}, f, indent=2)
+        try:
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+            with open(config_path, 'w') as f:
+                json.dump({"use_case": use_case.value}, f, indent=2)
+        except PermissionError:
+            logging.exception(
+                f"Permission denied writing to {config_path}. "
+                f"Ensure /etc/skroot is owned by the application user. "
+                f"Falling back to in-memory selection.",
+                extra={"id": "System failure"}
+            )
+            Version._inMemoryUseCase = use_case
+            return
 
         # Update Plymouth boot splash to match the selected use case
         theme_map = {

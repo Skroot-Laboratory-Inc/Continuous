@@ -25,6 +25,7 @@ class SetupReaderFormInput:
         self.equilibrationTime = config.defaultEquilibrationTime
         self.savePath = ""
         self.warehouse = config.defaultWarehouse
+        self.pumpRpm = config.defaultPumpRpm
 
     def getMonth(self) -> int:
         return self.month
@@ -62,6 +63,11 @@ class SetupReaderFormInput:
 
     def getWarehouse(self) -> str:
         return self.warehouse
+
+    def getPumpRpm(self) -> float:
+        if self.pumpRpm:
+            return float(self.pumpRpm)
+        return 0.0
 
     def resetRun(self):
         self.date = datetime.now()
