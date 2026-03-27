@@ -96,21 +96,23 @@ class ConfigurableSetupForm(SetupReaderForm):
             justify="center"
         )
 
-        entriesMap["Scan Rate (min)"] = createDropdown(
-            self.window,
-            self.scanRateEntry,
-            self.config.scanRateOptions,
-            bg=Colors().body.background,
-            fg=Colors().body.text
-        )
+        if not self.config.hideScanRate:
+            entriesMap["Scan Rate (min)"] = createDropdown(
+                self.window,
+                self.scanRateEntry,
+                self.config.scanRateOptions,
+                bg=Colors().body.background,
+                fg=Colors().body.text
+            )
 
-        entriesMap["Equilibration Time (hr)"] = createDropdown(
-            self.window,
-            self.equilibrationTimeEntry,
-            self.config.equilibrationTimeOptions,
-            bg=Colors().body.background,
-            fg=Colors().body.text
-        )
+        if not self.config.hideEquilibrationTime:
+            entriesMap["Equilibration Time (hr)"] = createDropdown(
+                self.window,
+                self.equilibrationTimeEntry,
+                self.config.equilibrationTimeOptions,
+                bg=Colors().body.background,
+                fg=Colors().body.text
+            )
 
         if self.config.includePumpRpm:
             entriesMap["Pump Speed (RPM)"] = tk.Entry(

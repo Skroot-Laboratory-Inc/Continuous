@@ -13,3 +13,4 @@ __pycache__/
 
 # Device-specific config (written on first launch via product selection UI)
 device_config.json
+.claude/settings.local.json

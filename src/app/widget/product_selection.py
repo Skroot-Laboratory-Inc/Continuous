@@ -13,7 +13,8 @@ class ProductSelectionDialog:
         self.selected_use_case = None
         self.isWindows = platform.system() == "Windows"
         self.displayNames = {
-            UseCase.Continuous: "Manufacturing (Continuous)",
+            UseCase.WWContinuous: "WW Continuous",
+            UseCase.SkrootContinuous: "Skroot Continuous",
             UseCase.FlowCell: "FlowCell",
             UseCase.SkrootFlowCell: "Skroot FlowCell",
             UseCase.Tunair: "Tunair",

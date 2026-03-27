@@ -4,11 +4,12 @@ Python 3.11 Tkinter GUI application for Skroot SIB (Sample Incubation Bioreactor
 
 ## Architecture
 
-The app supports 5 product variants through a shared codebase:
+The app supports 6 product variants through a shared codebase:
 
 | UseCase | Theme |
 |---------|-------|
-| Manufacturing (Continuous) | Wilson-Wolf |
+| WWContinuous (Manufacturing) | Wilson-Wolf |
+| SkrootContinuous | Skroot |
 | FlowCell | IBI |
 | SkrootFlowCell | Skroot |
 | Tunair | IBI |
@@ -33,6 +34,7 @@ Product selection is stored in `/etc/skroot/device_config.json` and the `UseCase
 - **Constants:** SCREAMING_SNAKE_CASE in Enum classes
 - **Indentation:** 4 spaces
 - **Type hints:** Used selectively — prioritize parameter annotations over return types
+- **Imports:** Always at the top of the file — never use inline/deferred imports inside functions or methods
 
 ## Error Handling & Logging
 

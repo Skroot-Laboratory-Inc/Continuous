@@ -30,7 +30,8 @@ class TestVersionThemeMapping(unittest.TestCase):
     def test_theme_mapping_correctness(self):
         version = Version()
         expected = {
-            UseCase.Continuous: Theme.WW,
+            UseCase.WWContinuous: Theme.WW,
+            UseCase.SkrootContinuous: Theme.Skroot,
             UseCase.FlowCell: Theme.IBI,
             UseCase.SkrootFlowCell: Theme.Skroot,
             UseCase.Tunair: Theme.IBI,
@@ -66,18 +67,18 @@ class TestDeviceConfigResolution(unittest.TestCase):
             config_path = f.name
         try:
             version = _make_version_with_config(config_path)
-            self.assertEqual(version.useCase, UseCase.Continuous)
+            self.assertEqual(version.useCase, UseCase.WWContinuous)
             self.assertEqual(version.theme, Theme.WW)
         finally:
             os.remove(config_path)
 
     def test_config_with_use_case_name(self):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump({"use_case": "Continuous"}, f)
+            json.dump({"use_case": "WWContinuous"}, f)
             config_path = f.name
         try:
             version = _make_version_with_config(config_path)
-            self.assertEqual(version.useCase, UseCase.Continuous)
+            self.assertEqual(version.useCase, UseCase.WWContinuous)
         finally:
             os.remove(config_path)
 
@@ -109,9 +110,9 @@ class TestSetDeviceUseCase(unittest.TestCase):
 
 class TestGetAllUseCases(unittest.TestCase):
 
-    def test_returns_all_five_use_cases(self):
+    def test_returns_all_six_use_cases(self):
         use_cases = Version.getAllUseCases()
-        self.assertEqual(len(use_cases), 5)
+        self.assertEqual(len(use_cases), 6)
         for uc in UseCase:
             self.assertIn(uc, use_cases)
 

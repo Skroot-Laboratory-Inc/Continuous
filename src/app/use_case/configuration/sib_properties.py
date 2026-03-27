@@ -11,8 +11,17 @@ class SibProperties:
     repeatMeasurements: int = 1
 
     @staticmethod
-    def getContinuousProperties():
-        """Sib Properties for Continuous (Manufacturing) use case."""
+    def getWWContinuousProperties():
+        """Sib Properties for WWContinuous use case."""
+        return SibProperties(
+            startFrequency=100,
+            stopFrequency=160,
+            stepSize=0.1
+        )
+
+    @staticmethod
+    def getSkrootContinuousProperties():
+        """Sib Properties for SkrootContinuous use case."""
         return SibProperties(
             startFrequency=100,
             stopFrequency=160,
