@@ -59,7 +59,7 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.use_case.roller_bottle.roller_bottle_sib import RollerBottleSib
             return RollerBottleSib(port, calibration_file, reader_number, port_allocator)
-        elif self.use_case == UseCase.Continuous:
+        elif self.use_case in (UseCase.WWContinuous, UseCase.SkrootContinuous):
             from src.app.use_case.continuous.continuous_sib import ContinuousSib
             return ContinuousSib(port, calibration_file, reader_number, port_allocator)
         elif self.use_case == UseCase.Tunair:
@@ -99,9 +99,12 @@ class ContextFactory:
         elif self.use_case == UseCase.RollerBottle:
             from src.app.use_case.roller_bottle.roller_bottle_kpi_form import RollerBottleKpiForm
             return RollerBottleKpiForm(parent, root_manager, session_manager)
-        elif self.use_case == UseCase.Continuous:
-            from src.app.use_case.continuous.continuous_kpi_form import ContinuousKpiForm
-            return ContinuousKpiForm(parent, root_manager, session_manager)
+        elif self.use_case == UseCase.WWContinuous:
+            from src.app.use_case.continuous.ww_continuous_kpi_form import WWContinuousKpiForm
+            return WWContinuousKpiForm(parent, root_manager, session_manager)
+        elif self.use_case == UseCase.SkrootContinuous:
+            from src.app.use_case.skroot_continuous.skroot_continuous_kpi_form import SkrootContinuousKpiForm
+            return SkrootContinuousKpiForm(parent, root_manager, session_manager)
         elif self.use_case == UseCase.Tunair:
             from src.app.use_case.tunair.tunair_kpi_form import TunairKpiForm
             return TunairKpiForm(parent, root_manager, session_manager)
@@ -126,8 +129,10 @@ class ContextFactory:
             return SetupFormConfig.getSkrootFlowCellConfig()
         elif self.use_case == UseCase.RollerBottle:
             return SetupFormConfig.getRollerBottleConfig()
-        elif self.use_case == UseCase.Continuous:
-            return SetupFormConfig.getContinuousConfig()
+        elif self.use_case == UseCase.WWContinuous:
+            return SetupFormConfig.getWWContinuousConfig()
+        elif self.use_case == UseCase.SkrootContinuous:
+            return SetupFormConfig.getSkrootContinuousConfig()
         elif self.use_case == UseCase.Tunair:
             return SetupFormConfig.getTunairConfig()
         else:
@@ -173,8 +178,10 @@ class ContextFactory:
             return SibProperties.getSkrootFlowCellProperties()
         elif self.use_case == UseCase.RollerBottle:
             return SibProperties.getRollerBottleProperties()
-        elif self.use_case == UseCase.Continuous:
-            return SibProperties.getContinuousProperties()
+        elif self.use_case == UseCase.WWContinuous:
+            return SibProperties.getWWContinuousProperties()
+        elif self.use_case == UseCase.SkrootContinuous:
+            return SibProperties.getSkrootContinuousProperties()
         elif self.use_case == UseCase.Tunair:
             return SibProperties.getTunairProperties()
         else:
@@ -233,5 +240,5 @@ class ContextFactory:
         Returns:
             True if popup should be shown, False otherwise
         """
-        return self.use_case == UseCase.Tunair or self.use_case == UseCase.Continuous or self.use_case == UseCase.RollerBottle
+        return self.use_case in (UseCase.Tunair, UseCase.WWContinuous, UseCase.SkrootContinuous, UseCase.RollerBottle)
 

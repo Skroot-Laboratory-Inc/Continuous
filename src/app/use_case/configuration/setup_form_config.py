@@ -18,10 +18,26 @@ class SetupFormConfig:
     includeWarehouse: bool = False
     defaultPumpRpm: str = ""
     includePumpRpm: bool = False
+    hideScanRate: bool = False
+    hideEquilibrationTime: bool = False
 
     @staticmethod
-    def getContinuousConfig():
-        """Configuration for Continuous (Manufacturing) use case."""
+    def getWWContinuousConfig():
+        """Configuration for WWContinuous use case."""
+        return SetupFormConfig(
+            scanRateOptions=["5"],
+            equilibrationTimeOptions=["0.5"],
+            defaultScanRate="5",
+            defaultEquilibrationTime="0.5",
+            defaultWarehouse=WarehouseConfiguration().getConfig(),
+            includeWarehouse=True,
+            hideScanRate=True,
+            hideEquilibrationTime=True,
+        )
+
+    @staticmethod
+    def getSkrootContinuousConfig():
+        """Configuration for SkrootContinuous use case (legacy Continuous behavior)."""
         return SetupFormConfig(
             scanRateOptions=["2", "5", "10", "30", "60"],
             equilibrationTimeOptions=["0", "0.2", "2", "12", "24"],

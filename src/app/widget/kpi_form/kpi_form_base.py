@@ -1,10 +1,11 @@
 """Base class for KPI forms that display reader information."""
 import tkinter as tk
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from reactivex import Subject
 
-from src.app.helper_methods.datetime_helpers import formatDatetime, millisToDatetime
+from src.app.helper_methods.datetime_helpers import datetimeToMillis, formatDatetime, millisToDatetime
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
 from src.app.widget.sidebar.configurations.secondary_axis_units import SecondaryAxisUnits
 
@@ -16,6 +17,7 @@ class KpiForm(ABC):
         self._saturationDate = None
         self._sgi = tk.StringVar(value="-")
         self._saturationTime = tk.StringVar(value="")
+        self._harvestRecommendation = tk.StringVar(value="")
         self._runId = tk.StringVar()
         self._user = tk.StringVar()
         self._axisLabel = tk.StringVar(value=f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}:")
@@ -63,6 +65,8 @@ class KpiForm(ABC):
         """Sets the saturation date displayed on the KPI form."""
         self._saturationDate = value
         self._saturationTime.set(formatDatetime(millisToDatetime(value)))
+        if datetimeToMillis(datetime.now()) >= value:
+            self._harvestRecommendation.set("Harvest within 24 hours")
 
     @property
     def sgi(self):

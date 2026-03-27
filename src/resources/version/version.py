@@ -13,7 +13,8 @@ class DevelopmentVersion(Enum):
 
 
 class UseCase(Enum):
-    Continuous = "Manufacturing"
+    WWContinuous = "Manufacturing"
+    SkrootContinuous = "SkrootContinuous"
     FlowCell = "FlowCell"
     SkrootFlowCell = "SkrootFlowCell"
     Tunair = "Tunair"
@@ -30,11 +31,12 @@ class Version:
         self.isBeta = True
 
         self.use_case_themes = {
-            UseCase.Continuous:     Theme.WW,
-            UseCase.FlowCell:       Theme.IBI,
-            UseCase.SkrootFlowCell: Theme.Skroot,
-            UseCase.Tunair:         Theme.IBI,
-            UseCase.RollerBottle:   Theme.Skroot,
+            UseCase.WWContinuous:      Theme.WW,
+            UseCase.SkrootContinuous:  Theme.Skroot,
+            UseCase.FlowCell:          Theme.IBI,
+            UseCase.SkrootFlowCell:    Theme.Skroot,
+            UseCase.Tunair:            Theme.IBI,
+            UseCase.RollerBottle:      Theme.Skroot,
         }
 
         self.deviceConfigPath = "/etc/skroot/device_config.json"
@@ -93,11 +95,12 @@ class Version:
 
         # Update Plymouth boot splash to match the selected use case
         theme_map = {
-            UseCase.Continuous:     Theme.WW,
-            UseCase.FlowCell:       Theme.IBI,
-            UseCase.SkrootFlowCell: Theme.Skroot,
-            UseCase.Tunair:         Theme.IBI,
-            UseCase.RollerBottle:   Theme.Skroot,
+            UseCase.WWContinuous:      Theme.WW,
+            UseCase.SkrootContinuous:  Theme.Skroot,
+            UseCase.FlowCell:          Theme.IBI,
+            UseCase.SkrootFlowCell:    Theme.Skroot,
+            UseCase.Tunair:            Theme.IBI,
+            UseCase.RollerBottle:      Theme.Skroot,
         }
         theme = theme_map.get(use_case)
         if theme:
