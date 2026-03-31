@@ -3,6 +3,7 @@ import socket
 import tkinter as tk
 from tkinter import ttk
 
+from src.app.barcode_scanner.helpers.configuration import BarcodeConfiguration
 from src.app.common_modules.authentication.helpers.configuration import AuthConfiguration
 from src.app.common_modules.authentication.helpers.logging import logAuthAction
 from src.app.helper_methods.ui_helpers import centerWindowOnFrame, createDropdown, styleDropdownOption, launchKeyboard, \
@@ -25,10 +26,16 @@ class SystemConfigurationPage:
         self.AuthConfiguration = AuthConfiguration()
         self.WarehouseConfiguration = WarehouseConfiguration()
         self.windowRoot = rootManager.createTopLevel()
-        self.includeWarehouse: bool = ContextFactory().getSetupFormConfig().includeWarehouse
+        self.factory = ContextFactory()
+        self.includeWarehouse: bool = self.factory.getSetupFormConfig().includeWarehouse
+        self.includeBarcodeScanner: bool = self.factory.requiresBarcodeScanner()
+        if self.includeBarcodeScanner:
+            self.BarcodeConfiguration = BarcodeConfiguration()
         formatPopup(self.windowRoot)
         self.authEnabled = tk.StringVar(value=styleDropdownOption(self.AuthConfiguration.getConfig()))
         self.warehouse = tk.StringVar(value=self.WarehouseConfiguration.getConfig())
+        if self.includeBarcodeScanner:
+            self.barcodeEnabled = tk.StringVar(value=styleDropdownOption(self.BarcodeConfiguration.getConfig()))
         self.windowRoot.transient(rootManager.getRoot())
 
         self.createHeader()
@@ -38,6 +45,10 @@ class SystemConfigurationPage:
         self.authDropdown = self.createAuthDropdown(3)
 
         currentRow = 5
+        if self.includeBarcodeScanner:
+            self.barcodeDropdown = self.createBarcodeDropdown(currentRow)
+            currentRow += 1
+
         if self.includeWarehouse:
             self.warehouseEntry = self.createWarehouse(currentRow)
             self.warehouseEntry.bind("<Button-1>", lambda event: launchKeyboard(event.widget, rootManager.getRoot(), "Warehouse:  "))
@@ -70,6 +81,19 @@ class SystemConfigurationPage:
             foreground=Colors().body.text).grid(row=0, column=0, columnspan=3)
         ttk.Separator(self.windowRoot, orient='horizontal').grid(
             row=1, column=0, columnspan=3, sticky='ew', pady=WidgetTheme().externalPadding)
+
+    def createBarcodeDropdown(self, row: int):
+        ttk.Label(
+            self.windowRoot,
+            text="Barcode Scanner Enabled: ",
+            font=FontTheme().primary,
+            background=Colors().body.background,
+            foreground=Colors().body.text).grid(row=row, column=0)
+
+        options = ["True", "False"]
+        dropdown = createDropdown(self.windowRoot, self.barcodeEnabled, options, outline=True)
+        dropdown.grid(row=row, column=1, padx=10, pady=WidgetTheme().externalPadding, ipady=WidgetTheme().internalPadding, sticky="ew")
+        return dropdown
 
     def createAuthDropdown(self, row: int):
         ttk.Label(
@@ -143,6 +167,10 @@ class SystemConfigurationPage:
         newAuthSetting = self.authEnabled.get().strip() == "True"
         if self.AuthConfiguration.getConfig() != newAuthSetting:
             self.submitAuthChanges(self.AuthConfiguration.getConfig(), newAuthSetting)
+        if self.includeBarcodeScanner:
+            newBarcodeSetting = self.barcodeEnabled.get().strip() == "True"
+            if self.BarcodeConfiguration.getConfig() != newBarcodeSetting:
+                self.submitBarcodeChanges(self.BarcodeConfiguration.getConfig(), newBarcodeSetting)
         if self.includeWarehouse:
             if self.WarehouseConfiguration.getConfig() != self.warehouse.get():
                 self.submitWarehouseChanges(self.WarehouseConfiguration.getConfig(), self.warehouse.get())
@@ -157,6 +185,15 @@ class SystemConfigurationPage:
             self.AuthConfiguration.authenticationEnabled = newSetting
         logAuthAction(
             "Authentication Enabled",
+            "Changed",
+            self.authorizer,
+            result=f"`{oldSetting}` to `{newSetting}`"
+        )
+
+    def submitBarcodeChanges(self, oldSetting: bool, newSetting: bool):
+        self.BarcodeConfiguration.barcodeEnabled.set(newSetting)
+        logAuthAction(
+            "Barcode Scanner Enabled",
             "Changed",
             self.authorizer,
             result=f"`{oldSetting}` to `{newSetting}`"

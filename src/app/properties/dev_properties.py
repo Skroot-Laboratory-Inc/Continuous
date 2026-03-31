@@ -8,6 +8,7 @@ class DevProperties:
         self.devBaseFolder = CommonFileManager().getDevBaseFolder()
         self.tryDevMode = True
         self.authEnabled = True
+        self.barcodeEnabled = False
         self.disableAws = True
         self.enforceScanRate = True
         self.sibShouldError = False

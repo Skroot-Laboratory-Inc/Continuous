@@ -1,4 +1,5 @@
 """Generic configurable setup form that works across all use cases."""
+import logging
 import os
 import socket
 import tkinter as tk
@@ -6,6 +7,8 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 from typing import Callable
 
+from src.app.barcode_scanner.barcode_scanner import BarcodeScanner
+from src.app.barcode_scanner.helpers.configuration import BarcodeConfiguration
 from src.app.helper_methods.file_manager.common_file_manager import CommonFileManager
 from src.app.helper_methods.file_manager.global_file_manager import GlobalFileManager
 from src.app.helper_methods.model.setup_reader_form_input import SetupReaderFormInput
@@ -40,6 +43,8 @@ class ConfigurableSetupForm(SetupReaderForm):
         self.guidedSetupResults = guidedSetupInputs
         self.calibrateRequired = tk.IntVar(value=1)
         self.setCalibrate()
+        self.barcodeConfiguration = BarcodeConfiguration() if config.includeBarcodeScanner else None
+        self.barcodeScanner = None
 
         self.equilibrationTimeEntry = tk.StringVar(value=f'{guidedSetupInputs.getEquilibrationTime():g}')
         self.lotIdEntry = tk.StringVar(value=guidedSetupInputs.getLotId())
@@ -138,8 +143,12 @@ class ConfigurableSetupForm(SetupReaderForm):
             entry.grid(row=row, column=1, sticky="ew", ipady=WidgetTheme().internalPadding)
 
             if entryLabelText == "Run ID":
-                entry.bind("<Button-1>", lambda event: launchKeyboard(
-                    event.widget, self.RootManager.getRoot(), "Run ID:  "))
+                self.runIdEntry = entry
+                if self.config.includeBarcodeScanner and self.barcodeConfiguration:
+                    self._initBarcodeScanner(entry)
+                else:
+                    entry.bind("<Button-1>", lambda event: launchKeyboard(
+                        event.widget, self.RootManager.getRoot(), "Run ID:  "))
             elif entryLabelText == "Warehouse":
                 entry.bind("<Button-1>", lambda event: launchKeyboard(
                     event.widget, self.RootManager.getRoot(), "Warehouse:  "))
@@ -221,6 +230,30 @@ class ConfigurableSetupForm(SetupReaderForm):
                 "Incorrect Formatting",
                 "One (or more) of the values entered is not formatted properly"
             )
+
+    def _initBarcodeScanner(self, entry: tk.Entry):
+        try:
+            self.barcodeScanner = BarcodeScanner(self.lotIdEntry)
+            self.barcodeScanner.start()
+        except Exception:
+            logging.exception("Failed to initialize barcode scanner.", extra={"id": "Barcode Scanner"})
+        self.barcodeConfiguration.barcodeEnabled.trace_add("write", self._toggleRunIdEntry)
+        self._toggleRunIdEntry()
+
+    def _toggleRunIdEntry(self, *args):
+        if self.barcodeConfiguration and self.barcodeConfiguration.getConfig():
+            self.runIdEntry.unbind("<Button-1>")
+        else:
+            self.runIdEntry.bind("<Button-1>", lambda event: launchKeyboard(
+                event.widget, self.RootManager.getRoot(), "Run ID:  "))
+
+    def stopBarcodeScanner(self):
+        if self.barcodeScanner:
+            self.barcodeScanner.stop()
+
+    def startBarcodeScanner(self):
+        if self.barcodeScanner:
+            self.barcodeScanner.start()
 
     def createSavePath(self, date):
         FileManager = CommonFileManager()

@@ -20,6 +20,7 @@ class SetupFormConfig:
     includePumpRpm: bool = False
     hideScanRate: bool = False
     hideEquilibrationTime: bool = False
+    includeBarcodeScanner: bool = False
 
     @staticmethod
     def getWWContinuousConfig():
@@ -33,6 +34,7 @@ class SetupFormConfig:
             includeWarehouse=True,
             hideScanRate=True,
             hideEquilibrationTime=True,
+            includeBarcodeScanner=True,
         )
 
     @staticmethod

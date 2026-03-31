@@ -233,6 +233,15 @@ class ContextFactory:
         """
         return self.use_case in (UseCase.FlowCell, UseCase.SkrootFlowCell)
 
+    def requiresBarcodeScanner(self) -> bool:
+        """
+        Check if the current UseCase supports barcode scanning.
+
+        Returns:
+            True if barcode scanner is supported, False otherwise
+        """
+        return self.getSetupFormConfig().includeBarcodeScanner
+
     def showNextPageToggle(self) -> bool:
         """
         Check if the pump control popup should be shown for this UseCase.
