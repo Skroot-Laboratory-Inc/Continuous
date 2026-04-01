@@ -3,6 +3,9 @@
     "features": {
       "1": "Added Pump flow rate option for the SkrootFlowCell app, hidden for others."
     },
+    "bugfixes": {
+      "1": "Fixed issue with entering second axis values for multiple runs without rebooting."
+    },
     "other": {
       "1": "Added in memory use case option."
     }

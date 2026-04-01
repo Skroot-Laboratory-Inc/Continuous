@@ -2,6 +2,9 @@
   "v3.0.10": {
     "features": {
       "1": "Initial release of SkrootContinuous with Skroot theme."
+    },
+    "bugfixes": {
+      "1": "Fixed issue with entering second axis values for multiple runs without rebooting."
     }
   }
 }

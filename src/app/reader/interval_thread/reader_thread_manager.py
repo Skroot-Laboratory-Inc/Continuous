@@ -39,10 +39,12 @@ class ReaderThreadManager:
         self.RootManager = rootManager
         self.Reader = reader
         self.kpiForm = self.Reader.ReaderPage.getReaderFrame().kpiForm
-        self.kpiForm.lastSecondAxisEntry.subscribe(lambda value: threading.Thread(
-            target=self.addSecondaryAxisValue,
-            args=(float(value),)
-        ).start())
+        self.secondAxisSubscription = self.kpiForm.lastSecondAxisEntry.subscribe(
+            lambda value: threading.Thread(
+                target=self.addSecondaryAxisValue,
+                args=(float(value),)
+            ).start()
+        )
         # Current Issues is supposed to be a dict of all issues used for updating text_notification on successful runs.
         # Needs fixing.
         self.currentIssues = {}
@@ -235,6 +237,7 @@ class ReaderThreadManager:
                 else:
                     self.checkIfScanTookTooLong(currentTime - startTime)
                 self.waitUntilNextScan(currentTime, startTime)
+        self.secondAxisSubscription.dispose()
         text_notification.setText("Run Finished.")
         if reader.finishedEquilibrationPeriod:
             reader.AwsService.uploadFinalExperimentFiles(
