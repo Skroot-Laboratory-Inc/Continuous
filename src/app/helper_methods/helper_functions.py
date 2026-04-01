@@ -306,7 +306,7 @@ def createScanFile(outputFileName: str, sweepData: SweepData):
     volts = convertListToPercent(sweepData.getMagnitude())
     with open(outputFileName, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['Frequency (MHz)', SibProperties.getContinuousProperties().yAxisLabel])
+        writer.writerow(['Frequency (MHz)', SibProperties.getWWContinuousProperties().yAxisLabel])
         writer.writerows(zip(sweepData.getFrequency(), volts))
 
 

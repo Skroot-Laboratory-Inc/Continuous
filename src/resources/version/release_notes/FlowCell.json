@@ -1,4 +1,9 @@
 {
+  "v3.0.10": {
+    "bugfixes": {
+      "1": "Fixed issue with entering second axis values for multiple runs without rebooting."
+    }
+  },
   "v3.0.6": {
     "features": {
       "1": "Updated submit arrow and plus icon to better match the IBI theme color.",

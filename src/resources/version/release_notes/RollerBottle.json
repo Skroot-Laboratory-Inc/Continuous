@@ -1,4 +1,15 @@
 {
+  "v3.0.10": {
+    "features": {
+      "1": "Split Continuous into WWContinuous and SkrootContinuous use cases.",
+      "2": "Fixed scan rate to 5 minutes and equilibration time to 0.5 hours.",
+      "3": "Added harvest recommendation display when saturation is reached.",
+      "4": "Removed manual sampling entry."
+    },
+    "bugfixes": {
+      "1": "Fixed issue with entering second axis values for multiple runs without rebooting."
+    }
+  },
   "v3.0.5": {
     "features": {
       "1": "Separated software releases by use case to improve maintainability.",
