@@ -11,6 +11,23 @@ on:
         default: ''
 
 jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install D2
+        run: curl -fsSL https://d2lang.com/install.sh | sh -s --
+
+      - name: Generate D2 diagrams
+        run: d2 docs/software-update-pipeline.d2 docs/software-update-pipeline.svg
+
+      - name: Upload diagram artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagrams
+          path: docs/*.svg
+
   deploy:
     runs-on: ubuntu-latest
     steps:

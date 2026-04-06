@@ -208,3 +208,17 @@ Before pushing, squash all commits from the current session into a single commit
 - Push to feature/bugfix branches, then open a PR against `master`
 - PRs require review before merging
 - CI/CD (GitHub Actions) handles deployment to S3 on release publication
+
+## D2 Diagrams
+
+Architecture diagrams are maintained as D2 source files in `docs/` and auto-generated to SVG on every release via GitHub Actions.
+
+- **Diagram source:** `docs/software-update-pipeline.d2`
+- **Generated output:** `docs/software-update-pipeline.svg` (build artifact, not committed)
+
+**When to update `docs/software-update-pipeline.d2`:**
+- Adding or removing a `UseCase` from the `UseCase` enum
+- Changing the S3 bucket structure or release path format (e.g., `software-releases/` or `release-notes/` prefixes)
+- Modifying the deployment pipeline (`deploy.yml` or `deployment_script.py`)
+- Changing how device credentials or device secrets scope access to releases
+- Changing the version properties (`build_type`, `is_beta`, etc.) that affect release paths

@@ -1,0 +1,195 @@
+grid-rows: 3
+grid-gap: 50
+
+# ===========================================================================
+# Row 1: GitHub
+# ===========================================================================
+github: GitHub {
+  label.near: top-left
+  style.font-size: 32
+  style.fill: "#fafafa"
+  style.stroke: "#24292e"
+  style.stroke-width: 2
+  style.border-radius: 5
+  grid-rows: 1
+  horizontal-gap: 300
+  vertical-gap: 100
+
+  repo: Continuous Repository {
+    style.font-size: 24
+  }
+
+  release: Release Published {
+    shape: step
+    style.fill: "#d4edda"
+    style.stroke: "#155724"
+    style.font-size: 24
+  }
+
+  ci: Deployment to S3 {
+    style.fill: "#e3f2fd"
+    style.stroke: "#1565c0"
+    style.border-radius: 8
+    style.font-size: 24
+  }
+
+  repo -> release: Developer creates\nGitHub Release\n(v3.0.10) {style.font-size: 22}
+  release -> ci: Triggers workflow {style.font-size: 22}
+}
+
+# ===========================================================================
+# Row 2: AWS Cloud
+# ===========================================================================
+aws: AWS Cloud {
+  label.near: top-left
+  style.font-size: 32
+  style.fill: "#fafafa"
+  style.stroke: "#232f3e"
+  style.stroke-width: 2
+  grid-rows: 2
+  grid-gap: 60
+
+  # --- Row 1: S3 buckets + note ---
+  buckets: "" {
+    grid-columns: 3
+    grid-gap: 80
+    style.fill: transparent
+    style.stroke: transparent
+
+    releases: "software-releases/" {
+      style.fill: "#fff8e1"
+      style.stroke: "#f57f17"
+      style.border-radius: 8
+      grid-columns: 3
+      grid-gap: 16
+      style.font-size: 32
+
+      ww: WWContinuous/
+      skroot: SkrootContinuous/
+      fc: FlowCell/
+      sfc: SkrootFlowCell/
+      tunair: Tunair/
+      rb: RollerBottle/
+    }
+
+    dir_note: |md
+      Each UseCase folder contains:
+      ```
+      Dev/
+      Test/
+      Prod/
+      Dev/Beta/
+      Test/Beta/
+      Prod/Beta/
+      ```
+    | {
+      style.fill: "#fffde7"
+      style.stroke: "#f57f17"
+      style.border-radius: 8
+      style.font-size: 32
+    }
+
+    notes: "release-notes/" {
+      style.fill: "#e8f5e9"
+      style.stroke: "#2e7d32"
+      style.border-radius: 8
+      grid-columns: 3
+      grid-gap: 16
+      style.font-size: 32
+
+      rn_ww: WWContinuous/
+      rn_skroot: SkrootContinuous/
+      rn_fc: FlowCell/
+      rn_sfc: SkrootFlowCell/
+      rn_tunair: Tunair/
+      rn_rb: RollerBottle/
+    }
+  }
+
+  # --- Row 2: Credentials API (left-aligned) ---
+  api_row: "" {
+    grid-columns: 1
+    style.fill: transparent
+    style.stroke: transparent
+
+    api: Credentials API {
+      shape: image
+      icon: https://icons.terrastruct.com/aws%2FNetworking%20%26%20Content%20Delivery%2FAmazon-API-Gateway.svg
+      width: 128
+      height: 128
+      style.font-size: 26
+    }
+  }
+}
+
+# ===========================================================================
+# Row 3: Skroot Reader
+# ===========================================================================
+device: Skroot Reader {
+  label.near: top-left
+  style.fill: "#e0f7fa"
+  style.stroke: "#00695c"
+  style.border-radius: 8
+  style.font-size: 28
+  grid-columns: 3
+  grid-gap: 60
+
+  hw: "" {
+    shape: image
+    icon: https://icons.terrastruct.com/tech%2F069-hard-drive.svg
+    width: 80
+    height: 80
+  }
+
+  device_json: device.json {
+    shape: page
+    style.fill: "#fff9c4"
+    style.stroke: "#f9a825"
+    style.font-size: 26
+
+    device_id: device_id {style.font-size: 26}
+    secret: device_secret {style.font-size: 26}
+  }
+
+  device_config: device_config.json {
+    shape: page
+    style.fill: "#fff9c4"
+    style.stroke: "#f9a825"
+    style.font-size: 26
+
+    use_case: "UseCase (e.g. FlowCell)" {style.font-size: 26}
+    dev_version: "DevelopmentVersion (e.g. Test/Beta)" {style.font-size: 26}
+  }
+}
+
+# ===========================================================================
+# Cross-row connections
+# ===========================================================================
+
+# Row 1 -> Row 2: CI pushes to S3
+github.release -> aws.buckets.releases: "Uploads release (v3.0.10)\nto ALL UseCase buckets" {
+  style.stroke: "#b71c1c"
+  style.font-size: 26
+}
+github.release -> aws.buckets.notes: "Uploads UseCase specific release\nnotes to all buckets" {
+  style.stroke: "#2e7d32"
+  style.font-size: 26
+}
+
+# Row 2 -> Row 3: Credentials API issues scoped credentials
+aws.api_row.api -> device.device_json: "Authenticates\ndevice_id + device_secret" {
+  style.font-size: 26
+  style.stroke: "#4527a0"
+}
+
+# Row 2 -> Row 3: S3 serves version & release notes to device
+aws.buckets.releases -> device: "Device pulls release matching\nUseCase + DevelopmentVersion" {
+  style.stroke: "#00695c"
+  style.stroke-dash: 3
+  style.font-size: 26
+}
+aws.buckets.notes -> device: "Device pulls release notes\nmatching UseCase" {
+  style.stroke: "#2e7d32"
+  style.stroke-dash: 3
+  style.font-size: 26
+}
