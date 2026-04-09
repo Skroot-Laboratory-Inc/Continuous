@@ -26,10 +26,10 @@ class Plotter:
 
     def plotFrequencies(self, resultSet: ResultSet, zeroPoint, sweepData: SweepData):
         if len(resultSet.getTime()) > 0:
-            if self.ReaderFigureCanvas.showSgi.value:
-                self.plotGrowthIndex(resultSet, zeroPoint)
-            else:
-                self.plotSignal(resultSet, sweepData)
+            # if self.ReaderFigureCanvas.showSgi.value:
+            #     self.plotGrowthIndex(resultSet, zeroPoint)
+            # else:
+            self.plotSignal(resultSet, sweepData)
             self.frequencyFrame.update()
             self.frequencyFrame.update_idletasks()
 

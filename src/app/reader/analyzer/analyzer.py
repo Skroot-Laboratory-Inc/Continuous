@@ -32,29 +32,29 @@ class Analyzer:
         resultSet.setTime((self.FileManager.getCurrentScanDate() - self.ResultSet.getStartTime()) / 3600000)
         resultSet.setFilename(os.path.basename(self.FileManager.getCurrentScan()))
         resultSet.setTimestamp(self.FileManager.getCurrentScanDate())
-        try:
-            peakHeight, maxFreq, peakWidth = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
-            resultSet.setMaxFrequency(maxFreq)
-            maxMag, maxFreq, peakWidth = self.findMaximumDataSmooth(sweepData)
-            resultSet.setMaxVoltsSmooth(maxMag)
-            resultSet.setMaxFrequencySmooth(maxFreq)
-            resultSet.setPeakWidthSmooth(peakWidth)
-            if shouldDenoise and len(self.ResultSet.getTime()) > 0:
-                derivative = self.calculateDerivativeValues(
-                    self.ResultSet.getDenoiseTimeSmooth(),
-                    frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth()),
-                )
-            else:
-                derivative = self.calculateDerivativeValues(
-                    self.ResultSet.getTime(),
-                    frequencyToIndex(self.zeroPoint, self.ResultSet.getMaxFrequency()),
-                )
-            resultSet.setDerivative(derivative)
-            self.TemperatureResultSet.appendTemp(resultSet.timestamp)
-        except:
-            raise ScanAnalysisException()
-        finally:
-            self.ResultSet.setValues(resultSet)
+        # try:
+        #     peakHeight, maxFreq, peakWidth = self.findMaxGaussian(sweepData.frequency, sweepData.magnitude)
+        #     resultSet.setMaxFrequency(maxFreq)
+        #     maxMag, maxFreq, peakWidth = self.findMaximumDataSmooth(sweepData)
+        #     resultSet.setMaxVoltsSmooth(maxMag)
+        #     resultSet.setMaxFrequencySmooth(maxFreq)
+        #     resultSet.setPeakWidthSmooth(peakWidth)
+        #     if shouldDenoise and len(self.ResultSet.getTime()) > 0:
+        #         derivative = self.calculateDerivativeValues(
+        #             self.ResultSet.getDenoiseTimeSmooth(),
+        #             frequencyToIndex(self.zeroPoint, self.ResultSet.getDenoiseFrequencySmooth()),
+        #         )
+        #     else:
+        #         derivative = self.calculateDerivativeValues(
+        #             self.ResultSet.getTime(),
+        #             frequencyToIndex(self.zeroPoint, self.ResultSet.getMaxFrequency()),
+        #         )
+        #     resultSet.setDerivative(derivative)
+        #     self.TemperatureResultSet.appendTemp(resultSet.timestamp)
+        # except:
+        #     raise ScanAnalysisException()
+        # finally:
+        self.ResultSet.setValues(resultSet)
 
     def recordFailedScan(self):
         self.sweepData = SweepData([], [])

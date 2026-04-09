@@ -95,20 +95,20 @@ class ReaderThreadManager:
         try:
             reader.FileManager.updateScanName()
             reader.Indicator.changeIndicatorYellow()
-            self.checkZeroPoint()
+            # self.checkZeroPoint()
             sweepData = reader.SibInterface.takeScan(
                 os.path.splitext(reader.FileManager.getCurrentScan())[0],
                 resultSet.getCurrentVolts(),
             )
-            createScanFile(reader.FileManager.getCurrentScan(), sweepData)
+            # createScanFile(reader.FileManager.getCurrentScan(), sweepData)
             analyzer.analyzeScan(sweepData, self.denoiseSet)
-            reader.SibInterface.setReferenceFrequency(resultSet.getCurrentFrequency())
+            # reader.SibInterface.setReferenceFrequency(resultSet.getCurrentFrequency())
             reader.plotFrequencyButton.invoke()  # any changes to GUI must be in common_modules thread
-            harvestAlgorithm.check(resultSet)
-            if harvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(harvestAlgorithm.currentHarvestPrediction):
-                self.kpiForm.saturationDate = harvestAlgorithm.currentHarvestPrediction
-            if reader.finishedEquilibrationPeriod:
-                self.kpiForm.sgi = frequencyToIndex(analyzer.zeroPoint, resultSet.getDenoiseFrequencySmooth())[-1]
+            # harvestAlgorithm.check(resultSet)
+            # if harvestAlgorithm.currentHarvestPrediction != 0 and not np.isnan(harvestAlgorithm.currentHarvestPrediction):
+            #     self.kpiForm.saturationDate = harvestAlgorithm.currentHarvestPrediction
+            # if reader.finishedEquilibrationPeriod:
+            #     self.kpiForm.sgi = frequencyToIndex(analyzer.zeroPoint, resultSet.getDenoiseFrequencySmooth())[-1]
             reader.Indicator.changeIndicatorGreen()
             if reader.readerNumber in self.currentIssues and not self.currentIssues[reader.readerNumber].resolved:
                 self.currentIssues[reader.readerNumber].resolveIssue()
@@ -116,16 +116,17 @@ class ReaderThreadManager:
                     reader.AutomatedIssueManager.updateIssue(self.currentIssues[reader.readerNumber])
                 del self.currentIssues[reader.readerNumber]
         finally:
-            analyzer.createAnalyzedFiles()
-            if reader.finishedEquilibrationPeriod:
-                reader.AwsService.uploadExperimentFilesOnInterval(
-                    reader.FileManager.getCurrentScanDate(),
-                    self.guidedSetupForm.getLotId(),
-                    self.kpiForm.saturationDate,
-                    reader.AutomatedIssueManager.hasOpenIssues(),
-                    resultSet.getStartTime(),
-                    self.guidedSetupForm.getWarehouse(),
-                )
+            # analyzer.createAnalyzedFiles()
+            # if reader.finishedEquilibrationPeriod:
+            #     reader.AwsService.uploadExperimentFilesOnInterval(
+            #         reader.FileManager.getCurrentScanDate(),
+            #         self.guidedSetupForm.getLotId(),
+            #         self.kpiForm.saturationDate,
+            #         reader.AutomatedIssueManager.hasOpenIssues(),
+            #         resultSet.getStartTime(),
+            #         self.guidedSetupForm.getWarehouse(),
+            #     )
+            pass
 
     def mainLoop(self, reader):
         if self.isDevMode:
@@ -251,13 +252,11 @@ class ReaderThreadManager:
                          extra={"id": f"Reader {self.Reader.readerNumber}"})
 
     def waitUntilNextScan(self, currentTime, startTime):
-        # Wait removed for power consumption testing - scan immediately
-        # while currentTime - startTime < self.scanRate * 60:
-        #     if self.thread.shutdown_flag.is_set():
-        #         logging.info('Cancelling data collection due to stop button pressed',
-        #                      extra={"id": f"Reader {self.Reader.readerNumber}"})
-        #         break
-        #     time.sleep(0.05)
-        #     self.Timer.updateTime()
-        #     currentTime = time.time()
-        pass
+        while currentTime - startTime < self.scanRate * 60:
+            if self.thread.shutdown_flag.is_set():
+                logging.info('Cancelling data collection due to stop button pressed',
+                             extra={"id": f"Reader {self.Reader.readerNumber}"})
+                break
+            time.sleep(0.05)
+            self.Timer.updateTime()
+            currentTime = time.time()
