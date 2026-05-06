@@ -26,7 +26,7 @@ class Version:
 
     def __init__(self):
         self.major = 3.0
-        self.minor = 10
+        self.minor = 11
         self.developmentVersion = DevelopmentVersion.Test
         self.isBeta = True
 

@@ -178,8 +178,6 @@ class DeviceCredentialsManager:
         if self._hardware_id:
             payload["hardware_id"] = self._hardware_id
 
-        last_error = None
-
         for attempt in range(MAX_RETRIES + 1):
             try:
                 response = requests.post(
@@ -192,32 +190,45 @@ class DeviceCredentialsManager:
                 if response.status_code == 200:
                     data = response.json()
 
-                    with self._credentials_lock:
-                        self._access_key_id = data.get('accessKeyId')
-                        self._secret_access_key = data.get('secretAccessKey')
-                        self._session_token = data.get('sessionToken')
+                    access_key_id = data.get('accessKeyId')
+                    secret_access_key = data.get('secretAccessKey')
+                    session_token = data.get('sessionToken')
+                    expiration_str = data.get('expiration')
 
-                        # Parse expiration time
-                        expiration_str = data.get('expiration')
-                        if expiration_str:
+                    missing = [
+                        name for name, value in (
+                            ('accessKeyId', access_key_id),
+                            ('secretAccessKey', secret_access_key),
+                            ('sessionToken', session_token),
+                            ('expiration', expiration_str),
+                        ) if not value
+                    ]
+                    if missing:
+                        last_error = f"200 response missing required fields: {missing}"
+                    else:
+                        with self._credentials_lock:
+                            self._access_key_id = access_key_id
+                            self._secret_access_key = secret_access_key
+                            self._session_token = session_token
+
                             # Handle ISO format: "2026-01-29T17:06:21.000Z"
                             self._expiration = datetime.fromisoformat(
                                 expiration_str.replace('Z', '+00:00')
                             )
 
-                        self._company_id = data.get('companyId')
-                        self._s3_prefix = data.get('s3Prefix')
+                            self._company_id = data.get('companyId')
+                            self._s3_prefix = data.get('s3Prefix')
 
-                        # Set environment variables for boto3
-                        self._set_environment_variables()
+                            # Set environment variables for boto3
+                            self._set_environment_variables()
 
-                    self._last_fetch_failed = False
-                    logging.info(
-                        f"Successfully fetched AWS credentials for device {device_id}, "
-                        f"company {self._company_id}, expires at {self._expiration}",
-                        extra={"id": "AWS"}
-                    )
-                    return True
+                        self._last_fetch_failed = False
+                        logging.info(
+                            f"Successfully fetched AWS credentials for device {device_id}, "
+                            f"company {self._company_id}, expires at {self._expiration}",
+                            extra={"id": "AWS"}
+                        )
+                        return True
 
                 else:
                     last_error = f"API returned status {response.status_code}: {response.text}"
@@ -231,9 +242,12 @@ class DeviceCredentialsManager:
             except Exception as e:
                 last_error = f"Unexpected error: {e}"
 
-            # Retry with delay if not the last attempt
             if attempt < MAX_RETRIES:
+                logging.warning(f"Failed to get AWS credentials with error: {last_error}, retrying.",
+                                extra={"id": "AWS"})
                 time.sleep(RETRY_DELAYS[attempt])
+            else:
+                logging.warning(f"Reached max retries with error: {last_error}.", extra={"id": "AWS"})
 
         return False
 
