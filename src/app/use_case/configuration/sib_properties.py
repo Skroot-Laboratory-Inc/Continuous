@@ -16,7 +16,7 @@ class SibProperties:
         return SibProperties(
             startFrequency=100,
             stopFrequency=160,
-            stepSize=0.1
+            stepSize=0.2
         )
 
     @staticmethod
@@ -25,7 +25,7 @@ class SibProperties:
         return SibProperties(
             startFrequency=100,
             stopFrequency=160,
-            stepSize=0.1
+            stepSize=0.2
         )
 
     @staticmethod
@@ -34,6 +34,7 @@ class SibProperties:
         return SibProperties(
             startFrequency=70,
             stopFrequency=120,
+            stepSize=0.2
         )
 
     @staticmethod
@@ -42,7 +43,7 @@ class SibProperties:
         return SibProperties(
             startFrequency=110,
             stopFrequency=160,
-            stepSize=0.1,
+            stepSize=0.2
         )
 
     @staticmethod
@@ -59,6 +60,6 @@ class SibProperties:
         return SibProperties(
             startFrequency=100,
             stopFrequency=160,
-            stepSize=0.1,
+            stepSize=0.2,
             repeatMeasurements=80,
         )
