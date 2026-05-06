@@ -1,4 +1,10 @@
 {
+  "v3.0.11": {
+    "features": {
+      "1": "Added logging around failed device credentials attempts.",
+      "2": "Updated step size to 200 kHz"
+    }
+  },
   "v3.0.10": {
     "features": {
       "1": "Added Pump flow rate option for the SkrootFlowCell app, hidden for others."
