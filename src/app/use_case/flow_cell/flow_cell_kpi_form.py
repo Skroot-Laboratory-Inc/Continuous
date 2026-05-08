@@ -12,6 +12,7 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.widget_theme import WidgetTheme
+from src.app.widget.flow_rate_slider_widget import FlowRateSliderWidget
 from src.app.widget.kpi_form.kpi_form_base import KpiForm
 from src.app.widget.pump_toggle_widget import PumpToggleWidget
 from src.app.widget.sidebar.configurations.secondary_axis_type import SecondaryAxisType
@@ -27,11 +28,16 @@ class FlowCellKpiForm(KpiForm):
         self.sessionManager = sessionManager
         self.pumpManager = pumpManager
         self.parentFrame = parent
-        self.parentFrame.grid_rowconfigure(1, weight=1, minsize=50)
-        self.parentFrame.grid_rowconfigure(3, weight=1, minsize=50)
-        self.parentFrame.grid_rowconfigure(5, weight=1, minsize=50)
-        self.parentFrame.grid_rowconfigure(7, weight=1, minsize=50)
-        self.pumpToggleWidget = PumpToggleWidget(self.parentFrame, pumpManager)
+        self.parentFrame.grid_rowconfigure(1, weight=1, minsize=20)
+        self.parentFrame.grid_rowconfigure(3, weight=1, minsize=20)
+        self.parentFrame.grid_rowconfigure(5, weight=1, minsize=20)
+        self.parentFrame.grid_rowconfigure(7, weight=1, minsize=20)
+        self.pumpControlsFrame = tk.Frame(self.parentFrame, bg=Colors().body.background)
+        self.pumpControlsFrame.grid_columnconfigure(0, weight=1)
+        self.flowRateSliderWidget = FlowRateSliderWidget(self.pumpControlsFrame, pumpManager)
+        self.flowRateSliderWidget.getWidget().grid(row=0, column=0, sticky="ew", padx=(0, 10))
+        self.pumpToggleWidget = PumpToggleWidget(self.pumpControlsFrame, pumpManager)
+        self.pumpToggleWidget.getWidget().grid(row=0, column=1, sticky="se")
         row = self.addLabels(0)
 
     def addLabels(self, row):
@@ -79,7 +85,8 @@ class FlowCellKpiForm(KpiForm):
             row += 1
         row = self.createSecondaryAxisRow(row)
 
-        self.pumpToggleWidget.getWidget().grid(row=row, column=1, sticky="nse")
+        self.pumpControlsFrame.grid(row=row, column=0, columnspan=2, sticky="nsew", pady=(0, WidgetTheme().externalPadding))
+        row += 1
 
         button = GenericButton(
             "Export Run",
@@ -158,4 +165,5 @@ class FlowCellKpiForm(KpiForm):
         self._saturationTime.set("")
         self._saturationDate = None
         self._saturationTime.set("")
+        self.flowRateSliderWidget.reset()
         self.parentFrame.grid_remove()

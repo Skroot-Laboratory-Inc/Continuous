@@ -5,4 +5,4 @@ class PumpProperties:
         self.stepsPerRevolution = int(360 / self.stepAngle * self.microsteps)
         self.defaultFlowRate = 2
         self.defaultPrimingFlowRate = 100
-        self.millilitersPerRevolution = 0.0803
+        self.millilitersPerRevolution = 0.0417
