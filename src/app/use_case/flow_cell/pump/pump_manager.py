@@ -66,6 +66,16 @@ class PumpManager:
     def setFlowRate(self, speed: float):
         """Set the normal (non-priming) flow rate."""
         self.speed = speed
+        if self.isRunning() and not self.primingEnabled:
+            self.pump.setFlowRate(speed)
+
+    def getMinSpeed(self) -> float:
+        """Minimum selectable pump speed (RPM)."""
+        return PumpProperties().defaultFlowRate
+
+    def getMaxSpeed(self) -> float:
+        """Maximum selectable pump speed (RPM)."""
+        return PumpProperties().defaultPrimingFlowRate
 
     def start(self):
         """Turn the pump ON."""

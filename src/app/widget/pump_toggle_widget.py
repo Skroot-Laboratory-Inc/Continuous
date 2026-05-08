@@ -24,28 +24,30 @@ class PumpToggleWidget:
         self.pump_manager = pump_manager
 
         self.control_frame = tk.Frame(parent_widget, bg=Colors().body.background)
-        self.control_frame.grid_rowconfigure(0, weight=1)
         self.control_frame.grid_columnconfigure(0, weight=1)
-        self.control_frame.grid_columnconfigure(1, weight=0)
 
         self.statusLabel = tk.Label(
             self.control_frame,
             text="Pump OFF",
             bg=Colors().body.background,
-            foreground=Colors().body.text
+            foreground=Colors().body.text,
+            width=12,
+            anchor="e",
+            pady=0,
         )
-        self.statusLabel.grid(row=0, column=1, sticky="ns")
+        self.statusLabel.grid(row=0, column=0, sticky="nse", pady=0)
 
         self.toggle_switch = ToggleSwitch(
             self.control_frame,
             self.pump_manager.getToggleSubject()
         )
         self.toggle_switch.getWidget().grid(
-            row=0,
+            row=1,
             column=0,
             sticky="e",
             ipadx=10,
-            ipady=WidgetTheme().internalPadding
+            ipady=3,
+            pady=0,
         )
 
         self._onStateChange = self._createStateChangeHandler()
