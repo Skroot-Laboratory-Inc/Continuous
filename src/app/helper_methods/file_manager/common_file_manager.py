@@ -1,18 +1,11 @@
 import os.path
 
-from src.app.ui_manager.theme.theme_manager import get_current_theme_name
-
 
 class CommonFileManager:
     def __init__(self):
         srcDir = f"{os.path.dirname(os.path.dirname(getCwd()))}"
-        theme = get_current_theme_name()
         resourcesDir = f"{srcDir}/src/resources"
-        self.addIcon = rf"{resourcesDir}/media/{theme}/plus.png"
-        self.arrowIcon = rf"{resourcesDir}/media/{theme}/arrow.png"
-        self.switchOn = rf"{resourcesDir}/media/{theme}/switch-on.png"
         self.helpIconPng = rf"{resourcesDir}/media/help.png"
-        self.switchOff = rf"{resourcesDir}/media/switch-off.png"
         self.profileIcon = rf"{resourcesDir}/media/profile.jpg"
         self.skrootLogo = rf"{resourcesDir}/media/squareLogo.PNG"
         self.powerIcon = rf"{resourcesDir}/media/power.png"
@@ -31,18 +24,6 @@ class CommonFileManager:
 
     def getHelpIcon(self):
         return self.helpIconPng
-
-    def getSwitchOn(self):
-        return self.switchOn
-
-    def getSwitchOff(self):
-        return self.switchOff
-
-    def getAddIcon(self):
-        return self.addIcon
-
-    def getArrowIcon(self):
-        return self.arrowIcon
 
     def getPowerIcon(self):
         return self.powerIcon
