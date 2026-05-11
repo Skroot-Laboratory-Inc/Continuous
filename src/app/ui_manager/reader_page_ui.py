@@ -9,6 +9,7 @@ from src.app.ui_manager.root_manager import RootManager
 from src.app.ui_manager.theme.colors import Colors
 from src.app.ui_manager.theme.font_theme import FontTheme
 from src.app.ui_manager.theme.image_theme import ImageTheme
+from src.app.widget.indicator import createIndicatorOnCanvas
 from src.app.widget.timer import RunningTimer
 
 
@@ -106,20 +107,24 @@ class ReaderPageUI:
         """Create the status indicator."""
         indicatorSize = ImageTheme().indicatorSize
         indicatorBorder = ImageTheme().indicatorBorder
+        diameter = indicatorSize * 2
+        bg = Colors().body.background
         indicatorCanvas = tk.Canvas(
             readerFrame,
-            height=indicatorSize * 2,
-            width=indicatorSize * 2,
-            bg=Colors().body.background,
-            highlightbackground=Colors().body.background,
+            height=diameter,
+            width=diameter,
+            bg=bg,
+            highlightbackground=bg,
+            highlightthickness=0,
             bd=0)
-        indicator = indicatorCanvas.create_circle(
-            x=indicatorSize,
-            y=indicatorSize,
-            r=indicatorSize - indicatorBorder,
+        indicator = createIndicatorOnCanvas(
+            indicatorCanvas,
+            diameter=diameter,
+            border=indicatorBorder,
             fill=defaultIndicatorColor,
             outline=Colors().body.text,
-            width=indicatorBorder)
+            bg=bg,
+        )
         indicatorCanvas.grid(row=0, column=2, sticky='ne')
         return indicatorCanvas, indicator
 

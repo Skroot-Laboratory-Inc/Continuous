@@ -32,10 +32,10 @@ class PumpToggleWidget:
             bg=Colors().body.background,
             foreground=Colors().body.text,
             width=12,
-            anchor="e",
+            anchor="center",
             pady=0,
         )
-        self.statusLabel.grid(row=0, column=0, sticky="nse", pady=0)
+        self.statusLabel.grid(row=0, column=0, pady=0)
 
         self.toggle_switch = ToggleSwitch(
             self.control_frame,
@@ -44,7 +44,6 @@ class PumpToggleWidget:
         self.toggle_switch.getWidget().grid(
             row=1,
             column=0,
-            sticky="e",
             ipadx=10,
             ipady=3,
             pady=0,
