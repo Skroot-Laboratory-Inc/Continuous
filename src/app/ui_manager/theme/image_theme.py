@@ -8,3 +8,4 @@ class ImageTheme:
         self.connectivitySize = (55, 45)
         self.indicatorSize = 25
         self.indicatorBorder = 2
+        self.toggleSize = (40, 20)
