@@ -27,7 +27,7 @@ class Version:
     def __init__(self):
         self.major = 3.0
         self.minor = 13
-        self.developmentVersion = DevelopmentVersion.Dev
+        self.developmentVersion = DevelopmentVersion.Test
         self.isBeta = True
 
         self.use_case_themes = {
