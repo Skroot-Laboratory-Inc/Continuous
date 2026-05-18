@@ -103,12 +103,16 @@ def zipTempDir(tempDir, outputZipFile):
 def copyRunFile(user: str, driveLocation: str, runId: str):
     if not os.path.exists(f"{driveLocation}/Run Results"):
         os.mkdir(f"{driveLocation}/Run Results")
-    runFiles = glob.glob(f"{CommonFileManager().getDataSavePath()}/*_{runId}/smoothAnalyzed.csv")
-    for file in runFiles:
-        shutil.copyfile(
-            file,
-            f"{driveLocation}/Run Results/{os.path.basename(os.path.dirname(file))}.csv",
-        )
+    runDirs = glob.glob(f"{CommonFileManager().getDataSavePath()}/*_{runId}")
+    filesToExport = ["smoothAnalyzed.csv", "secondAxis.csv"]
+    for runDir in runDirs:
+        destDir = f"{driveLocation}/Run Results/{os.path.basename(runDir)}"
+        if not os.path.exists(destDir):
+            os.mkdir(destDir)
+        for fileName in filesToExport:
+            sourceFile = f"{runDir}/{fileName}"
+            if os.path.exists(sourceFile):
+                shutil.copyfile(sourceFile, f"{destDir}/{fileName}")
 
 
 def setHostname(hostname: str):

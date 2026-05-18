@@ -1,4 +1,12 @@
 {
+  "v3.0.13": {
+    "features": {
+      "1": "Added secondAxis data to the exported CSVs"
+    },
+    "other": {
+      "1": "Removed PNGs for any images that change based on theme. Replaced them with code drawn images for better theme matching."
+    }
+  },
   "v3.0.11": {
     "features": {
       "1": "Added logging around failed device credentials attempts.",
