@@ -8,9 +8,10 @@ from src.app.widget.sidebar.configurations.secondary_axis_units import Secondary
 
 
 class SecondaryAxisTracker:
-    def __init__(self, outputFile: str):
+    def __init__(self, outputFile: str, startTime: int):
         self.axisValues: {int: float} = {}
         self.outputFile = outputFile
+        self.startTime = startTime
 
     def addValue(self, value: float):
         self.axisValues[datetimeToMillis(datetime.now())] = value
@@ -19,8 +20,8 @@ class SecondaryAxisTracker:
     def getTimestamps(self) -> [int]:
         return self.axisValues.keys()
 
-    def getTimes(self, startTime: int) -> [float]:
-        return [max(0, (time - startTime) / 3600000) for time in self.axisValues.keys()]
+    def getTimes(self) -> [float]:
+        return [max(0, (time - self.startTime) / 3600000) for time in self.axisValues.keys()]
 
     def getValues(self) -> [float]:
         return self.axisValues.values()
@@ -30,5 +31,9 @@ class SecondaryAxisTracker:
             os.mkdir(os.path.dirname(self.outputFile))
         with open(self.outputFile, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Timestamp', f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}"])
-            writer.writerows(zip(self.axisValues.keys(), self.axisValues.values()))
+            writer.writerow([
+                'Timestamp',
+                'Time (hours)',
+                f"{SecondaryAxisType().getConfig()} {SecondaryAxisUnits().getAsUnit()}",
+            ])
+            writer.writerows(zip(self.axisValues.keys(), self.getTimes(), self.axisValues.values()))

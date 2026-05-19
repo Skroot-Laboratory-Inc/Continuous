@@ -42,10 +42,11 @@ class Reader:
 
         self.readerNumber = readerNumber
         self.initialize(globalFileManager.getSavePath())
+        startTime = self.Analyzer.ResultSet.getStartTime()
         if DevProperties().isDevMode and DevProperties().useMockSecondaryAxis:
-            self.SecondaryAxisTracker = DevSecondaryAxisTracker(self.FileManager.getSecondAxis())
+            self.SecondaryAxisTracker = DevSecondaryAxisTracker(self.FileManager.getSecondAxis(), startTime)
         else:
-            self.SecondaryAxisTracker = SecondaryAxisTracker(self.FileManager.getSecondAxis())
+            self.SecondaryAxisTracker = SecondaryAxisTracker(self.FileManager.getSecondAxis(), startTime)
         self.Plotter = Plotter(
             readerNumber,
             self.FileManager,
