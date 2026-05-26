@@ -14,8 +14,8 @@ class PumpInterface(ABC):
         """ Stops the pump"""
 
     @abstractmethod
-    def setFlowRate(self, flowRate: float):
-        """ Sets the flowrate for the pump class."""
+    def setRpm(self, rpm: float):
+        """Sets the motor RPM driving the pump."""
 
     @abstractmethod
     def getToggleSubject(self) -> BehaviorSubject:

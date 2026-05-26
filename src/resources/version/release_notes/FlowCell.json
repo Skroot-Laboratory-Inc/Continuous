@@ -1,4 +1,9 @@
 {
+  "v3.0.15": {
+    "features": {
+      "1": "Accounted for loss whern setting flowrates via a quadratic fit."
+    }
+  },
   "v3.0.14": {
     "features": {
       "1": "Added time(hours) to the secondAxis file that is output during exporting a run."

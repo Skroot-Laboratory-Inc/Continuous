@@ -7,16 +7,16 @@ from src.app.properties.pump_properties import PumpProperties
 class PumpPrimingConfiguration:
     def __init__(self):
         # if not DevProperties().isDevMode:
-        #     self.defaultPrimingFlowRate = getFloatEnvFlag(
+        #     self.primingRpm = getFloatEnvFlag(
         #         ConfigurationConstants().defaultPrimingFlowRate,
-        #         PumpProperties().defaultPrimingFlowRate,
+        #         PumpProperties().primingRpm,
         #     )
         # else:
-        self.defaultPrimingFlowRate = PumpProperties().defaultPrimingFlowRate
+        self.primingRpm = PumpProperties().primingRpm
 
     def setConfig(self, newSetting: float):
-        self.defaultPrimingFlowRate = newSetting
+        self.primingRpm = newSetting
         setFloatEnvFlag(ConfigurationConstants().defaultPrimingFlowRate, newSetting)
 
     def getConfig(self) -> float:
-        return self.defaultPrimingFlowRate
+        return self.primingRpm

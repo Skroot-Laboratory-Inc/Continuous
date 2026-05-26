@@ -3,7 +3,7 @@ import tkinter as tk
 
 from PIL import Image, ImageDraw, ImageTk
 
-from src.app.use_case.flow_cell.pump.pump_helpers import rpmToFlowRate
+from src.app.use_case.flow_cell.pump.pump_helpers import rpmToActualFlowRate
 from src.app.use_case.flow_cell.pump.pump_manager import PumpManager
 from src.app.ui_manager.theme.colors import Colors
 
@@ -141,14 +141,14 @@ class FlowRateSliderWidget:
     immediately updates the pump's flow rate when the pump is running.
     """
 
-    SNAP_RPM = 0.4  # 1 mL/hr
+    SNAP_RPM = 0.4  # ~1 mL/hr at the linear end of the curve
 
     def __init__(self, parentWidget: tk.Widget, pumpManager: PumpManager):
         self.parentWidget = parentWidget
         self.pumpManager = pumpManager
 
-        self.minRate = pumpManager.getMinSpeed()
-        self.maxRate = pumpManager.getMaxSpeed()
+        self.minRate = pumpManager.getMinRpm()
+        self.maxRate = pumpManager.getMaxRpm()
 
         colors = Colors()
         bg = colors.body.background
@@ -192,7 +192,7 @@ class FlowRateSliderWidget:
         )
 
     def _formatLabel(self, rpm) -> str:
-        return f"Flow rate: {rpmToFlowRate(float(rpm)):.0f} mL/hr"
+        return f"Flow rate: ~{rpmToActualFlowRate(float(rpm)):.0f} mL/hr"
 
     def _snap(self, rpm: float) -> float:
         steps = round((rpm - self.minRate) / self.SNAP_RPM)
@@ -210,7 +210,7 @@ class FlowRateSliderWidget:
             snapped = self._snap(rpm)
             self.slider.setValue(snapped)
             self.valueLabel.config(text=self._formatLabel(snapped))
-            self.pumpManager.setFlowRate(snapped)
+            self.pumpManager.setRpm(snapped)
         except Exception:
             logging.exception("Failed to apply flow rate from slider", extra={"id": "Reader"})
 
@@ -220,4 +220,4 @@ class FlowRateSliderWidget:
     def reset(self):
         self.slider.setValue(self.minRate)
         self.valueLabel.config(text=self._formatLabel(self.minRate))
-        self.pumpManager.setFlowRate(self.minRate)
+        self.pumpManager.setRpm(self.minRate)
