@@ -6,7 +6,7 @@ from src.app.use_case.flow_cell.pump.pump_interface import PumpInterface
 class DevPump(PumpInterface):
     def __init__(self):
         self.isRunning = False
-        self.speed = 0.001
+        self.rpm = 0.001
         self.toggleSubject = BehaviorSubject(False)  # Start with pump off
         self.toggleSubject.subscribe(self._on_toggle_changed)
 
@@ -24,10 +24,10 @@ class DevPump(PumpInterface):
             self.isRunning = False
             print("DevPump: Stopping pump")
 
-    def setFlowRate(self, speed: float):
-        """Set pump speed (mock implementation for dev environment)"""
-        self.speed = speed
-        print(f"DevPump: Flow Rate set to {speed}")
+    def setRpm(self, rpm: float):
+        """Set motor RPM (mock implementation for dev environment)"""
+        self.rpm = rpm
+        print(f"DevPump: RPM set to {rpm}")
 
     def getToggleSubject(self):
         """Get the BehaviorSubject for toggle integration"""

@@ -27,7 +27,7 @@ class Pump(PumpInterface):
             direction: Pump direction (1 for forward, 0 for reverse)
         """
         self.isRunning = False
-        self.stepPeriod = self.setFlowRate(PumpProperties().defaultFlowRate)
+        self.stepPeriod = self.setRpm(PumpProperties().defaultRpm)
         self._stop_event = threading.Event()
         self._pump_thread = None
         self.toggleSubject = BehaviorSubject(False)  # Start with pump off
@@ -74,9 +74,8 @@ class Pump(PumpInterface):
         if self._pump_thread and self._pump_thread.is_alive():
             self._pump_thread.join(timeout=1.0)
 
-    def setFlowRate(self, flowRate: float):
-        # Actually setting pump speed, soon to be flow rate.
-        self.stepPeriod = rpmToStepPeriod(flowRate)
+    def setRpm(self, rpm: float):
+        self.stepPeriod = rpmToStepPeriod(rpm)
         return self.stepPeriod
 
     def getToggleSubject(self):

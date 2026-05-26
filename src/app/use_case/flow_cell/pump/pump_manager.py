@@ -8,8 +8,9 @@ from src.app.widget.sidebar.configurations.pump_priming_configuration import Pum
 
 class PumpManager:
     """
-    Centralized pump management that handles pump state, subscriptions, and flow rate control.
-    This should be created once and shared across all UI components that need pump control.
+    Centralized pump management that handles pump state, subscriptions, and motor
+    RPM control. This should be created once and shared across all UI components
+    that need pump control.
     """
 
     def __init__(self, pump: PumpInterface):
@@ -21,20 +22,20 @@ class PumpManager:
         """
         self.pump = pump
         self.primingEnabled = True
-        self.speed = PumpProperties().defaultFlowRate
+        self.rpm = PumpProperties().defaultRpm
         self._state_listeners: List[Callable[[bool], None]] = []
 
         # Single subscription to the pump's toggle subject
         self._subscription = self.pump.getToggleSubject().subscribe(self._onPumpStateChange)
 
     def _onPumpStateChange(self, state: bool):
-        """Handle pump state changes and update flow rate accordingly."""
+        """Handle pump state changes and update RPM accordingly."""
         if state:
-            # Pump is turning ON - set appropriate flow rate
+            # Pump is turning ON - set appropriate RPM
             if self.primingEnabled:
-                self.pump.setFlowRate(PumpPrimingConfiguration().getConfig())
+                self.pump.setRpm(PumpPrimingConfiguration().getConfig())
             else:
-                self.pump.setFlowRate(self.speed)
+                self.pump.setRpm(self.rpm)
 
         # Notify all registered listeners
         for listener in self._state_listeners:
@@ -63,19 +64,19 @@ class PumpManager:
         """Enable or disable priming mode."""
         self.primingEnabled = enabled
 
-    def setFlowRate(self, speed: float):
-        """Set the normal (non-priming) flow rate."""
-        self.speed = speed
+    def setRpm(self, rpm: float):
+        """Set the normal (non-priming) motor RPM."""
+        self.rpm = rpm
         if self.isRunning() and not self.primingEnabled:
-            self.pump.setFlowRate(speed)
+            self.pump.setRpm(rpm)
 
-    def getMinSpeed(self) -> float:
-        """Minimum selectable pump speed (RPM)."""
-        return PumpProperties().defaultFlowRate
+    def getMinRpm(self) -> float:
+        """Minimum selectable motor RPM."""
+        return PumpProperties().defaultRpm
 
-    def getMaxSpeed(self) -> float:
-        """Maximum selectable pump speed (RPM)."""
-        return PumpProperties().defaultPrimingFlowRate
+    def getMaxRpm(self) -> float:
+        """Maximum selectable motor RPM."""
+        return PumpProperties().primingRpm
 
     def start(self):
         """Turn the pump ON."""
